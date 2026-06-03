@@ -24,8 +24,8 @@ from typing import Optional
 
 import requests
 
-from ..wallet import Wallet
-from ..chain import Chain, ChainManager, CHAIN_IDS
+from .wallet import Wallet
+from .chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 

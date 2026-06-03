@@ -18,8 +18,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from ..wallet import Wallet
-from ..chain import Chain, ChainManager
+from .wallet import Wallet
+from .chain import Chain, ChainManager
 
 logger = logging.getLogger(__name__)
 

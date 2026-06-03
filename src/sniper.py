@@ -28,8 +28,8 @@ from enum import Enum
 from threading import Thread, Event
 from typing import Any, Callable, Optional
 
-from ..wallet import Wallet
-from ..chain import Chain, ChainManager, CHAIN_IDS
+from .wallet import Wallet
+from .chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 
