@@ -31,12 +31,21 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 
 ## ✨ Features
 
-- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana
-- 🤖 **LLM-powered reasoning** — Multi-provider cascade (OpenAI, Anthropic, Groq, DeepSeek, OpenRouter, Kimi)
-- 💰 **Uniswap V2 swaps** — Actual token swaps with quotes, approvals, slippage protection
-- 🔐 **Governed signing** — Safety caps, kill-switch, operator confirmation
-- 📊 **Portfolio management** — Track balances, positions, P&L across chains
+### 🤖 Core
+- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC
+- 🧠 **LLM-powered reasoning** — Multi-provider cascade (OpenAI, Anthropic, Groq, DeepSeek, OpenRouter, Kimi)
 - 🎯 **Natural language goals** — Tell the agent what to do in plain English
+- 🔐 **Governed signing** — Safety caps, kill-switch, operator confirmation
+
+### 💰 DeFi
+- 💱 **Uniswap V2 swaps** — Actual token swaps with quotes, approvals, slippage protection
+- 🌉 **Cross-chain bridges** — Li.Fi + Socket aggregators for best routes
+- 📊 **Portfolio tracking** — Real-time balances, P&L across all chains
+
+### 🔫 Sniper
+- 🎯 **Token sniper** — Monitor new liquidity pools, auto-buy safe tokens
+- 🛡️ **Risk assessment** — Honeypot detection, liquidity checks, contract analysis
+- ⚡ **Live monitoring** — Background thread with callback alerts
 
 ---
 
@@ -68,12 +77,13 @@ export BASE_RPC="https://..."
 ### Basic Usage
 
 ```python
-from web3_agent_kit import Agent, Wallet, Chain
+from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
 
 # Setup
-wallet = Wallet.from_env("PRIVATE_KEY")
-uniswap = Uniswap(chain_manager=wallet.chain_manager, slippage=0.5)
+chain_manager = ChainManager(chains=[Chain.BASE])
+wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
+uniswap = Uniswap(chain_manager=chain_manager)
 
 # Create agent with LLM reasoning
 agent = Agent(
@@ -87,25 +97,6 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 print(result)
 ```
 
-### Direct Swap (No LLM)
-
-```python
-from web3_agent_kit import Wallet, Chain, ChainManager
-from web3_agent_kit.defi import Uniswap
-
-chain_manager = ChainManager(chains=[Chain.BASE])
-wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
-uniswap = Uniswap(chain_manager=chain_manager)
-
-# Get quote
-quote = uniswap.get_quote("ETH", "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 0.1, Chain.BASE)
-print(f"0.1 ETH → {quote['amount_out']:.2f} USDC")
-
-# Execute swap
-result = uniswap.execute(wallet, "ETH", "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", 0.1, Chain.BASE)
-print(f"TX: {result.tx_hash}")
-```
-
 ---
 
 ## 📦 Examples
@@ -114,6 +105,9 @@ print(f"TX: {result.tx_hash}")
 |---------|-------------|
 | `examples/llm_swap_agent.py` | LLM-powered natural language swapping |
 | `examples/direct_swap.py` | Programmatic Uniswap swap without LLM |
+| `examples/token_sniper.py` | Monitor new pairs, auto-buy safe tokens |
+| `examples/portfolio_dashboard.py` | Real-time portfolio across chains |
+| `examples/bridge_agent.py` | Cross-chain transfers via Li.Fi/Socket |
 | `examples/swap_agent.py` | Autonomous token swapping |
 | `examples/yield_optimizer.py` | Cross-chain yield farming |
 | `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
@@ -124,7 +118,7 @@ print(f"TX: {result.tx_hash}")
 
 ## 🧠 LLM Integration
 
-Web3 Agent Kit supports multiple LLM providers with automatic cascade fallback:
+Multi-provider cascade with automatic fallback:
 
 ```python
 from web3_agent_kit.llm import LLM
@@ -151,20 +145,96 @@ data = llm.chat_json("Analyze this swap: 0.1 ETH to USDC")
 
 ---
 
+## 🔫 Token Sniper
+
+Monitor new liquidity pools and auto-buy safe tokens:
+
+```python
+from web3_agent_kit import TokenSniper, SniperConfig, RiskLevel
+
+config = SniperConfig(
+    max_buy=0.005,          # max 0.005 ETH per snipe
+    auto_buy=True,          # auto-buy safe tokens
+    honeypot_check=True,    # check if token is honeypot
+    min_liquidity=0.5,      # min 0.5 ETH liquidity
+)
+
+sniper = TokenSniper(chain_manager, wallet, config, uniswap=uniswap)
+
+# Scan recent blocks
+pairs = sniper.scan_recent_blocks(num_blocks=100, chain=Chain.BASE)
+
+# Or start live monitoring
+sniper.start(chain=Chain.BASE, poll_interval=12)
+```
+
+---
+
+## 📊 Portfolio Dashboard
+
+Track balances and P&L across chains:
+
+```python
+from web3_agent_kit import PortfolioTracker
+
+tracker = PortfolioTracker(chain_manager, wallet)
+summary = tracker.get_summary()
+
+print(summary)
+# 📊 Portfolio: 0x1234...
+# 💰 Total Value: $12,345.67
+#
+#   🔗 ETHEREUM: $8,000.00
+#      Native: 1.5000 ETH ($5,250.00)
+#      USDC: 2750.0000 ($2,750.00)
+#
+#   🔗 BASE: $4,345.67
+#      Native: 1.2000 ETH ($4,200.00)
+#      USDC: 145.6700 ($145.67)
+```
+
+---
+
+## 🌉 Bridge Agent
+
+Cross-chain transfers via Li.Fi and Socket:
+
+```python
+from web3_agent_kit import BridgeAgent
+
+bridge = BridgeAgent(chain_manager, wallet)
+
+# Get best routes
+routes = bridge.get_routes("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
+
+for route in routes:
+    print(f"{route.bridge_name}: {route.amount_out:.6f} ETH (fee: ${route.fee_usd:.2f})")
+
+# Execute transfer
+result = bridge.transfer("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
+print(f"TX: {result.tx_hash}")
+```
+
+---
+
 ## 🏗️ Architecture
 
 ```
 web3-agent-kit/
 ├── src/
-│   ├── agent.py      # Agent framework + LLM reasoning
-│   ├── llm.py        # Multi-provider LLM client
-│   ├── wallet.py     # Wallet management + signing
-│   ├── chain.py      # Multi-chain RPC + config
+│   ├── __init__.py    # Package exports
+│   ├── agent.py       # Agent framework + LLM reasoning
+│   ├── llm.py         # Multi-provider LLM client
+│   ├── wallet.py      # Wallet management + signing
+│   ├── chain.py       # Multi-chain RPC + config
+│   ├── sniper.py      # Token sniper + monitoring
+│   ├── portfolio.py   # Portfolio tracking + P&L
+│   ├── bridge.py      # Cross-chain bridge agent
 │   └── defi/
 │       ├── __init__.py  # Uniswap, Aerodrome, Aave, Curve
-├── examples/          # Ready-to-use examples
-├── tests/             # Test suite
-└── docs/              # Documentation
+├── examples/           # Ready-to-use examples
+├── tests/              # Test suite
+└── docs/               # Documentation
 ```
 
 ---
@@ -193,16 +263,16 @@ governor.unkill() # resume
 
 ## 🛠️ Supported Chains
 
-| Chain | Status | Uniswap |
-|-------|--------|---------|
-| Ethereum | ✅ | ✅ |
-| Base | ✅ | ✅ |
-| Arbitrum | ✅ | ✅ |
-| Optimism | ✅ | ✅ |
-| Polygon | ✅ | ✅ |
-| Avalanche | ✅ | — |
-| BSC | ✅ | — |
-| Solana | 🔜 | — |
+| Chain | Status | Uniswap | Bridge |
+|-------|--------|---------|--------|
+| Ethereum | ✅ | ✅ | ✅ |
+| Base | ✅ | ✅ | ✅ |
+| Arbitrum | ✅ | ✅ | ✅ |
+| Optimism | ✅ | ✅ | ✅ |
+| Polygon | ✅ | ✅ | ✅ |
+| Avalanche | ✅ | — | ✅ |
+| BSC | ✅ | — | ✅ |
+| Solana | 🔜 | — | — |
 
 ---
 
@@ -224,6 +294,7 @@ Built with:
 - [web3.py](https://github.com/ethereum/web3.py) — Ethereum interactions
 - [OpenAI](https://openai.com) / [Anthropic](https://anthropic.com) / [Groq](https://groq.com) — LLM providers
 - [Uniswap](https://uniswap.org) — DEX protocol
+- [Li.Fi](https://li.fi) / [Socket](https://socket.tech) — Bridge aggregators
 
 ---
 
