@@ -4,11 +4,14 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Twitter](https://img.shields.io/twitter/follow/web3agentkit?style=social)](https://twitter.com/web3agentkit)
+[![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
+[![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
+
+---
 
 ## What is this?
 
-Web3 Agent Kit is a Python framework for building AI agents that can autonomously interact with DeFi protocols, manage wallets, execute trades, and perform complex on-chain operations across multiple blockchains.
+Web3 Agent Kit is a Python framework for building **AI agents that can autonomously interact with DeFi protocols**, manage wallets, execute trades, and perform complex on-chain operations across multiple blockchains.
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain
@@ -23,7 +26,9 @@ agent = Agent(
 agent.run("Find the best yield farming opportunities on Base and optimize my portfolio")
 ```
 
-## Features
+---
+
+## ✨ Features
 
 - 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Solana
 - 🤖 **Agent framework** — Goal-driven autonomous agents with LLM reasoning
@@ -33,7 +38,9 @@ agent.run("Find the best yield farming opportunities on Base and optimize my por
 - 🦊 **Browser automation** — Interact with dApps via stealth browser
 - 📡 **Real-time monitoring** — Mempool, whale tracking, price alerts
 
-## Quick Start
+---
+
+## 🚀 Quick Start
 
 ### Install
 
@@ -55,7 +62,7 @@ agent = Agent(
     wallet=wallet,
     chains=[Chain.BASE],
     tools=[Uniswap(), Aave()],
-    llm="gpt-4",  # or claude, llama, etc.
+    llm="gpt-4",
 )
 
 # Run a task
@@ -63,39 +70,69 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 print(result)  # → Transaction hash, gas used, etc.
 ```
 
-### Yield Optimizer
+---
 
-```python
-from web3_agent_kit import Agent
-from web3_agent_kit.strategies import YieldOptimizer
+## 📦 Examples
 
-optimizer = YieldOptimizer(
-    wallet=wallet,
-    chains=[Chain.ETHEREUM, Chain.BASE],
-    min_apy=5.0,  # minimum 5% APY
-    max_risk=0.3,  # low-medium risk
-)
-
-# Auto-optimize yield across chains
-optimizer.run(interval="1h")  # check every hour
-```
+| Example | Description |
+|---------|-------------|
+| `examples/swap_agent.py` | Autonomous token swapping |
+| `examples/yield_optimizer.py` | Cross-chain yield farming |
+| `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
+| `examples/sniper_bot.py` | Token launch sniper |
+| `examples/portfolio_tracker.py` | Portfolio tracking & reporting |
 
 ### Airdrop Farmer
 
 ```python
-from web3_agent_kit import Agent
-from web3_agent_kit.tools import AirdropFarmer
+from web3_agent_kit import Agent, Wallet, Chain
+from web3_agent_kit.defi import Uniswap, Aerodrome
 
-farmer = AirdropFarmer(
+wallet = Wallet.from_env("PRIVATE_KEY")
+
+agent = Agent(
     wallet=wallet,
-    targets=["scroll", "zksync", "linea"],
+    chains=[Chain.BASE, Chain.ARBITRUM, Chain.OPTIMISM],
+    tools=[Uniswap(), Aerodrome()],
 )
 
 # Farm airdrops across multiple chains
-farmer.run("Complete daily quests and track eligibility")
+agent.run("Complete daily quests and track eligibility across all chains")
 ```
 
-## Architecture
+### Token Sniper
+
+```python
+from web3_agent_kit import Agent, Wallet, Chain
+from web3_agent_kit.defi import Uniswap
+
+agent = Agent(
+    wallet=Wallet.from_env("PRIVATE_KEY"),
+    chains=[Chain.BASE],
+    tools=[Uniswap()],
+)
+
+# Snipe new token launches
+agent.run("Monitor for new liquidity adds, analyze contracts, and buy if safe")
+```
+
+### Portfolio Tracker
+
+```python
+from web3_agent_kit import Agent, Wallet, Chain
+
+agent = Agent(
+    wallet=Wallet.from_env("PRIVATE_KEY"),
+    chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM],
+)
+
+# Track portfolio across chains
+agent.run("Get all balances, calculate total value, identify opportunities")
+```
+
+---
+
+## 🏗️ Architecture
 
 ```
 web3-agent-kit/
@@ -109,55 +146,58 @@ web3-agent-kit/
 └── docs/                # Documentation
 ```
 
-## Examples
+---
 
-| Example | Description |
-|---------|-------------|
-| `examples/swap_agent.py` | Autonomous token swapping |
-| `examples/yield_optimizer.py` | Cross-chain yield farming |
-| `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
-| `examples/sniper_bot.py` | Token launch sniper |
-| `examples/portfolio_manager.py` | Portfolio rebalancing |
-
-## Safety
+## 🔐 Safety
 
 Web3 Agent Kit includes built-in safety features:
 
-- **Spend Governor** — Per-transaction caps, daily limits, kill-switch
-- **Confirm Gate** — Operator approval for high-value transactions
-- **Simulation** — Dry-run transactions before execution
-- **Audit Log** — Complete history of all agent actions
-
 ```python
-from web3_agent_kit.safety import SpendGovernor
+from web3_agent_kit.safety import SpendGovernor, SpendLimits
 
 governor = SpendGovernor(
-    max_per_tx=0.1,      # max 0.1 ETH per transaction
-    daily_limit=1.0,     # max 1 ETH per day
-    require_confirm=True, # operator must confirm
+    limits=SpendLimits(
+        max_per_tx=0.1,      # max 0.1 ETH per transaction
+        daily_limit=1.0,     # max 1 ETH per day
+    ),
+    require_confirm=True,    # operator must confirm
 )
+
+# Kill switch for emergencies
+governor.kill()   # blocks all transactions
+governor.unkill() # resume
 ```
 
-## Roadmap
+---
 
-- [ ] Core framework (wallet, chains, agents)
-- [ ] DeFi integrations (Uniswap, Aave, Curve)
-- [ ] LLM integration (GPT-4, Claude, Llama)
-- [ ] Browser automation for dApp interaction
-- [ ] Solana support
-- [ ] Telegram/Discord bot interface
-- [ ] Web dashboard
-- [ ] Token-gated features
+## 🛠️ Supported Chains
 
-## Contributing
+| Chain | Status |
+|-------|--------|
+| Ethereum | ✅ |
+| Base | ✅ |
+| Arbitrum | ✅ |
+| Optimism | ✅ |
+| Polygon | ✅ |
+| Avalanche | ✅ |
+| BSC | ✅ |
+| Solana | 🔜 |
+
+---
+
+## 🤝 Contributing
 
 We welcome contributions! See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+---
+
+## 📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
 
-## Acknowledgments
+---
+
+## 🙏 Acknowledgments
 
 Built with:
 - [web3.py](https://github.com/ethereum/web3.py) — Ethereum interactions
