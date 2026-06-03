@@ -13,17 +13,49 @@ from .chain import Chain
 logger = logging.getLogger(__name__)
 
 
+# System prompt for the agent
+AGENT_SYSTEM_PROMPT = """You are an autonomous Web3 agent. You observe blockchain state, reason about goals, and execute on-chain actions using available tools.
+
+TOOLS:
+{tools}
+
+RESPONSE FORMAT:
+You must respond with a JSON object:
+{{
+    "thought": "your reasoning about what to do next",
+    "tool": "tool_name",
+    "args": {{"key": "value"}}
+}}
+
+When the goal is complete, respond with:
+{{
+    "thought": "summary of what was accomplished",
+    "tool": "done",
+    "answer": "final answer to the user"
+}}
+
+RULES:
+- Always use the cheapest available option
+- Check balances before swaps
+- Consider gas costs in your reasoning
+- Never exceed the governor limits
+- If a tool fails, try an alternative approach
+- Be precise with token addresses and amounts
+"""
+
+
 @dataclass
 class AgentConfig:
     """Configuration for an autonomous agent."""
 
     wallet: Wallet
     chains: list[Chain] = field(default_factory=lambda: [Chain.ETHEREUM])
-    llm: str = "gpt-4"
+    llm: str = "auto"  # "auto" for auto-detect, or specific model
     max_steps: int = 20
     tools: list[Any] = field(default_factory=list)
     governor: Optional[Any] = None
     confirm_fn: Optional[Callable] = None
+    verbose: bool = False
 
 
 class Agent:
@@ -52,6 +84,15 @@ class Agent:
         self.chains = self.config.chains
         self.tools = {t.name: t for t in self.config.tools}
         self.history: list[dict] = []
+        self._llm = None
+
+    @property
+    def llm(self):
+        """Lazy-load LLM client."""
+        if self._llm is None:
+            from .llm import LLM, LLMConfig
+            self._llm = LLM()
+        return self._llm
 
     def run(self, goal: str, max_steps: Optional[int] = None) -> str:
         """
@@ -73,8 +114,18 @@ class Agent:
             # Decide next action via LLM
             action = self._decide(goal, observation)
 
+            if self.config.verbose:
+                thought = action.get("thought", "")
+                logger.info(f"Thought: {thought}")
+
             if action.get("tool") == "done":
-                return action.get("answer", "Task completed")
+                result = action.get("answer", "Task completed")
+                self.history.append({
+                    "step": step + 1,
+                    "action": action,
+                    "result": result,
+                })
+                return result
 
             # Execute action
             result = self._act(action)
@@ -87,6 +138,9 @@ class Agent:
                 "result": result,
             })
 
+            if self.config.verbose:
+                logger.info(f"Result: {result}")
+
         return f"Max steps ({steps}) reached without completion"
 
     def _observe(self) -> str:
@@ -94,8 +148,11 @@ class Agent:
         observations = []
 
         for chain in self.chains:
-            balance = self.wallet.get_balance(chain)
-            observations.append(f"{chain.name}: {balance} ETH")
+            try:
+                balance = self.wallet.get_balance(chain)
+                observations.append(f"{chain.name}: {balance} ETH")
+            except Exception as e:
+                observations.append(f"{chain.name}: error ({e})")
 
         return " | ".join(observations)
 
@@ -105,13 +162,50 @@ class Agent:
 
         Returns action dict: {"tool": "name", "args": {...}}
         """
-        # TODO: Integrate with LLM providers
-        # For now, return a placeholder
-        return {
-            "tool": "done",
-            "args": {},
-            "answer": f"Goal '{goal}' — LLM integration pending",
-        }
+        # Build tool descriptions
+        tool_descriptions = []
+        for name, tool in self.tools.items():
+            chains = [c.value for c in tool.supported_chains]
+            tool_descriptions.append(f"- {name}: chains={chains}")
+
+        if not tool_descriptions:
+            tool_descriptions = ["- No tools available"]
+
+        system_prompt = AGENT_SYSTEM_PROMPT.format(
+            tools="\n".join(tool_descriptions)
+        )
+
+        # Build conversation context
+        context_parts = [f"OBSERVATION: {observation}"]
+
+        if self.history:
+            for h in self.history[-3:]:  # Last 3 steps
+                context_parts.append(
+                    f"Step {h['step']}: tool={h['action'].get('tool')}, result={str(h['result'])[:200]}"
+                )
+
+        context_parts.append(f"GOAL: {goal}")
+
+        user_prompt = "\n".join(context_parts)
+
+        try:
+            response = self.llm.chat_json(user_prompt, system=system_prompt)
+
+            # Validate response
+            if "tool" not in response:
+                response["tool"] = "done"
+                response["answer"] = response.get("thought", "Invalid LLM response")
+
+            return response
+
+        except Exception as e:
+            logger.error(f"LLM failed: {e}")
+            # Fallback: return done with error
+            return {
+                "tool": "done",
+                "args": {},
+                "answer": f"LLM error: {e}",
+            }
 
     def _act(self, action: dict) -> str:
         """Execute an action using the appropriate tool."""
@@ -119,7 +213,7 @@ class Agent:
         args = action.get("args", {})
 
         if tool_name not in self.tools:
-            return f"Unknown tool: {tool_name}"
+            return f"Unknown tool: {tool_name}. Available: {list(self.tools.keys())}"
 
         tool = self.tools[tool_name]
 
