@@ -202,6 +202,55 @@ python my_agent.py
 
 ---
 
+## 🌐 REST API
+
+Full HTTP API for all modules — use from any language (JavaScript, curl, etc):
+
+```bash
+# Start the API server
+python -m src.api
+
+# Or with API key
+WEB3_API_KEY=your-secret python -m src.api
+```
+
+**Endpoints:**
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/wallet/info` | GET | Wallet info + balance |
+| `/swap/quote` | GET | Get swap quote |
+| `/swap/execute` | POST | Execute token swap |
+| `/portfolio/` | GET | Portfolio dashboard |
+| `/gas/estimate` | GET | Gas estimates (EIP-1559) |
+| `/gas/recommendation` | GET | Gas timing recommendation |
+| `/watcher/list` | GET | List watched wallets |
+| `/watcher/add` | POST | Add wallet to watch |
+| `/approval/scan` | GET | Scan token approvals |
+| `/approval/risk` | GET | Risk report |
+| `/dca/orders` | GET/POST | List/create DCA orders |
+| `/yield/opportunities` | GET | Scan yield opportunities |
+| `/yield/best` | GET | Find best yield |
+| `/bridge/quote` | GET | Get bridge quote |
+| `/bridge/execute` | POST | Execute bridge |
+| `/health` | GET | Health check |
+| `/docs` | GET | Swagger UI |
+| `/redoc` | GET | ReDoc documentation |
+
+**Example:**
+```bash
+# Get gas estimate
+curl http://localhost:8000/gas/estimate?chain=ethereum
+
+# Get swap quote
+curl "http://localhost:8000/swap/quote?token_in=ETH&token_out=USDC&amount_in=1.0"
+
+# Scan approvals
+curl http://localhost:8000/approval/scan?chain=ethereum
+```
+
+---
+
 ## 🎯 Showcase
 
 ### Telegram Bot
@@ -233,6 +282,7 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 | `examples/multi_wallet.py` | Multi-wallet management + batch ops |
 | `examples/plugin_system.py` | Plugin system usage + custom plugins |
 | `examples/dca_bot.py` | Dollar-cost averaging bot with intervals & limits |
+| `examples/api_server.py` | REST API server with Swagger docs |
 | `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
 | `examples/sniper_bot.py` | Token launch sniper |
 | `examples/portfolio_tracker.py` | Portfolio tracking & reporting |
@@ -453,9 +503,13 @@ web3-agent-kit/
 │   │   ├── __init__.py     # Plugin system (base, registry, manager)
 │   │   └── examples/
 │   │       └── gas_tracker.py
+│   ├── api/
+│   │   ├── __init__.py     # FastAPI REST API server
+│   │   ├── models.py       # Pydantic request/response models
+│   │   └── routes/         # API route handlers
 │   └── defi/
 │       └── __init__.py     # Uniswap, Aerodrome, Aave, Curve
-├── examples/               # 13 ready-to-use examples
+├── examples/               # 15 ready-to-use examples
 ├── tests/                  # Test suite
 └── docs/                   # Documentation
 ```
