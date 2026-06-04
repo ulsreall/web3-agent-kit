@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
-[![Coverage](https://img.shields.io/badge/coverage-45%25-yellow.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
+| [![Coverage](https://img.shields.io/badge/coverage-60%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme) |
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
@@ -28,6 +28,9 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, bridges |
+| **Yield** | Manual research, claim, compound | Auto-compound, cross-protocol APY comparison |
+| **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
+| **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
 ---
@@ -94,6 +97,9 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **DeFi Tools** | Uniswap, Aave, bridges | ❌ | ❌ | Limited |
 | **Token Sniper** | ✅ | ❌ | ❌ | ❌ |
+| **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
+| **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
+| **Plugin System** | ✅ | ❌ | ❌ | ❌ |
 | **Safety Rails** | ✅ Governor | ❌ | ❌ | ❌ |
 | **Natural Language** | ✅ | Partial | ❌ | ❌ |
 | **Python Native** | ✅ | ✅ | Varies | ❌ (TS) |
@@ -207,10 +213,13 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 | `examples/portfolio_dashboard.py` | Real-time portfolio across chains |
 | `examples/bridge_agent.py` | Cross-chain transfers via Li.Fi/Socket |
 | `examples/swap_agent.py` | Autonomous token swapping |
-| `examples/yield_optimizer.py` | Cross-chain yield farming |
+| `examples/yield_optimizer.py` | Cross-protocol yield farming + auto-compound |
+| `examples/multi_wallet.py` | Multi-wallet management + batch ops |
+| `examples/plugin_system.py` | Plugin system usage + custom plugins |
 | `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
 | `examples/sniper_bot.py` | Token launch sniper |
 | `examples/portfolio_tracker.py` | Portfolio tracking & reporting |
+| `examples/llm_swap_agent.py` | LLM-powered natural language swapping |
 
 ---
 
@@ -315,24 +324,123 @@ print(f"TX: {result.tx_hash}")
 
 ---
 
+## 🌾 Yield Optimizer
+
+Auto-compound and compare yield across DeFi protocols:
+
+```python
+from web3_agent_kit import YieldOptimizer, YieldConfig, RiskLevel
+
+optimizer = YieldOptimizer(wallet, Chain.ETHEREUM, YieldConfig(
+    min_apy=2.0,
+    max_risk=RiskLevel.MEDIUM,
+    auto_compound_threshold=25,
+))
+
+# Scan & compare
+opportunities = optimizer.scan_opportunities("USDC")
+best = optimizer.find_best("USDC", amount=10000)
+
+# Deposit & auto-compound
+optimizer.deposit(best, amount=10000)
+optimizer.auto_compound_all()
+```
+
+**Protocols:** Aave V3, Compound V3, Morpho, Lido, Rocket Pool, Fluid
+**Data source:** DeFiLlama API (real-time APY/TVL)
+
+---
+
+## 👛 Multi-Wallet Manager
+
+Manage multiple wallets with batch operations:
+
+```python
+from web3_agent_kit import MultiWalletManager, Chain
+
+manager = MultiWalletManager(chain=Chain.ETHEREUM)
+
+# Create wallet groups
+manager.create_wallet("trading-01", group="trading")
+manager.create_wallet("airdrop-01", group="airdrop")
+
+# Batch send from all airdrop wallets
+results = manager.batch_send(
+    recipients=["0xAddr1", "0xAddr2"],
+    amount=0.001,
+    group_filter="airdrop",
+)
+
+# Consolidate funds back
+manager.consolidate_to("main", group_filter="airdrop")
+```
+
+**Features:** Wallet groups, batch send (native + ERC20), consolidated portfolio, fund consolidation.
+
+---
+
+## 🔌 Plugin System
+
+Extend with community plugins:
+
+```python
+from web3_agent_kit.plugins import PluginManager
+
+manager = PluginManager()
+manager.load_dir("./my_plugins/")
+manager.setup_all(agent)
+
+# Plugins can hook into agent lifecycle
+# manager.before_transaction(tx)
+# manager.on_block(block_number)
+```
+
+**Create a plugin:**
+
+```python
+from web3_agent_kit.plugins import Plugin, PluginMeta
+
+class MyPlugin(Plugin):
+    @property
+    def meta(self):
+        return PluginMeta(name="my-plugin", version="1.0.0",
+                         description="Does cool things", author="You")
+
+    def setup(self, agent):
+        self.agent = agent
+
+    def execute(self, action, **kwargs):
+        return {"result": "done"}
+```
+
+**Discovery:** Local directories, Python entry points, or manual registration.
+
+---
+
 ## 📁 Project Structure
 
 ```
 web3-agent-kit/
 ├── src/
-│   ├── __init__.py    # Package exports
-│   ├── agent.py       # Agent framework + LLM reasoning
-│   ├── llm.py         # Multi-provider LLM client
-│   ├── wallet.py      # Wallet management + signing
-│   ├── chain.py       # Multi-chain RPC + config
-│   ├── sniper.py      # Token sniper + monitoring
-│   ├── portfolio.py   # Portfolio tracking + P&L
-│   ├── bridge.py      # Cross-chain bridge agent
+│   ├── __init__.py         # Package exports
+│   ├── agent.py            # Agent framework + LLM reasoning
+│   ├── llm.py              # Multi-provider LLM client
+│   ├── wallet.py           # Wallet management + signing
+│   ├── chain.py            # Multi-chain RPC + config
+│   ├── sniper.py           # Token sniper + monitoring
+│   ├── portfolio.py        # Portfolio tracking + P&L
+│   ├── bridge.py           # Cross-chain bridge agent
+│   ├── yield_optimizer.py  # Yield optimizer + auto-compound
+│   ├── multi_wallet.py     # Multi-wallet manager + batch ops
+│   ├── plugins/
+│   │   ├── __init__.py     # Plugin system (base, registry, manager)
+│   │   └── examples/
+│   │       └── gas_tracker.py
 │   └── defi/
-│       ├── __init__.py  # Uniswap, Aerodrome, Aave, Curve
-├── examples/           # Ready-to-use examples
-├── tests/              # Test suite
-└── docs/               # Documentation
+│       └── __init__.py     # Uniswap, Aerodrome, Aave, Curve
+├── examples/               # 13 ready-to-use examples
+├── tests/                  # Test suite
+└── docs/                   # Documentation
 ```
 
 ---

@@ -1,6 +1,6 @@
 """Web3 Agent Kit — Open-source framework for autonomous Web3 AI agents."""
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "Maulana"
 
 from .agent import Agent, AgentConfig
@@ -10,6 +10,20 @@ from .llm import LLM, LLMConfig
 from .portfolio import PortfolioTracker, PortfolioSummary
 from .bridge import BridgeAgent, BridgeRoute, BridgeResult
 from .sniper import TokenSniper, SniperConfig, NewPair, RiskLevel
+from .yield_optimizer import (
+    YieldOptimizer,
+    YieldConfig,
+    YieldOpportunity,
+    YieldPosition,
+    Protocol as YieldProtocol,
+)
+from .multi_wallet import (
+    MultiWalletManager,
+    WalletInfo,
+    BatchTxResult,
+    ConsolidatedBalance,
+)
+from .plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
 
 __all__ = [
     # Core
@@ -30,4 +44,20 @@ __all__ = [
     "SniperConfig",
     "NewPair",
     "RiskLevel",
+    # Yield Optimizer
+    "YieldOptimizer",
+    "YieldConfig",
+    "YieldOpportunity",
+    "YieldPosition",
+    "YieldProtocol",
+    # Multi-Wallet
+    "MultiWalletManager",
+    "WalletInfo",
+    "BatchTxResult",
+    "ConsolidatedBalance",
+    # Plugin System
+    "Plugin",
+    "PluginMeta",
+    "PluginRegistry",
+    "PluginManager",
 ]

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web3-agent-kit"
-version = "0.3.0"
+version = "0.4.0"
 description = "Open-source framework for building autonomous AI agents that interact with blockchain networks"
 readme = "README.md"
 license = {text = "MIT"}
@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     {name = "Maulana", email = "khasbim240803@gmail.com"},
 ]
-keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm"]
+keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm", "yield", "multi-wallet", "plugins"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -29,6 +29,7 @@ dependencies = [
     "eth-account>=0.10.0",
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
+    "httpx>=0.25.0",
 ]
 
 [project.optional-dependencies]
