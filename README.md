@@ -30,6 +30,9 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, bridges |
 | **Yield** | Manual research, claim, compound | Auto-compound, cross-protocol APY comparison |
 | **DCA** | Manual recurring buys | Automated DCA with intervals, limits, callbacks |
+| **Gas** | Guess gas prices | Smart estimation, timing, batching |
+| **Security** | Manual approval checks | Auto-scan & revoke risky approvals |
+| **Alerts** | Manual whale tracking | Auto-monitor wallets, instant alerts |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
 | **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
@@ -99,6 +102,9 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **DeFi Tools** | Uniswap, Aave, bridges | ❌ | ❌ | Limited |
 | **Token Sniper** | ✅ | ❌ | ❌ | ❌ |
 | **DCA Bot** | ✅ | ❌ | ❌ | ❌ |
+| **Gas Optimizer** | ✅ | ❌ | ❌ | ❌ |
+| **Approval Manager** | ✅ | ❌ | ❌ | ❌ |
+| **Wallet Watcher** | ✅ | ❌ | ❌ | ❌ |
 | **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
