@@ -100,6 +100,23 @@ print(result)
 
 ---
 
+## 🎯 Showcase
+
+### Telegram Bot
+A full-featured Telegram bot built with web3-agent-kit:
+
+```bash
+cd showcase/telegram-bot
+pip install -r requirements.txt
+python bot.py
+```
+
+Features: balance check, token swap, portfolio tracking, token sniper, cross-chain bridge.
+
+[![Telegram Bot Demo](showcase/telegram-bot/demo.gif)](showcase/telegram-bot/)
+
+---
+
 ## 📦 Examples
 
 | Example | Description |
