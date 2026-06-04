@@ -8,6 +8,10 @@
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
+## 🎬 Demo
+
+![Web3 Agent Kit Demo](assets/demo.gif)
+
 ---
 
 ## What is this?
