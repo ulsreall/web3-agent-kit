@@ -28,6 +28,13 @@ def chain_manager():
     return ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
 
 
+@pytest.fixture
+def mock_gas_price():
+    """Mock gas price to avoid real network calls."""
+    with patch.object(GasOptimizer, '_get_base_fee', return_value=20.0):
+        yield
+
+
 # === Gas Optimizer ===
 
 class TestGasOptimizer:
@@ -48,25 +55,25 @@ class TestGasOptimizer:
         assert GasOptimizer._gas_level(50) == "🟠 High"
         assert GasOptimizer._gas_level(100) == "🔴 Very High"
 
-    def test_estimate_transfer(self, wallet, chain_manager):
+    def test_estimate_transfer(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         est = opt.estimate(to="0x123", value=0.1, chain=Chain.ETHEREUM)
         assert est.gas_limit == 21000
         assert est.priority == GasPriority.MEDIUM
         assert est.total_cost_eth > 0
 
-    def test_estimate_swap(self, wallet, chain_manager):
+    def test_estimate_swap(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         est = opt.estimate(to="0x123", chain=Chain.ETHEREUM, operation="swap")
         assert est.gas_limit == 180000
 
-    def test_estimate_priority_levels(self, wallet, chain_manager):
+    def test_estimate_priority_levels(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         low = opt.estimate(to="0x123", chain=Chain.ETHEREUM, priority=GasPriority.LOW)
         high = opt.estimate(to="0x123", chain=Chain.ETHEREUM, priority=GasPriority.HIGH)
         assert low.priority_fee < high.priority_fee
 
-    def test_get_gas_price(self, wallet, chain_manager):
+    def test_get_gas_price(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         price = opt.get_gas_price(Chain.ETHEREUM)
         assert "gwei" in price
@@ -77,12 +84,12 @@ class TestGasOptimizer:
         opt.update_eth_price(4000)
         assert opt.eth_price_usd == 4000
 
-    def test_recommend_timing_urgent(self, wallet, chain_manager):
+    def test_recommend_timing_urgent(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         rec = opt.recommend_timing(Chain.ETHEREUM, GasPriority.URGENT)
         assert rec.recommended_action == "execute_now"
 
-    def test_batch_estimate(self, wallet, chain_manager):
+    def test_batch_estimate(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         txs = [
             {"to": "0xA", "value": 0.01},
@@ -92,7 +99,7 @@ class TestGasOptimizer:
         assert batch["count"] == 2
         assert batch["total_cost_eth"] > 0
 
-    def test_batch_execute(self, wallet, chain_manager):
+    def test_batch_execute(self, wallet, chain_manager, mock_gas_price):
         opt = GasOptimizer(wallet, chain_manager)
         txs = [{"to": "0xA", "value": 0.01}, {"to": "0xB", "value": 0.02}]
         result = opt.batch_execute(txs, Chain.ETHEREUM)
