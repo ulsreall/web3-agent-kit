@@ -1,6 +1,6 @@
 """Web3 Agent Kit — Open-source framework for autonomous Web3 AI agents."""
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 __author__ = "Maulana"
 
 from .agent import Agent, AgentConfig
@@ -24,6 +24,7 @@ from .multi_wallet import (
     ConsolidatedBalance,
 )
 from .plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
+from .dca_bot import DCABot, DCAOrder, DCAResult, Interval, DCAStatus
 
 __all__ = [
     # Core
@@ -60,4 +61,10 @@ __all__ = [
     "PluginMeta",
     "PluginRegistry",
     "PluginManager",
+    # DCA Bot
+    "DCABot",
+    "DCAOrder",
+    "DCAResult",
+    "Interval",
+    "DCAStatus",
 ]

@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
-| [![Coverage](https://img.shields.io/badge/coverage-60%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme) |
+| [![Coverage](https://img.shields.io/badge/coverage-66%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme) |
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
@@ -29,6 +29,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, bridges |
 | **Yield** | Manual research, claim, compound | Auto-compound, cross-protocol APY comparison |
+| **DCA** | Manual recurring buys | Automated DCA with intervals, limits, callbacks |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
 | **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
@@ -97,6 +98,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **DeFi Tools** | Uniswap, Aave, bridges | ❌ | ❌ | Limited |
 | **Token Sniper** | ✅ | ❌ | ❌ | ❌ |
+| **DCA Bot** | ✅ | ❌ | ❌ | ❌ |
 | **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
@@ -184,6 +186,14 @@ python my_agent.py
 - 🛡️ **Risk assessment** — Honeypot detection, liquidity checks, contract analysis
 - ⚡ **Live monitoring** — Background thread with callback alerts
 
+### 📈 DCA Bot
+- 🔄 **Recurring buys** — Dollar-cost average into any token automatically
+- ⏰ **Flexible intervals** — Hourly, daily, weekly, biweekly, monthly
+- 🛑 **Spending limits** — Max buys, max total spend, auto-stop
+- 📊 **Cost average analysis** — Track avg price, min/max, P&L
+- 💾 **Persistent orders** — Survives restarts, stored on disk
+- 🔔 **Callbacks** — Hook into execution events for notifications
+
 ---
 
 ## 🎯 Showcase
@@ -216,6 +226,7 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 | `examples/yield_optimizer.py` | Cross-protocol yield farming + auto-compound |
 | `examples/multi_wallet.py` | Multi-wallet management + batch ops |
 | `examples/plugin_system.py` | Plugin system usage + custom plugins |
+| `examples/dca_bot.py` | Dollar-cost averaging bot with intervals & limits |
 | `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
 | `examples/sniper_bot.py` | Token launch sniper |
 | `examples/portfolio_tracker.py` | Portfolio tracking & reporting |

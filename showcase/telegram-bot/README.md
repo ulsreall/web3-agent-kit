@@ -1,114 +1,66 @@
-# 🤖 Web3 Agent Telegram Bot
+# 🤖 Web3 Agent Kit — Telegram Bot
 
-A powerful Telegram bot for Web3 operations, built with [web3-agent-kit](https://github.com/ulsreall/web3-agent-kit).
-
-![Demo](demo.gif)
+A ready-to-deploy Telegram bot showcasing web3-agent-kit features.
 
 ## Features
 
-- 💰 **Check Balance** — View ETH + token balances
-- 💱 **Swap Tokens** — Uniswap V2 swaps with quote confirmation
-- 📊 **Portfolio** — Track holdings and P&L
-- 🎯 **Token Sniper** — Analyze new tokens for safety
-- 🌉 **Bridge** — Cross-chain transfers via Li.Fi/Socket
-- ⛓️ **Multi-Chain** — Ethereum, Base, Arbitrum, Optimism, Polygon
+- `/balance` — Check wallet balance across chains
+- `/portfolio` — Full portfolio view with USD values
+- `/dca` — Create & manage DCA (Dollar-Cost Averaging) orders
+- `/gas` — Check gas prices with recommendations
+- `/help` — Command list
+
+Inline keyboard buttons for quick navigation.
 
 ## Quick Start
 
 ```bash
-# Install dependencies
+# 1. Install dependencies
 pip install -r requirements.txt
 
-# Set environment variables
-export TELEGRAM_BOT_TOKEN="your_bot_token"
-export WALLET_ADDRESS="0x..."
-export PRIVATE_KEY="0x..."
+# 2. Set environment variables
+cp .env.example .env
+# Edit .env with your values
 
-# Run the bot
+# 3. Run
 python bot.py
 ```
 
-## Commands
+## Environment Variables
 
-| Command | Description |
-|---------|-------------|
-| `/start` | Welcome message |
-| `/balance` | Check wallet balance |
-| `/swap 0.1 ETH USDC` | Swap tokens |
-| `/portfolio` | View portfolio |
-| `/snipe <address>` | Analyze token |
-| `/bridge 100 USDC arbitrum` | Bridge assets |
-| `/chain ethereum` | Switch chain |
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `TELEGRAM_BOT_TOKEN` | ✅ | Get from @BotFather |
+| `PRIVATE_KEY` | ✅ | Wallet private key |
+| `TELEGRAM_OWNER_ID` | ❌ | Your Telegram user ID |
+| `ETH_RPC` | ❌ | Custom Ethereum RPC |
 
 ## Screenshots
 
-### Balance Check
-```
-💰 Wallet Balance
+The bot features:
+- Inline keyboard buttons for easy navigation
+- Markdown-formatted messages
+- Real-time balance & portfolio data
+- DCA order management with history
+- Gas price monitoring with recommendations
 
-Native: 1.5 ETH
-USD Value: $4,500.00
+## Deploy
 
-Top Tokens:
-• USDC: 1000.00 ($1,000.00)
-• UNI: 50.0 ($350.00)
-```
-
-### Swap Quote
-```
-💱 Swap Quote
-
-From: 0.1 ETH
-To: ~300.00 USDC
-Price Impact: 0.01%
-Gas: ~$5.00
-
-[✅ Confirm] [❌ Cancel]
+### Systemd (recommended)
+```bash
+sudo cp web3-bot.service /etc/systemd/system/
+sudo systemctl enable web3-bot
+sudo systemctl start web3-bot
 ```
 
-### Token Analysis
-```
-🔍 Token Info
-
-Name: Example Token (EXT)
-Price: $0.00000100
-Liquidity: $50,000
-Safety: 🟢 Safe
-
-Checks:
-• Honeypot: ✅
-• Mint Auth: ✅
-• LP Locked: ✅
+### PM2
+```bash
+pm2 start bot.py --interpreter python3 --name web3-bot
 ```
 
-## Architecture
-
+### Screen
+```bash
+screen -S web3-bot
+python bot.py
+# Ctrl+A, D to detach
 ```
-┌─────────────────┐
-│  Telegram Bot   │
-├─────────────────┤
-│  web3-agent-kit │
-├─────────────────┤
-│  Uniswap V2     │
-│  Li.Fi Bridge   │
-│  Portfolio      │
-│  Token Sniper   │
-├─────────────────┤
-│  Ethereum       │
-│  Base           │
-│  Arbitrum       │
-│  Optimism       │
-│  Polygon        │
-└─────────────────┘
-```
-
-## Security
-
-- Governor limits per-transaction and daily spending
-- Safety checks before token swaps
-- Confirmation required for all transactions
-- Private keys never logged or exposed
-
-## License
-
-MIT
