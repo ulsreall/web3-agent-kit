@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-06-04
+
+### Added
+- **Yield Optimizer** (`src/yield_optimizer.py`) — Cross-protocol yield farming + auto-compound
+  - DeFiLlama API integration for real-time APY/TVL data
+  - 6 supported protocols: Aave V3, Compound V3, Morpho, Lido, Rocket Pool, Fluid
+  - Auto-compound with configurable threshold and interval
+  - Risk assessment (LOW/MEDIUM/HIGH)
+  - Portfolio summary with P&L tracking
+  - Protocol comparison for any asset
+- **Multi-Wallet Manager** (`src/multi_wallet.py`) — Manage multiple wallets with batch operations
+  - Create/import wallets with labels, groups, and tags
+  - Batch send native tokens and ERC20s across wallet groups
+  - Consolidated portfolio view across all wallets
+  - Fund consolidation to single target wallet
+  - Export addresses (JSON/CSV)
+  - Persistent metadata storage (no private keys on disk)
+- **Plugin System** (`src/plugins/`) — Extend with community plugins
+  - Abstract `Plugin` base class with lifecycle hooks
+  - `PluginRegistry` for discovery and management
+  - `PluginManager` with agent lifecycle integration
+  - Hooks: `on_transaction`, `on_block`, `on_price_update`, `on_startup`, `on_shutdown`
+  - Discovery: local directories, Python entry points, manual registration
+  - Example plugin: `GasTrackerPlugin`
+
+### Changed
+- Version bumped from 0.3.0 to 0.4.0
+- Added `httpx` as dependency (for DeFiLlama API)
+- Updated README with Yield Optimizer, Multi-Wallet, and Plugin System docs
+- Updated comparison table and architecture
+
 ## [0.3.0] - 2025-06-04
 
 ### Added
