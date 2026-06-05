@@ -25,13 +25,17 @@ from .social import (
 from .tracker import AirdropTracker, AirdropReward, AirdropSummary
 from .multi_wallet import AirdropFarmer, SybilAvoidanceConfig, FarmResult, WalletFarmProgress
 
-# New modules
+# Discovery & Automation
 from .discovery import CampaignDiscovery, DiscoveryConfig, DiscoveredCampaign
 from .onchain import OnChainAirdropFarmer, OnChainConfig, TransactionResult, Chain, DeFiProtocol, FARMING_PLANS
 from .scheduler import AirdropScheduler, SchedulerConfig, ScheduledTask, ScheduleFrequency
 from .dashboard import PointsDashboard, DashboardConfig, PlatformPoints, PointsSnapshot
 from .referral import ReferralManager, ReferralLink, ReferralPlatform, ReferralStats
 from .faucet import FaucetClaimer, FaucetConfig, ClaimResult, FAUCETS
+
+# Real Execution
+from .form_filler import FormFiller, FormProfile, FormField, FillResult
+from .wl_grinder import WLGrinder, WLProfile, WLResult, WLJob
 
 __all__ = [
     # Base
@@ -65,7 +69,7 @@ __all__ = [
     "AirdropTracker",
     "AirdropReward",
     "AirdropSummary",
-    # Multi-wallet farming
+    # Multi-wallet
     "AirdropFarmer",
     "SybilAvoidanceConfig",
     "FarmResult",
@@ -101,4 +105,14 @@ __all__ = [
     "FaucetConfig",
     "ClaimResult",
     "FAUCETS",
+    # Form Filler
+    "FormFiller",
+    "FormProfile",
+    "FormField",
+    "FillResult",
+    # WL Grinder
+    "WLGrinder",
+    "WLProfile",
+    "WLResult",
+    "WLJob",
 ]
