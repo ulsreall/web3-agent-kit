@@ -117,7 +117,7 @@ class PointsDashboard:
     Example::
 
         dashboard = PointsDashboard(config)
-        dashboard.sync_all(wallet="0x721e885...A522")
+        dashboard.sync_all(wallet="0xYOUR_WALLET_ADDRESS")
         dashboard.print_summary()
     """
 

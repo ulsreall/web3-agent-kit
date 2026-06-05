@@ -158,7 +158,7 @@ def example_dashboard():
     print("=" * 60)
 
     config = DashboardConfig(
-        wallet_address="0x721e885BE237Ef193807d7a912C201c6a53dA522",
+        wallet_address="0xYOUR_WALLET_ADDRESS",
         platforms=["galxe", "zealy", "layer3"],
     )
 
@@ -207,7 +207,7 @@ def example_referral():
     print("=" * 60)
 
     manager = ReferralManager(
-        wallets=["0x721e885BE237Ef193807d7a912C201c6a53dA522"]
+        wallets=["0xYOUR_WALLET_ADDRESS"]
     )
 
     # Add platforms
@@ -231,7 +231,7 @@ def example_referral():
     # Generate a chain
     chain = manager.generate_chain(
         ["galxe", "zealy", "layer3"],
-        wallet="0x721e885BE237Ef193807d7a912C201c6a53dA522",
+        wallet="0xYOUR_WALLET_ADDRESS",
     )
     print(f"\nReferral chain: {' → '.join(l.platform for l in chain)}")
 

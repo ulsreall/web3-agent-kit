@@ -130,10 +130,10 @@ class WLGrinder:
     Example::
 
         profile = WLProfile(
-            wallet="0x721e885...",
-            twitter="@itseywacc",
+            wallet="0xYOUR_WALLET...",
+            twitter="@your_twitter",
             discord="user#1234",
-            email="khasbimln@gmail.com",
+            email="your_email@gmail.com",
         )
         grinder = WLGrinder(profile)
         result = grinder.apply("https://typeform.com/to/abc123")
