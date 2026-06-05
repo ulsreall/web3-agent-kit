@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/orders")
 async def list_orders(chain: str = "ethereum", status: str = "active"):
     """List DCA orders."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -30,7 +30,7 @@ async def create_order(
     total_buys: int = 0,
 ):
     """Create a new DCA order."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -49,7 +49,7 @@ async def create_order(
 @router.get("/orders/{order_id}")
 async def get_order(order_id: str, chain: str = "ethereum"):
     """Get DCA order status."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -62,7 +62,7 @@ async def get_order(order_id: str, chain: str = "ethereum"):
 @router.delete("/orders/{order_id}")
 async def cancel_order(order_id: str, chain: str = "ethereum"):
     """Cancel a DCA order."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -75,7 +75,7 @@ async def cancel_order(order_id: str, chain: str = "ethereum"):
 @router.post("/orders/{order_id}/pause")
 async def pause_order(order_id: str, chain: str = "ethereum"):
     """Pause a DCA order."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -88,7 +88,7 @@ async def pause_order(order_id: str, chain: str = "ethereum"):
 @router.post("/orders/{order_id}/resume")
 async def resume_order(order_id: str, chain: str = "ethereum"):
     """Resume a paused DCA order."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)
@@ -101,7 +101,7 @@ async def resume_order(order_id: str, chain: str = "ethereum"):
 @router.get("/stats")
 async def get_stats(chain: str = "ethereum"):
     """Get DCA bot statistics."""
-    from ...dca_bot import DCABot
+    from ...trading.dca import DCABot
 
     try:
         bot = DCABot(chain)

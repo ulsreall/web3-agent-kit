@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from .chain import Chain, ChainManager
+from ..chains.chain import Chain, ChainManager
 
 
 @dataclass

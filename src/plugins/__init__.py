@@ -428,3 +428,10 @@ class PluginManager:
             }
             for m in self.registry.list_plugins()
         ]
+
+__all__ = [
+    "PluginMeta",
+    "Plugin",
+    "PluginRegistry",
+    "PluginManager",
+]

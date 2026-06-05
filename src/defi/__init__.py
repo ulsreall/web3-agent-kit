@@ -9,10 +9,18 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Optional
 
-from ..wallet import Wallet
-from ..chain import Chain, ChainManager, CHAIN_IDS
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
+from .yield_optimizer import (
+    YieldOptimizer,
+    YieldConfig,
+    YieldPosition,
+    Protocol as YieldProtocol,
+    RiskLevel as YieldRiskLevel,
+)
+
 
 
 # Uniswap V2 Router ABI (minimal)
@@ -474,3 +482,26 @@ class Curve(DeFiTool):
     def execute(self, wallet: Wallet, pool: str, token_in: str, token_out: str, amount: float, **kwargs) -> SwapResult:
         """Execute a swap on Curve."""
         raise NotImplementedError("Curve swap not yet implemented")
+
+__all__ = [
+    # Swap
+    "SwapResult",
+    "Uniswap",
+    "Aerodrome",
+    "Aave",
+    "Curve",
+    "DeFiTool",
+    "YieldOpportunity",
+    # Yield Optimizer
+    "YieldOptimizer",
+    "YieldConfig",
+    "YieldPosition",
+    "YieldProtocol",
+    "YieldRiskLevel",
+    # Constants
+    "WETH",
+    "NATIVE",
+    "STABLECOINS",
+    "UNISWAP_V2_ROUTER_ABI",
+    "ERC20_ABI",
+]

@@ -12,7 +12,7 @@ router = APIRouter()
 @router.get("/")
 async def get_portfolio(chain: str = "ethereum"):
     """Get full portfolio with token balances and USD values."""
-    from ...wallet import Wallet
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(chain)
@@ -30,7 +30,7 @@ async def get_portfolio(chain: str = "ethereum"):
 @router.get("/value")
 async def get_portfolio_value(chain: str = "ethereum"):
     """Get total portfolio value in USD."""
-    from ...wallet import Wallet
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(chain)

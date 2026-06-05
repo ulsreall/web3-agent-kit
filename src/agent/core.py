@@ -7,8 +7,8 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-from .wallet import Wallet
-from .chain import Chain
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain
 
 logger = logging.getLogger(__name__)
 

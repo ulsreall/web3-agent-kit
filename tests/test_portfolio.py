@@ -10,7 +10,7 @@ from src.portfolio import (
     ChainPortfolio,
     TokenBalance,
 )
-from src.chain import Chain
+from src.chains.chain import Chain
 
 
 class TestTokenBalance:

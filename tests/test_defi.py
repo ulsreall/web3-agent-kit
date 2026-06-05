@@ -17,8 +17,8 @@ from src.defi import (
     NATIVE,
     STABLECOINS,
 )
-from src.chain import Chain, ChainManager, CHAIN_IDS
-from src.wallet import Wallet
+from src.chains.chain import Chain, ChainManager, CHAIN_IDS
+from src.wallet.wallet import Wallet
 
 
 # ---------------------------------------------------------------------------

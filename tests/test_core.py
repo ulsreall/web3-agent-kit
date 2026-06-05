@@ -3,9 +3,9 @@
 import pytest
 from unittest.mock import MagicMock
 
-from src.agent import Agent, AgentConfig
-from src.wallet import Wallet
-from src.chain import Chain
+from src.agent.core import Agent, AgentConfig
+from src.wallet.wallet import Wallet
+from src.chains.chain import Chain
 
 
 class TestWallet:
@@ -44,7 +44,7 @@ class TestChain:
 
     def test_chain_config(self):
         """Test chain configuration."""
-        from src.chain import ChainConfig
+        from src.chains.chain import ChainConfig
         config = ChainConfig(chain=Chain.BASE)
         assert config.is_evm is True
         assert config.chain_id == 8453
@@ -52,7 +52,7 @@ class TestChain:
 
     def test_solana_not_evm(self):
         """Test Solana is not EVM."""
-        from src.chain import ChainConfig
+        from src.chains.chain import ChainConfig
         config = ChainConfig(chain=Chain.SOLANA)
         assert config.is_evm is False
 

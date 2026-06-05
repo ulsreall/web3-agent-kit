@@ -3,7 +3,7 @@
 Supports Li.Fi, Socket, and direct bridge contracts.
 
 Usage:
-    from web3_agent_kit.bridge import BridgeAgent
+    from web3_agent_kit.bridge.bridge import BridgeAgent
 
     bridge = BridgeAgent(chain_manager, wallet)
     result = bridge.transfer(
@@ -24,8 +24,8 @@ from typing import Optional
 
 import requests
 
-from .wallet import Wallet
-from .chain import Chain, ChainManager, CHAIN_IDS
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -472,7 +472,7 @@ class BridgeAgent:
         if chain in WETH and token == "WETH":
             return WETH[chain]
         # Check known tokens
-        from .portfolio import KNOWN_TOKENS
+        from ..portfolio.tracker import KNOWN_TOKENS
         chain_tokens = KNOWN_TOKENS.get(chain, {})
         if token in chain_tokens:
             return chain_tokens[token]

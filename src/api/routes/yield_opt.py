@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/opportunities")
 async def scan_yields(chain: str = "ethereum", min_apy: float = 0.0):
     """Scan yield opportunities across protocols."""
-    from ...yield_optimizer import YieldOptimizer
+    from ...defi.yield_optimizer import YieldOptimizer
 
     try:
         optimizer = YieldOptimizer(chain)
@@ -23,7 +23,7 @@ async def scan_yields(chain: str = "ethereum", min_apy: float = 0.0):
 @router.get("/best")
 async def find_best_yield(chain: str = "ethereum"):
     """Find the best yield opportunity."""
-    from ...yield_optimizer import YieldOptimizer
+    from ...defi.yield_optimizer import YieldOptimizer
 
     try:
         optimizer = YieldOptimizer(chain)
@@ -36,7 +36,7 @@ async def find_best_yield(chain: str = "ethereum"):
 @router.get("/compare")
 async def compare_protocols(chain: str = "ethereum"):
     """Compare yields across supported protocols."""
-    from ...yield_optimizer import YieldOptimizer
+    from ...defi.yield_optimizer import YieldOptimizer
 
     try:
         optimizer = YieldOptimizer(chain)
@@ -49,7 +49,7 @@ async def compare_protocols(chain: str = "ethereum"):
 @router.get("/portfolio")
 async def get_yield_portfolio(chain: str = "ethereum"):
     """Get current yield-earning positions."""
-    from ...yield_optimizer import YieldOptimizer
+    from ...defi.yield_optimizer import YieldOptimizer
 
     try:
         optimizer = YieldOptimizer(chain)
@@ -62,7 +62,7 @@ async def get_yield_portfolio(chain: str = "ethereum"):
 @router.post("/compound")
 async def auto_compound(chain: str = "ethereum"):
     """Auto-compound all yield positions."""
-    from ...yield_optimizer import YieldOptimizer
+    from ...defi.yield_optimizer import YieldOptimizer
 
     try:
         optimizer = YieldOptimizer(chain)

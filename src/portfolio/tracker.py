@@ -3,7 +3,7 @@
 Tracks wallet balances, token holdings, and calculates total portfolio value.
 
 Usage:
-    from web3_agent_kit.portfolio import PortfolioTracker
+    from web3_agent_kit.portfolio.tracker import PortfolioTracker
 
     tracker = PortfolioTracker(chain_manager, wallet)
     summary = tracker.get_summary()
@@ -18,8 +18,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .wallet import Wallet
-from .chain import Chain, ChainManager
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain, ChainManager
 
 logger = logging.getLogger(__name__)
 

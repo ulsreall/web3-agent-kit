@@ -9,8 +9,8 @@ from typing import Optional
 
 from web3 import Web3
 
-from .wallet import Wallet
-from .chain import Chain
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain
 
 
 class Protocol(Enum):

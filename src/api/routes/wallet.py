@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/info")
 async def get_wallet_info(chain: str = "ethereum"):
     """Get current wallet info and balance."""
-    from ...wallet import Wallet
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(chain)
@@ -44,7 +44,7 @@ async def create_wallet(chain: str = "ethereum"):
 @router.get("/balance/{address}")
 async def get_balance(address: str, chain: str = "ethereum"):
     """Get ETH/native balance for an address."""
-    from ...wallet import Wallet
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(chain)

@@ -138,3 +138,9 @@ class SpendGovernor:
             "session_limit": self.limits.session_limit,
             "kill_switch": self._kill_switch,
         }
+
+__all__ = [
+    "SpendLimits",
+    "GovernorDecision",
+    "SpendGovernor",
+]

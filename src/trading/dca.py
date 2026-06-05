@@ -9,8 +9,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Callable
 
-from .chain import Chain, ChainManager
-from .wallet import Wallet
+from ..chains.chain import Chain, ChainManager
+from ..wallet.wallet import Wallet
 
 
 class Interval(Enum):

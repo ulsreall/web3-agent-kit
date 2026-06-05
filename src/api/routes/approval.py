@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/scan")
 async def scan_approvals(chain: str = "ethereum"):
     """Scan all token approvals for an address."""
-    from ...approval_manager import ApprovalManager
+    from ...wallet.approval import ApprovalManager
 
     try:
         manager = ApprovalManager(chain)
@@ -23,7 +23,7 @@ async def scan_approvals(chain: str = "ethereum"):
 @router.get("/risk")
 async def get_risk_report(chain: str = "ethereum"):
     """Get risk report for all approvals."""
-    from ...approval_manager import ApprovalManager
+    from ...wallet.approval import ApprovalManager
 
     try:
         manager = ApprovalManager(chain)
@@ -46,7 +46,7 @@ async def revoke_approval(
     spender: str = "",
 ):
     """Revoke a token approval."""
-    from ...approval_manager import ApprovalManager
+    from ...wallet.approval import ApprovalManager
 
     try:
         manager = ApprovalManager(chain)
@@ -59,7 +59,7 @@ async def revoke_approval(
 @router.post("/revoke-all-unlimited")
 async def revoke_all_unlimited(chain: str = "ethereum"):
     """Revoke all unlimited approvals."""
-    from ...approval_manager import ApprovalManager
+    from ...wallet.approval import ApprovalManager
 
     try:
         manager = ApprovalManager(chain)
@@ -72,7 +72,7 @@ async def revoke_all_unlimited(chain: str = "ethereum"):
 @router.get("/known-protocols")
 async def list_known_protocols():
     """List known protocol addresses for risk assessment."""
-    from ...approval_manager import KNOWN_SPENDERS
+    from ...wallet.approval import KNOWN_SPENDERS
 
     try:
         return {"protocols": KNOWN_SPENDERS}

@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.bridge import BridgeAgent, BridgeRoute, BridgeResult
-from src.chain import Chain
+from src.bridge.bridge import BridgeAgent, BridgeRoute, BridgeResult
+from src.chains.chain import Chain
 
 
 class TestBridgeRoute:
@@ -98,7 +98,7 @@ class TestBridgeAgent:
         bridge = BridgeAgent(chain_manager, wallet)
         assert bridge.wallet.address == "0x1234"
 
-    @patch("src.bridge.requests.Session.get")
+    @patch("src.bridge.bridge.requests.Session.get")
     def test_get_routes_lifi(self, mock_get):
         """Test getting routes from Li.Fi."""
         mock_response = MagicMock()

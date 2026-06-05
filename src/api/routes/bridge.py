@@ -15,7 +15,7 @@ async def get_bridge_quote(
     amount: str = "100",
 ):
     """Get bridge quote with estimated fees and time."""
-    from ...bridge import BridgeAgent
+    from ...bridge.bridge import BridgeAgent
 
     try:
         agent = BridgeAgent(from_chain)
@@ -33,8 +33,8 @@ async def execute_bridge(
     amount: str = "100",
 ):
     """Execute a cross-chain bridge."""
-    from ...bridge import BridgeAgent
-    from ...wallet import Wallet
+    from ...bridge.bridge import BridgeAgent
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(from_chain)
@@ -48,7 +48,7 @@ async def execute_bridge(
 @router.get("/chains")
 async def list_chains():
     """List supported chains for bridging."""
-    from ...bridge import BridgeAgent, LIFI_CHAIN_IDS, SOCKET_CHAIN_IDS
+    from ...bridge.bridge import BridgeAgent, LIFI_CHAIN_IDS, SOCKET_CHAIN_IDS
 
     try:
         return {

@@ -9,7 +9,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional, Callable
 
-from .chain import Chain, ChainManager
+from ..chains.chain import Chain, ChainManager
 
 
 class AlertType(Enum):

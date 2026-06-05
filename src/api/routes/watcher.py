@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/list")
 async def list_watched(chain: str = "ethereum"):
     """List all watched wallets."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)
@@ -27,7 +27,7 @@ async def add_watched(
     label: str = "",
 ):
     """Add a wallet to watch."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)
@@ -40,7 +40,7 @@ async def add_watched(
 @router.delete("/remove")
 async def remove_watched(address: str, chain: str = "ethereum"):
     """Remove a wallet from watchlist."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)
@@ -53,7 +53,7 @@ async def remove_watched(address: str, chain: str = "ethereum"):
 @router.get("/alerts")
 async def get_alerts(chain: str = "ethereum", limit: int = 50):
     """Get alerts for watched wallets."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)
@@ -66,7 +66,7 @@ async def get_alerts(chain: str = "ethereum", limit: int = 50):
 @router.post("/check")
 async def check_wallets(chain: str = "ethereum"):
     """Manually trigger wallet check for all watched addresses."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)
@@ -79,7 +79,7 @@ async def check_wallets(chain: str = "ethereum"):
 @router.get("/summary")
 async def get_summary(chain: str = "ethereum"):
     """Get watcher summary statistics."""
-    from ...wallet_watcher import WalletWatcher
+    from ...wallet.watcher import WalletWatcher
 
     try:
         watcher = WalletWatcher(chain)

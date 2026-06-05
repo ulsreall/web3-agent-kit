@@ -94,7 +94,7 @@ class TestAPIKeyAuth:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestWalletEndpoints:
     def test_wallet_info(self, mock_no_api_key):
-        with patch("src.wallet.Wallet") as MockWallet:
+        with patch("src.wallet.wallet.Wallet") as MockWallet:
             mock_instance = MagicMock()
             mock_instance.address = "0x721e885BE237Ef193807d7a912C201c6a53dA522"
             mock_instance.get_balance.return_value = 1.5
@@ -105,7 +105,7 @@ class TestWalletEndpoints:
             assert data["chain"] == "ethereum"
 
     def test_wallet_balance(self, mock_no_api_key):
-        with patch("src.wallet.Wallet") as MockWallet:
+        with patch("src.wallet.wallet.Wallet") as MockWallet:
             mock_instance = MagicMock()
             mock_instance.get_balance.return_value = 1.5
             MockWallet.from_env.return_value = mock_instance
@@ -153,7 +153,7 @@ class TestSwapEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestGasEndpoints:
     def test_gas_estimate(self, mock_no_api_key):
-        with patch("src.gas_optimizer.GasOptimizer") as MockOpt:
+        with patch("src.gas.optimizer.GasOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.estimate.return_value = {
                 "chain": "ethereum",
@@ -168,7 +168,7 @@ class TestGasEndpoints:
             assert resp.status_code == 200
 
     def test_gas_recommendation(self, mock_no_api_key):
-        with patch("src.gas_optimizer.GasOptimizer") as MockOpt:
+        with patch("src.gas.optimizer.GasOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.recommend_timing.return_value = {
                 "action": "wait",
@@ -185,7 +185,7 @@ class TestGasEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestWatcherEndpoints:
     def test_list_watched(self, mock_no_api_key):
-        with patch("src.wallet_watcher.WalletWatcher") as MockWatcher:
+        with patch("src.wallet.watcher.WalletWatcher") as MockWatcher:
             mock_instance = MagicMock()
             mock_instance.list_wallets.return_value = [
                 {"address": "0x123", "label": "whale", "tags": ["whale"]}
@@ -195,7 +195,7 @@ class TestWatcherEndpoints:
             assert resp.status_code == 200
 
     def test_add_watched(self, mock_no_api_key):
-        with patch("src.wallet_watcher.WalletWatcher") as MockWatcher:
+        with patch("src.wallet.watcher.WalletWatcher") as MockWatcher:
             mock_instance = MagicMock()
             mock_instance.add_wallet.return_value = {"status": "added", "address": "0x123"}
             MockWatcher.return_value = mock_instance
@@ -203,7 +203,7 @@ class TestWatcherEndpoints:
             assert resp.status_code == 200
 
     def test_get_alerts(self, mock_no_api_key):
-        with patch("src.wallet_watcher.WalletWatcher") as MockWatcher:
+        with patch("src.wallet.watcher.WalletWatcher") as MockWatcher:
             mock_instance = MagicMock()
             mock_instance.get_alerts.return_value = []
             MockWatcher.return_value = mock_instance
@@ -211,7 +211,7 @@ class TestWatcherEndpoints:
             assert resp.status_code == 200
 
     def test_check_wallets(self, mock_no_api_key):
-        with patch("src.wallet_watcher.WalletWatcher") as MockWatcher:
+        with patch("src.wallet.watcher.WalletWatcher") as MockWatcher:
             mock_instance = MagicMock()
             mock_instance.check_all.return_value = {"checked": 0, "alerts": 0}
             MockWatcher.return_value = mock_instance
@@ -225,7 +225,7 @@ class TestWatcherEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestApprovalEndpoints:
     def test_scan_approvals(self, mock_no_api_key):
-        with patch("src.approval_manager.ApprovalManager") as MockMgr:
+        with patch("src.wallet.approval.ApprovalManager") as MockMgr:
             mock_instance = MagicMock()
             mock_instance.scan.return_value = [
                 {
@@ -240,7 +240,7 @@ class TestApprovalEndpoints:
             assert resp.status_code == 200
 
     def test_risk_report(self, mock_no_api_key):
-        with patch("src.approval_manager.ApprovalManager") as MockMgr:
+        with patch("src.wallet.approval.ApprovalManager") as MockMgr:
             mock_instance = MagicMock()
             mock_instance.get_summary.return_value = {
                 "total_approvals": 5,
@@ -253,7 +253,7 @@ class TestApprovalEndpoints:
             assert resp.status_code == 200
 
     def test_known_protocols(self, mock_no_api_key):
-        with patch("src.approval_manager.KNOWN_SPENDERS", {"Uniswap V2": "0x..."}):
+        with patch("src.wallet.approval.KNOWN_SPENDERS", {"Uniswap V2": "0x..."}):
             resp = client.get("/approval/known-protocols")
             assert resp.status_code == 200
 
@@ -264,7 +264,7 @@ class TestApprovalEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestDCAEndpoints:
     def test_list_orders(self, mock_no_api_key):
-        with patch("src.dca_bot.DCABot") as MockBot:
+        with patch("src.trading.dca.DCABot") as MockBot:
             mock_instance = MagicMock()
             mock_instance.list_orders.return_value = []
             MockBot.return_value = mock_instance
@@ -272,7 +272,7 @@ class TestDCAEndpoints:
             assert resp.status_code == 200
 
     def test_create_order(self, mock_no_api_key):
-        with patch("src.dca_bot.DCABot") as MockBot:
+        with patch("src.trading.dca.DCABot") as MockBot:
             mock_instance = MagicMock()
             mock_instance.create_order.return_value = {
                 "order_id": "dca_123",
@@ -285,7 +285,7 @@ class TestDCAEndpoints:
             assert resp.status_code == 200
 
     def test_get_order(self, mock_no_api_key):
-        with patch("src.dca_bot.DCABot") as MockBot:
+        with patch("src.trading.dca.DCABot") as MockBot:
             mock_instance = MagicMock()
             mock_instance.get_order.return_value = {
                 "order_id": "dca_123",
@@ -296,7 +296,7 @@ class TestDCAEndpoints:
             assert resp.status_code == 200
 
     def test_cancel_order(self, mock_no_api_key):
-        with patch("src.dca_bot.DCABot") as MockBot:
+        with patch("src.trading.dca.DCABot") as MockBot:
             mock_instance = MagicMock()
             mock_instance.cancel_order.return_value = {"status": "cancelled"}
             MockBot.return_value = mock_instance
@@ -304,7 +304,7 @@ class TestDCAEndpoints:
             assert resp.status_code == 200
 
     def test_stats(self, mock_no_api_key):
-        with patch("src.dca_bot.DCABot") as MockBot:
+        with patch("src.trading.dca.DCABot") as MockBot:
             mock_instance = MagicMock()
             mock_instance.get_summary.return_value = {"total_orders": 0}
             MockBot.return_value = mock_instance
@@ -318,7 +318,7 @@ class TestDCAEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestYieldEndpoints:
     def test_scan_opportunities(self, mock_no_api_key):
-        with patch("src.yield_optimizer.YieldOptimizer") as MockOpt:
+        with patch("src.defi.yield_optimizer.YieldOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.scan_opportunities.return_value = [
                 {
@@ -333,7 +333,7 @@ class TestYieldEndpoints:
             assert resp.status_code == 200
 
     def test_best_yield(self, mock_no_api_key):
-        with patch("src.yield_optimizer.YieldOptimizer") as MockOpt:
+        with patch("src.defi.yield_optimizer.YieldOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.find_best.return_value = {
                 "protocol": "Aave V3",
@@ -344,7 +344,7 @@ class TestYieldEndpoints:
             assert resp.status_code == 200
 
     def test_compare_protocols(self, mock_no_api_key):
-        with patch("src.yield_optimizer.YieldOptimizer") as MockOpt:
+        with patch("src.defi.yield_optimizer.YieldOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.compare_protocols.return_value = []
             MockOpt.return_value = mock_instance
@@ -352,7 +352,7 @@ class TestYieldEndpoints:
             assert resp.status_code == 200
 
     def test_yield_portfolio(self, mock_no_api_key):
-        with patch("src.yield_optimizer.YieldOptimizer") as MockOpt:
+        with patch("src.defi.yield_optimizer.YieldOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.get_portfolio_summary.return_value = {"total_value": 0}
             MockOpt.return_value = mock_instance
@@ -360,7 +360,7 @@ class TestYieldEndpoints:
             assert resp.status_code == 200
 
     def test_auto_compound(self, mock_no_api_key):
-        with patch("src.yield_optimizer.YieldOptimizer") as MockOpt:
+        with patch("src.defi.yield_optimizer.YieldOptimizer") as MockOpt:
             mock_instance = MagicMock()
             mock_instance.auto_compound_all.return_value = {"compounded": 0}
             MockOpt.return_value = mock_instance
@@ -374,7 +374,7 @@ class TestYieldEndpoints:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestBridgeEndpoints:
     def test_bridge_quote(self, mock_no_api_key):
-        with patch("src.bridge.BridgeAgent") as MockAgent:
+        with patch("src.bridge.bridge.BridgeAgent") as MockAgent:
             mock_instance = MagicMock()
             mock_instance.get_routes.return_value = {
                 "from_chain": "ethereum",
@@ -388,8 +388,8 @@ class TestBridgeEndpoints:
             assert resp.status_code == 200
 
     def test_bridge_chains(self, mock_no_api_key):
-        with patch("src.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}), \
-             patch("src.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}):
+        with patch("src.bridge.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}), \
+             patch("src.bridge.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}):
             resp = client.get("/bridge/chains")
             assert resp.status_code == 200
 

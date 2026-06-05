@@ -6,13 +6,13 @@ import tempfile
 
 import pytest
 
-from src.multi_wallet import (
+from src.wallet.multi_wallet import (
     MultiWalletManager,
     WalletInfo,
     BatchTxResult,
     ConsolidatedBalance,
 )
-from src.chain import Chain
+from src.chains.chain import Chain
 
 
 @pytest.fixture

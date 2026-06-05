@@ -415,3 +415,10 @@ class Notifier:
                 f.write(json.dumps(notification.to_dict()) + "\n")
         except Exception:
             pass
+
+__all__ = [
+    "AlertLevel",
+    "NotifierConfig",
+    "Notification",
+    "Notifier",
+]

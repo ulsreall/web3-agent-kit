@@ -13,7 +13,7 @@ from eth_account import Account
 from web3 import Web3
 
 from .wallet import Wallet, WalletConfig
-from .chain import Chain, ChainManager
+from ..chains.chain import Chain, ChainManager
 
 
 @dataclass

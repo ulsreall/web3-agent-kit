@@ -4,7 +4,7 @@ Monitors DEX factory contracts for new pair creation,
 analyzes contract safety, and executes buys if safe.
 
 Usage:
-    from web3_agent_kit.sniper import TokenSniper, SniperConfig
+    from web3_agent_kit.trading.sniper import TokenSniper, SniperConfig
 
     sniper = TokenSniper(
         chain_manager=chain_manager,
@@ -28,8 +28,8 @@ from enum import Enum
 from threading import Thread, Event
 from typing import Any, Callable, Optional
 
-from .wallet import Wallet
-from .chain import Chain, ChainManager, CHAIN_IDS
+from ..wallet.wallet import Wallet
+from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 

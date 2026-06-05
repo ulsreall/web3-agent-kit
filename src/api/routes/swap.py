@@ -36,7 +36,7 @@ async def execute_swap(
 ):
     """Execute a token swap."""
     from ...defi import Uniswap
-    from ...wallet import Wallet
+    from ...wallet.wallet import Wallet
 
     try:
         wallet = Wallet.from_env(chain)

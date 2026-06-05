@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] - 2026-06-05
+
+### Changed — Major Repo Reorganization
+- **Reorganized `src/` structure** — grouped flat files into logical subdirectories:
+  - `src/agent/` — Agent core + LLM integration
+  - `src/wallet/` — Wallet, multi-wallet, watcher, approval manager
+  - `src/bridge/` — Cross-chain bridge agent
+  - `src/chains/` — Chain definitions and RPC management
+  - `src/portfolio/` — Portfolio tracker
+  - `src/trading/` — Token sniper + DCA bot
+  - `src/gas/` — Gas optimizer
+  - `src/defi/` — DeFi protocols + yield optimizer (merged)
+- **Added `__all__` exports** to every `__init__.py` for explicit public API
+- **Added `py.typed` marker** for PEP 561 type checking support
+- **Moved content files** to proper directories:
+  - `blog-post.md` → `blog/post.md`
+  - `show-hn.md` → `blog/show-hn.md`
+  - `CONTRIBUTING_PLATFORMS.md` → `docs/contributing-platforms.md`
+  - `research/` → `docs/research/`
+- **Cleaned up root directory** — only config/docs remain
+- **Updated all imports** in tests, examples, and API routes
+- **Backward compatible** — all `from web3_agent_kit import ...` paths still work
+
 ## [0.4.0] - 2026-06-04
 
 ### Added

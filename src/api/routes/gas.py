@@ -10,7 +10,7 @@ router = APIRouter()
 @router.get("/estimate")
 async def estimate_gas(chain: str = "ethereum"):
     """Get current gas estimates with EIP-1559 parameters."""
-    from ...gas_optimizer import GasOptimizer
+    from ...gas.optimizer import GasOptimizer
 
     try:
         optimizer = GasOptimizer(chain)
@@ -23,7 +23,7 @@ async def estimate_gas(chain: str = "ethereum"):
 @router.get("/recommendation")
 async def get_gas_recommendation(chain: str = "ethereum"):
     """Get gas timing recommendation (execute now vs wait)."""
-    from ...gas_optimizer import GasOptimizer
+    from ...gas.optimizer import GasOptimizer
 
     try:
         optimizer = GasOptimizer(chain)
@@ -36,7 +36,7 @@ async def get_gas_recommendation(chain: str = "ethereum"):
 @router.get("/batch")
 async def batch_estimate(chain: str = "ethereum"):
     """Estimate gas for multiple transaction types."""
-    from ...gas_optimizer import GasOptimizer
+    from ...gas.optimizer import GasOptimizer
 
     try:
         optimizer = GasOptimizer(chain)

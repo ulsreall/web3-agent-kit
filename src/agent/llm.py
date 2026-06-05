@@ -4,7 +4,7 @@ Supports: OpenAI, Anthropic, Groq, DeepSeek, OpenRouter.
 Falls back through providers on 429/5xx/timeout.
 
 Usage:
-    from web3_agent_kit.llm import LLM
+    from web3_agent_kit.agent.llm import LLM
 
     llm = LLM()  # auto-detect from env vars
     response = llm.chat("What is the best yield on Base?")
