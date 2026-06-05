@@ -1,6 +1,6 @@
 """Web3 Agent Kit — Open-source framework for autonomous Web3 AI agents."""
 
-__version__ = "0.6.0"
+__version__ = "1.2.0"
 __author__ = "Maulana"
 
 from .agent import Agent, AgentConfig
@@ -28,6 +28,18 @@ from .dca_bot import DCABot, DCAOrder, DCAResult, Interval, DCAStatus
 from .gas_optimizer import GasOptimizer, GasEstimate, GasRecommendation, GasPriority
 from .wallet_watcher import WalletWatcher, WatchedWallet, WalletAlert, AlertType, AlertSeverity
 from .approval_manager import ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk
+from .security import (
+    TokenAnalyzer,
+    SecurityConfig,
+    SecurityReport,
+    TokenInfo,
+    TaxInfo,
+    LiquidityInfo,
+    HolderInfo,
+    ContractAudit,
+    RiskLevel as SecurityRiskLevel,
+    ContractPattern,
+)
 
 __all__ = [
     # Core
@@ -86,4 +98,15 @@ __all__ = [
     "TokenApproval",
     "RevokeResult",
     "ApprovalRisk",
+    # Security
+    "TokenAnalyzer",
+    "SecurityConfig",
+    "SecurityReport",
+    "TokenInfo",
+    "TaxInfo",
+    "LiquidityInfo",
+    "HolderInfo",
+    "ContractAudit",
+    "SecurityRiskLevel",
+    "ContractPattern",
 ]
