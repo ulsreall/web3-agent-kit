@@ -34,6 +34,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Security** | Manual approval checks | Auto-scan & revoke risky approvals |
 | **Alerts** | Manual whale tracking | Auto-monitor wallets, instant alerts |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
+| **Airdrops** | Manual quest hunting | Auto-track campaigns, multi-wallet farming, Sybil-safe |
 | **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
@@ -107,6 +108,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Wallet Watcher** | ✅ | ❌ | ❌ | ❌ |
 | **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
+| **Airdrops** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
 | **Safety Rails** | ✅ Governor | ❌ | ❌ | ❌ |
 | **Natural Language** | ✅ | Partial | ❌ | ❌ |
@@ -369,6 +371,54 @@ print(summary)
 
 ---
 
+## 🪂 Airdrop Automation
+
+Discover, track, and complete airdrop campaigns across multiple platforms:
+
+```python
+from web3_agent_kit.airdrop import (
+    GalxePlatform, ZealyPlatform, GleamCampaign,
+    AirdropTracker, AirdropFarmer, SocialTaskManager,
+    PlatformConfig, TaskType, SybilAvoidanceConfig,
+)
+
+# Track campaigns across platforms
+tracker = AirdropTracker()
+
+# Galxe integration
+galxe = GalxePlatform(config=PlatformConfig(api_key="your_key"))
+galxe.login({"api_key": "your_key"})
+tasks = galxe.get_tasks("campaign_id")
+for task in tasks:
+    galxe.complete_task(task)
+
+# Social task automation
+social = SocialTaskManager()
+social.complete_social_task(TaskType.SOCIAL_TWITTER_FOLLOW, "defi_project")
+social.complete_social_task(TaskType.SOCIAL_DISCORD_JOIN, "https://discord.gg/invite")
+
+# Multi-wallet farming with Sybil avoidance
+farmer = AirdropFarmer(
+    wallet_manager=manager,
+    group="airdrop",
+    config=SybilAvoidanceConfig(
+        min_delay_between_wallets=60,
+        max_delay_between_wallets=600,
+        max_tasks_per_wallet_per_day=10,
+    ),
+)
+results = farmer.farm_campaign(campaign, execute=True)
+
+# Export report
+tracker.export_json("./airdrop_report.json")
+tracker.export_csv("./airdrop_report.csv")
+```
+
+**Supported platforms:** Gleam.io, Zealy (Crew3), Galxe (Project Galaxy)
+**Social tasks:** Twitter, Discord, Telegram, YouTube, GitHub
+
+---
+
 ## 🌉 Bridge Agent
 
 Cross-chain transfers via Li.Fi and Socket:
@@ -499,6 +549,15 @@ web3-agent-kit/
 │   ├── bridge.py           # Cross-chain bridge agent
 │   ├── yield_optimizer.py  # Yield optimizer + auto-compound
 │   ├── multi_wallet.py     # Multi-wallet manager + batch ops
+│   ├── airdrop/            # Airdrop automation module
+│   │   ├── __init__.py     # Package exports
+│   │   ├── base.py         # Base platform abstraction
+│   │   ├── gleam.py        # Gleam.io automation
+│   │   ├── zealy.py        # Zealy quest automation
+│   │   ├── galxe.py        # Galxe campaign automation
+│   │   ├── social.py       # Social task helpers
+│   │   ├── tracker.py      # Airdrop tracker
+│   │   └── multi_wallet.py # Multi-wallet farming
 │   ├── plugins/
 │   │   ├── __init__.py     # Plugin system (base, registry, manager)
 │   │   └── examples/
