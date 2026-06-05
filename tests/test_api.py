@@ -417,4 +417,4 @@ class TestOpenAPISchema:
     def test_schema_version(self):
         resp = client.get("/openapi.json")
         schema = resp.json()
-        assert schema["info"]["version"] == "0.8.0"
+        assert schema["info"]["version"] == "0.9.0"
