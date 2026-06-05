@@ -69,7 +69,7 @@ app = FastAPI(
     description="REST API for autonomous Web3 AI agents. "
     "Manage wallets, swap tokens, monitor portfolios, "
     "optimize gas, track approvals, and more.",
-    version="0.9.0",
+    version="1.0.0",
     lifespan=lifespan,
     docs_url="/docs",
     redoc_url="/redoc",
@@ -89,7 +89,7 @@ app.add_middleware(
 @app.get("/health", tags=["system"])
 async def health():
     """Health check endpoint."""
-    return {"status": "ok", "version": "0.9.0"}
+    return {"status": "ok", "version": "1.0.0"}
 
 
 @app.get("/", tags=["system"])
@@ -97,7 +97,7 @@ async def root():
     """API root with available endpoints."""
     return {
         "name": "Web3 Agent Kit API",
-        "version": "0.9.0",
+        "version": "1.0.0",
         "docs": "/docs",
         "endpoints": {
             "wallet": "/wallet",
