@@ -2,6 +2,14 @@
 import pytest
 from unittest.mock import MagicMock
 
+try:
+    from playwright.sync_api import sync_playwright
+    HAS_PLAYWRIGHT = True
+except ImportError:
+    HAS_PLAYWRIGHT = False
+
+requires_playwright = pytest.mark.skipif(not HAS_PLAYWRIGHT, reason="playwright not installed")
+
 from src.airdrop.executor.browser import BrowserManager, BrowserConfig
 from src.airdrop.executor.gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
 from src.airdrop.executor.social_exec import (
@@ -33,6 +41,7 @@ class TestBrowserConfig:
 
 # ─── BrowserManager ──────────────────────────────────────────
 
+@requires_playwright
 class TestBrowserManager:
     def test_init(self):
         mgr = BrowserManager()
