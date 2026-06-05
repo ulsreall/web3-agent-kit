@@ -25,6 +25,14 @@ from .social import (
 from .tracker import AirdropTracker, AirdropReward, AirdropSummary
 from .multi_wallet import AirdropFarmer, SybilAvoidanceConfig, FarmResult, WalletFarmProgress
 
+# New modules
+from .discovery import CampaignDiscovery, DiscoveryConfig, DiscoveredCampaign
+from .onchain import OnChainAirdropFarmer, OnChainConfig, TransactionResult, Chain, DeFiProtocol, FARMING_PLANS
+from .scheduler import AirdropScheduler, SchedulerConfig, ScheduledTask, ScheduleFrequency
+from .dashboard import PointsDashboard, DashboardConfig, PlatformPoints, PointsSnapshot
+from .referral import ReferralManager, ReferralLink, ReferralPlatform, ReferralStats
+from .faucet import FaucetClaimer, FaucetConfig, ClaimResult, FAUCETS
+
 __all__ = [
     # Base
     "BaseAirdropPlatform",
@@ -62,4 +70,35 @@ __all__ = [
     "SybilAvoidanceConfig",
     "FarmResult",
     "WalletFarmProgress",
+    # Discovery
+    "CampaignDiscovery",
+    "DiscoveryConfig",
+    "DiscoveredCampaign",
+    # On-chain
+    "OnChainAirdropFarmer",
+    "OnChainConfig",
+    "TransactionResult",
+    "Chain",
+    "DeFiProtocol",
+    "FARMING_PLANS",
+    # Scheduler
+    "AirdropScheduler",
+    "SchedulerConfig",
+    "ScheduledTask",
+    "ScheduleFrequency",
+    # Dashboard
+    "PointsDashboard",
+    "DashboardConfig",
+    "PlatformPoints",
+    "PointsSnapshot",
+    # Referral
+    "ReferralManager",
+    "ReferralLink",
+    "ReferralPlatform",
+    "ReferralStats",
+    # Faucet
+    "FaucetClaimer",
+    "FaucetConfig",
+    "ClaimResult",
+    "FAUCETS",
 ]
