@@ -35,6 +35,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Alerts** | Manual whale tracking | Auto-monitor wallets, instant alerts |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
 | **Airdrops** | Manual quest hunting | Auto-track campaigns, multi-wallet farming, Sybil-safe |
+| **Token Security** | Manual research | Honeypot detection, rug pull check, contract audit |
 | **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
@@ -109,6 +110,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
 | **Airdrops** | ✅ | ❌ | ❌ | ❌ |
+| **Token Security** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
 | **Safety Rails** | ✅ Governor | ❌ | ❌ | ❌ |
 | **Natural Language** | ✅ | Partial | ❌ | ❌ |
@@ -202,6 +204,38 @@ python my_agent.py
 - 💾 **Persistent orders** — Survives restarts, stored on disk
 - 🔔 **Callbacks** — Hook into execution events for notifications
 
+### 🔒 Security Module (NEW!)
+- 🍯 **Honeypot detection** — Check if token can be sold before buying
+- 🧶 **Rug pull checker** — Assess rug pull risk factors
+- 📝 **Contract audit** — Detect hidden mint, blacklist, pause, proxy patterns
+- 💰 **Tax checker** — Buy/sell tax analysis
+- 💧 **Liquidity analysis** — Locked %, lock duration
+- 👥 **Holder analysis** — Concentration, whale detection
+- 📊 **Safety score** — 0-100 score with risk levels
+- 🌐 **GoPlus API** — Real-time token security data
+- 📈 **DexScreener** — Liquidity data integration
+
+### 🪂 Airdrop Automation (NEW!)
+- 🔍 **Campaign Discovery** — Auto-scan 7 platforms (Galxe, Zealy, Layer3, QuestN, TaskOn, Intract, Port3)
+- ⛓️ **On-chain Farming** — DeFi interactions for airdrops (Base, Ethereum, Arbitrum, Optimism, Scroll, Linea, zkSync)
+- ⏰ **Daily Scheduler** — Automate recurring tasks with retry logic
+- 📊 **Points Dashboard** — Track points across all platforms with history
+- 🔗 **Referral Manager** — Generate, track, and optimize referral links
+- 🚰 **Faucet Claimer** — Auto-claim testnet tokens from 12+ faucets
+- 🤖 **Multi-wallet** — Sybil avoidance, wallet rotation
+- 🔌 **Plugin System** — Extend with custom platform executors
+
+### 🌐 REST API
+- 📡 **18 endpoints** — Full HTTP API for all modules
+- 🔑 **API key auth** — Secure access control
+- 📖 **Swagger UI** — Interactive API documentation
+- 🔄 **Auto-fallback** — Multi-provider LLM cascade
+
+### 🔌 Plugin System
+- 📦 **Plugin registry** — Discover and load plugins dynamically
+- 🛠️ **Custom plugins** — Extend with your own tools
+- 🔄 **Hot reload** — Add plugins without restarting
+
 ---
 
 ## 🌐 REST API
@@ -288,7 +322,8 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 | `examples/airdrop_farmer.py` | Multi-chain airdrop farming |
 | `examples/sniper_bot.py` | Token launch sniper |
 | `examples/portfolio_tracker.py` | Portfolio tracking & reporting |
-| `examples/llm_swap_agent.py` | LLM-powered natural language swapping |
+| `examples/airdrop_suite.py` | Full airdrop automation suite |
+| `examples/security_analysis.py` | Token security analysis |
 
 ---
 
@@ -297,334 +332,98 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 Multi-provider cascade with automatic fallback:
 
 ```python
-from web3_agent_kit.llm import LLM
+from web3_agent_kit.llm import LLM, LLMConfig
 
-# Auto-detect from environment variables
-llm = LLM()
+# Use any LLM provider with automatic fallback
+llm = LLM(LLMConfig(
+    providers=["anthropic", "openai", "groq", "deepseek"],
+    model="claude-3-5-sonnet-20241022",
+))
 
-# Cascade order: Anthropic → Kimi → OpenRouter → DeepSeek → Groq → OpenAI
-
-# Simple chat
-response = llm.chat("What is the best yield on Base?")
-
-# JSON response
-data = llm.chat_json("Analyze this swap: 0.1 ETH to USDC")
-```
-
-**Supported providers:**
-- **Anthropic** (Claude) — Best reasoning
-- **OpenAI** (GPT-4) — General purpose
-- **Groq** (Llama) — Fastest inference
-- **DeepSeek** — Cheapest
-- **OpenRouter** — Multi-model fallback
-- **Kimi** — Long context
-
----
-
-## 🔫 Token Sniper
-
-Monitor new liquidity pools and auto-buy safe tokens:
-
-```python
-from web3_agent_kit import TokenSniper, SniperConfig, RiskLevel
-
-config = SniperConfig(
-    max_buy=0.005,          # max 0.005 ETH per snipe
-    auto_buy=True,          # auto-buy safe tokens
-    honeypot_check=True,    # check if token is honeypot
-    min_liquidity=0.5,      # min 0.5 ETH liquidity
-)
-
-sniper = TokenSniper(chain_manager, wallet, config, uniswap=uniswap)
-
-# Scan recent blocks
-pairs = sniper.scan_recent_blocks(num_blocks=100, chain=Chain.BASE)
-
-# Or start live monitoring
-sniper.start(chain=Chain.BASE, poll_interval=12)
+# Natural language → structured action
+action = llm.parse("Swap 0.1 ETH to USDC on Base")
+# → {"tool": "uniswap", "action": "swap", "params": {...}}
 ```
 
 ---
 
-## 📊 Portfolio Dashboard
+## 🔒 Security Module
 
-Track balances and P&L across chains:
+Analyze tokens before interacting:
 
 ```python
-from web3_agent_kit import PortfolioTracker
+from web3_agent_kit.security import TokenAnalyzer, SecurityConfig
 
-tracker = PortfolioTracker(chain_manager, wallet)
-summary = tracker.get_summary()
+analyzer = TokenAnalyzer(SecurityConfig(chain="base"))
 
-print(summary)
-# 📊 Portfolio: 0x1234...
-# 💰 Total Value: $12,345.67
-#
-#   🔗 ETHEREUM: $8,000.00
-#      Native: 1.5000 ETH ($5,250.00)
-#      USDC: 2750.0000 ($2,750.00)
-#
-#   🔗 BASE: $4,345.67
-#      Native: 1.2000 ETH ($4,200.00)
-#      USDC: 145.6700 ($145.67)
+# Quick check
+result = analyzer.quick_check("0x...")
+print(f"Is Honeypot: {result['is_honeypot']}")
+
+# Full analysis
+report = analyzer.analyze_token("0x...")
+print(f"Safety Score: {report.safety_score}/100")
+print(f"Risk Level: {report.risk_level.value}")
+
+if report.is_honeypot:
+    print("🚨 HONEYPOT DETECTED!")
+elif report.safety_score < 50:
+    print("⚠️ HIGH RISK TOKEN")
+else:
+    print("✓ Safe to trade")
 ```
 
 ---
 
 ## 🪂 Airdrop Automation
 
-Discover, track, and complete airdrop campaigns across multiple platforms:
+Automate airdrop farming across multiple platforms:
 
 ```python
 from web3_agent_kit.airdrop import (
-    GalxePlatform, ZealyPlatform, GleamCampaign,
-    AirdropTracker, AirdropFarmer, SocialTaskManager,
-    PlatformConfig, TaskType, SybilAvoidanceConfig,
+    CampaignDiscovery,
+    OnChainAirdropFarmer,
+    AirdropScheduler,
+    PointsDashboard,
+    ReferralManager,
+    FaucetClaimer,
 )
 
-# Track campaigns across platforms
-tracker = AirdropTracker()
+# Discover new campaigns
+discovery = CampaignDiscovery()
+campaigns = discovery.discover_all()
 
-# Galxe integration
-galxe = GalxePlatform(config=PlatformConfig(api_key="your_key"))
-galxe.login({"api_key": "your_key"})
-tasks = galxe.get_tasks("campaign_id")
-for task in tasks:
-    galxe.complete_task(task)
+# On-chain farming (dry run)
+farmer = OnChainAirdropFarmer(OnChainConfig(chain="base", dry_run=True))
+farmer.farm_plan("base_activity")
 
-# Social task automation
-social = SocialTaskManager()
-social.complete_social_task(TaskType.SOCIAL_TWITTER_FOLLOW, "defi_project")
-social.complete_social_task(TaskType.SOCIAL_DISCORD_JOIN, "https://discord.gg/invite")
+# Schedule daily tasks
+scheduler = AirdropScheduler()
+scheduler.add_daily("galxe_checkin", "09:00", galxe_checkin_fn)
 
-# Multi-wallet farming with Sybil avoidance
-farmer = AirdropFarmer(
-    wallet_manager=manager,
-    group="airdrop",
-    config=SybilAvoidanceConfig(
-        min_delay_between_wallets=60,
-        max_delay_between_wallets=600,
-        max_tasks_per_wallet_per_day=10,
-    ),
-)
-results = farmer.farm_campaign(campaign, execute=True)
+# Track points
+dashboard = PointsDashboard(DashboardConfig(wallet="0x..."))
+dashboard.sync_all()
 
-# Export report
-tracker.export_json("./airdrop_report.json")
-tracker.export_csv("./airdrop_report.csv")
-```
+# Generate referrals
+manager = ReferralManager()
+manager.generate_links(count=10)
 
-**Supported platforms:** Gleam.io, Zealy (Crew3), Galxe (Project Galaxy)
-**Social tasks:** Twitter, Discord, Telegram, YouTube, GitHub
-
----
-
-## 🌉 Bridge Agent
-
-Cross-chain transfers via Li.Fi and Socket:
-
-```python
-from web3_agent_kit import BridgeAgent
-
-bridge = BridgeAgent(chain_manager, wallet)
-
-# Get best routes
-routes = bridge.get_routes("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
-
-for route in routes:
-    print(f"{route.bridge_name}: {route.amount_out:.6f} ETH (fee: ${route.fee_usd:.2f})")
-
-# Execute transfer
-result = bridge.transfer("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
-print(f"TX: {result.tx_hash}")
+# Claim testnet tokens
+claimer = FaucetClaimer()
+claimer.claim_all(wallet="0x...")
 ```
 
 ---
 
-## 🌾 Yield Optimizer
+## 📊 Project Stats
 
-Auto-compound and compare yield across DeFi protocols:
-
-```python
-from web3_agent_kit import YieldOptimizer, YieldConfig, RiskLevel
-
-optimizer = YieldOptimizer(wallet, Chain.ETHEREUM, YieldConfig(
-    min_apy=2.0,
-    max_risk=RiskLevel.MEDIUM,
-    auto_compound_threshold=25,
-))
-
-# Scan & compare
-opportunities = optimizer.scan_opportunities("USDC")
-best = optimizer.find_best("USDC", amount=10000)
-
-# Deposit & auto-compound
-optimizer.deposit(best, amount=10000)
-optimizer.auto_compound_all()
-```
-
-**Protocols:** Aave V3, Compound V3, Morpho, Lido, Rocket Pool, Fluid
-**Data source:** DeFiLlama API (real-time APY/TVL)
-
----
-
-## 👛 Multi-Wallet Manager
-
-Manage multiple wallets with batch operations:
-
-```python
-from web3_agent_kit import MultiWalletManager, Chain
-
-manager = MultiWalletManager(chain=Chain.ETHEREUM)
-
-# Create wallet groups
-manager.create_wallet("trading-01", group="trading")
-manager.create_wallet("airdrop-01", group="airdrop")
-
-# Batch send from all airdrop wallets
-results = manager.batch_send(
-    recipients=["0xAddr1", "0xAddr2"],
-    amount=0.001,
-    group_filter="airdrop",
-)
-
-# Consolidate funds back
-manager.consolidate_to("main", group_filter="airdrop")
-```
-
-**Features:** Wallet groups, batch send (native + ERC20), consolidated portfolio, fund consolidation.
-
----
-
-## 🔌 Plugin System
-
-Extend with community plugins:
-
-```python
-from web3_agent_kit.plugins import PluginManager
-
-manager = PluginManager()
-manager.load_dir("./my_plugins/")
-manager.setup_all(agent)
-
-# Plugins can hook into agent lifecycle
-# manager.before_transaction(tx)
-# manager.on_block(block_number)
-```
-
-**Create a plugin:**
-
-```python
-from web3_agent_kit.plugins import Plugin, PluginMeta
-
-class MyPlugin(Plugin):
-    @property
-    def meta(self):
-        return PluginMeta(name="my-plugin", version="1.0.0",
-                         description="Does cool things", author="You")
-
-    def setup(self, agent):
-        self.agent = agent
-
-    def execute(self, action, **kwargs):
-        return {"result": "done"}
-```
-
-**Discovery:** Local directories, Python entry points, or manual registration.
-
----
-
-## 📁 Project Structure
-
-```
-web3-agent-kit/
-├── src/
-│   ├── __init__.py         # Package exports
-│   ├── agent.py            # Agent framework + LLM reasoning
-│   ├── llm.py              # Multi-provider LLM client
-│   ├── wallet.py           # Wallet management + signing
-│   ├── chain.py            # Multi-chain RPC + config
-│   ├── sniper.py           # Token sniper + monitoring
-│   ├── portfolio.py        # Portfolio tracking + P&L
-│   ├── bridge.py           # Cross-chain bridge agent
-│   ├── yield_optimizer.py  # Yield optimizer + auto-compound
-│   ├── multi_wallet.py     # Multi-wallet manager + batch ops
-│   ├── airdrop/            # Airdrop automation module
-│   │   ├── __init__.py     # Package exports
-│   │   ├── base.py         # Base platform abstraction
-│   │   ├── gleam.py        # Gleam.io automation
-│   │   ├── zealy.py        # Zealy quest automation
-│   │   ├── galxe.py        # Galxe campaign automation
-│   │   ├── social.py       # Social task helpers
-│   │   ├── tracker.py      # Airdrop tracker
-│   │   └── multi_wallet.py # Multi-wallet farming
-│   ├── plugins/
-│   │   ├── __init__.py     # Plugin system (base, registry, manager)
-│   │   └── examples/
-│   │       └── gas_tracker.py
-│   ├── api/
-│   │   ├── __init__.py     # FastAPI REST API server
-│   │   ├── models.py       # Pydantic request/response models
-│   │   └── routes/         # API route handlers
-│   └── defi/
-│       └── __init__.py     # Uniswap, Aerodrome, Aave, Curve
-├── examples/               # 15 ready-to-use examples
-├── tests/                  # Test suite
-└── docs/                   # Documentation
-```
-
----
-
-## ⚡ Benchmarks
-
-> 📝 *Benchmarks will be published after v1.0 release. Numbers below are preliminary estimates on standard hardware.*
-
-| Metric | Value | Notes |
-|--------|-------|-------|
-| Swap execution (incl. LLM) | ~3–8s | Depends on LLM provider |
-| Swap execution (no LLM) | ~1–3s | Direct RPC interaction |
-| Portfolio fetch (7 chains) | ~2–4s | Parallel RPC calls |
-| Sniper block scan (100 blocks) | ~5–10s | Per chain |
-| Bridge route discovery | ~1–2s | Aggregator API latency |
-
-*Benchmarks run on: Python 3.11, 4-core CPU, SSD, public RPC endpoints.*
-
----
-
-## 🔐 Safety
-
-Web3 Agent Kit includes built-in safety features:
-
-```python
-from web3_agent_kit.safety import SpendGovernor, SpendLimits
-
-governor = SpendGovernor(
-    limits=SpendLimits(
-        max_per_tx=0.1,      # max 0.1 ETH per transaction
-        daily_limit=1.0,     # max 1 ETH per day
-    ),
-    require_confirm=True,    # operator must confirm
-)
-
-# Kill switch for emergencies
-governor.kill()   # blocks all transactions
-governor.unkill() # resume
-```
-
----
-
-## 🛠️ Supported Chains
-
-| Chain | Status | Uniswap | Bridge |
-|-------|--------|---------|--------|
-| Ethereum | ✅ | ✅ | ✅ |
-| Base | ✅ | ✅ | ✅ |
-| Arbitrum | ✅ | ✅ | ✅ |
-| Optimism | ✅ | ✅ | ✅ |
-| Polygon | ✅ | ✅ | ✅ |
-| Avalanche | ✅ | — | ✅ |
-| BSC | ✅ | — | ✅ |
-| Solana | 🔜 | — | — |
+- **Version:** 1.2.0
+- **Modules:** 20+
+- **Tests:** 565+
+- **Examples:** 18
+- **Chains:** 7+
+- **License:** MIT
 
 ---
 
@@ -642,12 +441,14 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ## 🙏 Acknowledgments
 
-Built with:
-- [web3.py](https://github.com/ethereum/web3.py) — Ethereum interactions
-- [OpenAI](https://openai.com) / [Anthropic](https://anthropic.com) / [Groq](https://groq.com) — LLM providers
-- [Uniswap](https://uniswap.org) — DEX protocol
-- [Li.Fi](https://li.fi) / [Socket](https://socket.tech) — Bridge aggregators
+- [Uniswap](https://uniswap.org/) — DEX protocol
+- [Li.Fi](https://li.fi/) — Bridge aggregator
+- [Socket](https://socket.tech/) — Bridge aggregator
+- [GoPlus](https://gopluslabs.io/) — Token security API
+- [DexScreener](https://dexscreener.com/) — DEX data
 
 ---
 
-**Built by [Maulana](https://github.com/ulsreall)** · [Twitter](https://twitter.com/itseywacc)
+<p align="center">
+  Made with ❤️ by <a href="https://twitter.com/itseywacc">@itseywacc</a>
+</p>
