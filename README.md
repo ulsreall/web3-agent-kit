@@ -145,7 +145,32 @@ export ETH_RPC="https://..."
 export BASE_RPC="https://..."
 ```
 
-### 3. Write Your First Agent
+### 3. CLI Tool (Optional)
+
+```bash
+# Check environment
+wak doctor
+
+# Show library info & capabilities
+wak info
+
+# List available examples
+wak examples
+
+# Check wallet balance
+wak wallet balance --address 0x... --chain ethereum
+
+# Token safety check
+wak token check --address 0x...
+
+# Gas prices
+wak gas --chain ethereum
+
+# Run an AI agent
+wak agent --goal "swap 0.1 ETH to USDC on Base" --wallet 0x... --chain base
+```
+
+### 4. Write Your First Agent
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
