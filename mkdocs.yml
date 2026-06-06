@@ -45,23 +45,6 @@ theme:
 
 plugins:
   - search
-  - mkdocstrings:
-      default_handler: python
-      handlers:
-        python:
-          options:
-            show_source: true
-            show_root_heading: true
-            show_root_full_path: false
-            show_category_heading: true
-            show_symbol_type_heading: true
-            show_symbol_type_toc: true
-            docstring_style: google
-            docstring_section_style: spacy
-            merge_init_into_class: true
-            show_signature_annotations: true
-            separate_signature: true
-            line_length: 80
 
 markdown_extensions:
   - abbr
@@ -113,6 +96,7 @@ extra:
 nav:
   - Home: index.md
   - Getting Started: getting-started.md
+  - CLI Tool: cli.md
   - Features: features.md
   - Examples: examples.md
   - API Reference:
@@ -124,5 +108,10 @@ nav:
     - api/portfolio.md
     - api/bridge.md
     - api/defi.md
+    - api/airdrop.md
+    - api/security.md
+    - api/mev.md
+    - api/nft.md
+    - api/trading.md
   - Contributing: contributing.md
   - Changelog: changelog.md

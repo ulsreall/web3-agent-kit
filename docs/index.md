@@ -59,6 +59,20 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 pip install web3-agent-kit
 ```
 
+### CLI Tool
+
+Web3 Agent Kit ships with a terminal CLI — no Python code needed:
+
+```bash
+wak info          # Package info
+wak doctor        # Check environment
+wak wallet        # Check balances
+wak gas           # Gas prices
+wak agent "Swap 0.1 ETH to USDC on Base"  # Run agent
+```
+
+See the [CLI Documentation](cli.md) for all commands.
+
 ### Environment Variables
 
 ```bash

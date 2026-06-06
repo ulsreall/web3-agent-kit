@@ -182,8 +182,76 @@ print(f"0.1 ETH = {quote['amount_out']:.2f} USDC")
 
 - **Uniswap V2** — Ethereum, Base, Arbitrum, Optimism, Polygon
 - **Aerodrome** — Base (V2-compatible router)
-- **Aave** — Lending/borrowing (coming soon)
-- **Curve** — Stableswap (coming soon)
+- **Aave** — Lending/borrowing
+- **Curve** — Stableswap
+
+---
+
+## 🎯 Airdrop Suite
+
+Full airdrop farming automation — discover, track, and claim airdrops across multiple platforms.
+
+### Platform Integrations
+
+- **Galxe** — Quest completion, credential claiming
+- **Zealy** — Quest automation
+- **Layer3** — Task completion
+- **QuestN** — Quest participation
+- **Intract** — Campaign automation
+- **Gleam** — Giveaway entry
+
+### Multi-Wallet Farming
+
+Manage multiple wallets for airdrop farming with a single interface.
+
+```python
+from web3_agent_kit.airdrop import MultiWalletManager
+
+manager = MultiWalletManager.from_csv("wallets.csv")
+manager.execute_on_all("swap", token_in="ETH", token_out="USDC", amount=0.01)
+```
+
+---
+
+## 🔐 Security Tools
+
+Smart contract security auditing — static analysis, fuzzing, exploit development, and forensics.
+
+- **Static Analysis** — Slither-based vulnerability detection
+- **Fuzzing** — Property-based testing with Echidna/Foundry
+- **Exploit Development** — PoC builder for discovered vulnerabilities
+- **Forensics** — On-chain transaction tracing
+- **Protocol Audit** — Full DeFi protocol security audit
+
+---
+
+## ⚡ MEV Bots
+
+Maximal Extractable Value extraction tools.
+
+- **Arbitrage** — Cross-DEX arbitrage with Flashbot support
+- **Liquidation** — Monitor and liquidate undercollateralized positions
+- **Flashbots** — Private mempool submission to avoid frontrunning
+
+---
+
+## 🖼️ NFT Tools
+
+NFT collection creation, minting, and marketplace integration.
+
+- **Collection Deploy** — Deploy ERC-721A contracts
+- **Batch Minting** — Mint to multiple recipients
+- **Marketplace** — OpenSea-compatible listing
+
+---
+
+## 📈 Trading Bots
+
+Automated trading strategies.
+
+- **DCA Bot** — Dollar-cost averaging with price triggers
+- **Yield Optimizer** — Find and auto-compound best yields
+- **Token Sniper** — Monitor new pools, auto-buy safe tokens
 
 ---
 
