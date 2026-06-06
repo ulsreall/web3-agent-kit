@@ -6,6 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
+[![Docs](https://img.shields.io/badge/docs-site-blue.svg)](https://ulsreall.github.io/web3-agent-kit/)
 [![Coverage](https://img.shields.io/badge/coverage-66%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
@@ -443,10 +444,10 @@ claimer.claim_all(wallet="0x...")
 
 ## 📊 Project Stats
 
-- **Version:** 1.2.0
-- **Modules:** 20+
+- **Version:** 1.6.0
+- **Modules:** 19
 - **Tests:** 565+
-- **Examples:** 18
+- **Examples:** 20
 - **Chains:** 7+
 - **License:** MIT
 

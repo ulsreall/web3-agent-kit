@@ -48,7 +48,7 @@ dev = [
 Homepage = "https://github.com/ulsreall/web3-agent-kit"
 Repository = "https://github.com/ulsreall/web3-agent-kit"
 Issues = "https://github.com/ulsreall/web3-agent-kit/issues"
-Documentation = "https://github.com/ulsreall/web3-agent-kit#readme"
+Documentation = "https://ulsreall.github.io/web3-agent-kit/"
 
 [tool.setuptools.packages.find]
 where = ["."]
