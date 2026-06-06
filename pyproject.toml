@@ -30,7 +30,12 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "requests>=2.31.0",
     "httpx>=0.25.0",
+    "click>=8.0",
+    "rich>=13.0",
 ]
+[project.scripts]
+wak = "src.cli:main"
+
 
 [project.optional-dependencies]
 dev = [
