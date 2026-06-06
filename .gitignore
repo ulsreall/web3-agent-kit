@@ -71,3 +71,4 @@ coverage.xml
 # MkDocs build output
 site/
 blog/
+setup.py
