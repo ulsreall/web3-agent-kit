@@ -10,15 +10,15 @@ theme:
   palette:
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: deep purple
-      accent: amber
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: deep purple
-      accent: amber
+      primary: custom
+      accent: custom
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
@@ -29,22 +29,30 @@ theme:
     - content.code.copy
     - content.code.annotate
     - content.tabs.link
+    - content.tooltips
     - navigation.instant
+    - navigation.instant.progress
     - navigation.tracking
     - navigation.sections
     - navigation.expand
     - navigation.top
     - navigation.footer
+    - navigation.indexes
     - search.suggest
     - search.highlight
+    - search.share
     - toc.follow
+    - announce.dismiss
   icon:
     repo: fontawesome/brands/github
-  logo: assets/logo.png
+    logo: fontawesome/solid/robot
   favicon: assets/favicon.png
 
 plugins:
   - search
+
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - abbr
@@ -92,6 +100,7 @@ extra:
       link: https://twitter.com/itseywacc
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/web3-agent-kit/
+  generator: false
 
 nav:
   - Home: index.md

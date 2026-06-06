@@ -1,0 +1,345 @@
+/* ============================================
+   Web3 Agent Kit — Custom Docs Theme
+   ============================================ */
+
+/* ---------- Custom Colors (Material palette override) ---------- */
+:root {
+  --md-primary-fg-color: #6366f1;
+  --md-primary-fg-color--light: #818cf8;
+  --md-primary-fg-color--dark: #4f46e5;
+  --md-accent-fg-color: #a855f7;
+  --md-accent-fg-color--transparent: rgba(168, 85, 247, 0.1);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #818cf8;
+  --md-primary-fg-color--light: #a5b4fc;
+  --md-primary-fg-color--dark: #6366f1;
+  --md-accent-fg-color: #a855f7;
+  --md-default-bg-color: #0f0f1a;
+  --md-code-bg-color: #1e1e2e;
+}
+
+/* ---------- Hero Section ---------- */
+.md-header {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tx-hero {
+  padding: 3rem 0;
+  text-align: center;
+}
+
+.tx-hero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #a855f7 0%, #6366f1 40%, #06b6d4 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 0.5rem;
+}
+
+.tx-hero .tx-hero-sub {
+  font-size: 1.25rem;
+  opacity: 0.8;
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  line-height: 1.6;
+}
+
+.tx-hero .tx-hero-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.95rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: inline-block;
+  margin: 1rem auto;
+  max-width: 500px;
+  text-align: left;
+}
+
+[data-md-color-scheme="slate"] .tx-hero .tx-hero-code {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(99, 102, 241, 0.25);
+}
+
+.tx-hero-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.5rem;
+}
+
+.tx-hero-buttons a {
+  border-radius: 10px;
+  padding: 0.75rem 2rem;
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.tx-hero-buttons .md-button--primary {
+  background: linear-gradient(135deg, #a855f7, #6366f1);
+  color: #fff;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+}
+
+.tx-hero-buttons .md-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(99, 102, 241, 0.4);
+  color: #fff;
+}
+
+.tx-hero-buttons .md-button {
+  background: transparent;
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  color: #6366f1;
+}
+
+.tx-hero-buttons .md-button:hover {
+  background: rgba(99, 102, 241, 0.08);
+  border-color: #6366f1;
+  transform: translateY(-2px);
+}
+
+/* ---------- Stats Bar ---------- */
+.tx-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2.5rem;
+  flex-wrap: wrap;
+  padding: 1.5rem 0;
+  margin: 1rem 0 2rem;
+  border-top: 1px solid rgba(99, 102, 241, 0.15);
+  border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+}
+
+.tx-stats .stat {
+  text-align: center;
+}
+
+.tx-stats .stat-num {
+  font-size: 1.8rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.tx-stats .stat-label {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- Feature Grid ---------- */
+.tx-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin: 2rem 0;
+}
+
+.tx-feature {
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+  background: rgba(99, 102, 241, 0.03);
+  transition: all 0.25s ease;
+}
+
+.tx-feature:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(99, 102, 241, 0.06);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 30px rgba(99, 102, 241, 0.1);
+}
+
+.tx-feature-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.tx-feature h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+
+.tx-feature p {
+  font-size: 0.9rem;
+  opacity: 0.75;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* ---------- Code Blocks ---------- */
+.md-typeset pre {
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.1);
+}
+
+[data-md-color-scheme="slate"] .md-typeset pre {
+  background: #1e1e2e;
+  border-color: rgba(99, 102, 241, 0.15);
+}
+
+/* ---------- Admonition Cards ---------- */
+.md-typeset .admonition,
+.md-typeset details {
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.12);
+}
+
+.md-typeset .admonition.tip {
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.md-typeset .admonition.note {
+  border-color: rgba(99, 102, 241, 0.3);
+}
+
+.md-typeset .admonition.warning {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+/* ---------- Section Headers ---------- */
+.md-typeset h2 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid rgba(99, 102, 241, 0.15);
+  margin-top: 2.5rem;
+}
+
+/* ---------- Navigation ---------- */
+.md-nav__item--active > .md-nav__link {
+  font-weight: 600;
+  color: #a855f7;
+}
+
+.md-sidebar--secondary .md-nav__link {
+  font-size: 0.8rem;
+}
+
+/* ---------- Footer ---------- */
+.md-footer {
+  margin-top: 3rem;
+}
+
+.md-footer-meta {
+  backdrop-filter: blur(12px);
+}
+
+/* ---------- Responsive ---------- */
+@media screen and (max-width: 76.1875em) {
+  .tx-hero h1 {
+    font-size: 2.2rem;
+  }
+  
+  .tx-hero .tx-hero-sub {
+    font-size: 1.05rem;
+  }
+  
+  .tx-stats {
+    gap: 1.5rem;
+  }
+  
+  .tx-stats .stat-num {
+    font-size: 1.4rem;
+  }
+  
+  .tx-features {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Animated gradient bg for hero ---------- */
+.tx-hero-gradient {
+  position: relative;
+  overflow: hidden;
+}
+
+.tx-hero-gradient::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at 30% 50%, rgba(168, 85, 247, 0.06) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 50%, rgba(6, 182, 212, 0.04) 0%, transparent 60%);
+  animation: tx-float 20s ease-in-out infinite alternate;
+  z-index: -1;
+}
+
+@keyframes tx-float {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  100% { transform: translate(3%, -3%) rotate(3deg); }
+}
+
+/* ---------- Install badge ---------- */
+.tx-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(99, 102, 241, 0.08);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 10px;
+  padding: 0.6rem 1.2rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
+}
+
+.tx-install code {
+  background: none;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+/* ---------- Divider ---------- */
+.tx-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.2), transparent);
+  margin: 3rem 0;
+}
+
+/* ---------- Smooth scroll ---------- */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ---------- TOC highlight ---------- */
+.md-sidebar--secondary .md-nav__link--active {
+  color: #a855f7;
+  font-weight: 600;
+}
+
+/* ---------- Copy button style ---------- */
+.md-typeset .highlight button {
+  border-radius: 6px;
+}
+
+/* ---------- Table style ---------- */
+.md-typeset table:not([class]) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.md-typeset table:not([class]) th {
+  background: rgba(99, 102, 241, 0.08);
+  font-weight: 600;
+}
