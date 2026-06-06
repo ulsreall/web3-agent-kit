@@ -25,19 +25,18 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | Pain Point | Without Web3 Agent Kit | With Web3 Agent Kit |
 |------------|------------------------|---------------------|
 | **Setup** | Days of boilerplate | `pip install` → 5 lines of code |
+| **CLI** | Write Python for everything | `wak` — 7 commands, zero code |
 | **Multi-chain** | Write adapters per chain | Built-in for 7+ chains |
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
-| **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, bridges |
-| **Yield** | Manual research, claim, compound | Auto-compound, cross-protocol APY comparison |
-| **DCA** | Manual recurring buys | Automated DCA with intervals, limits, callbacks |
-| **Gas** | Guess gas prices | Smart estimation, timing, batching |
-| **Security** | Manual approval checks | Auto-scan & revoke risky approvals |
-| **Alerts** | Manual whale tracking | Auto-monitor wallets, instant alerts |
-| **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio, wallet groups |
-| **Airdrops** | Manual quest hunting | Auto-track campaigns, multi-wallet farming, Sybil-safe |
-| **Token Security** | Manual research | Honeypot detection, rug pull check, contract audit |
-| **Extensibility** | Hard-coded logic | Plugin system — community can extend anything |
+| **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, Curve, bridges |
+| **Airdrops** | Manual quest hunting | Auto-track 6 platforms, multi-wallet farming |
+| **Security Audit** | Manual code review | Static analysis, fuzzing, exploit PoC |
+| **MEV** | Build from scratch | Arbitrage, liquidation, Flashbot support |
+| **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
+| **Trading** | Manual recurring buys | DCA bot, yield optimizer, token sniper |
+| **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio |
+| **Extensibility** | Hard-coded logic | Plugin system — extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
 ---
@@ -47,7 +46,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        User / Application                          │
-│                    "Swap 0.1 ETH to USDC on Base"                  │
+│              "Swap 0.1 ETH to USDC on Base"  /  `wak agent "..."`  │
 └──────────────────────────────┬──────────────────────────────────────┘
                                │
                                ▼
@@ -55,7 +54,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 │                          Agent Framework                            │
 │  ┌───────────┐  ┌──────────────┐  ┌─────────────┐  ┌────────────┐ │
 │  │ Goal      │→ │ LLM Planner  │→ │ Tool        │→ │ Transaction│ │
-│  │ Parser    │  │ (cascade)    │  │ Router      │  │ Executor   │ │
+│  │ Parser    │  │ (6 providers)│  │ Router      │  │ Executor   │ │
 │  └───────────┘  └──────────────┘  └─────────────┘  └─────┬──────┘ │
 └───────────────────────────────────────────────────────────┼────────┘
                                                             │
@@ -70,16 +69,29 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
                                │  └─────────────────────────┘      │ │
                                └────────────────────────────────────┘
                                                             │
-                               ┌────────────────────────────┼────────┐
-                               │      Tool Ecosystem        │        │
-                               │  ┌─────────┐ ┌──────────┐ │        │
-                               │  │ Uniswap │ │ Bridge   │ │        │
-                               │  │ V2/V3   │ │ Agg.     │ │        │
-                               │  ├─────────┤ ├──────────┤ │        │
-                               │  │ Sniper  │ │ Portfolio│ │        │
-                               │  │ Module  │ │ Tracker  │ │        │
-                               │  └─────────┘ └──────────┘ │        │
-                               └────────────────────────────┼────────┘
+       ┌────────────────────────────────────────────────────┼────────┐
+       │                    Tool Ecosystem                    │        │
+       │                                                     │        │
+       │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐│        │
+       │  │ DeFi     │ │ Airdrop  │ │ Security │ │ MEV    ││        │
+       │  │ •Uniswap │ │ •Galxe   │ │ •Static  │ │ •Arb   ││        │
+       │  │ •Aerodrome│ │ •Zealy   │ │ •Fuzzing │ │ •Liq   ││        │
+       │  │ •Aave    │ │ •Layer3  │ │ •Exploit │ │ •Flash ││        │
+       │  │ •Curve   │ │ •Gleam   │ │ •Audit   │ │  bots  ││        │
+       │  ├──────────┤ ├──────────┤ ├──────────┤ ├────────┤│        │
+       │  │ Trading  │ │ NFT      │ │ Portfolio│ │ Bridge ││        │
+       │  │ •DCA Bot │ │ •Deploy  │ │ •Tracker │ │ •Li.Fi ││        │
+       │  │ •Sniper  │ │ •Mint    │ │ •P&L     │ │ •Socket││        │
+       │  │ •Yield   │ │ •Market  │ │ •Alerts  │ │        ││        │
+       │  └──────────┘ └──────────┘ └──────────┘ └────────┘│        │
+       │                                                     │        │
+       │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │        │
+       │  │ Gas      │ │ Wallet   │ │ Plugins  │           │        │
+       │  │ Optimizer│ │ •Multi   │ │ •Custom  │           │        │
+       │  │          │ │ •Watcher │ │ •Community│          │        │
+       │  │          │ │ •Approval│ │          │           │        │
+       │  └──────────┘ └──────────┘ └──────────┘           │        │
+       └────────────────────────────────────────────────────┼────────┘
                                                             │
                                ┌────────────────────────────┼────────┐
                                │    Chain Abstraction Layer  │        │
@@ -88,7 +100,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
                                │  ├──────┤ ├──────┤ ├────┤ │        │
                                │  │ OP   │ │ MATIC│ │AVAX│ │        │
                                │  ├──────┤ ├──────┤ ├────┤ │        │
-                               │  │ BSC  │ │      │ │    │ │        │
+                               │  │ BSC  │ │ SOL  │ │    │ │        │
                                │  └──────┘ └──────┘ └────┘ │        │
                                └────────────────────────────────────┘
 ```
@@ -102,22 +114,21 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Setup Time** | Minutes | Hours | Days | Hours |
 | **Multi-chain** | 7+ chains | Manual | Manual | Limited |
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
-| **DeFi Tools** | Uniswap, Aave, bridges | ❌ | ❌ | Limited |
+| **CLI Tool** | `wak` (7 cmds) | ❌ | ❌ | ❌ |
+| **DeFi Tools** | Uniswap, Aave, Curve | ❌ | ❌ | Limited |
+| **Airdrop Suite** | 6 platforms | ❌ | ❌ | ❌ |
+| **Security Audit** | Static + Fuzz + Exploit | ❌ | ❌ | ❌ |
+| **MEV Bots** | Arbitrage + Liquidation | ❌ | ❌ | ❌ |
+| **NFT Tools** | Deploy + Mint + Market | ❌ | ❌ | ❌ |
 | **Token Sniper** | ✅ | ❌ | ❌ | ❌ |
 | **DCA Bot** | ✅ | ❌ | ❌ | ❌ |
 | **Gas Optimizer** | ✅ | ❌ | ❌ | ❌ |
-| **Approval Manager** | ✅ | ❌ | ❌ | ❌ |
-| **Wallet Watcher** | ✅ | ❌ | ❌ | ❌ |
-| **Yield Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
-| **Airdrops** | ✅ | ❌ | ❌ | ❌ |
-| **Token Security** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
 | **Safety Rails** | ✅ Governor | ❌ | ❌ | ❌ |
 | **Natural Language** | ✅ | Partial | ❌ | ❌ |
 | **Python Native** | ✅ | ✅ | Varies | ❌ (TS) |
 | **Type Hints** | ✅ | Partial | Varies | N/A |
-| **Active Maintenance** | ✅ | ✅ | Depends | Limited |
 
 ---
 
