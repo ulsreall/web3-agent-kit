@@ -36,6 +36,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
 | **Trading** | Manual recurring buys | DCA bot, yield optimizer, token sniper |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio |
+| **Restaking** | Manual protocol juggling | EigenLayer + Babylon + Solana, auto-optimize |
 | **Extensibility** | Hard-coded logic | Plugin system — extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
@@ -85,12 +86,12 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
        │  │ •Yield   │ │ •Market  │ │ •Alerts  │ │        ││        │
        │  └──────────┘ └──────────┘ └──────────┘ └────────┘│        │
        │                                                     │        │
-       │  ┌──────────┐ ┌──────────┐ ┌──────────┐           │        │
-       │  │ Gas      │ │ Wallet   │ │ Plugins  │           │        │
-       │  │ Optimizer│ │ •Multi   │ │ •Custom  │           │        │
-       │  │          │ │ •Watcher │ │ •Community│          │        │
-       │  │          │ │ •Approval│ │          │           │        │
-       │  └──────────┘ └──────────┘ └──────────┘           │        │
+       │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐│        │
+       │  │ Gas      │ │ Wallet   │ │ Plugins  │ │Restake ││        │
+       │  │ Optimizer│ │ •Multi   │ │ •Custom  │ │•Eigen  ││        │
+       │  │          │ │ •Watcher │ │ •Community│ │•Babylon││        │
+       │  │          │ │ •Approval│ │          │ │•Solana ││        │
+       │  └──────────┘ └──────────┘ └──────────┘ └────────┘│        │
        └────────────────────────────────────────────────────┼────────┘
                                                             │
                                ┌────────────────────────────┼────────┐
@@ -125,6 +126,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Gas Optimizer** | ✅ | ❌ | ❌ | ❌ |
 | **Multi-Wallet** | ✅ | ❌ | ❌ | ❌ |
 | **Plugin System** | ✅ | ❌ | ❌ | ❌ |
+| **Restaking** | EigenLayer + Babylon + Solana | ❌ | ❌ | ❌ |
 | **Safety Rails** | ✅ Governor | ❌ | ❌ | ❌ |
 | **Natural Language** | ✅ | Partial | ❌ | ❌ |
 | **Python Native** | ✅ | ✅ | Varies | ❌ (TS) |
@@ -272,6 +274,13 @@ python my_agent.py
 - 📦 **Plugin registry** — Discover and load plugins dynamically
 - 🛠️ **Custom plugins** — Extend with your own tools
 - 🔄 **Hot reload** — Add plugins without restarting
+
+### 🔄 Restaking (NEW!)
+- 🏦 **EigenLayer integration** — Restake LSTs, delegate to operators, track rewards
+- ₿ **Babylon BTC restaking** — Bitcoin restaking via Babylon protocol
+- ☀️ **Solana restaking** — Solayer, Jito, Marinade support
+- 📊 **Yield optimizer** — Cross-protocol restaking yield optimization with risk-adjusted scoring
+- 🔔 **Slashing monitor** — Position tracking, slashing risk alerts, portfolio snapshots
 
 ---
 
@@ -453,11 +462,44 @@ claimer.claim_all(wallet="0x...")
 
 ---
 
+## 🔄 Restaking
+
+Optimize yields across restaking protocols:
+
+```python
+from web3_agent_kit.restaking import (
+    EigenLayer,
+    EigenLayerConfig,
+    RestakingOptimizer,
+    RestakingMonitor,
+    BabylonBtcRestaking,
+    SolanaRestaking,
+)
+
+# EigenLayer restaking
+el = EigenLayer(EigenLayerConfig(chain="ethereum"))
+result = el.restake("stETH", 10.0)
+print(f"Restaked: {result.tx_hash}")
+
+# Find best restaking yield
+optimizer = RestakingOptimizer()
+best = optimizer.find_best_opportunity(min_apy=3.0)
+print(f"Best: {best.protocol} — {best.apy}% APY")
+
+# Monitor positions
+monitor = RestakingMonitor()
+snapshot = monitor.get_portfolio_snapshot()
+print(f"Total staked: ${snapshot.total_value_usd:,.2f}")
+print(f"Slashing risk: {snapshot.overall_risk}")
+```
+
+---
+
 ## 📊 Project Stats
 
-- **Version:** 1.6.0
-- **Modules:** 19
-- **Tests:** 565+
+- **Version:** 1.7.0
+- **Modules:** 18
+- **Tests:** 817
 - **Examples:** 20
 - **Chains:** 7+
 - **License:** MIT
