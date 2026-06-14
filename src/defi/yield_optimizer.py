@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import time
 from dataclasses import dataclass, field
+import logging
 from enum import Enum
 from typing import Optional
 
@@ -11,6 +12,9 @@ from web3 import Web3
 
 from ..wallet.wallet import Wallet
 from ..chains.chain import Chain
+from ..utils.prices import get_price_usd
+
+logger = logging.getLogger(__name__)
 
 
 class Protocol(Enum):
@@ -231,8 +235,8 @@ class YieldOptimizer:
         position = YieldPosition(
             opportunity=opportunity,
             deposited_amount=amount,
-            deposited_value_usd=amount,  # TODO: fetch actual USD value
-            current_value_usd=amount,
+            deposited_value_usd=amount * get_price_usd(opportunity.asset, fallback=1.0),
+            current_value_usd=amount * get_price_usd(opportunity.asset, fallback=1.0),
             rewards_earned=0,
             entry_timestamp=time.time(),
             last_compound=time.time(),

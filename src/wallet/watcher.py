@@ -6,10 +6,14 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
+import logging
 from enum import Enum
 from typing import Optional, Callable
 
 from ..chains.chain import Chain, ChainManager
+from ..utils.prices import get_eth_price_usd
+
+logger = logging.getLogger(__name__)
 
 
 class AlertType(Enum):
@@ -246,7 +250,7 @@ class WalletWatcher:
                 chain=chain,
                 native_balance=native,
                 token_balances={},  # TODO: fetch token balances
-                total_value_usd=native * 3500,  # TODO: fetch price
+                total_value_usd=native * get_eth_price_usd(),
                 timestamp=time.time(),
             )
 

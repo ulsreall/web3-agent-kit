@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-06-14
+
+### Added
+- **Restaking Module** (`src/restaking/`) — EigenLayer, Babylon BTC, Solana restaking
+  - `EigenLayer` class — restake LSTs, delegate to operators, track rewards, estimate yields
+  - `BabylonBtcRestaking` — Bitcoin restaking via Babylon protocol
+  - `SolanaRestaking` — Solana restaking (Solayer, Jito, Marinade)
+  - `RestakingOptimizer` — Cross-protocol yield optimization with risk-adjusted scoring
+  - `RestakingMonitor` — Position tracking, slashing alerts, portfolio snapshots
+  - Real contract addresses for EigenLayer mainnet (StrategyManager, DelegationManager, Slasher)
+- **Price Utility** (`src/utils/prices.py`) — Real-time price fetching
+  - CoinGecko API integration with 60-second cache
+  - `get_price_usd()` for any asset, `get_eth_price_usd()` convenience function
+  - Stablecoin detection, graceful fallback on API failure
+- **252 new tests** — Full coverage for mev, nft, gas, notifications, restaking modules
+  - `tests/test_mev.py` — 43 tests (sandwich protection, frontrun detection, strategies)
+  - `tests/test_nft.py` — 50 tests (minting, marketplace, whitelist, rarity)
+  - `tests/test_gas.py` — 28 tests (optimizer, batch operations, recommendations)
+  - `tests/test_notifications.py` — 40 tests (Telegram, Discord, email delivery)
+  - `tests/test_restaking.py` — 91 tests (EigenLayer, Babylon, Solana, optimizer, monitor)
+
+### Changed
+- **Refactored monolithic modules** — Split 4 single-file modules into proper submodules:
+  - `mev/` → `sandwich_protection.py`, `frontrun_detection.py`, `mev_strategy.py`, `utils.py`
+  - `nft/` → `mint.py`, `marketplace.py`, `whitelist.py`, `manager.py`, `utils.py`
+  - `notifications/` → `telegram.py`, `discord.py`, `email_notifier.py`, `notifier.py`, `utils.py`
+  - `gas/` → cleaned up `optimizer.py` with proper structure
+- **Replaced 31 bare `except Exception:`** with specific exceptions (ConnectionError, ValueError, etc.)
+- **Replaced `print()` with `logging`** across 15+ files
+- **Fixed hardcoded ETH price** — `$3,500` → real CoinGecko price fetch with fallback
+- **Fixed hardcoded USD values** in yield optimizer — now uses real price data
+- **All `__init__.py` re-exports** preserved for backward compatibility
+
+### Fixed
+- `wallet/watcher.py` — ETH price no longer hardcoded at $3,500
+- `defi/yield_optimizer.py` — USD value calculation now uses real prices
+- Silent error swallowing in mev, bridge, notifications, gas modules
+
 ## [1.5.0] - 2026-06-05
 
 ### Changed — Major Repo Reorganization

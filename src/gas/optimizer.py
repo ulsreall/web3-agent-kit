@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from ..chains.chain import Chain, ChainManager
 from ..wallet.wallet import Wallet
+
+logger = logging.getLogger(__name__)
 
 
 class GasPriority(Enum):
@@ -70,7 +73,7 @@ class GasOptimizer:
         # Get timing recommendation
         rec = optimizer.recommend_timing(Chain.ETHEREUM)
         if rec.recommended_action == "wait":
-            print(f"Wait {rec.estimated_wait_hours:.1f}h for gas to drop")
+            logger.info("Wait %.1fh for gas to drop", rec.estimated_wait_hours)
 
         # Batch multiple transactions
         result = optimizer.batch_execute([
@@ -80,10 +83,10 @@ class GasOptimizer:
     """
 
     # Gas price history API
-    GAS_API = "https://api.etherscan.io/api?module=gastracker&action=gasoracle"
+    GAS_API: str = "https://api.etherscan.io/api?module=gastracker&action=gasoracle"
 
     # EIP-1559 priority fee defaults (gwei)
-    PRIORITY_FEES = {
+    PRIORITY_FEES: dict[GasPriority, float] = {
         GasPriority.LOW: 0.5,
         GasPriority.MEDIUM: 1.5,
         GasPriority.HIGH: 3.0,
@@ -91,7 +94,7 @@ class GasOptimizer:
     }
 
     # Gas limits for common operations
-    GAS_LIMITS = {
+    GAS_LIMITS: dict[str, int] = {
         "transfer": 21000,
         "erc20_transfer": 65000,
         "erc20_approve": 46000,
@@ -106,7 +109,7 @@ class GasOptimizer:
         wallet: Wallet,
         chain_manager: ChainManager,
         eth_price_usd: float = 3500.0,
-    ):
+    ) -> None:
         self.wallet = wallet
         self.chain_manager = chain_manager
         self.eth_price_usd = eth_price_usd
@@ -243,10 +246,10 @@ class GasOptimizer:
 
     def batch_estimate(
         self,
-        transactions: list[dict],
+        transactions: list[dict[str, Any]],
         chain: Chain = Chain.ETHEREUM,
         priority: GasPriority = GasPriority.MEDIUM,
-    ) -> dict:
+    ) -> dict[str, Any]:
         """Estimate gas for multiple transactions.
 
         Args:
@@ -257,7 +260,7 @@ class GasOptimizer:
         Returns:
             Summary with individual and total estimates.
         """
-        estimates = []
+        estimates: list[GasEstimate] = []
         for tx in transactions:
             est = self.estimate(
                 to=tx.get("to", ""),
@@ -284,7 +287,7 @@ class GasOptimizer:
 
     def batch_execute(
         self,
-        transactions: list[dict],
+        transactions: list[dict[str, Any]],
         chain: Chain = Chain.ETHEREUM,
         priority: GasPriority = GasPriority.MEDIUM,
     ) -> BatchResult:
@@ -298,7 +301,6 @@ class GasOptimizer:
         Returns:
             BatchResult with savings and status.
         """
-        # Estimate individual vs batched
         individual = self.batch_estimate(transactions, chain, priority)
         batched_gas = len(transactions) * self.GAS_LIMITS["transfer"] * 0.85  # ~15% savings
 
@@ -311,7 +313,7 @@ class GasOptimizer:
             status="batched",
         )
 
-    def get_gas_price(self, chain: Chain = Chain.ETHEREUM) -> dict:
+    def get_gas_price(self, chain: Chain = Chain.ETHEREUM) -> dict[str, Any]:
         """Get current gas price in different units.
 
         Args:
@@ -345,7 +347,7 @@ class GasOptimizer:
         """
         return self.GAS_LIMITS.get(operation, self.GAS_LIMITS["default"])
 
-    def update_eth_price(self, price: float):
+    def update_eth_price(self, price: float) -> None:
         """Update ETH price for USD calculations."""
         self.eth_price_usd = price
 
@@ -358,9 +360,10 @@ class GasOptimizer:
             block = w3.eth.get_block("latest")
             base_fee = w3.from_wei(block.get("baseFeePerGas", 0), "gwei")
             return float(base_fee)
-        except Exception:
+        except (ConnectionError, TimeoutError, AttributeError, ValueError, KeyError) as exc:
+            logger.debug("Failed to fetch base fee for %s: %s", chain.value, exc)
             # Fallback estimates
-            defaults = {
+            defaults: dict[Chain, float] = {
                 Chain.ETHEREUM: 20.0,
                 Chain.BASE: 0.01,
                 Chain.ARBITRUM: 0.1,
@@ -395,7 +398,6 @@ class GasOptimizer:
         if len(history) < 5:
             return 2.0  # Default estimate
 
-        # Simple: look at how often gas dips below target
         below_target = sum(1 for _, g in history if g <= target_gwei)
         ratio = below_target / len(history)
 
