@@ -26,11 +26,11 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 |------------|------------------------|---------------------|
 | **Setup** | Days of boilerplate | `pip install` → 5 lines of code |
 | **CLI** | Write Python for everything | `wak` — 7 commands, zero code |
-| **Multi-chain** | Write adapters per chain | Built-in for 7+ chains |
+| **Multi-chain** | Write adapters per chain | Built-in for 8 chains |
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
-| **DeFi** | Read docs, write ABIs | Drop-in Uniswap, Aave, Curve, bridges |
-| **Airdrops** | Manual quest hunting | Auto-track 6 platforms, multi-wallet farming |
+| **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2 (+ Aave, Curve coming soon), bridges |
+| **Airdrops** | Manual quest hunting | Auto-track 7 platforms, multi-wallet farming |
 | **Security Audit** | Manual code review | Static analysis, fuzzing, exploit PoC |
 | **MEV** | Build from scratch | Arbitrage, liquidation, Flashbot support |
 | **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
@@ -113,11 +113,11 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | Feature | Web3 Agent Kit | LangChain + Web3 | Custom Bot | Goat SDK |
 |---------|:--------------:|:----------------:|:----------:|:--------:|
 | **Setup Time** | Minutes | Hours | Days | Hours |
-| **Multi-chain** | 7+ chains | Manual | Manual | Limited |
+| **Multi-chain** | 8 chains | Manual | Manual | Limited |
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **CLI Tool** | `wak` (7 cmds) | ❌ | ❌ | ❌ |
-| **DeFi Tools** | Uniswap, Aave, Curve | ❌ | ❌ | Limited |
-| **Airdrop Suite** | 6 platforms | ❌ | ❌ | ❌ |
+| **DeFi Tools** | Uniswap V2 (+ Aave, Curve coming soon) | ❌ | ❌ | Limited |
+| **Airdrop Suite** | 7 platforms | ❌ | ❌ | ❌ |
 | **Security Audit** | Static + Fuzz + Exploit | ❌ | ❌ | ❌ |
 | **MEV Bots** | Arbitrage + Liquidation | ❌ | ❌ | ❌ |
 | **NFT Tools** | Deploy + Mint + Market | ❌ | ❌ | ❌ |
@@ -207,7 +207,7 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 print(result)
 ```
 
-### 4. Run It
+### 5. Run It
 
 ```bash
 python my_agent.py
@@ -265,7 +265,7 @@ python my_agent.py
 - 🔌 **Plugin System** — Extend with custom platform executors
 
 ### 🌐 REST API
-- 📡 **18 endpoints** — Full HTTP API for all modules
+- 📡 **37+ endpoints** — Full HTTP API for all modules
 - 🔑 **API key auth** — Secure access control
 - 📖 **Swagger UI** — Interactive API documentation
 - 🔄 **Auto-fallback** — Multi-provider LLM cascade
@@ -319,6 +319,8 @@ WEB3_API_KEY=your-secret python -m src.api
 | `/docs` | GET | Swagger UI |
 | `/redoc` | GET | ReDoc documentation |
 
+> 💡 *Full list of endpoints available in [Swagger UI](http://localhost:8000/docs) when the server is running.*
+
 **Example:**
 ```bash
 # Get gas estimate
@@ -346,7 +348,7 @@ python bot.py
 
 Features: balance check, token swap, portfolio tracking, token sniper, cross-chain bridge.
 
-[![Telegram Bot Demo](showcase/telegram-bot/demo.gif)](showcase/telegram-bot/)
+[![Telegram Bot Demo](assets/demo.gif)](showcase/telegram-bot/)
 
 ---
 
@@ -370,6 +372,9 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 | `examples/portfolio_tracker.py` | Portfolio tracking & reporting |
 | `examples/airdrop_suite.py` | Full airdrop automation suite |
 | `examples/security_analysis.py` | Token security analysis |
+| `examples/approval_manager.py` | Token approval scanning & management |
+| `examples/gas_optimizer.py` | Gas optimization & batch operations |
+| `examples/wallet_watcher.py` | Multi-wallet monitoring & alerts |
 
 ---
 
@@ -429,6 +434,7 @@ Automate airdrop farming across multiple platforms:
 from web3_agent_kit.airdrop import (
     CampaignDiscovery,
     OnChainAirdropFarmer,
+    OnChainConfig,
     AirdropScheduler,
     PointsDashboard,
     ReferralManager,
@@ -490,7 +496,7 @@ print(f"Best: {best.protocol} — {best.apy}% APY")
 monitor = RestakingMonitor()
 snapshot = monitor.get_portfolio_snapshot()
 print(f"Total staked: ${snapshot.total_value_usd:,.2f}")
-print(f"Slashing risk: {snapshot.overall_risk}")
+print(f"Slashing risk: {snapshot.total_risk_score}")
 ```
 
 ---
@@ -500,8 +506,8 @@ print(f"Slashing risk: {snapshot.overall_risk}")
 - **Version:** 1.7.0
 - **Modules:** 18
 - **Tests:** 817
-- **Examples:** 20
-- **Chains:** 7+
+- **Examples:** 19
+- **Chains:** 8
 - **License:** MIT
 
 ---
