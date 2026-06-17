@@ -7,6 +7,7 @@ timezone spoofing, cookie persistence, and proxy support.
 from __future__ import annotations
 
 import json
+import asyncio
 import logging
 import os
 import random
@@ -301,6 +302,37 @@ class BrowserManager:
                         pass
         return False
 
+    async def async_navigate_with_retry(
+        self,
+        page: Page,
+        url: str,
+        timeout: int = 30000,
+    ) -> bool:
+        """Async version — non-blocking sleep for retries.
+
+        Args:
+            page: The Playwright Page.
+            url: URL to navigate to.
+            timeout: Navigation timeout in milliseconds.
+
+        Returns:
+            True if navigation succeeded.
+        """
+        for attempt in range(self.config.max_retries):
+            try:
+                page.goto(url, timeout=timeout, wait_until="domcontentloaded")
+                return True
+            except Exception as e:
+                logger.warning(f"Navigation failed (attempt {attempt + 1}): {e}")
+                if attempt < self.config.max_retries - 1:
+                    await asyncio.sleep(self.config.retry_delay * (attempt + 1))
+                    try:
+                        if page.is_closed():
+                            page = self.new_page()
+                    except Exception:
+                        pass
+        return False
+
     def wait_for_element(
         self,
         page: Page,
@@ -342,6 +374,27 @@ class BrowserManager:
                 logger.debug(f"Click failed (attempt {attempt + 1}): {e}")
                 if attempt < self.config.max_retries - 1:
                     time.sleep(1)
+        return False
+
+    async def async_click_with_retry(self, page: Page, selector: str, timeout: int = 10000) -> bool:
+        """Async version — non-blocking sleep between retries.
+
+        Args:
+            page: The Playwright Page.
+            selector: CSS selector to click.
+            timeout: Max wait time in milliseconds.
+
+        Returns:
+            True if click succeeded.
+        """
+        for attempt in range(self.config.max_retries):
+            try:
+                page.click(selector, timeout=timeout)
+                return True
+            except Exception as e:
+                logger.debug(f"Click failed (attempt {attempt + 1}): {e}")
+                if attempt < self.config.max_retries - 1:
+                    await asyncio.sleep(1)
         return False
 
     @property

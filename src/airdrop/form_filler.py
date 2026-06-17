@@ -23,6 +23,7 @@ import json
 import logging
 import re
 import time
+import asyncio
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
@@ -263,7 +264,7 @@ class FormFiller:
 
                 # Navigate to form
                 page.goto(url, wait_until="networkidle", timeout=30000)
-                time.sleep(2)
+                time.sleep(2)  # TODO: convert to async
 
                 # Detect fields
                 fields = self._detect_fields(page)
@@ -299,7 +300,7 @@ class FormFiller:
                     submitted = self._submit_form(page)
                     result.submitted = submitted
                     if submitted:
-                        time.sleep(3)
+                        time.sleep(3)  # TODO: convert to async
                         result.success = True
 
                 browser.close()
@@ -340,7 +341,7 @@ class FormFiller:
                 )
                 page = context.new_page()
                 page.goto(url, wait_until="networkidle", timeout=30000)
-                time.sleep(3)
+                time.sleep(3)  # TODO: convert to async
 
                 # Typeform uses a wizard-style form
                 # Each question is on a separate screen
@@ -369,7 +370,7 @@ class FormFiller:
 
                     # Click next
                     self._typeform_next(page)
-                    time.sleep(1)
+                    time.sleep(1)  # TODO: convert to async
 
                 # Submit if on final screen
                 if submit:
@@ -415,7 +416,7 @@ class FormFiller:
                 )
                 page = context.new_page()
                 page.goto(url, wait_until="networkidle", timeout=30000)
-                time.sleep(3)
+                time.sleep(3)  # TODO: convert to async
 
                 # Google Forms uses a specific structure
                 # Each question is a div with role="listitem"
@@ -457,7 +458,7 @@ class FormFiller:
                     submit_btn = page.query_selector('div[role="button"]:has-text("Submit")')
                     if submit_btn:
                         submit_btn.click()
-                        time.sleep(3)
+                        time.sleep(3)  # TODO: convert to async
                         result.submitted = True
                         result.success = True
 
@@ -518,7 +519,8 @@ class FormFiller:
                     required=required,
                     placeholder=placeholder,
                 ))
-            except Exception:
+            except Exception as e:
+                logger.debug(f"Field detection failed: {e}")
                 continue
 
         return fields
@@ -554,7 +556,7 @@ class FormFiller:
                 element.click()
                 element.fill(value)
 
-            time.sleep(0.5)
+            time.sleep(0.5)  # TODO: convert to async
             return True
         except Exception as e:
             logger.debug(f"Fill failed for {field.name}: {e}")
@@ -580,7 +582,7 @@ class FormFiller:
                 btn = page.query_selector(selector)
                 if btn and btn.is_visible():
                     btn.click()
-                    time.sleep(2)
+                    time.sleep(2)  # TODO: convert to async
                     return True
 
             return False
@@ -608,8 +610,8 @@ class FormFiller:
             heading = page.query_selector('h1, h2, [class*="title"]')
             if heading:
                 return heading.inner_text()
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Typeform question detection failed: {e}")
         return None
 
     def _match_typeform_field(self, question: str) -> str:
@@ -628,10 +630,10 @@ class FormFiller:
             )
             if input_el:
                 input_el.fill(value)
-                time.sleep(0.5)
+                time.sleep(0.5)  # TODO: convert to async
                 return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Typeform fill failed: {e}")
         return False
 
     def _typeform_next(self, page) -> bool:
@@ -644,10 +646,10 @@ class FormFiller:
             )
             if btn:
                 btn.click()
-                time.sleep(1)
+                time.sleep(1)  # TODO: convert to async
                 return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Typeform next failed: {e}")
         return False
 
     def _typeform_submit(self, page) -> bool:
@@ -660,17 +662,17 @@ class FormFiller:
             )
             if btn:
                 btn.click()
-                time.sleep(3)
+                time.sleep(3)  # TODO: convert to async
                 return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Typeform submit failed: {e}")
         return False
 
     def _fill_google_dropdown(self, page, select_el, value: str) -> bool:
         """Fill Google Forms dropdown."""
         try:
             select_el.click()
-            time.sleep(0.5)
+            time.sleep(0.5)  # TODO: convert to async
             # Find matching option
             options = page.query_selector_all('div[role="option"]')
             for opt in options:
@@ -678,6 +680,6 @@ class FormFiller:
                 if value.lower() in text.lower() or text.lower() in value.lower():
                     opt.click()
                     return True
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Google dropdown fill failed: {e}")
         return False

@@ -29,7 +29,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Multi-chain** | Write adapters per chain | Built-in for 8 chains |
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
-| **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2 (+ Aave, Curve coming soon), bridges |
+| **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2, Uniswap V3, Aave V3, Curve, bridges |
 | **Airdrops** | Manual quest hunting | Auto-track 7 platforms, multi-wallet farming |
 | **Security Audit** | Manual code review | Static analysis, fuzzing, exploit PoC |
 | **MEV** | Build from scratch | Arbitrage, liquidation, Flashbot support |
@@ -116,7 +116,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Multi-chain** | 8 chains | Manual | Manual | Limited |
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **CLI Tool** | `wak` (7 cmds) | ❌ | ❌ | ❌ |
-| **DeFi Tools** | Uniswap V2 (+ Aave, Curve coming soon) | ❌ | ❌ | Limited |
+| **DeFi Tools** | Uniswap V2, Uniswap V3, Aave V3, Curve | ❌ | ❌ | Limited |
 | **Airdrop Suite** | 7 platforms | ❌ | ❌ | ❌ |
 | **Security Audit** | Static + Fuzz + Exploit | ❌ | ❌ | ❌ |
 | **MEV Bots** | Arbitrage + Liquidation | ❌ | ❌ | ❌ |

@@ -472,15 +472,16 @@ class TestAave:
     def test_name(self):
         assert Aave.name == "aave"
 
-    def test_execute_not_implemented(self):
+    def test_execute_requires_chain_manager(self):
         aave = Aave()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises((ValueError, AttributeError, TypeError)):
             aave.execute(MagicMock(), "supply")
 
-    def test_yield_not_implemented(self):
+    def test_get_yield_opportunities(self):
         aave = Aave()
-        with pytest.raises(NotImplementedError):
-            aave.get_yield_opportunities(Chain.ETHEREUM)
+        # Should return list (may be empty without chain manager)
+        result = aave.get_yield_opportunities(Chain.ETHEREUM)
+        assert isinstance(result, list)
 
 
 # ---------------------------------------------------------------------------
@@ -491,9 +492,9 @@ class TestCurve:
     def test_name(self):
         assert Curve.name == "curve"
 
-    def test_execute_not_implemented(self):
+    def test_execute_requires_chain_manager(self):
         curve = Curve()
-        with pytest.raises(NotImplementedError):
+        with pytest.raises((ValueError, AttributeError)):
             curve.execute(MagicMock(), "0xpool", "0xin", "0xout", 1.0)
 
 

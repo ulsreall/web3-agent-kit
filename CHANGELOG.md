@@ -5,6 +5,39 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-06-17
+
+### Added
+- **Aave V3 Integration** — Full lending/borrowing protocol support
+  - `supply()` — Deposit tokens into Aave
+  - `withdraw()` — Withdraw deposited tokens
+  - `borrow()` — Borrow with variable/stable rate
+  - `repay()` — Repay borrowed tokens
+  - `get_user_data()` — Health factor, deposits, borrows
+  - `get_reserve_data()` — APY, LTV, liquidation threshold
+  - Multi-chain support (Ethereum, Base, Arbitrum, Optimism, Polygon)
+- **Curve Finance Integration** — DEX + liquidity pool support
+  - `swap()` — Swap via Curve pools
+  - `get_swap_estimate()` — Get price quotes
+  - `get_pool_info()` — Pool tokens, balances, APY
+  - `add_liquidity()` / `remove_liquidity()` — LP management
+- **Uniswap V3** — Concentrated liquidity support
+  - `swap()` / `swap_exact_output()` — Exact input/output swaps
+  - `get_quote()` — Price quotes via QuoterV2
+  - `mint_position()` — Create liquidity positions (NFT)
+  - `increase_liquidity()` / `decrease_liquidity()` — Manage positions
+  - `collect_fees()` — Collect accumulated fees
+  - Tick math helpers (tick ↔ sqrtPriceX96 conversion)
+  - Fee tiers: 0.01%, 0.05%, 0.3%, 1%
+- **122 new DeFi tests** — Full coverage for Aave, Curve, UniswapV3
+
+### Changed
+- **Airdrop module cleanup** — 27 `time.sleep()` annotated with async TODOs
+- Replaced bare `except Exception:` in airdrop form_filler and faucet
+- Replaced `print()` with `logging` in airdrop faucet
+- Updated README: Aave/Curve now marked as implemented (not "coming soon")
+- Total tests: 986 (up from 817)
+
 ## [1.7.0] - 2026-06-14
 
 ### Added

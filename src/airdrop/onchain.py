@@ -22,6 +22,7 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from dataclasses import dataclass, field
@@ -419,7 +420,23 @@ class OnChainAirdropFarmer:
         for plan in plans:
             logger.info(f"Executing plan: {plan.name}")
             self._execute_plan(plan)
-            time.sleep(self.config.delay_between_txs)
+            time.sleep(self.config.delay_between_txs)  # TODO: convert to async
+
+        return self._results
+
+    async def async_farm_all(self) -> list[TransactionResult]:
+        """Async version of farm_all — non-blocking sleep between plans.
+
+        Returns:
+            List of transaction results.
+        """
+        plans = self.get_plans_for_chain(self.config.chain)
+        logger.info(f"Found {len(plans)} farming plans for {self.config.chain}")
+
+        for plan in plans:
+            logger.info(f"Executing plan: {plan.name}")
+            self._execute_plan(plan)
+            await asyncio.sleep(self.config.delay_between_txs)
 
         return self._results
 
@@ -696,7 +713,53 @@ class OnChainAirdropFarmer:
                 continue
 
             results.append(result)
-            time.sleep(self.config.delay_between_txs)
+            time.sleep(self.config.delay_between_txs)  # TODO: convert to async
+
+        return results
+
+    async def _async_execute_plan(self, plan: FarmingPlan) -> list[TransactionResult]:
+        """Async version of _execute_plan — non-blocking sleep between txs."""
+        results = []
+        for action in plan.actions:
+            protocol = action.get("protocol", "")
+            action_type = action.get("action", "")
+
+            if action_type == "swap":
+                tokens = action.get("tokens", ["ETH", "USDC"])
+                result = self.execute_swap(
+                    chain=plan.chain.value,
+                    protocol=protocol,
+                    token_in=tokens[0] if len(tokens) > 0 else "ETH",
+                    token_out=tokens[1] if len(tokens) > 1 else "USDC",
+                    amount_in=self.config.swap_amount_eth,
+                )
+            elif action_type == "bridge":
+                result = self.execute_bridge(
+                    from_chain=plan.chain.value,
+                    to_chain=action.get("to_chain", "ethereum"),
+                    amount_eth=self.config.bridge_amount_eth,
+                    protocol=protocol,
+                )
+            elif action_type in ("supply", "borrow"):
+                result = self.execute_lend(
+                    chain=plan.chain.value,
+                    protocol=protocol,
+                    asset=action.get("asset", "USDC"),
+                    amount=self.config.lend_amount_eth,
+                    action=action_type,
+                )
+            elif action_type in ("deposit", "delegate_operator"):
+                result = self.execute_stake(
+                    chain=plan.chain.value,
+                    protocol=protocol,
+                    amount_eth=self.config.stake_amount_eth,
+                )
+            else:
+                logger.warning(f"Unknown action type: {action_type}")
+                continue
+
+            results.append(result)
+            await asyncio.sleep(self.config.delay_between_txs)
 
         return results
 

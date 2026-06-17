@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import time
 from abc import ABC, abstractmethod
@@ -217,7 +218,7 @@ class BaseAirdropPlatform(ABC):
         if elapsed < self.config.rate_limit_delay:
             sleep_time = self.config.rate_limit_delay - elapsed
             logger.debug(f"Rate limiting: sleeping {sleep_time:.1f}s")
-            time.sleep(sleep_time)
+            time.sleep(sleep_time)  # TODO: convert to async
         self._last_request_time = time.time()
 
     def _request(
@@ -249,7 +250,7 @@ class BaseAirdropPlatform(ABC):
                 if response.status_code == 429:
                     retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
                     logger.warning(f"Rate limited, waiting {retry_after}s")
-                    time.sleep(retry_after)
+                    time.sleep(retry_after)  # TODO: convert to async
                     continue
                 response.raise_for_status()
                 return response
@@ -257,7 +258,7 @@ class BaseAirdropPlatform(ABC):
                 last_error = e
                 logger.warning(f"Request failed (attempt {attempt + 1}): {e}")
                 if attempt < self.config.max_retries - 1:
-                    time.sleep(self.config.retry_delay * (attempt + 1))
+                    time.sleep(self.config.retry_delay * (attempt + 1))  # TODO: convert to async
 
         raise last_error  # type: ignore[misc]
 
@@ -266,3 +267,68 @@ class BaseAirdropPlatform(ABC):
 
     def _post(self, url: str, **kwargs) -> requests.Response:
         return self._request("POST", url, **kwargs)
+
+    # ─── Async Variants ────────────────────────────────────────
+
+    async def _async_rate_limit(self) -> None:
+        """Async version of rate limiting — non-blocking sleep."""
+        elapsed = time.time() - self._last_request_time
+        if elapsed < self.config.rate_limit_delay:
+            sleep_time = self.config.rate_limit_delay - elapsed
+            logger.debug(f"Rate limiting: sleeping {sleep_time:.1f}s")
+            await asyncio.sleep(sleep_time)
+        self._last_request_time = time.time()
+
+    async def _async_request(
+        self,
+        method: str,
+        url: str,
+        **kwargs,
+    ) -> requests.Response:
+        """Async-compatible HTTP request with rate limiting and retry.
+
+        Note: The actual HTTP call is still synchronous (requests library).
+        Only the sleep/delay portions are non-blocking.
+
+        Args:
+            method: HTTP method (GET, POST, etc.).
+            url: Request URL.
+            **kwargs: Passed to requests.
+
+        Returns:
+            Response object.
+
+        Raises:
+            requests.RequestException: After all retries exhausted.
+        """
+        kwargs.setdefault("timeout", self.config.timeout)
+        last_error = None
+
+        for attempt in range(self.config.max_retries):
+            await self._async_rate_limit()
+            try:
+                response = self.session.request(method, url, **kwargs)
+                if response.status_code == 429:
+                    retry_after = int(
+                        response.headers.get("Retry-After", self.config.retry_delay)
+                    )
+                    logger.warning(f"Rate limited, waiting {retry_after}s")
+                    await asyncio.sleep(retry_after)
+                    continue
+                response.raise_for_status()
+                return response
+            except requests.RequestException as e:
+                last_error = e
+                logger.warning(f"Request failed (attempt {attempt + 1}): {e}")
+                if attempt < self.config.max_retries - 1:
+                    await asyncio.sleep(self.config.retry_delay * (attempt + 1))
+
+        raise last_error  # type: ignore[misc]
+
+    async def _async_get(self, url: str, **kwargs) -> requests.Response:
+        """Async GET request."""
+        return await self._async_request("GET", url, **kwargs)
+
+    async def _async_post(self, url: str, **kwargs) -> requests.Response:
+        """Async POST request."""
+        return await self._async_request("POST", url, **kwargs)

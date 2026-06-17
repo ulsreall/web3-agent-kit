@@ -1,6 +1,6 @@
 """Web3 Agent Kit — Open-source framework for autonomous Web3 AI agents."""
 
-__version__ = "1.7.0"
+__version__ = "1.8.0"
 __author__ = "Maulana"
 
 # Core

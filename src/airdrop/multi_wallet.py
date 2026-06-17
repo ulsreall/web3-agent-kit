@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import asyncio
 import random
 import time
 from dataclasses import dataclass, field
@@ -152,7 +153,46 @@ class AirdropFarmer:
                     self.config.max_delay_between_wallets,
                 )
                 logger.debug(f"Farmer: waiting {delay:.0f}s before next wallet")
-                time.sleep(delay)
+                time.sleep(delay)  # TODO: convert to async
+
+        return results
+
+    async def async_farm_campaign(
+        self,
+        campaign: AirdropCampaign,
+        execute: bool = False,
+    ) -> list[FarmResult]:
+        """Async version of farm_campaign — non-blocking sleep for delays.
+
+        Args:
+            campaign: The campaign to farm.
+            execute: If True, actually execute tasks (otherwise just plan).
+
+        Returns:
+            List of FarmResult per wallet.
+        """
+        self._reset_daily_counts_if_needed()
+        wallets = self.get_wallets()
+        results: list[FarmResult] = []
+
+        logger.info(f"Farmer: farming '{campaign.name}' across {len(wallets)} wallets")
+
+        for wallet_label in wallets:
+            if not self._can_wallet_act(wallet_label):
+                logger.debug(f"Farmer: skipping {wallet_label} (daily limit reached)")
+                continue
+
+            result = self._farm_with_wallet(wallet_label, campaign, execute)
+            results.append(result)
+
+            # Sybil avoidance delay
+            if execute:
+                delay = random.uniform(
+                    self.config.min_delay_between_wallets,
+                    self.config.max_delay_between_wallets,
+                )
+                logger.debug(f"Farmer: waiting {delay:.0f}s before next wallet")
+                await asyncio.sleep(delay)
 
         return results
 

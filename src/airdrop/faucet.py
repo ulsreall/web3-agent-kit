@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import logging
+import asyncio
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone, timedelta
@@ -305,7 +306,56 @@ class FaucetClaimer:
             else:
                 logger.warning(f"✗ {faucet.name}: {result.error}")
 
-            time.sleep(2)  # Rate limiting
+            time.sleep(2)  # TODO: convert to async  # Rate limiting
+
+        return self._results
+
+    async def async_claim_all(
+        self,
+        wallet: str,
+        chains: Optional[list[str]] = None,
+        skip_cooldown: bool = False,
+    ) -> list[ClaimResult]:
+        """Async version of claim_all — non-blocking sleep for rate limiting.
+
+        Args:
+            wallet: Wallet address to receive tokens.
+            chains: Specific chains to claim (None = all).
+            skip_cooldown: Skip cooldown checks.
+
+        Returns:
+            List of claim results.
+        """
+        self._results = []
+        faucets = (
+            {k: v for k, v in self._faucets.items() if k in chains}
+            if chains
+            else self._faucets
+        )
+
+        for key, faucet in faucets.items():
+            if not skip_cooldown and self._in_cooldown(key):
+                logger.info(f"Skipping {key}: in cooldown")
+                self._results.append(ClaimResult(
+                    faucet=faucet.name,
+                    chain=faucet.chain,
+                    token=faucet.token,
+                    success=False,
+                    error="In cooldown",
+                ))
+                continue
+
+            logger.info(f"Claiming from {faucet.name}...")
+            result = self._claim_faucet(faucet, wallet)
+            self._results.append(result)
+
+            if result.success:
+                self._set_cooldown(key, faucet.cooldown_hours)
+                logger.info(f"✓ {faucet.name}: {result.amount} {result.token}")
+            else:
+                logger.warning(f"✗ {faucet.name}: {result.error}")
+
+            await asyncio.sleep(2)  # Rate limiting
 
         return self._results
 
@@ -404,7 +454,7 @@ class FaucetClaimer:
         ])
 
         summary = "\n".join(lines)
-        print(summary)
+        logger.info(summary)
         return summary
 
     def export_json(self, path: Optional[str] = None) -> str:
@@ -531,7 +581,7 @@ class FaucetClaimer:
 
             # Poll for result
             for _ in range(30):
-                time.sleep(5)
+                time.sleep(5)  # TODO: convert to async
                 result = self._session.post(
                     "https://api.anti-captcha.com/getTaskResult",
                     json={
@@ -544,7 +594,50 @@ class FaucetClaimer:
                 if result.get("status") == "ready":
                     return result.get("solution", {}).get("gRecaptchaResponse")
 
-        except Exception as e:
+        except requests.RequestException as e:
+            logger.error(f"CAPTCHA solving failed: {e}")
+
+        return None
+
+    async def _async_solve_captcha(self, faucet: FaucetConfig) -> Optional[str]:
+        """Async version of _solve_captcha — non-blocking poll sleep."""
+        if not self._captcha_api_key:
+            return None
+
+        try:
+            resp = self._session.post(
+                "https://api.anti-captcha.com/createTask",
+                json={
+                    "clientKey": self._captcha_api_key,
+                    "task": {
+                        "type": "RecaptchaV2TaskProxyless",
+                        "websiteURL": faucet.url,
+                        "websiteKey": faucet.captcha_site_key,
+                    },
+                },
+                timeout=30,
+            )
+            data = resp.json()
+            task_id = data.get("taskId")
+
+            if not task_id:
+                return None
+
+            for _ in range(30):
+                await asyncio.sleep(5)
+                result = self._session.post(
+                    "https://api.anti-captcha.com/getTaskResult",
+                    json={
+                        "clientKey": self._captcha_api_key,
+                        "taskId": task_id,
+                    },
+                    timeout=30,
+                ).json()
+
+                if result.get("status") == "ready":
+                    return result.get("solution", {}).get("gRecaptchaResponse")
+
+        except requests.RequestException as e:
             logger.error(f"CAPTCHA solving failed: {e}")
 
         return None
@@ -572,8 +665,8 @@ class FaucetClaimer:
                 for k, v in data.items():
                     self._cooldowns[k] = datetime.fromisoformat(v)
                 logger.info(f"Loaded {len(self._cooldowns)} cooldowns")
-            except Exception:
-                pass
+            except Exception as e:
+                logger.debug(f"Failed to load cooldowns: {e}")
 
     def _save_cooldowns(self) -> None:
         """Save cooldowns to file."""
@@ -582,5 +675,5 @@ class FaucetClaimer:
             path.parent.mkdir(parents=True, exist_ok=True)
             data = {k: v.isoformat() for k, v in self._cooldowns.items()}
             path.write_text(json.dumps(data, indent=2))
-        except Exception:
-            pass
+        except Exception as e:
+            logger.debug(f"Failed to save cooldowns: {e}")

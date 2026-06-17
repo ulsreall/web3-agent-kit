@@ -7,6 +7,7 @@ social tasks via redirects, and tracks XP earned.
 from __future__ import annotations
 
 import logging
+import asyncio
 import time
 from dataclasses import dataclass, field
 from typing import Optional

@@ -7,6 +7,7 @@ and verify entry status.
 from __future__ import annotations
 
 import logging
+import asyncio
 import re
 import time
 from dataclasses import dataclass, field

@@ -15,6 +15,7 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import time
@@ -541,7 +542,7 @@ class AirdropScheduler:
     # ─── Private Methods ─────────────────────────────────────────
 
     def _run_loop(self) -> None:
-        """Main scheduler loop."""
+        """Main scheduler loop (runs in thread)."""
         logger.info("Scheduler loop started")
         while self._running:
             try:
@@ -553,7 +554,22 @@ class AirdropScheduler:
                 self._save_state()
             except Exception as e:
                 logger.error(f"Scheduler loop error: {e}")
-            time.sleep(self.config.check_interval)
+            time.sleep(self.config.check_interval)  # TODO: convert to async
+
+    async def _async_run_loop(self) -> None:
+        """Async scheduler loop — uses non-blocking sleep."""
+        logger.info("Async scheduler loop started")
+        while self._running:
+            try:
+                due_tasks = self.get_due_tasks()
+                for task in due_tasks:
+                    if not self._running:
+                        break
+                    self._execute_task(task)
+                self._save_state()
+            except Exception as e:
+                logger.error(f"Scheduler loop error: {e}")
+            await asyncio.sleep(self.config.check_interval)
 
     def _execute_task(self, task: ScheduledTask) -> ExecutionLog:
         """Execute a single task."""
@@ -599,7 +615,7 @@ class AirdropScheduler:
                     f"Task {task.name} failed (attempt {attempt + 1}): {e}"
                 )
                 if attempt < task.max_retries - 1:
-                    time.sleep(task.retry_delay)
+                    time.sleep(task.retry_delay)  # TODO: convert to async
 
                 log.status = TaskExecutionStatus.FAILED
                 log.error = str(e)
@@ -612,6 +628,73 @@ class AirdropScheduler:
         self._execution_log.append(log)
         self._log_execution(log)
         return log
+
+    async def _async_execute_task(self, task: ScheduledTask) -> ExecutionLog:
+        """Async version — uses non-blocking sleep for retries."""
+        log = ExecutionLog(
+            task_id=task.task_id,
+            started_at=datetime.now(timezone.utc),
+        )
+
+        if not task.callback:
+            log.status = TaskExecutionStatus.SKIPPED
+            log.error = "No callback defined"
+            self._execution_log.append(log)
+            return log
+
+        logger.info(f"Executing task (async): {task.name}")
+        task.last_status = TaskExecutionStatus.RUNNING
+
+        for attempt in range(task.max_retries):
+            try:
+                start = time.time()
+                result = task.callback(*task.args, **task.kwargs)
+                duration = time.time() - start
+
+                log.status = TaskExecutionStatus.SUCCESS
+                log.result = result
+                log.duration_seconds = duration
+                log.finished_at = datetime.now(timezone.utc)
+
+                task.last_run = datetime.now(timezone.utc)
+                task.last_status = TaskExecutionStatus.SUCCESS
+                task.total_runs += 1
+                task.total_successes += 1
+                task.consecutive_failures = 0
+                task.next_run = self._calculate_next_run(
+                    task.frequency, task.target_time
+                )
+
+                logger.info(f"Task {task.name} completed in {duration:.1f}s")
+                break
+
+            except Exception as e:
+                logger.warning(
+                    f"Task {task.name} failed (attempt {attempt + 1}): {e}"
+                )
+                if attempt < task.max_retries - 1:
+                    await asyncio.sleep(task.retry_delay)
+
+                log.status = TaskExecutionStatus.FAILED
+                log.error = str(e)
+                log.finished_at = datetime.now(timezone.utc)
+
+                task.last_status = TaskExecutionStatus.FAILED
+                task.consecutive_failures += 1
+                task.total_runs += 1
+
+        self._execution_log.append(log)
+        self._log_execution(log)
+        return log
+
+    async def start_async(self) -> None:
+        """Start the scheduler as an async task (non-blocking sleep)."""
+        if self._running:
+            logger.warning("Scheduler already running")
+            return
+        self._running = True
+        logger.info("Async scheduler started")
+        await self._async_run_loop()
 
     def _calculate_next_run(
         self, frequency: ScheduleFrequency, time_str: str = "00:00"

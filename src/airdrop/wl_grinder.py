@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import json
 import logging
+import asyncio
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -226,7 +227,50 @@ class WLGrinder:
 
             # Delay between applications
             if i < len(urls) - 1:
-                time.sleep(delay)
+                time.sleep(delay)  # TODO: convert to async
+
+        logger.info(
+            f"Bulk apply complete: {job.success}/{job.total} success"
+        )
+        return job
+
+    async def async_apply_bulk(
+        self,
+        urls: list[str],
+        delay: float = 10.0,
+        skip_existing: bool = True,
+    ) -> WLJob:
+        """Async version of apply_bulk — non-blocking sleep between applications.
+
+        Args:
+            urls: List of WL URLs.
+            delay: Delay between applications (seconds).
+            skip_existing: Skip already-applied URLs.
+
+        Returns:
+            WLJob with results.
+        """
+        job = WLJob(urls=urls, total=len(urls))
+
+        for i, url in enumerate(urls):
+            if skip_existing and url in self._applied_urls:
+                job.skipped += 1
+                job.results.append(WLResult(
+                    url=url, success=False, error="Already applied"
+                ))
+                continue
+
+            logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
+            result = self.apply(url)
+            job.results.append(result)
+
+            if result.success:
+                job.success += 1
+            else:
+                job.failed += 1
+
+            if i < len(urls) - 1:
+                await asyncio.sleep(delay)
 
         logger.info(
             f"Bulk apply complete: {job.success}/{job.total} success"
@@ -316,7 +360,7 @@ class WLGrinder:
                 page = context.new_page()
 
                 page.goto(url, wait_until="networkidle", timeout=30000)
-                time.sleep(3)
+                time.sleep(3)  # TODO: convert to async
 
                 # Premint requires wallet connection
                 # Look for connect button
@@ -328,7 +372,7 @@ class WLGrinder:
 
                 if connect_btn:
                     connect_btn.click()
-                    time.sleep(2)
+                    time.sleep(2)  # TODO: convert to async
 
                     # Try to connect wallet (usually MetaMask popup)
                     # This requires wallet extension or WalletConnect
@@ -342,7 +386,7 @@ class WLGrinder:
                     )
                     if apply_btn:
                         apply_btn.click()
-                        time.sleep(3)
+                        time.sleep(3)  # TODO: convert to async
                         result.applied = True
                         result.success = True
 
