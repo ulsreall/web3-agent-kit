@@ -7,7 +7,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
 [![Docs](https://img.shields.io/badge/docs-site-blue.svg)](https://ulsreall.github.io/web3-agent-kit/)
-[![Coverage](https://img.shields.io/badge/coverage-66%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
+[![Coverage](https://img.shields.io/badge/coverage-60%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
@@ -503,9 +503,9 @@ print(f"Slashing risk: {snapshot.total_risk_score}")
 
 ## 📊 Project Stats
 
-- **Version:** 1.7.0
+- **Version:** 1.8.0
 - **Modules:** 18
-- **Tests:** 817
+- **Tests:** 986
 - **Examples:** 19
 - **Chains:** 8
 - **License:** MIT
