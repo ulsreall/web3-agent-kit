@@ -3,6 +3,7 @@
 > **Build autonomous AI agents that interact with blockchains — in minutes, not months.**
 
 [![PyPI](https://img.shields.io/pypi/v/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
+[![Downloads](https://img.shields.io/pypi/dm/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
@@ -136,84 +137,32 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 
 ## 🎯 Quick Start
 
-### 1. Install
+**5 lines of code. No ceremony.**
 
 ```bash
 pip install web3-agent-kit
-```
-
-### 2. Set Environment Variables
-
-```bash
-# Required: Wallet private key
 export PRIVATE_KEY="0x..."
-
-# Required: At least one LLM provider key
-export OPENAI_API_KEY="sk-..."        # OpenAI
-export ANTHROPIC_API_KEY="sk-ant-..."  # Anthropic (best reasoning)
-export GROQ_API_KEY="gsk_..."          # Groq (fastest)
-export DEEPSEEK_API_KEY="sk-..."       # DeepSeek (cheapest)
-
-# Optional: Custom RPC endpoints (public defaults are provided)
-export ETH_RPC="https://..."
-export BASE_RPC="https://..."
+export ANTHROPIC_API_KEY="sk-ant-..."
 ```
-
-### 3. CLI Tool (Optional)
-
-```bash
-# Check environment
-wak doctor
-
-# Show library info & capabilities
-wak info
-
-# List available examples
-wak examples
-
-# Check wallet balance
-wak wallet balance --address 0x... --chain ethereum
-
-# Token safety check
-wak token check --address 0x...
-
-# Gas prices
-wak gas --chain ethereum
-
-# Run an AI agent
-wak agent --goal "swap 0.1 ETH to USDC on Base" --wallet 0x... --chain base
-```
-
-### 4. Write Your First Agent
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
 
-# Setup
-chain_manager = ChainManager(chains=[Chain.BASE])
-wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
-uniswap = Uniswap(chain_manager=chain_manager)
+chain = ChainManager(chains=[Chain.BASE])
+wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain)
 
-# Create agent with LLM reasoning
-agent = Agent(
-    wallet=wallet,
-    chains=[Chain.BASE],
-    tools=[uniswap],
-)
-
-# Natural language swap — that's it!
+agent = Agent(wallet=wallet, chains=[Chain.BASE], tools=[Uniswap(chain_manager=chain)])
 result = agent.run("Swap 0.1 ETH to USDC on Base")
-print(result)
 ```
 
-### 5. Run It
+That's it. One `pip install`, two env vars, five lines of Python, and your AI agent is swapping on-chain.
 
-```bash
-python my_agent.py
-```
+**CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --chain base`
 
-> 💡 **Tip:** Start with a small amount on a testnet or use `dry_run=True` mode to validate behavior before going live.
+**More examples:** `wak examples` or browse [`examples/`](examples/) — 19 working scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more).
+
+> 💡 **Tip:** Start with `dry_run=True` on testnet to validate before going live.
 
 ---
 
