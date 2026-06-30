@@ -5,16 +5,16 @@ from __future__ import annotations
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from .base import (
+    AirdropCampaign,
+    AirdropTask,
     BaseAirdropPlatform,
     PlatformConfig,
-    AirdropTask,
-    AirdropCampaign,
-    TaskType,
     TaskStatus,
+    TaskType,
 )
 
 logger = logging.getLogger(__name__)

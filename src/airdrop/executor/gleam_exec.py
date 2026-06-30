@@ -7,7 +7,6 @@ and verify entry status.
 from __future__ import annotations
 
 import logging
-import asyncio
 import re
 import time
 from dataclasses import dataclass, field
@@ -15,8 +14,8 @@ from enum import Enum
 from typing import Optional
 from urllib.parse import urlparse
 
-from ..base import AirdropTask, AirdropCampaign, TaskType, TaskStatus
-from .browser import BrowserManager, BrowserConfig
+from ..base import AirdropTask, TaskStatus, TaskType
+from .browser import BrowserManager
 
 logger = logging.getLogger(__name__)
 

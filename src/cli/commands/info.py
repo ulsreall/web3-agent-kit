@@ -1,6 +1,7 @@
 """wak info — show library version, stats, and links."""
 
 import os
+
 import click
 
 BANNER = r"""
@@ -32,7 +33,7 @@ def _count_chains(src_dir: str) -> int:
     count = 0
     with open(chain_file) as f:
         for line in f:
-            stripped = line.strip().upper()
+            line.strip().upper()
             # Enum members look like: ETHEREUM = "ethereum"
             if "=" in line and '"' in line and not line.strip().startswith("#"):
                 parts = line.strip().split("=")

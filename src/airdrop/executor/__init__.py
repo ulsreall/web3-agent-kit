@@ -4,16 +4,6 @@ Provides real browser-based automation for Gleam.io, Zealy, and social
 platform tasks using Playwright with anti-detect capabilities.
 """
 
-from .browser import BrowserManager, BrowserConfig
-from .gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
-from .social_exec import (
-    TwitterExecutor,
-    DiscordExecutor,
-    TelegramExecutor,
-    SocialExecutorConfig,
-)
-from .zealy_exec import ZealyExecutor, ZealyResult
-
 # New platform executors
 from .base_executor import (
     BasePlatformExecutor,
@@ -22,19 +12,28 @@ from .base_executor import (
     PlatformTask,
     TaskDifficulty,
 )
+from .browser import BrowserConfig, BrowserManager
 from .captcha_solver import (
-    CaptchaSolver,
     CaptchaConfig,
     CaptchaProvider,
+    CaptchaSolver,
     CaptchaSolvingError,
 )
-from .questn import QuestNExecutor, QuestNTask, QuestNResult
-from .taskon import TaskOnExecutor, TaskOnTask, TaskOnResult
-from .intract_exec import IntractExecutor, IntractTask, IntractResult
-from .port3_exec import Port3Executor, Port3Task, Port3Result
-from .galxe_exec import GalxeExecutor, GalxeTask, GalxeResult
-from .layer3_exec import Layer3Executor, Layer3Task, Layer3Result
+from .galxe_exec import GalxeExecutor, GalxeResult, GalxeTask
+from .gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
+from .intract_exec import IntractExecutor, IntractResult, IntractTask
+from .layer3_exec import Layer3Executor, Layer3Result, Layer3Task
 from .plugin_registry import PlatformPluginRegistry
+from .port3_exec import Port3Executor, Port3Result, Port3Task
+from .questn import QuestNExecutor, QuestNResult, QuestNTask
+from .social_exec import (
+    DiscordExecutor,
+    SocialExecutorConfig,
+    TelegramExecutor,
+    TwitterExecutor,
+)
+from .taskon import TaskOnExecutor, TaskOnResult, TaskOnTask
+from .zealy_exec import ZealyExecutor, ZealyResult
 
 __all__ = [
     # Browser

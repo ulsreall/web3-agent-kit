@@ -9,31 +9,33 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Any, Optional
 
+from ..chains.chain import CHAIN_IDS, Chain, ChainManager
 from ..wallet.wallet import Wallet
-from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
-from .yield_optimizer import (
-    YieldOptimizer,
-    YieldConfig,
-    YieldPosition,
-    Protocol as YieldProtocol,
-    RiskLevel as YieldRiskLevel,
-)
 from .uniswap_v3 import (
-    UniswapV3,
-    V3SwapResult,
-    PoolInfo,
-    PositionInfo,
+    FACTORY,
     FEE_TIERS,
+    NONFUNGIBLE_POSITION_MANAGER,
+    QUOTER_V2,
     SWAP_ROUTER,
     SWAP_ROUTER_02,
-    QUOTER_V2,
-    NONFUNGIBLE_POSITION_MANAGER,
-    FACTORY,
+    PoolInfo,
+    PositionInfo,
+    UniswapV3,
+    V3SwapResult,
 )
-
-
+from .yield_optimizer import (
+    Protocol as YieldProtocol,
+)
+from .yield_optimizer import (
+    RiskLevel as YieldRiskLevel,
+)
+from .yield_optimizer import (
+    YieldConfig,
+    YieldOptimizer,
+    YieldPosition,
+)
 
 # Uniswap V2 Router ABI (minimal)
 UNISWAP_V2_ROUTER_ABI = json.loads("""[

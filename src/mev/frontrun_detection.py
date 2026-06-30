@@ -31,7 +31,7 @@ def detect_frontrun(
     competing_txs: list[dict[str, Any]] = []
 
     to_addr = tx.get("to", "").lower()
-    tx_data = tx.get("data", "0x")
+    tx.get("data", "0x")
 
     # Get our gas price
     gas_price_raw = tx.get("gasPrice", "0x0")
@@ -44,7 +44,7 @@ def detect_frontrun(
 
     for pending in pending_txs:
         pending_to = pending.get("to", "").lower()
-        pending_data = pending.get("data", "0x")
+        pending.get("data", "0x")
 
         # Same target contract?
         if to_addr and pending_to == to_addr:

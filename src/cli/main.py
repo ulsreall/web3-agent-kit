@@ -2,14 +2,13 @@
 
 import click
 
-from src.cli.commands.info import info
-from src.cli.commands.doctor import doctor
-from src.cli.commands.wallet import wallet
-from src.cli.commands.token import token
-from src.cli.commands.gas import gas
 from src.cli.commands.agent import agent
+from src.cli.commands.doctor import doctor
 from src.cli.commands.examples import examples
-
+from src.cli.commands.gas import gas
+from src.cli.commands.info import info
+from src.cli.commands.token import token
+from src.cli.commands.wallet import wallet
 
 BANNER = r"""
  ██╗    ██╗ █████╗ ██╗

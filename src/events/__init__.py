@@ -6,7 +6,7 @@ polling or WebSocket-based subscription.
 
 Usage::
     from web3_agent_kit.events import EventListener, EventConfig
-    
+
     listener = EventListener(rpc_url="https://eth.llamarpc.com")
     listener.subscribe(
         address="0x...",
@@ -61,7 +61,7 @@ class EventListener:
 
     Example::
         listener = EventListener(rpc_url="https://eth.llamarpc.com")
-        
+
         # Subscribe to USDC Transfer events
         listener.subscribe(
             address="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
@@ -237,6 +237,7 @@ class EventListener:
     def _send_webhook(self, event_data: dict, config: EventConfig):
         """Send event data to webhook URL."""
         import json
+
         import requests
         try:
             requests.post(

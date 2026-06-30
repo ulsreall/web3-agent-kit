@@ -5,7 +5,7 @@ TWAP/VWAP oracles with automatic fallback.
 
 Usage::
     from web3_agent_kit.oracle import OracleAggregator
-    
+
     oracle = OracleAggregator(rpc_url="https://eth.llamarpc.com")
     price = oracle.get_price("ETH", "USD")
     print(f"ETH: ${price.price:.2f} (sources: {len(price.sources)})")

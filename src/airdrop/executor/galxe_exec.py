@@ -10,9 +10,8 @@ from __future__ import annotations
 
 import json
 import logging
-import time
-from dataclasses import dataclass, field
-from typing import Any, Optional
+from dataclasses import dataclass
+from typing import Optional
 from urllib.parse import urlparse
 
 from .base_executor import (
@@ -538,9 +537,9 @@ class GalxeExecutor(BasePlatformExecutor):
     def _handle_geetest_if_needed(self) -> Optional[dict]:
         """Handle GeeTest CAPTCHA if triggered."""
         try:
-            from .captcha_solver import CaptchaSolver, CaptchaConfig, CaptchaProvider
+            from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            solver = CaptchaSolver(CaptchaConfig(
+            CaptchaSolver(CaptchaConfig(
                 provider=CaptchaProvider(self.config.captcha_provider),
                 api_key=self.config.captcha_api_key,
             ))

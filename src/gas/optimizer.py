@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from typing import Any, Optional
 
@@ -198,7 +198,7 @@ class GasOptimizer:
         prices.sort()
         p25 = prices[len(prices) // 4]
         p50 = prices[len(prices) // 2]
-        p75 = prices[len(prices) * 3 // 4]
+        prices[len(prices) * 3 // 4]
 
         if urgency == GasPriority.URGENT:
             return GasRecommendation(

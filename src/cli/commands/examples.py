@@ -1,6 +1,7 @@
 """wak examples — list available example scripts."""
 
 import os
+
 import click
 
 

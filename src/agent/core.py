@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-import json
 import logging
 from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
-from ..wallet.wallet import Wallet
 from ..chains.chain import Chain
+from ..wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
 
@@ -90,7 +89,7 @@ class Agent:
     def llm(self):
         """Lazy-load LLM client."""
         if self._llm is None:
-            from .llm import LLM, LLMConfig
+            from .llm import LLM
             self._llm = LLM()
         return self._llm
 

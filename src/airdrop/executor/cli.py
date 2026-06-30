@@ -6,15 +6,12 @@ managing browser sessions, and tracking airdrop progress.
 
 from __future__ import annotations
 
-import csv
-import os
 import sys
 import time
 from pathlib import Path
 
 import click
 
-from ..base import TaskStatus
 from ..tracker import AirdropTracker
 
 # Lazy imports for heavy dependencies
@@ -28,7 +25,7 @@ _telegram_executor = None
 
 def _get_browser(config=None):
     """Lazy-import and create BrowserManager."""
-    from .browser import BrowserManager, BrowserConfig
+    from .browser import BrowserConfig, BrowserManager
 
     return BrowserManager(config or BrowserConfig())
 
@@ -196,7 +193,6 @@ def farm_status(platform: str, show_all: bool):
 
     for campaign in campaigns:
         progress_bar = _make_progress_bar(campaign.progress)
-        status_color = "green" if campaign.progress >= 1.0 else "yellow"
 
         click.echo(f"   {click.style(campaign.name, fg='white', bold=True)} [{campaign.platform}]")
         click.echo(f"     {progress_bar} {campaign.progress:.0%}")

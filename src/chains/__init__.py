@@ -1,6 +1,6 @@
 """Chains module — multi-chain support, chain definitions, and RPC management."""
 
-from .chain import Chain, ChainManager, ChainConfig, CHAIN_IDS, DEFAULT_RPCS
+from .chain import CHAIN_IDS, DEFAULT_RPCS, Chain, ChainConfig, ChainManager
 
 __all__ = [
     "Chain",

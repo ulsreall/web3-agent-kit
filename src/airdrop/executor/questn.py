@@ -7,10 +7,8 @@ tasks (Twitter follow/RT, Discord join, Telegram, quiz), and tracks XP.
 from __future__ import annotations
 
 import logging
-import time
-from dataclasses import dataclass, field
-from typing import Any, Optional
-from urllib.parse import urlparse
+from dataclasses import dataclass
+from typing import Optional
 
 from .base_executor import (
     BasePlatformExecutor,

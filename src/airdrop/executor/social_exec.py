@@ -9,14 +9,11 @@ from __future__ import annotations
 
 import json
 import logging
-import asyncio
 import time
-from dataclasses import dataclass, field
-from pathlib import Path
+from dataclasses import dataclass
 from typing import Optional
 
-from ..base import TaskType, TaskStatus
-from .browser import BrowserManager, BrowserConfig
+from .browser import BrowserConfig, BrowserManager
 
 logger = logging.getLogger(__name__)
 
@@ -159,7 +156,7 @@ class TwitterExecutor:
 
             # Look for Follow button
             follow_selectors = [
-                f'button[data-testid*="follow"]',
+                'button[data-testid*="follow"]',
                 '[aria-label*="Follow"]',
                 'div[role="button"]:has-text("Follow")',
             ]

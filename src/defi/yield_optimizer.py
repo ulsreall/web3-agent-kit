@@ -2,17 +2,15 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from dataclasses import dataclass, field
-import logging
 from enum import Enum
 from typing import Optional
 
-from web3 import Web3
-
-from ..wallet.wallet import Wallet
 from ..chains.chain import Chain
 from ..utils.prices import get_price_usd
+from ..wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
 

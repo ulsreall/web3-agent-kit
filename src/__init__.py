@@ -4,72 +4,123 @@ __version__ = "1.9.0"
 __author__ = "Maulana"
 
 # Core
-from .agent import Agent, AgentConfig, LLM, LLMConfig
-from .wallet import (
-    Wallet, WalletConfig,
-    MultiWalletManager, WalletInfo, BatchTxResult, ConsolidatedBalance,
-    WalletWatcher, WatchedWallet, WalletAlert, AlertType, AlertSeverity,
-    ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk,
+# Account Abstraction
+from .account_abstraction import (
+    BUNDLER_RPCS,
+    ENTRY_POINTS,
+    KNOWN_FACTORIES,
+    AAChain,
+    AAPaymaster,
+    AAWallet,
+    AAWalletInfo,
+    UserOperation,
+    UserOpResult,
 )
-from .chains import Chain, ChainManager, ChainConfig, CHAIN_IDS, DEFAULT_RPCS
-
-# Features
-from .portfolio import PortfolioTracker, PortfolioSummary
-from .bridge import BridgeAgent, BridgeRoute, BridgeResult
-from .trading import TokenSniper, SniperConfig, NewPair, RiskLevel, DCABot, DCAOrder, DCAResult, Interval, DCAStatus
-from .gas import GasOptimizer, GasEstimate, GasRecommendation, GasPriority
+from .agent import LLM, Agent, AgentConfig, LLMConfig
+from .bridge import BridgeAgent, BridgeResult, BridgeRoute
+from .chains import CHAIN_IDS, DEFAULT_RPCS, Chain, ChainConfig, ChainManager
 
 # DeFi & Yield
 from .defi import (
-    YieldOptimizer, YieldConfig, YieldOpportunity, YieldPosition,
+    YieldConfig,
+    YieldOpportunity,
+    YieldOptimizer,
+    YieldPosition,
     YieldProtocol,
 )
 
-# Security
-from .security import (
-    TokenAnalyzer, SecurityConfig, SecurityReport, TokenInfo,
-    TaxInfo, LiquidityInfo, HolderInfo, ContractAudit,
-    RiskLevel as SecurityRiskLevel, ContractPattern,
-)
-
-# Plugins
-from .plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
-
-# MEV
-from .mev import MEVProtector, MEVConfig
-
-# NFT
-from .nft import NFTManager, NFTConfig
-
-# Notifications (merged into utils)
-from .utils import Notifier, NotifierConfig  # noqa: F811
-
-# Oracle
-from .oracle import OracleAggregator, AggregatedPrice, PricePoint, OracleSource
-
 # Events
-from .events import EventListener, EventConfig, Subscription
+from .events import EventConfig, EventListener, Subscription
+from .gas import GasEstimate, GasOptimizer, GasPriority, GasRecommendation
 
-# Simulator
-from .simulator import TxSimulator, SimResult, SimConfig, SimMode
-
-# Account Abstraction
-from .account_abstraction import (
-    AAWallet, AAPaymaster, UserOperation, UserOpResult,
-    AAWalletInfo, AAChain, ENTRY_POINTS, BUNDLER_RPCS, KNOWN_FACTORIES,
+# Governance
+from .governance import (
+    KNOWN_DAOS,
+    DelegateInfo,
+    GovConfig,
+    GovernanceTracker,
+    Proposal,
+    ProposalStatus,
+    VoteChoice,
+    VotingPower,
 )
 
 # Cross-chain Messaging
 from .messaging import (
-    CrossChainMessenger, MessageConfig, MessageResult, MessageStatus,
-    BridgeProtocol, LZ_ENDPOINTS, LZ_CHAIN_IDS,
-    WORMHOLE_CHAIN_IDS, CCIP_CHAIN_SELECTORS,
+    CCIP_CHAIN_SELECTORS,
+    LZ_CHAIN_IDS,
+    LZ_ENDPOINTS,
+    WORMHOLE_CHAIN_IDS,
+    BridgeProtocol,
+    CrossChainMessenger,
+    MessageConfig,
+    MessageResult,
+    MessageStatus,
 )
 
-# Governance
-from .governance import (
-    GovernanceTracker, GovConfig, Proposal, ProposalStatus,
-    VoteChoice, VotingPower, DelegateInfo, KNOWN_DAOS,
+# MEV
+from .mev import MEVConfig, MEVProtector
+
+# NFT
+from .nft import NFTConfig, NFTManager
+
+# Oracle
+from .oracle import AggregatedPrice, OracleAggregator, OracleSource, PricePoint
+
+# Plugins
+from .plugins import Plugin, PluginManager, PluginMeta, PluginRegistry
+
+# Features
+from .portfolio import PortfolioSummary, PortfolioTracker
+
+# Security
+from .security import (
+    ContractAudit,
+    ContractPattern,
+    HolderInfo,
+    LiquidityInfo,
+    SecurityConfig,
+    SecurityReport,
+    TaxInfo,
+    TokenAnalyzer,
+    TokenInfo,
+)
+from .security import (
+    RiskLevel as SecurityRiskLevel,
+)
+
+# Simulator
+from .simulator import SimConfig, SimMode, SimResult, TxSimulator
+from .trading import (
+    DCABot,
+    DCAOrder,
+    DCAResult,
+    DCAStatus,
+    Interval,
+    NewPair,
+    RiskLevel,
+    SniperConfig,
+    TokenSniper,
+)
+
+# Notifications (merged into utils)
+from .utils import Notifier, NotifierConfig  # noqa: F811
+from .wallet import (
+    AlertSeverity,
+    AlertType,
+    ApprovalManager,
+    ApprovalRisk,
+    BatchTxResult,
+    ConsolidatedBalance,
+    MultiWalletManager,
+    RevokeResult,
+    TokenApproval,
+    Wallet,
+    WalletAlert,
+    WalletConfig,
+    WalletInfo,
+    WalletWatcher,
+    WatchedWallet,
 )
 
 __all__ = [

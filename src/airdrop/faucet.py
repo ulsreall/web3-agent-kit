@@ -14,14 +14,14 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-import asyncio
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 import requests
 

@@ -12,10 +12,10 @@ from typing import Optional
 from web3 import Web3
 
 try:
-    from ...chains.chain import Chain, ChainManager, CHAIN_IDS
+    from ...chains.chain import CHAIN_IDS, Chain, ChainManager
     from ...wallet.wallet import Wallet
 except ImportError:
-    from src.chains.chain import Chain, ChainManager, CHAIN_IDS  # type: ignore[no-redef]
+    from src.chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
     from src.wallet.wallet import Wallet  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
@@ -573,11 +573,11 @@ class EigenLayer:
         )
 
         try:
-            is_operator = delegation_contract.functions.isOperator(
+            delegation_contract.functions.isOperator(
                 w3.to_checksum_address(operator)
             ).call()
         except Exception:
-            is_operator = True  # Assume valid
+            pass  # Assume valid
 
         total_stake = 0.0
         try:

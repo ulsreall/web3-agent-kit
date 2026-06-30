@@ -6,7 +6,7 @@ unexpected state changes.
 
 Usage::
     from web3_agent_kit.simulator import TxSimulator
-    
+
     sim = TxSimulator(rpc_url="https://eth.llamarpc.com")
     result = sim.simulate(
         from_address="0x...",
@@ -181,7 +181,7 @@ class TxSimulator:
             # Check for balance changes
             balance_changes = []
             if value > 0:
-                balance_before = self.w3.eth.get_balance(
+                self.w3.eth.get_balance(
                     self.w3.to_checksum_address(from_address),
                     block_identifier=block,
                 )
@@ -243,6 +243,7 @@ class TxSimulator:
             raise ValueError("Tenderly API key, user, and project required for Tenderly mode")
 
         import json
+
         import requests
         from web3 import Web3
 

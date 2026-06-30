@@ -8,11 +8,9 @@ Anti-bot: Custom CAPTCHA, IP detection.
 
 from __future__ import annotations
 
-import json
 import logging
-import time
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 from urllib.parse import urlparse
 
 from .base_executor import (
@@ -250,7 +248,7 @@ class Layer3Executor(BasePlatformExecutor):
 
             data = response.json()
             verifications = data.get("verifications", {})
-            logger.info(f"Layer3: on-chain verification complete")
+            logger.info("Layer3: on-chain verification complete")
             return verifications
 
         except Exception as e:
@@ -388,9 +386,9 @@ class Layer3Executor(BasePlatformExecutor):
     def _handle_captcha_if_needed(self) -> Optional[str]:
         """Handle CAPTCHA if triggered by the platform."""
         try:
-            from .captcha_solver import CaptchaSolver, CaptchaConfig, CaptchaProvider
+            from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            solver = CaptchaSolver(CaptchaConfig(
+            CaptchaSolver(CaptchaConfig(
                 provider=CaptchaProvider(self.config.captcha_provider),
                 api_key=self.config.captcha_api_key,
             ))

@@ -38,6 +38,6 @@ def balance(address, chain):
     click.echo()
     click.echo(click.style("  💡 Tip:", fg="blue") + " You can also use the Python API directly:")
     click.echo('    from web3_agent_kit import Wallet, WalletConfig')
-    click.echo(f'    w = Wallet(WalletConfig(rpc_url="https://eth.llamarpc.com"))')
+    click.echo('    w = Wallet(WalletConfig(rpc_url="https://eth.llamarpc.com"))')
     click.echo(f'    print(w.get_balance("{address}"))')
     click.echo()

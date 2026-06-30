@@ -5,7 +5,7 @@ and build omnichain applications.
 
 Usage::
     from web3_agent_kit.messaging import CrossChainMessenger, MessageConfig
-    
+
     messenger = CrossChainMessenger(
         bridge="layerzero",
         rpc_url="https://arb.llamarpc.com",

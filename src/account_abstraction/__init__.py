@@ -5,7 +5,7 @@ via paymasters, and account factory deployment.
 
 Usage::
     from web3_agent_kit.account_abstraction import AAWallet, AAPaymaster
-    
+
     wallet = AAWallet(
         rpc_url="https://base.llamarpc.com",
         entry_point="0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
@@ -348,6 +348,7 @@ class AAWallet:
     def _submit_to_bundler(self, user_op: UserOperation) -> str:
         """Submit UserOperation to bundler via eth_sendUserOperation."""
         import json
+
         import requests
 
         payload = {

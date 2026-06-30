@@ -1,9 +1,10 @@
 """wak doctor — check environment health."""
 
+import importlib
 import os
 import sys
+
 import click
-import importlib
 
 
 def _check(label: str, ok: bool, detail: str = "") -> bool:

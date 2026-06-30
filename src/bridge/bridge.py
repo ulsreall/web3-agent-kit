@@ -18,14 +18,13 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from dataclasses import dataclass
 from typing import Optional
 
 import requests
 
+from ..chains.chain import CHAIN_IDS, Chain, ChainManager
 from ..wallet.wallet import Wallet
-from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -396,7 +395,7 @@ class BridgeAgent:
 
         signed = self.wallet.sign_transaction(tx, route.from_chain)
         tx_hash = w3.eth.send_raw_transaction(signed)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+        w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
         return BridgeResult(
             tx_hash=tx_hash.hex(),
@@ -452,7 +451,7 @@ class BridgeAgent:
 
         signed = self.wallet.sign_transaction(tx, route.from_chain)
         tx_hash = w3.eth.send_raw_transaction(signed)
-        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+        w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
         return BridgeResult(
             tx_hash=tx_hash.hex(),

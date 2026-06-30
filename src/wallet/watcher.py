@@ -3,12 +3,12 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 from dataclasses import dataclass, field
-import logging
 from enum import Enum
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from ..chains.chain import Chain, ChainManager
 from ..utils.prices import get_eth_price_usd

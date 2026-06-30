@@ -23,13 +23,12 @@ Usage::
 
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
-import asyncio
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -400,7 +399,7 @@ class WLGrinder:
     def _apply_gleam(self, url: str, result: WLResult) -> WLResult:
         """Apply via Gleam.io widget."""
         try:
-            from .executor.browser import BrowserManager, BrowserConfig
+            from .executor.browser import BrowserConfig, BrowserManager
             from .executor.gleam_exec import GleamExecutor
 
             config = BrowserConfig(headless=True)

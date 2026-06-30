@@ -16,7 +16,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -168,7 +168,6 @@ class LLM:
         self, provider: dict, messages: list[dict], response_format: Optional[str]
     ) -> str:
         """Call a specific LLM provider."""
-        import requests
 
         headers = {
             "Content-Type": "application/json",
@@ -258,7 +257,7 @@ class LLM:
         )
 
         if resp.status_code == 429:
-            raise RuntimeError(f"Rate limited by Anthropic")
+            raise RuntimeError("Rate limited by Anthropic")
         if resp.status_code >= 500:
             raise RuntimeError(f"Server error from Anthropic: {resp.status_code}")
 

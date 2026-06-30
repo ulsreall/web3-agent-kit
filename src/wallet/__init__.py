@@ -1,9 +1,9 @@
 """Wallet module — wallet management, multi-wallet, watcher, approvals."""
 
+from .approval import ApprovalManager, ApprovalRisk, RevokeResult, TokenApproval
+from .multi_wallet import BatchTxResult, ConsolidatedBalance, MultiWalletManager, WalletInfo
 from .wallet import Wallet, WalletConfig
-from .multi_wallet import MultiWalletManager, WalletInfo, BatchTxResult, ConsolidatedBalance
-from .watcher import WalletWatcher, WatchedWallet, WalletAlert, AlertType, AlertSeverity
-from .approval import ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk
+from .watcher import AlertSeverity, AlertType, WalletAlert, WalletWatcher, WatchedWallet
 
 __all__ = [
     # Wallet

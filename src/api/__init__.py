@@ -41,7 +41,6 @@ from .routes import (
     yield_opt,
 )
 
-
 # API key auth
 API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
 

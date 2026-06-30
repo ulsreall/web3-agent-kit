@@ -7,14 +7,13 @@ social tasks via redirects, and tracks XP earned.
 from __future__ import annotations
 
 import logging
-import asyncio
 import time
 from dataclasses import dataclass, field
 from typing import Optional
 from urllib.parse import urlparse
 
-from ..base import AirdropTask, AirdropCampaign, TaskType, TaskStatus
-from .browser import BrowserManager, BrowserConfig
+from ..base import AirdropTask, TaskStatus, TaskType
+from .browser import BrowserManager
 
 logger = logging.getLogger(__name__)
 

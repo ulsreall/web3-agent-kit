@@ -48,7 +48,7 @@ async def execute_bridge(
 @router.get("/chains")
 async def list_chains():
     """List supported chains for bridging."""
-    from ...bridge.bridge import BridgeAgent, LIFI_CHAIN_IDS, SOCKET_CHAIN_IDS
+    from ...bridge.bridge import LIFI_CHAIN_IDS, SOCKET_CHAIN_IDS
 
     try:
         return {

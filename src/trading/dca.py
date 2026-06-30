@@ -7,7 +7,7 @@ import os
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Callable
+from typing import Callable, Optional
 
 from ..chains.chain import Chain, ChainManager
 from ..wallet.wallet import Wallet

@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
-from .base import TaskType, TaskStatus, AirdropTask
+from .base import TaskType
 
 logger = logging.getLogger(__name__)
 

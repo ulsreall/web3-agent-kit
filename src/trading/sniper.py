@@ -25,11 +25,11 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from threading import Thread, Event
-from typing import Any, Callable, Optional
+from threading import Event, Thread
+from typing import Callable, Optional
 
+from ..chains.chain import Chain, ChainManager
 from ..wallet.wallet import Wallet
-from ..chains.chain import Chain, ChainManager, CHAIN_IDS
 
 logger = logging.getLogger(__name__)
 

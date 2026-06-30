@@ -6,14 +6,12 @@ import json
 import os
 import time
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Optional
 
 from eth_account import Account
-from web3 import Web3
 
-from .wallet import Wallet, WalletConfig
 from ..chains.chain import Chain, ChainManager
+from .wallet import Wallet, WalletConfig
 
 
 @dataclass

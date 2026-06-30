@@ -5,12 +5,12 @@ on-chain proposals, and delegation management.
 
 Usage::
     from web3_agent_kit.governance import GovernanceTracker, GovConfig
-    
+
     tracker = GovernanceTracker(rpc_url="https://eth.llamarpc.com")
-    
+
     # Get active proposals
     proposals = tracker.get_active_proposals(dao="uniswap")
-    
+
     # Check voting power
     power = tracker.get_voting_power(
         address="0x...",
@@ -160,12 +160,12 @@ class GovernanceTracker:
 
     Example::
         tracker = GovernanceTracker(rpc_url="https://eth.llamarpc.com")
-        
+
         # Get active proposals
         proposals = tracker.get_active_proposals(dao="uniswap")
         for p in proposals:
             print(f"{p.title} — {p.status.value} (ends in {p.end_time - time.time()}s)")
-        
+
         # Check voting power
         power = tracker.get_voting_power("0x...", token="0x1f98...")
         print(f"Voting power: {power.power}")
@@ -447,7 +447,7 @@ class GovernanceTracker:
 
         try:
             resp = requests.get(
-                f"https://api.tally.xyz/query",
+                "https://api.tally.xyz/query",
                 params={"dao": dao},
                 headers={"Api-Key": self.config.tally_api_key or ""},
                 timeout=10,

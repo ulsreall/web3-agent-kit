@@ -7,10 +7,10 @@ import logging
 import math
 import time
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Optional
 
+from ..chains.chain import CHAIN_IDS, Chain, ChainManager  # noqa: E402
 from ..wallet.wallet import Wallet
-from ..chains.chain import Chain, ChainManager, CHAIN_IDS  # noqa: E402
 
 # Minimal ERC20 ABI (duplicated here to avoid circular import with __init__)
 ERC20_ABI = json.loads("""[
@@ -679,7 +679,7 @@ class UniswapV3:
             "sqrtPriceLimitX96": 0,
         }
 
-        tx = router.functions.exactInputSingle(params).build_transaction({
+        router.functions.exactInputSingle(params).build_transaction({
             "from": self._to_checksum(w3, "0x0"),
             "value": amount_in_wei if is_eth_in else 0,
             "gas": 300_000,
@@ -690,7 +690,6 @@ class UniswapV3:
 
         # Sign & send (requires wallet — here we return the built tx for external signing)
         # In production the caller signs via wallet.sign_transaction
-        signed = None  # placeholder — actual signing requires wallet reference
         # For now, return built transaction info
         return V3SwapResult(
             tx_hash="",  # filled after send
@@ -804,11 +803,11 @@ class UniswapV3:
 
         token_in_addr = self._resolve_token(token_in, w3)
         token_out_addr = self._resolve_token(token_out, w3)
-        is_eth_in = self._is_native(token_in)
+        self._is_native(token_in)
 
         amount_out_wei = self._amount_to_wei(w3, token_out_addr, amount_out)
 
-        router = w3.eth.contract(
+        w3.eth.contract(
             address=self._to_checksum(w3, self.swap_router_address),
             abi=SWAP_ROUTER_ABI,
         )

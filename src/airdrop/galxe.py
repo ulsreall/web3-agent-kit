@@ -8,12 +8,12 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from .base import (
+    AirdropCampaign,
+    AirdropTask,
     BaseAirdropPlatform,
     PlatformConfig,
-    AirdropTask,
-    AirdropCampaign,
-    TaskType,
     TaskStatus,
+    TaskType,
 )
 
 logger = logging.getLogger(__name__)

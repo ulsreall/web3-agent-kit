@@ -6,9 +6,8 @@ import logging
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Optional
 
-from .notif_utils import AlertLevel, Notification, NotifierConfig
+from .notif_utils import Notification, NotifierConfig
 
 logger = logging.getLogger(__name__)
 

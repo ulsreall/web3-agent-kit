@@ -4,16 +4,14 @@ from __future__ import annotations
 
 import json
 import logging
-import time
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
 
 try:
-    from ...chains.chain import Chain, ChainManager, CHAIN_IDS
+    from ...chains.chain import CHAIN_IDS, Chain, ChainManager
 except ImportError:
-    from chains.chain import Chain, ChainManager, CHAIN_IDS  # type: ignore[no-redef]
+    from chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 

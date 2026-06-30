@@ -7,7 +7,6 @@ for solving reCAPTCHA v2/v3, hCaptcha, GeeTest, and Cloudflare Turnstile.
 from __future__ import annotations
 
 import logging
-import asyncio
 import os
 import time
 from dataclasses import dataclass

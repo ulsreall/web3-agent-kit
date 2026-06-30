@@ -7,7 +7,6 @@ logging, and progress tracking. All platform executors extend this class.
 from __future__ import annotations
 
 import logging
-import asyncio
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -16,7 +15,7 @@ from typing import Any, Optional
 
 import requests
 
-from ..base import AirdropTask, TaskType, TaskStatus
+from ..base import AirdropTask, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 

@@ -9,10 +9,8 @@ Anti-bot: Medium (ReCAPTCHA).
 from __future__ import annotations
 
 import logging
-import time
-from dataclasses import dataclass, field
-from typing import Any, Optional
-from urllib.parse import urlparse
+from dataclasses import dataclass
+from typing import Optional
 
 from .base_executor import (
     BasePlatformExecutor,
@@ -300,7 +298,7 @@ class IntractExecutor(BasePlatformExecutor):
     def _solve_captcha(self, task: IntractTask) -> Optional[str]:
         """Solve a CAPTCHA if required."""
         try:
-            from .captcha_solver import CaptchaSolver, CaptchaConfig, CaptchaProvider
+            from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
             solver = CaptchaSolver(CaptchaConfig(
                 provider=CaptchaProvider(self.config.captcha_provider),

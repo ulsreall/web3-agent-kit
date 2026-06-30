@@ -27,7 +27,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -381,8 +381,8 @@ class OnChainAirdropFarmer:
     def _init_web3(self) -> None:
         """Initialize Web3 connection."""
         try:
-            from web3 import Web3
             from eth_account import Account
+            from web3 import Web3
 
             rpc_url = self.config.rpc_url or self.DEFAULT_RPCS.get(
                 self.config.chain, ""

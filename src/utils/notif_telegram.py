@@ -3,11 +3,10 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
 
 import requests
 
-from .notif_utils import AlertLevel, Notification, NotifierConfig
+from .notif_utils import Notification, NotifierConfig
 
 logger = logging.getLogger(__name__)
 

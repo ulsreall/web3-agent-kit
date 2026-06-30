@@ -1,7 +1,7 @@
 """Trading module — token sniper, DCA bot, and automated trading."""
 
-from .sniper import TokenSniper, SniperConfig, NewPair, RiskLevel
-from .dca import DCABot, DCAOrder, DCAResult, Interval, DCAStatus
+from .dca import DCABot, DCAOrder, DCAResult, DCAStatus, Interval
+from .sniper import NewPair, RiskLevel, SniperConfig, TokenSniper
 
 __all__ = [
     # Sniper
