@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 from dataclasses import dataclass
 
-from src.restaking import (
+from src.plugins.restaking import (
     # EigenLayer
     EigenLayer,
     EigenLayerConfig,

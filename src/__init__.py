@@ -1,6 +1,6 @@
 """Web3 Agent Kit — Open-source framework for autonomous Web3 AI agents."""
 
-__version__ = "1.8.0"
+__version__ = "1.9.0"
 __author__ = "Maulana"
 
 # Core
@@ -41,8 +41,36 @@ from .mev import MEVProtector, MEVConfig
 # NFT
 from .nft import NFTManager, NFTConfig
 
-# Notifications
-from .notifications import Notifier, NotifierConfig
+# Notifications (merged into utils)
+from .utils import Notifier, NotifierConfig  # noqa: F811
+
+# Oracle
+from .oracle import OracleAggregator, AggregatedPrice, PricePoint, OracleSource
+
+# Events
+from .events import EventListener, EventConfig, Subscription
+
+# Simulator
+from .simulator import TxSimulator, SimResult, SimConfig, SimMode
+
+# Account Abstraction
+from .account_abstraction import (
+    AAWallet, AAPaymaster, UserOperation, UserOpResult,
+    AAWalletInfo, AAChain, ENTRY_POINTS, BUNDLER_RPCS, KNOWN_FACTORIES,
+)
+
+# Cross-chain Messaging
+from .messaging import (
+    CrossChainMessenger, MessageConfig, MessageResult, MessageStatus,
+    BridgeProtocol, LZ_ENDPOINTS, LZ_CHAIN_IDS,
+    WORMHOLE_CHAIN_IDS, CCIP_CHAIN_SELECTORS,
+)
+
+# Governance
+from .governance import (
+    GovernanceTracker, GovConfig, Proposal, ProposalStatus,
+    VoteChoice, VotingPower, DelegateInfo, KNOWN_DAOS,
+)
 
 __all__ = [
     # Version
@@ -129,4 +157,47 @@ __all__ = [
     # Notifications
     "Notifier",
     "NotifierConfig",
+    # Oracle
+    "OracleAggregator",
+    "AggregatedPrice",
+    "PricePoint",
+    "OracleSource",
+    # Events
+    "EventListener",
+    "EventConfig",
+    "Subscription",
+    # Simulator
+    "TxSimulator",
+    "SimResult",
+    "SimConfig",
+    "SimMode",
+    # Account Abstraction
+    "AAWallet",
+    "AAPaymaster",
+    "UserOperation",
+    "UserOpResult",
+    "AAWalletInfo",
+    "AAChain",
+    "ENTRY_POINTS",
+    "BUNDLER_RPCS",
+    "KNOWN_FACTORIES",
+    # Cross-chain Messaging
+    "CrossChainMessenger",
+    "MessageConfig",
+    "MessageResult",
+    "MessageStatus",
+    "BridgeProtocol",
+    "LZ_ENDPOINTS",
+    "LZ_CHAIN_IDS",
+    "WORMHOLE_CHAIN_IDS",
+    "CCIP_CHAIN_SELECTORS",
+    # Governance
+    "GovernanceTracker",
+    "GovConfig",
+    "Proposal",
+    "ProposalStatus",
+    "VoteChoice",
+    "VotingPower",
+    "DelegateInfo",
+    "KNOWN_DAOS",
 ]

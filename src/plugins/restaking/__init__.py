@@ -44,7 +44,7 @@ try:
     )
 except ImportError:
     # Fallback: when imported as top-level package (sys.path includes src/)
-    from eigenlayer import (  # type: ignore[no-redef]
+    from src.plugins.restaking.eigenlayer import (  # type: ignore[no-redef]
         EigenLayer,
         EigenLayerConfig,
         RestakeResult,
@@ -56,7 +56,7 @@ except ImportError:
         EIGENLAYER_SLASHER,
         EIGEN_TOKEN,
     )
-    from protocols import (  # type: ignore[no-redef]
+    from src.plugins.restaking.protocols import (  # type: ignore[no-redef]
         RestakingProtocol,
         BabylonBtcRestaking,
         SolanaRestaking,
@@ -67,14 +67,14 @@ except ImportError:
         SOLAYER_RESTAKING_ABI,
         SOLAYER_VAULT_ADDRESS,
     )
-    from optimizer import (  # type: ignore[no-redef]
+    from src.plugins.restaking.optimizer import (  # type: ignore[no-redef]
         RestakingOptimizer,
         RestakingOpportunity,
         RiskAdjustedYield,
         OptimizationStrategy,
         OptimizationResult,
     )
-    from monitor import (  # type: ignore[no-redef]
+    from src.plugins.restaking.monitor import (  # type: ignore[no-redef]
         RestakingMonitor,
         MonitoredPosition,
         SlashingEvent,

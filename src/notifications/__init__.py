@@ -1,24 +1,19 @@
 """Notification System — alerts via Telegram, Discord, webhooks.
 
-Sends notifications for important events: token listings,
-gas alerts, wallet movements, trade confirmations.
+Note: Notifications module has been merged into utils/.
+This module re-exports from utils for backward compatibility.
 
 Usage::
-
     from web3_agent_kit.notifications import Notifier, NotifierConfig
 
-    notifier = Notifier(NotifierConfig(
-        telegram_bot_token="...",
-        telegram_chat_id="...",
-    ))
-    notifier.send("Trade executed!", level="success")
+    # Or equivalently:
+    from web3_agent_kit.utils import Notifier, NotifierConfig
 """
 
-from .discord import DiscordNotifier
-from .email_notifier import EmailNotifier
-from .notifier import Notifier
-from .telegram import TelegramNotifier
-from .utils import AlertLevel, Notification, NotifierConfig
+from ..utils import AlertLevel, Notification, Notifier, NotifierConfig
+from ..utils.notif_discord import DiscordNotifier
+from ..utils.notif_email_notifier import EmailNotifier
+from ..utils.notif_telegram import TelegramNotifier
 
 __all__ = [
     "AlertLevel",

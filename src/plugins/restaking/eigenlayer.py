@@ -12,11 +12,11 @@ from typing import Optional
 from web3 import Web3
 
 try:
-    from ..chains.chain import Chain, ChainManager, CHAIN_IDS
-    from ..wallet.wallet import Wallet
+    from ...chains.chain import Chain, ChainManager, CHAIN_IDS
+    from ...wallet.wallet import Wallet
 except ImportError:
-    from chains.chain import Chain, ChainManager, CHAIN_IDS  # type: ignore[no-redef]
-    from wallet.wallet import Wallet  # type: ignore[no-redef]
+    from src.chains.chain import Chain, ChainManager, CHAIN_IDS  # type: ignore[no-redef]
+    from src.wallet.wallet import Wallet  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 

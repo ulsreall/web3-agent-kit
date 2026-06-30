@@ -11,7 +11,7 @@ from enum import Enum
 from typing import Optional
 
 try:
-    from ..chains.chain import Chain, ChainManager, CHAIN_IDS
+    from ...chains.chain import Chain, ChainManager, CHAIN_IDS
 except ImportError:
     from chains.chain import Chain, ChainManager, CHAIN_IDS  # type: ignore[no-redef]
 

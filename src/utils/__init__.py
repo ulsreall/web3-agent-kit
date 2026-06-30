@@ -6,6 +6,10 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
+# Re-export notifications (merged from notifications/ module)
+from .notif_notifier import Notifier
+from .notif_utils import AlertLevel, Notification, NotifierConfig
+
 
 @dataclass
 class SpendLimits:
@@ -143,4 +147,8 @@ __all__ = [
     "SpendLimits",
     "GovernorDecision",
     "SpendGovernor",
+    "Notifier",
+    "NotifierConfig",
+    "AlertLevel",
+    "Notification",
 ]
