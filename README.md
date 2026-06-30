@@ -8,7 +8,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
 [![Docs](https://img.shields.io/badge/docs-site-blue.svg)](https://ulsreall.github.io/web3-agent-kit/)
-[![Coverage](https://img.shields.io/badge/coverage-60%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
+[![Coverage](https://img.shields.io/badge/coverage-58%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
@@ -63,7 +63,12 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
 | **Trading** | Manual recurring buys | DCA bot, yield optimizer, token sniper |
 | **Multi-wallet** | Manage keys manually | Batch ops, consolidated portfolio |
-| **Restaking** | Manual protocol juggling | EigenLayer + Babylon + Solana, auto-optimize |
+| **Restaking** | Manual protocol juggling | EigenLayer + Babylon + Solana |
+| **Price Oracle** | Hardcode prices | Chainlink + DexScreener + CoinGecko aggregator |
+| **TX Simulation** | Hope it works | Tenderly + eth_call pre-flight verification |
+| **Account Abstraction** | Build ERC-4337 from scratch | Bundler, paymaster, factory deployment |
+| **Cross-chain** | Manual bridge + relay | LayerZero + Wormhole + CCIP unified API |
+| **Governance** | Check manually | Snapshot + Tally + on-chain governor tracking |
 | **Extensibility** | Hard-coded logic | Plugin system — extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
 
@@ -118,6 +123,18 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
        │  │ Optimizer│ │ •Multi   │ │ •Custom  │ │•Eigen  ││        │
        │  │          │ │ •Watcher │ │ •Community│ │•Babylon││        │
        │  │          │ │ •Approval│ │          │ │•Solana ││        │
+       │  └──────────┘ └──────────┘ └──────────┘ └────────┘│        │
+       │                                                     │        │
+       │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐│        │
+       │  │ Oracle   │ │ Events   │ │Simulator │ │Acct    ││        │
+       │  │•Chainlink│ │•Listener │ │•Tenderly │ │Abstract││        │
+       │  │•DexScrnr │ │•Webhooks │ │•eth_call │ │•ERC4337││        │
+       │  │•CoinGecko│ │•Callbacks│ │•Anvil    │ │•Paymstr││        │
+       │  ├──────────┤ ├──────────┤ ├──────────┤ ├────────┤│        │
+       │  │Messaging │ │Governance│ │          │ │        ││        │
+       │  │•LayerZero│ │•Snapshot │ │          │ │        ││        │
+       │  │•Wormhole │ │•Tally    │ │          │ │        ││        │
+       │  │•CCIP     │ │•On-chain │ │          │ │        ││        │
        │  └──────────┘ └──────────┘ └──────────┘ └────────┘│        │
        └────────────────────────────────────────────────────┼────────┘
                                                             │
@@ -250,12 +267,54 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 - 🛠️ **Custom plugins** — Extend with your own tools
 - 🔄 **Hot reload** — Add plugins without restarting
 
-### 🔄 Restaking (NEW!)
+### 🔄 Restaking
 - 🏦 **EigenLayer integration** — Restake LSTs, delegate to operators, track rewards
 - ₿ **Babylon BTC restaking** — Bitcoin restaking via Babylon protocol
 - ☀️ **Solana restaking** — Solayer, Jito, Marinade support
 - 📊 **Yield optimizer** — Cross-protocol restaking yield optimization with risk-adjusted scoring
 - 🔔 **Slashing monitor** — Position tracking, slashing risk alerts, portfolio snapshots
+
+### 📡 Oracle Aggregator (NEW!)
+- 🔗 **Chainlink feeds** — 12+ mainnet price feeds (ETH, BTC, SOL, UNI, AAVE, etc.)
+- 📈 **DexScreener** — Real-time DEX price data with liquidity ranking
+- 🪙 **CoinGecko** — Free API fallback for 20+ tokens
+- ⚖️ **Weighted median** — Multi-source aggregation with deviation detection
+- 💾 **Smart cache** — 30s TTL, batch queries, automatic stale detection
+
+### 📡 Event Listener (NEW!)
+- 🔔 **On-chain events** — Subscribe to any contract event (Transfer, Approval, custom)
+- 🌐 **Webhook support** — HTTP POST to any URL on event trigger
+- 🧵 **Background polling** — Multi-subscription threaded listener
+- 📦 **Pre-built ABIs** — ERC-20 Transfer/Approval, ERC-721 Transfer
+- 📊 **Status tracking** — Per-subscription event count, error rate, last block
+
+### 🧪 Transaction Simulator (NEW!)
+- 🔍 **Pre-flight verification** — Simulate before broadcasting to catch reverts
+- 🌐 **Tenderly integration** — Full state diff, events, gas profiling
+- 🍴 **Local fork mode** — Anvil/Hardhat impersonation testing
+- ⚡ **eth_call mode** — Fast simulation with gas estimation + safety margin
+- ⚠️ **Smart warnings** — Balance checks, approval analysis, MEV exposure
+
+### 🏦 Account Abstraction (NEW!)
+- 📦 **ERC-4337 support** — UserOperations, EntryPoint v0.6
+- 🏭 **Factory deployment** — SimpleAccount, Safe v1.4.3, Kernel v3
+- 💰 **Paymaster integration** — Pimlico gas sponsorship, token paymaster
+- 🔗 **Multi-chain** — Ethereum, Base, Arbitrum, Optimism, Polygon
+- 📊 **Counterfactual addresses** — Pre-compute before deployment
+
+### 🌉 Cross-chain Messaging (NEW!)
+- 📡 **LayerZero** — 7 chains, endpoint registry, fee estimation
+- 🐛 **Wormhole** — Multi-chain message relay, delivery tracking
+- ⛓️ **Chainlink CCIP** — Chain selector registry, message verification
+- 📊 **Status tracking** — Real-time delivery status via protocol APIs
+- 💰 **Fee estimation** — Per-chain cost breakdown
+
+### 🏛️ Governance (NEW!)
+- 📊 **Snapshot integration** — GraphQL API, active proposal tracking
+- 📈 **On-chain governor** — OpenZeppelin Governor, proposal lifecycle
+- 🗳️ **Voting power** — Token-weighted voting, delegation management
+- 🔍 **Tally API** — Delegate discovery, voting history
+- 🏷️ **Known DAOs** — Uniswap, Aave, Arbitrum, Optimism, ENS pre-configured
 
 ---
 
@@ -478,9 +537,11 @@ print(f"Slashing risk: {snapshot.total_risk_score}")
 
 ## 📊 Project Stats
 
-- **Version:** 1.8.0
-- **Modules:** 18
-- **Tests:** 986
+- **Version:** 1.9.0
+- **Modules:** 23
+- **Source Files:** 115
+- **Lines of Code:** 32,743
+- **Tests:** 991
 - **Examples:** 19
 - **Chains:** 8
 - **License:** MIT

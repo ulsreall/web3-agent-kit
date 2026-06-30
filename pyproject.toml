@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     {name = "Maulana", email = "khasbim240803@gmail.com"},
 ]
-keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm", "yield", "multi-wallet", "plugins"]
+keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm", "yield", "multi-wallet", "plugins", "oracle", "account-abstraction", "erc4337", "governance", "cross-chain", "layerzero", "simulation"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
