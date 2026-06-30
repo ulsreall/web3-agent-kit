@@ -17,6 +17,32 @@
 
 ---
 
+## ⚡ Quick Install
+
+```bash
+pip install web3-agent-kit
+```
+
+Verify installation:
+
+```bash
+wak info        # Show version, modules, chains
+wak doctor      # Check dependencies
+wak examples    # List 19 example scripts
+```
+
+Run your first swap:
+
+```python
+from web3_agent_kit import Agent
+
+agent = Agent(private_key="0x...")
+result = agent.execute("swap 0.01 ETH to USDC on Base")
+print(result.tx_hash)
+```
+
+---
+
 ## 🤔 Why Web3 Agent Kit?
 
 Building AI agents that interact with blockchains is **hard**. You need to juggle RPC providers, wallet management, transaction signing, gas estimation, DeFi protocol ABIs, LLM integration, and safety rails — all before writing a single line of business logic.
