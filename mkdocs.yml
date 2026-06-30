@@ -123,5 +123,12 @@ nav:
     - api/mev.md
     - api/nft.md
     - api/trading.md
+  - New Modules:
+    - api/oracle.md
+    - api/events.md
+    - api/simulator.md
+    - api/account_abstraction.md
+    - api/messaging.md
+    - api/governance.md
   - Contributing: contributing.md
   - Changelog: changelog.md

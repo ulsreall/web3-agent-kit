@@ -1,4 +1,4 @@
----
+--- 
 title: Web3 Agent Kit
 description: Build autonomous AI agents that interact with blockchains — in minutes, not months.
 hide:
@@ -36,19 +36,19 @@ pip install web3-agent-kit
 <!-- Stats Bar -->
 <div class="tx-stats" markdown>
 <div class="stat" markdown>
-<div class="stat-num">v1.6.0</div>
+<div class="stat-num">v1.9.0</div>
 <div class="stat-label">Version</div>
 </div>
 <div class="stat" markdown>
-<div class="stat-num">19</div>
+<div class="stat-num">23</div>
 <div class="stat-label">Modules</div>
 </div>
 <div class="stat" markdown>
-<div class="stat-num">565+</div>
+<div class="stat-num">991</div>
 <div class="stat-label">Tests</div>
 </div>
 <div class="stat" markdown>
-<div class="stat-num">7+</div>
+<div class="stat-num">8</div>
 <div class="stat-label">Chains</div>
 </div>
 <div class="stat" markdown>
@@ -92,7 +92,7 @@ Goal-driven autonomous agents with LLM reasoning. Natural language in, on-chain 
 <div class="tx-feature" markdown>
 <span class="tx-feature-icon">💰</span>
 ### DeFi Tools
-Uniswap V2, Aerodrome, Aave, Curve. Real swaps, quotes, approvals, slippage protection.
+Uniswap V2/V3, Aerodrome, Aave, Curve. Real swaps, quotes, approvals, slippage protection.
 </div>
 
 <div class="tx-feature" markdown>
@@ -128,7 +128,43 @@ DCA with price triggers, yield optimizer, token sniper. Automated strategies.
 <div class="tx-feature" markdown>
 <span class="tx-feature-icon">🌉</span>
 ### Cross-Chain Bridge
-Li.Fi + Socket aggregators. Best routes, lowest fees, 7+ chains.
+Li.Fi + Socket aggregators. Best routes, lowest fees, 8 chains.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">🔮</span>
+### Oracle Aggregator
+Multi-source price feeds — Chainlink, DexScreener, CoinGecko. Weighted median, auto-fallback, cache.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">📡</span>
+### Event Listener
+On-chain event subscription with webhooks, callbacks, and background polling. Real-time monitoring.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">🧪</span>
+### Transaction Simulator
+Pre-flight TX verification via eth_call, Tenderly, or local fork. Catch reverts before broadcasting.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">🔑</span>
+### Account Abstraction
+ERC-4337 bundler, paymaster integration, smart account factory. SimpleAccount, Safe, Kernel support.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">🔗</span>
+### Cross-Chain Messaging
+LayerZero + Wormhole + CCIP unified API. Send messages, query status, estimate fees.
+</div>
+
+<div class="tx-feature" markdown>
+<span class="tx-feature-icon">🗳️</span>
+### Governance
+Snapshot + Tally + on-chain governor. Proposal tracking, voting power, delegation management.
 </div>
 
 <div class="tx-feature" markdown>
@@ -157,16 +193,19 @@ User / Application
    │  Governor + Kill SW │
    └──────────┼──────────┘
               │
-   ┌──────────┼──────────────────────────────────┐
-   │          Tool Ecosystem                      │
-   │  DeFi · Airdrop · Security · MEV · NFT      │
-   │  Trading · Portfolio · Bridge · Gas · Wallet │
-   └──────────┼──────────────────────────────────┘
+   ┌──────────┼────────────────────────────────────────┐
+   │          Tool Ecosystem                            │
+   │  DeFi · Airdrop · Security · MEV · NFT · Trading   │
+   │  Portfolio · Bridge · Gas · Wallet · Oracle        │
+   │  Events · Simulator · Account Abstraction          │
+   │  Messaging · Governance · Plugins · Utils          │
+   └──────────┼────────────────────────────────────────┘
               │
    ┌──────────┼──────────┐
    │  Chain Abstraction   │
    │  ETH · BASE · ARB   │
    │  OP · MATIC · BSC   │
+   │  AVAX · BERACHAIN   │
    └─────────────────────┘
 ```
 
@@ -221,6 +260,26 @@ User / Application
         print(f"[{vuln.severity}] {vuln.name}")
     ```
 
+=== "Oracle"
+
+    ```python
+    from web3_agent_kit.oracle import OracleAggregator
+
+    oracle = OracleAggregator()
+    price = oracle.get_price("ETH")
+    print(f"ETH: ${price.usd:.2f} (sources: {price.sources})")
+    ```
+
+=== "Simulate TX"
+
+    ```python
+    from web3_agent_kit.simulator import TransactionSimulator
+
+    sim = TransactionSimulator(chain_manager=cm)
+    result = sim.simulate(to=router, data=calldata, from_addr=wallet.address)
+    print(f"Would revert: {result.would_revert}, gas: {result.gas_used}")
+    ```
+
 <div class="tx-divider"></div>
 
 ## 📦 Supported Chains
@@ -234,6 +293,7 @@ User / Application
 | Polygon | ✅ | ✅ | ✅ |
 | Avalanche | ✅ | — | ✅ |
 | BSC | ✅ | — | ✅ |
+| Berachain | ✅ | — | ✅ |
 
 <div class="tx-divider"></div>
 
