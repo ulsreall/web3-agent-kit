@@ -10,12 +10,6 @@
 [![Docs](https://img.shields.io/badge/docs-site-blue.svg)](https://web3-agent-kit.vercel.app/)
 [![Website](https://img.shields.io/badge/website-live-10b981.svg)](https://web3-agent-kit.vercel.app/)
 [![Coverage](https://img.shields.io/badge/coverage-58%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
-
-<p align="center">
-  <a href="https://web3-agent-kit.vercel.app/">
-    <img src="https://img.shields.io/badge/🌐_Visit_Website-10b981?style=for-the-badge" alt="Visit Website"/>
-  </a>
-</p>
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
