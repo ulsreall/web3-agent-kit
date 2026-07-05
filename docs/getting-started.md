@@ -219,7 +219,7 @@ data = llm.chat_json("Analyze this swap: 0.1 ETH to USDC")
 Web3 Agent Kit includes built-in safety features:
 
 ```python
-from web3_agent_kit.safety import SpendGovernor, SpendLimits
+from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
 governor = SpendGovernor(
     limits=SpendLimits(
@@ -247,7 +247,7 @@ governor.unkill() # resume
 | Polygon | ✅ | ✅ | ✅ |
 | Avalanche | ✅ | — | ✅ |
 | BSC | ✅ | — | ✅ |
-| Solana | 🔜 | — | — |
+| Solana | ✅ | — | — |
 
 ---
 

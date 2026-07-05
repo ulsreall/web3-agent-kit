@@ -23,11 +23,11 @@ Display package information and version.
 ```bash
 $ wak info
 ╔══════════════════════════════════════════════╗
-║         🤖 Web3 Agent Kit v1.6.0             ║
+║         🤖 Web3 Agent Kit v1.9.1             ║
 ║    Open-source AI agent framework for Web3   ║
 ╚══════════════════════════════════════════════╝
 
-📦 Version: 1.6.0
+📦 Version: 1.9.1
 🔗 GitHub: https://github.com/ulsreall/web3-agent-kit
 📦 PyPI: https://pypi.org/project/web3-agent-kit/
 ```
@@ -107,12 +107,12 @@ $ wak examples
   10. multi_wallet.py      — Multi-wallet management
 ```
 
-### `wak agent <goal>`
+### `wak agent --goal <goal> --wallet <address>`
 
 Run an agent with a natural language goal directly from terminal.
 
 ```bash
-$ wak agent "Check my ETH balance on Base"
+$ wak agent --goal "Check my ETH balance on Base" --wallet 0x721e...A522
 🤖 Agent running...
 📊 Goal: Check my ETH balance on Base
 

@@ -22,7 +22,7 @@ BANNER = r"""
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="1.8.0", prog_name="wak")
+@click.version_option(version="1.9.1", prog_name="wak")
 @click.pass_context
 def main(ctx):
     """WAK — Web3 Agent Kit CLI.

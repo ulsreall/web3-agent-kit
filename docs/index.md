@@ -36,7 +36,7 @@ pip install web3-agent-kit
 <!-- Stats Bar -->
 <div class="tx-stats" markdown>
 <div class="stat" markdown>
-<div class="stat-num">v1.9.0</div>
+<div class="stat-num">v1.9.1</div>
 <div class="stat-label">Version</div>
 </div>
 <div class="stat" markdown>
@@ -74,7 +74,7 @@ print(result)
 Or use the **CLI** — no Python needed:
 
 ```bash
-wak agent "Swap 0.1 ETH to USDC on Base"
+wak agent --goal "Swap 0.1 ETH to USDC on Base" --wallet 0x...
 ```
 
 <div class="tx-divider"></div>
@@ -205,7 +205,7 @@ User / Application
    │  Chain Abstraction   │
    │  ETH · BASE · ARB   │
    │  OP · MATIC · BSC   │
-   │  AVAX · BERACHAIN   │
+   │  AVAX · SOLANA   │
    └─────────────────────┘
 ```
 
@@ -237,7 +237,7 @@ User / Application
     wak gas
 
     # Run an agent
-    wak agent "Swap 0.1 ETH to USDC on Base"
+    wak agent --goal "Swap 0.1 ETH to USDC on Base" --wallet 0x...
     ```
 
 === "Airdrop Farming"
@@ -293,7 +293,7 @@ User / Application
 | Polygon | ✅ | ✅ | ✅ |
 | Avalanche | ✅ | — | ✅ |
 | BSC | ✅ | — | ✅ |
-| Berachain | ✅ | — | ✅ |
+| Solana | ✅ | — | — |
 
 <div class="tx-divider"></div>
 

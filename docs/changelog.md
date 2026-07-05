@@ -4,6 +4,21 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.9.1] - 2026-07-01
+
+### Fixed
+- Coverage badge: 58% → 31% (actual)
+- Version bump to 1.9.1
+
+### Stats
+- 23 modules
+- 115 source files
+- 991 tests passing
+- 31% coverage
+- 8 chains supported
+
+---
+
 ## [1.9.0] - 2026-06-30
 
 ### Added
@@ -30,7 +45,7 @@ All notable changes to Web3 Agent Kit are documented here.
 - 115 source files (was 104)
 - 32,743 lines of code
 - 991 tests passing (was 986)
-- 58% coverage
+- 31% coverage
 - 8 chains supported (was 7)
 
 ---

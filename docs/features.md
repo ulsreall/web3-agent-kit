@@ -57,7 +57,7 @@ agent = Agent(config=config)
 
 ## 🔗 Multi-Chain Support
 
-Web3 Agent Kit supports 7+ blockchain networks out of the box.
+Web3 Agent Kit supports **8** blockchain networks out of the box.
 
 ### Supported Chains
 
@@ -68,6 +68,7 @@ Web3 Agent Kit supports 7+ blockchain networks out of the box.
 - **Polygon** — Ethereum sidechain with low fees
 - **Avalanche** — High-throughput L1
 - **BSC** — Binance Smart Chain
+- **Solana** — High-performance L1, low fees
 
 ### Custom RPC Endpoints
 
@@ -384,7 +385,7 @@ Built-in safety features to protect your wallet.
 ### Spend Governor
 
 ```python
-from web3_agent_kit.safety import SpendGovernor, SpendLimits
+from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
 governor = SpendGovernor(
     limits=SpendLimits(

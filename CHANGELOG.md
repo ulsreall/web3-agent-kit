@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-07-01
+
+### Fixed
+- Coverage badge: 58% → 31% (actual)
+- Docs: updated version to v1.9.1, coverage stats, chain table (Berachain → Solana)
+- CLI version: `wak --version` now shows 1.9.1
+
+### Stats
+- 23 modules
+- 115 source files
+- 991 tests passing
+- 31% coverage
+- 8 chains supported
+
+## [1.9.0] - 2026-06-30
+
+### Added
+- **Oracle Aggregator** — Multi-source price feeds (Chainlink, DexScreener, CoinGecko) with weighted median, cache, and auto-fallback
+- **Event Listener** — On-chain event subscription with webhooks, callbacks, and background polling
+- **Transaction Simulator** — Pre-flight TX verification via eth_call, Tenderly API, and local fork
+- **Account Abstraction** — ERC-4337 bundler, paymaster integration (Pimlico), smart account factory (SimpleAccount, Safe, Kernel)
+- **Cross-chain Messaging** — LayerZero + Wormhole + CCIP unified API with status tracking and fee estimation
+- **Governance** — Snapshot + Tally + on-chain governor, proposal tracking, voting power, delegation
+- `.env.example` with all module configurations
+- Integration test suite (`tests/test_integration.py`)
+- PyPI auto-publish workflow via GitHub Actions
+- Aave V3, Curve, Uniswap V3 DeFi integrations
+
+### Changed
+- `restaking/` moved to `plugins/restaking/` — now a plugin, not a core module
+- `notifications/` merged into `utils/` — backward-compatible re-exports maintained
+- README updated with 6 new module sections, architecture diagram, and stats
+- PyPI keywords updated with oracle, erc4337, governance, cross-chain, layerzero, simulation
+- Version bump to 1.9.0
+
+### Stats
+- 23 modules (was 18)
+- 115 source files (was 104)
+- 32,743 lines of code
+- 991 tests passing (was 986)
+- 58% coverage (later corrected to 31%)
+- 8 chains supported (was 7)
+
 ## [1.8.0] - 2026-06-17
 
 ### Added
