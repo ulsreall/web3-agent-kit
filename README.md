@@ -9,7 +9,7 @@
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
 [![Docs](https://img.shields.io/badge/docs-site-blue.svg)](https://web3-agent-kit.vercel.app/)
 [![Website](https://img.shields.io/badge/website-live-10b981.svg)](https://web3-agent-kit.vercel.app/)
-[![Coverage](https://img.shields.io/badge/coverage-58%25-green.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
+[![Coverage](https://img.shields.io/badge/coverage-31%25-yellow.svg)](https://github.com/ulsreall/web3-agent-kit#readme)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
