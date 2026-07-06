@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-07-06
+
+### Added
+- **Async airdrop module** — 31 `time.sleep()` calls converted to `asyncio.sleep()` / `page.wait_for_timeout()`
+  - `scheduler.py`, `discovery.py`, `faucet.py`, `onchain.py`, `multi_wallet.py`, `wl_grinder.py`, `form_filler.py`, `base.py`
+- **Simulator test suite** — 29 new tests for TransactionSimulator
+- **PyPI trusted publisher** — OIDC-based auto-publish on GitHub Release (no API token needed)
+
+### Changed
+- `AirdropScheduler.start()` now uses async event loop in background thread
+- `AirdropScheduler.run_task_now()` is now async (`await`)
+- `FaucetClaimer.claim_chain()` is now async (`await`)
+- `AirdropFarmer.farm_campaign()` is now async (`await`)
+- CI: added `pytest-asyncio` dependency for async test support
+
+### Stats
+- 27 modules (was 23)
+- 1,033 tests passing (was 991)
+- 60% coverage (was 58%)
+- 8 chains supported
+
 ## [1.9.1] - 2026-07-01
 
 ### Fixed

@@ -267,13 +267,13 @@ class PortfolioTracker:
 
     def _get_token_balance(self, token_address: str, chain: Chain) -> Optional[TokenBalance]:
         """Get balance of a specific token."""
-        w3 = self.chain_manager.get_web3(chain)
-        token = w3.eth.contract(
-            address=w3.to_checksum_address(token_address),
-            abi=ERC20_ABI,
-        )
-
         try:
+            w3 = self.chain_manager.get_web3(chain)
+            token = w3.eth.contract(
+                address=w3.to_checksum_address(token_address),
+                abi=ERC20_ABI,
+            )
+
             balance_raw = token.functions.balanceOf(
                 w3.to_checksum_address(self.wallet.address)
             ).call()
