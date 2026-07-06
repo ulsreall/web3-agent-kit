@@ -249,7 +249,7 @@ if __name__ == "__main__":
 
 ## 🌾 Yield Optimizer
 
-Cross-chain yield farming optimizer (coming soon).
+Scan, compare, and auto-compound yields across DeFi protocols.
 
 **File:** `examples/yield_optimizer.py`
 
@@ -285,7 +285,7 @@ if __name__ == "__main__":
 
 ## 🪂 Airdrop Farmer
 
-Multi-chain airdrop farming strategy (coming soon).
+Multi-chain airdrop farming with tracking and quest automation.
 
 **File:** `examples/airdrop_farmer.py`
 

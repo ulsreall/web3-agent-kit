@@ -171,7 +171,7 @@ mkdocs build
 ## 📜 License
 
 By contributing, you agree that your contributions will be licensed under
-the [MIT License](https://github.com/ulsreall/web3-agent-kit/blob/main/LICENSE).
+the [MIT License](https://github.com/ulsreall/web3-agent-kit/blob/master/LICENSE).
 
 ---
 

@@ -58,15 +58,47 @@ result = aerodrome.execute(wallet, "ETH", "USDC", 0.1)
 
       show_root_heading: true
       show_source: true
-!!! note "Coming Soon"
-    Aave lending/borrowing integration is not yet implemented.
+
+Aave V3 lending/borrowing integration — deposit, withdraw, borrow, repay, and liquidation.
+
+```python
+from web3_agent_kit.defi import Aave
+
+aave = Aave(chain_manager=chain_manager)
+
+# Deposit tokens
+result = aave.execute(
+    wallet=wallet,
+    action="deposit",
+    token="0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+    amount=1000,
+)
+
+# Get user data
+data = aave.get_user_data(wallet.address)
+print(f"Health factor: {data.health_factor}")
+```
 ---
 ## Curve
 
       show_root_heading: true
       show_source: true
-!!! note "Coming Soon"
-    Curve stableswap integration is not yet implemented.
+
+Curve Finance stableswap integration — swap stablecoins across all pool types, gauge deposits.
+
+```python
+from web3_agent_kit.defi import Curve
+
+curve = Curve(chain_manager=chain_manager)
+swap_result = curve.execute(
+    wallet=wallet,
+    pool="0x...",
+    token_in="USDC",
+    token_out="USDT",
+    amount=1000,
+)
+print(f"Swapped: {swap_result.amount_in} → {swap_result.amount_out}")
+```
 ---
 ## Data Classes
 
