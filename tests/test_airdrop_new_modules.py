@@ -311,7 +311,8 @@ class TestAirdropScheduler:
         scheduler.enable_task("test")
         assert scheduler.get_task("test").enabled is True
 
-    def test_run_task_now(self):
+    @pytest.mark.asyncio
+    async def test_run_task_now(self):
         scheduler = AirdropScheduler()
         result = []
 
@@ -319,19 +320,20 @@ class TestAirdropScheduler:
             result.append("executed")
 
         scheduler.add_daily("test", "09:00", test_fn)
-        log = scheduler.run_task_now("test")
+        log = await scheduler.run_task_now("test")
         assert log is not None
         assert log.status == TaskExecutionStatus.SUCCESS
         assert len(result) == 1
 
-    def test_run_task_with_error(self):
+    @pytest.mark.asyncio
+    async def test_run_task_with_error(self):
         scheduler = AirdropScheduler()
 
         def failing_fn():
             raise ValueError("Test error")
 
         scheduler.add_daily("test", "09:00", failing_fn, max_retries=1)
-        log = scheduler.run_task_now("test")
+        log = await scheduler.run_task_now("test")
         assert log.status == TaskExecutionStatus.FAILED
 
     def test_get_summary(self):
@@ -585,8 +587,9 @@ class TestFaucetClaimer:
         claimer._set_cooldown("base_sepolia", 24)
         assert claimer._in_cooldown("base_sepolia") is True
 
+    @pytest.mark.asyncio
     @patch("src.airdrop.faucet.requests.Session.post")
-    def test_claim_success(self, mock_post):
+    async def test_claim_success(self, mock_post):
         mock_response = MagicMock()
         mock_response.status_code = 200
         mock_response.json.return_value = {"success": True, "txHash": "0x123"}
@@ -594,7 +597,7 @@ class TestFaucetClaimer:
         mock_post.return_value = mock_response
 
         claimer = FaucetClaimer()
-        results = claimer.claim_chain("base_sepolia", "0x123", skip_cooldown=True)
+        results = await claimer.claim_chain("base_sepolia", "0x123", skip_cooldown=True)
         assert len(results) == 1
 
 

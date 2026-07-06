@@ -17,7 +17,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -260,7 +259,7 @@ class FaucetClaimer:
         self._faucets[key] = config
         logger.info(f"Added faucet: {key}")
 
-    def claim_all(
+    async def claim_all(
         self,
         wallet: str,
         chains: Optional[list[str]] = None,
@@ -297,7 +296,7 @@ class FaucetClaimer:
                 continue
 
             logger.info(f"Claiming from {faucet.name}...")
-            result = self._claim_faucet(faucet, wallet)
+            result = await self._claim_faucet(faucet, wallet)
             self._results.append(result)
 
             if result.success:
@@ -306,7 +305,7 @@ class FaucetClaimer:
             else:
                 logger.warning(f"✗ {faucet.name}: {result.error}")
 
-            time.sleep(2)  # TODO: convert to async  # Rate limiting
+            await asyncio.sleep(2)  # Rate limiting
 
         return self._results
 
@@ -346,7 +345,7 @@ class FaucetClaimer:
                 continue
 
             logger.info(f"Claiming from {faucet.name}...")
-            result = self._claim_faucet(faucet, wallet)
+            result = await self._claim_faucet(faucet, wallet)
             self._results.append(result)
 
             if result.success:
@@ -359,7 +358,7 @@ class FaucetClaimer:
 
         return self._results
 
-    def claim_chain(
+    async def claim_chain(
         self,
         chain: str,
         wallet: str,
@@ -389,7 +388,7 @@ class FaucetClaimer:
                 error="In cooldown",
             )]
 
-        result = self._claim_faucet(faucet, wallet)
+        result = await self._claim_faucet(faucet, wallet)
         if result.success:
             self._set_cooldown(chain, faucet.cooldown_hours)
         return [result]
@@ -484,7 +483,7 @@ class FaucetClaimer:
 
     # ─── Private Methods ─────────────────────────────────────────
 
-    def _claim_faucet(
+    async def _claim_faucet(
         self, faucet: FaucetConfig, wallet: str
     ) -> ClaimResult:
         """Claim tokens from a single faucet."""
@@ -512,7 +511,7 @@ class FaucetClaimer:
 
             # Handle CAPTCHA if needed
             if faucet.requires_captcha and self._captcha_api_key:
-                captcha_token = self._solve_captcha(faucet)
+                captcha_token = await self._solve_captcha(faucet)
                 if captcha_token:
                     body["captcha"] = captcha_token
                 else:
@@ -554,7 +553,7 @@ class FaucetClaimer:
 
         return result
 
-    def _solve_captcha(self, faucet: FaucetConfig) -> Optional[str]:
+    async def _solve_captcha(self, faucet: FaucetConfig) -> Optional[str]:
         """Solve CAPTCHA for a faucet."""
         if not self._captcha_api_key:
             return None
@@ -581,7 +580,7 @@ class FaucetClaimer:
 
             # Poll for result
             for _ in range(30):
-                time.sleep(5)  # TODO: convert to async
+                await asyncio.sleep(5)
                 result = self._session.post(
                     "https://api.anti-captcha.com/getTaskResult",
                     json={

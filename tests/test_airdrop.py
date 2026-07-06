@@ -411,13 +411,14 @@ class TestAirdropFarmer:
         farmer.unfreeze_wallet("wallet1")
         assert farmer._progress["wallet1"].is_frozen is False
 
-    def test_farm_campaign_no_wallets(self):
+    @pytest.mark.asyncio
+    async def test_farm_campaign_no_wallets(self):
         farmer = AirdropFarmer()
         campaign = AirdropCampaign(
             campaign_id="c1", platform="test", name="Test",
             tasks=[AirdropTask(task_id="t1", platform="test", task_type=TaskType.VISIT_URL, title="Visit")],
         )
-        results = farmer.farm_campaign(campaign, execute=True)
+        results = await farmer.farm_campaign(campaign, execute=True)
         assert results == []
 
     def test_get_progress_empty(self):

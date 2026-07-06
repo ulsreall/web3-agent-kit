@@ -26,7 +26,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -149,7 +148,7 @@ class WLGrinder:
         self._applied_urls: set[str] = set()
         logger.info("WLGrinder initialized")
 
-    def apply(self, url: str) -> WLResult:
+    async def apply(self, url: str) -> WLResult:
         """Apply for a single WL spot.
 
         Args:
@@ -170,7 +169,7 @@ class WLGrinder:
             elif platform == "google_form":
                 result = self._apply_google_form(url, result)
             elif platform == "premint":
-                result = self._apply_premint(url, result)
+                result = await self._apply_premint(url, result)
             elif platform == "gleam":
                 result = self._apply_gleam(url, result)
             else:
@@ -188,7 +187,7 @@ class WLGrinder:
 
         return result
 
-    def apply_bulk(
+    async def apply_bulk(
         self,
         urls: list[str],
         delay: float = 10.0,
@@ -216,7 +215,7 @@ class WLGrinder:
                 continue
 
             logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
-            result = self.apply(url)
+            result = await self.apply(url)
             job.results.append(result)
 
             if result.success:
@@ -226,7 +225,7 @@ class WLGrinder:
 
             # Delay between applications
             if i < len(urls) - 1:
-                time.sleep(delay)  # TODO: convert to async
+                await asyncio.sleep(delay)
 
         logger.info(
             f"Bulk apply complete: {job.success}/{job.total} success"
@@ -260,7 +259,7 @@ class WLGrinder:
                 continue
 
             logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
-            result = self.apply(url)
+            result = await self.apply(url)
             job.results.append(result)
 
             if result.success:
@@ -348,7 +347,7 @@ class WLGrinder:
 
         return result
 
-    def _apply_premint(self, url: str, result: WLResult) -> WLResult:
+    async def _apply_premint(self, url: str, result: WLResult) -> WLResult:
         """Apply via Premint.xyz."""
         try:
             from playwright.sync_api import sync_playwright
@@ -359,7 +358,7 @@ class WLGrinder:
                 page = context.new_page()
 
                 page.goto(url, wait_until="networkidle", timeout=30000)
-                time.sleep(3)  # TODO: convert to async
+                await asyncio.sleep(3)
 
                 # Premint requires wallet connection
                 # Look for connect button
@@ -371,7 +370,7 @@ class WLGrinder:
 
                 if connect_btn:
                     connect_btn.click()
-                    time.sleep(2)  # TODO: convert to async
+                    await asyncio.sleep(2)
 
                     # Try to connect wallet (usually MetaMask popup)
                     # This requires wallet extension or WalletConnect
@@ -385,7 +384,7 @@ class WLGrinder:
                     )
                     if apply_btn:
                         apply_btn.click()
-                        time.sleep(3)  # TODO: convert to async
+                        await asyncio.sleep(3)
                         result.applied = True
                         result.success = True
 

@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
@@ -408,7 +407,7 @@ class OnChainAirdropFarmer:
         except Exception as e:
             logger.error(f"Web3 init failed: {e}")
 
-    def farm_all(self) -> list[TransactionResult]:
+    async def farm_all(self) -> list[TransactionResult]:
         """Execute all farming plans for the configured chain.
 
         Returns:
@@ -419,8 +418,8 @@ class OnChainAirdropFarmer:
 
         for plan in plans:
             logger.info(f"Executing plan: {plan.name}")
-            self._execute_plan(plan)
-            time.sleep(self.config.delay_between_txs)  # TODO: convert to async
+            await self._execute_plan(plan)
+            await asyncio.sleep(self.config.delay_between_txs)
 
         return self._results
 
@@ -435,12 +434,12 @@ class OnChainAirdropFarmer:
 
         for plan in plans:
             logger.info(f"Executing plan: {plan.name}")
-            self._execute_plan(plan)
+            await self._execute_plan(plan)
             await asyncio.sleep(self.config.delay_between_txs)
 
         return self._results
 
-    def farm_plan(self, plan_name: str) -> list[TransactionResult]:
+    async def farm_plan(self, plan_name: str) -> list[TransactionResult]:
         """Execute a specific farming plan.
 
         Args:
@@ -453,7 +452,7 @@ class OnChainAirdropFarmer:
         if not plan:
             logger.error(f"Unknown plan: {plan_name}")
             return []
-        return self._execute_plan(plan)
+        return await self._execute_plan(plan)
 
     def get_plans_for_chain(self, chain: str) -> list[FarmingPlan]:
         """Get all farming plans for a specific chain.
@@ -671,7 +670,7 @@ class OnChainAirdropFarmer:
 
     # ─── Private Methods ─────────────────────────────────────────
 
-    def _execute_plan(self, plan: FarmingPlan) -> list[TransactionResult]:
+    async def _execute_plan(self, plan: FarmingPlan) -> list[TransactionResult]:
         """Execute a farming plan."""
         results = []
         for action in plan.actions:
@@ -713,7 +712,7 @@ class OnChainAirdropFarmer:
                 continue
 
             results.append(result)
-            time.sleep(self.config.delay_between_txs)  # TODO: convert to async
+            await asyncio.sleep(self.config.delay_between_txs)
 
         return results
 

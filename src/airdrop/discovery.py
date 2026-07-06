@@ -19,7 +19,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -221,62 +220,8 @@ class CampaignDiscovery:
         self._load_seen()
         logger.info("CampaignDiscovery initialized")
 
-    def discover_all(self) -> list[DiscoveredCampaign]:
+    async def discover_all(self) -> list[DiscoveredCampaign]:
         """Scan all configured platforms for campaigns.
-
-        Returns:
-            List of discovered campaigns, sorted by points (desc).
-        """
-        all_campaigns: list[DiscoveredCampaign] = []
-        scanners = {
-            "galxe": self._scan_galxe,
-            "zealy": self._scan_zealy,
-            "layer3": self._scan_layer3,
-            "questn": self._scan_questn,
-            "taskon": self._scan_taskon,
-            "intract": self._scan_intract,
-            "port3": self._scan_port3,
-        }
-
-        for platform in self.config.platforms:
-            scanner = scanners.get(platform)
-            if not scanner:
-                logger.warning(f"Unknown platform: {platform}")
-                continue
-
-            try:
-                logger.info(f"Scanning {platform}...")
-                campaigns = scanner()
-                new_campaigns = [
-                    c for c in campaigns
-                    if self._campaign_key(c) not in self._seen_campaigns
-                ]
-                all_campaigns.extend(new_campaigns)
-                logger.info(
-                    f"{platform}: found {len(campaigns)} total, "
-                    f"{len(new_campaigns)} new"
-                )
-                time.sleep(self.config.rate_limit_delay)  # TODO: convert to async
-            except Exception as e:
-                logger.error(f"Failed to scan {platform}: {e}")
-
-        # Apply filters
-        filtered = self._filter_campaigns(all_campaigns)
-
-        # Sort by points desc
-        filtered.sort(key=lambda c: c.points, reverse=True)
-
-        # Save seen campaigns
-        self._save_seen(filtered)
-
-        logger.info(
-            f"Discovery complete: {len(filtered)} campaigns "
-            f"(from {len(all_campaigns)} raw)"
-        )
-        return filtered
-
-    async def async_discover_all(self) -> list[DiscoveredCampaign]:
-        """Async version of discover_all — non-blocking sleep between platforms.
 
         Returns:
             List of discovered campaigns, sorted by points (desc).
@@ -314,8 +259,13 @@ class CampaignDiscovery:
             except Exception as e:
                 logger.error(f"Failed to scan {platform}: {e}")
 
+        # Apply filters
         filtered = self._filter_campaigns(all_campaigns)
+
+        # Sort by points desc
         filtered.sort(key=lambda c: c.points, reverse=True)
+
+        # Save seen campaigns
         self._save_seen(filtered)
 
         logger.info(
@@ -347,19 +297,19 @@ class CampaignDiscovery:
             raise ValueError(f"Unknown platform: {platform}")
         return scanner()
 
-    def get_new_campaigns(self) -> list[DiscoveredCampaign]:
+    async def get_new_campaigns(self) -> list[DiscoveredCampaign]:
         """Get only campaigns not seen before.
 
         Returns:
             List of new (unseen) campaigns.
         """
-        all_campaigns = self.discover_all()
+        all_campaigns = await self.discover_all()
         return [
             c for c in all_campaigns
             if self._campaign_key(c) not in self._seen_campaigns
         ]
 
-    def get_high_value_campaigns(
+    async def get_high_value_campaigns(
         self, min_points: int = 100
     ) -> list[DiscoveredCampaign]:
         """Get only high-value campaigns.
@@ -370,7 +320,7 @@ class CampaignDiscovery:
         Returns:
             List of high-value campaigns.
         """
-        all_campaigns = self.discover_all()
+        all_campaigns = await self.discover_all()
         return [c for c in all_campaigns if c.points >= min_points]
 
     def export_urls(self, campaigns: list[DiscoveredCampaign]) -> list[str]:

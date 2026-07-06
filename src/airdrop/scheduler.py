@@ -455,7 +455,7 @@ class AirdropScheduler:
         """
         return [t for t in self._tasks.values() if t.is_due]
 
-    def run_task_now(self, task_id: str) -> Optional[ExecutionLog]:
+    async def run_task_now(self, task_id: str) -> Optional[ExecutionLog]:
         """Run a task immediately.
 
         Args:
@@ -468,7 +468,7 @@ class AirdropScheduler:
         if not task:
             logger.error(f"Task not found: {task_id}")
             return None
-        return self._execute_task(task)
+        return await self._execute_task(task)
 
     def start(self) -> None:
         """Start the scheduler in a background thread."""
@@ -477,9 +477,33 @@ class AirdropScheduler:
             return
 
         self._running = True
-        self._thread = threading.Thread(target=self._run_loop, daemon=True)
+        self._thread = threading.Thread(target=self._run_async_loop, daemon=True)
         self._thread.start()
         logger.info("Scheduler started")
+
+    def _run_async_loop(self) -> None:
+        """Run the async scheduler loop in a new event loop."""
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            loop.run_until_complete(self._async_run_loop())
+        finally:
+            loop.close()
+
+    async def _async_run_loop(self) -> None:
+        """Async scheduler loop — uses non-blocking sleep."""
+        logger.info("Async scheduler loop started")
+        while self._running:
+            try:
+                due_tasks = self.get_due_tasks()
+                for task in due_tasks:
+                    if not self._running:
+                        break
+                    await self._async_execute_task(task)
+                self._save_state()
+            except Exception as e:
+                logger.error(f"Scheduler loop error: {e}")
+            await asyncio.sleep(self.config.check_interval)
 
     def stop(self) -> None:
         """Stop the scheduler."""
@@ -495,13 +519,6 @@ class AirdropScheduler:
         limit: int = 100,
     ) -> list[ExecutionLog]:
         """Get execution log.
-
-        Args:
-            task_id: Optional filter by task ID.
-            limit: Max entries to return.
-
-        Returns:
-            List of execution logs.
         """
         logs = self._execution_log
         if task_id:
@@ -541,21 +558,6 @@ class AirdropScheduler:
 
     # ─── Private Methods ─────────────────────────────────────────
 
-    def _run_loop(self) -> None:
-        """Main scheduler loop (runs in thread)."""
-        logger.info("Scheduler loop started")
-        while self._running:
-            try:
-                due_tasks = self.get_due_tasks()
-                for task in due_tasks:
-                    if not self._running:
-                        break
-                    self._execute_task(task)
-                self._save_state()
-            except Exception as e:
-                logger.error(f"Scheduler loop error: {e}")
-            time.sleep(self.config.check_interval)  # TODO: convert to async
-
     async def _async_run_loop(self) -> None:
         """Async scheduler loop — uses non-blocking sleep."""
         logger.info("Async scheduler loop started")
@@ -565,13 +567,13 @@ class AirdropScheduler:
                 for task in due_tasks:
                     if not self._running:
                         break
-                    self._execute_task(task)
+                    await self._execute_task(task)
                 self._save_state()
             except Exception as e:
                 logger.error(f"Scheduler loop error: {e}")
             await asyncio.sleep(self.config.check_interval)
 
-    def _execute_task(self, task: ScheduledTask) -> ExecutionLog:
+    async def _execute_task(self, task: ScheduledTask) -> ExecutionLog:
         """Execute a single task."""
         log = ExecutionLog(
             task_id=task.task_id,
@@ -615,7 +617,7 @@ class AirdropScheduler:
                     f"Task {task.name} failed (attempt {attempt + 1}): {e}"
                 )
                 if attempt < task.max_retries - 1:
-                    time.sleep(task.retry_delay)  # TODO: convert to async
+                    await asyncio.sleep(task.retry_delay)
 
                 log.status = TaskExecutionStatus.FAILED
                 log.error = str(e)

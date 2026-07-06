@@ -118,7 +118,7 @@ class AirdropFarmer:
 
         return eligible
 
-    def farm_campaign(
+    async def farm_campaign(
         self,
         campaign: AirdropCampaign,
         execute: bool = False,
@@ -153,7 +153,7 @@ class AirdropFarmer:
                     self.config.max_delay_between_wallets,
                 )
                 logger.debug(f"Farmer: waiting {delay:.0f}s before next wallet")
-                time.sleep(delay)  # TODO: convert to async
+                await asyncio.sleep(delay)
 
         return results
 

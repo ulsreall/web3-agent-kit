@@ -1,5 +1,8 @@
 """Airdrop automation module — discover, track, and complete airdrop campaigns."""
 
+import asyncio
+import time as _time
+
 from .base import (
     AirdropCampaign,
     AirdropTask,
@@ -123,6 +126,31 @@ __all__ = [
     "WLResult",
     "WLJob",
 ]
+
+# ─── Sleep helpers ─────────────────────────────────────────────
+
+async def async_sleep(seconds: float) -> None:
+    """Async sleep wrapper — non-blocking sleep."""
+    await asyncio.sleep(seconds)
+
+
+def sleep(seconds: float) -> None:
+    """Sync-compatible fallback sleep.
+
+    Uses asyncio.sleep if an event loop is running and we can
+    safely await, otherwise falls back to time.sleep for pure sync
+    contexts.
+    """
+    try:
+        loop = asyncio.get_running_loop()
+        if loop.is_running():
+            raise RuntimeError(
+                "Use await async_sleep() instead of sleep() in async context"
+            )
+    except RuntimeError:
+        pass
+    _time.sleep(seconds)
+
 
 __all__ = [
     # Base
