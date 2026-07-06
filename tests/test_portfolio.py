@@ -282,7 +282,7 @@ class TestPortfolioTracker:
 
         assert result is not None
         assert result.symbol == "USDC"
-        assert result.balance == 10.0  # 1000000000 / 10^6
+        assert result.balance == 1000.0  # Corrected
         assert result.decimals == 6
 
     def test_get_token_balance_failure(self):
