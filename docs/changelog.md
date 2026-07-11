@@ -4,6 +4,30 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.12.0] - 2026-07-12
+
+### Fixed
+- **CRITICAL DX:** package import path is now `web3_agent_kit` (was incorrectly installed as `src`)
+- README/docs/examples import paths aligned with real package name
+- CLI version string synced to release version
+- Notification module duplication cleaned (`notifications/` canonical; `utils/notif_*` are shims)
+
+### Added
+- `Agent(private_key=...)` convenience constructor
+- `Agent.execute()` alias for `Agent.run()`
+- CI import smoke test for public package path
+
+### Changed
+- Source tree renamed: `src/` → `web3_agent_kit/`
+- Pytest/coverage config now tracks `web3_agent_kit`
+
+### Stats
+- 1,149 tests passing
+- 61% coverage
+- Public import: `from web3_agent_kit import Agent, Wallet, Chain`
+
+---
+
 ## [1.11.0] - 2026-07-11
 
 ### Added
