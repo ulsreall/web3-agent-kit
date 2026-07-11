@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.defi.uniswap_v3 import (
+from web3_agent_kit.defi.uniswap_v3 import (
     UniswapV3,
     V3SwapResult,
     PoolInfo,
@@ -25,7 +25,7 @@ from src.defi.uniswap_v3 import (
     get_tick_at_sqrt_ratio,
     nearest_usable_tick,
 )
-from src.chains.chain import Chain, ChainManager, CHAIN_IDS
+from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
 
 
 # ---------------------------------------------------------------------------

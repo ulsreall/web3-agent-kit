@@ -4,13 +4,13 @@ import time
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.gas.optimizer import GasOptimizer, GasPriority, GasEstimate, GasRecommendation
-from src.wallet.watcher import (
+from web3_agent_kit.gas.optimizer import GasOptimizer, GasPriority, GasEstimate, GasRecommendation
+from web3_agent_kit.wallet.watcher import (
     WalletWatcher, WatchedWallet, WalletAlert, AlertType, AlertSeverity
 )
-from src.wallet.approval import ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk
-from src.chains.chain import Chain, ChainManager
-from src.wallet.wallet import Wallet, WalletConfig
+from web3_agent_kit.wallet.approval import ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk
+from web3_agent_kit.chains.chain import Chain, ChainManager
+from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
 
 @pytest.fixture

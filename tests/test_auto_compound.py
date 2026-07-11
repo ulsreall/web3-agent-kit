@@ -1,7 +1,7 @@
 """Tests for Yield Auto-Compound module."""
 
 import pytest
-from src.defi.auto_compound import (
+from web3_agent_kit.defi.auto_compound import (
     AutoCompound,
     CompoundConfig,
     Position,

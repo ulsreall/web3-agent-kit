@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 
-from src.defi import (
+from web3_agent_kit.defi import (
     Aave,
     Curve,
     UniswapV3,
@@ -29,7 +29,7 @@ from src.defi import (
     NONFUNGIBLE_POSITION_MANAGER,
     FACTORY,
 )
-from src.defi.uniswap_v3 import (
+from web3_agent_kit.defi.uniswap_v3 import (
     MIN_TICK,
     MAX_TICK,
     get_sqrt_ratio_at_tick,
@@ -41,8 +41,8 @@ from src.defi.uniswap_v3 import (
     POOL_ABI,
     NONFUNGIBLE_POSITION_MANAGER_ABI,
 )
-from src.chains.chain import Chain, ChainManager, CHAIN_IDS
-from src.wallet.wallet import Wallet
+from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
+from web3_agent_kit.wallet.wallet import Wallet
 
 
 # ---------------------------------------------------------------------------

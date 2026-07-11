@@ -6,9 +6,8 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-# Re-export notifications (merged from notifications/ module)
-from .notif_notifier import Notifier
-from .notif_utils import AlertLevel, Notification, NotifierConfig
+# Re-export notifications (canonical module: web3_agent_kit.notifications)
+from ..notifications import AlertLevel, Notification, Notifier, NotifierConfig
 
 
 @dataclass

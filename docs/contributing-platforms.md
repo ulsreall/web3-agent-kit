@@ -74,7 +74,7 @@ self._rate_limit()  # Enforces self.config.rate_limit_delay between calls
 ### Configuration
 
 ```python
-from src.airdrop.executor.base_executor import ExecutorConfig
+from web3_agent_kit.airdrop.executor.base_executor import ExecutorConfig
 
 config = ExecutorConfig(
     rate_limit_delay=2.0,    # Seconds between requests
@@ -287,7 +287,7 @@ Tasks use a standard type system for cross-platform compatibility:
 ### Difficulty Levels
 
 ```python
-from src.airdrop.executor.base_executor import TaskDifficulty
+from web3_agent_kit.airdrop.executor.base_executor import TaskDifficulty
 
 TaskDifficulty.EASY    # Social tasks, visits
 TaskDifficulty.MEDIUM  # On-chain transactions, wallet connections
@@ -309,7 +309,7 @@ airdrop_task = task.to_airdrop_task("my_platform")
 ### Using the CAPTCHA Solver
 
 ```python
-from src.airdrop.executor.captcha_solver import (
+from web3_agent_kit.airdrop.executor.captcha_solver import (
     CaptchaSolver,
     CaptchaConfig,
     CaptchaProvider,
@@ -391,7 +391,7 @@ On startup, the framework discovers executors from two locations:
 
 ```python
 # ~/.web3-agent-kit/plugins/my_custom_executor.py
-from src.airdrop.executor.base_executor import BasePlatformExecutor, ExecutorConfig
+from web3_agent_kit.airdrop.executor.base_executor import BasePlatformExecutor, ExecutorConfig
 from typing import Optional
 
 class MyCustomExecutor(BasePlatformExecutor):
@@ -413,7 +413,7 @@ class MyCustomExecutor(BasePlatformExecutor):
 ### Using the Registry Programmatically
 
 ```python
-from src.airdrop.executor.plugin_registry import PlatformPluginRegistry
+from web3_agent_kit.airdrop.executor.plugin_registry import PlatformPluginRegistry
 
 # List all available platforms
 platforms = PlatformPluginRegistry.list_all()
@@ -438,7 +438,7 @@ Create `tests/test_my_platform.py`:
 ```python
 import pytest
 from unittest.mock import MagicMock, patch
-from src.airdrop.executor.my_platform import MyPlatformExecutor, MyPlatformTask
+from web3_agent_kit.airdrop.executor.my_platform import MyPlatformExecutor, MyPlatformTask
 
 class TestMyPlatformExecutor:
     def test_init(self):
@@ -499,7 +499,7 @@ python -m pytest tests/test_my_platform.py -v --override-ini="addopts="
 python -m pytest tests/test_platforms.py -v --override-ini="addopts="
 
 # Run with coverage
-python -m pytest tests/test_my_platform.py -v --cov=src.airdrop.executor.my_platform
+python -m pytest tests/test_my_platform.py -v --cov=web3_agent_kit.airdrop.executor.my_platform
 ```
 
 ### Mocking Best Practices

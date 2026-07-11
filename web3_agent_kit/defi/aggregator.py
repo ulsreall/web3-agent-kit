@@ -242,7 +242,7 @@ class DEXAggregator:
         if chain == Chain.SOLANA:
             # Use Jupiter for Solana
             try:
-                from src.solana.dex import JupiterDEX
+                from web3_agent_kit.solana.dex import JupiterDEX
 
                 jup = JupiterDEX()
                 quote = await jup.get_quote(token_in, token_out, amount)

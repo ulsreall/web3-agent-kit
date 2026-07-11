@@ -7,15 +7,15 @@ import time
 
 import pytest
 
-from src.trading.dca import (
+from web3_agent_kit.trading.dca import (
     DCABot,
     DCAOrder,
     DCAResult,
     Interval,
     DCAStatus,
 )
-from src.chains.chain import Chain, ChainManager
-from src.wallet.wallet import Wallet, WalletConfig
+from web3_agent_kit.chains.chain import Chain, ChainManager
+from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
 
 @pytest.fixture

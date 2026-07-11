@@ -1,6 +1,6 @@
 """Example: Multi-Wallet Manager — Create, manage, batch send across multiple wallets."""
 
-from web3_agent_kit.multi_wallet import MultiWalletManager
+from web3_agent_kit.wallet import MultiWalletManager
 from web3_agent_kit import Chain
 
 # Initialize manager

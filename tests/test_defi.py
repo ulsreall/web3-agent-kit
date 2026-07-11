@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 
-from src.defi import (
+from web3_agent_kit.defi import (
     Uniswap,
     Aerodrome,
     Aave,
@@ -17,8 +17,8 @@ from src.defi import (
     NATIVE,
     STABLECOINS,
 )
-from src.chains.chain import Chain, ChainManager, CHAIN_IDS
-from src.wallet.wallet import Wallet
+from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
+from web3_agent_kit.wallet.wallet import Wallet
 
 
 # ---------------------------------------------------------------------------

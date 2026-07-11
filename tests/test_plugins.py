@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from src.plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
+from web3_agent_kit.plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
 
 
 # === Test Plugins ===
@@ -206,7 +206,7 @@ class TestPluginRegistry:
         # Create a temporary plugin file
         with tempfile.TemporaryDirectory() as tmpdir:
             plugin_code = '''
-from src.plugins import Plugin, PluginMeta
+from web3_agent_kit.plugins import Plugin, PluginMeta
 
 class DirPlugin(Plugin):
     @property
@@ -283,7 +283,7 @@ class TestPluginManager:
         manager = PluginManager()
         with tempfile.TemporaryDirectory() as tmpdir:
             plugin_code = '''
-from src.plugins import Plugin, PluginMeta
+from web3_agent_kit.plugins import Plugin, PluginMeta
 
 class TestDirPlugin(Plugin):
     @property

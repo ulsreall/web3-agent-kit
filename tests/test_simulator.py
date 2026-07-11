@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 from dataclasses import dataclass
 
-from src.simulator import TxSimulator, SimResult, SimConfig, SimMode
+from web3_agent_kit.simulator import TxSimulator, SimResult, SimConfig, SimMode
 
 
 class TestSimResult:

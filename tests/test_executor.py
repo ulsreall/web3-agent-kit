@@ -10,12 +10,12 @@ except ImportError:
 
 requires_playwright = pytest.mark.skipif(not HAS_PLAYWRIGHT, reason="playwright not installed")
 
-from src.airdrop.executor.browser import BrowserManager, BrowserConfig
-from src.airdrop.executor.gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
-from src.airdrop.executor.social_exec import (
+from web3_agent_kit.airdrop.executor.browser import BrowserManager, BrowserConfig
+from web3_agent_kit.airdrop.executor.gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
+from web3_agent_kit.airdrop.executor.social_exec import (
     TwitterExecutor, DiscordExecutor, TelegramExecutor, SocialExecutorConfig,
 )
-from src.airdrop.executor.zealy_exec import ZealyExecutor, ZealyResult
+from web3_agent_kit.airdrop.executor.zealy_exec import ZealyExecutor, ZealyResult
 
 
 # ─── BrowserConfig ────────────────────────────────────────────

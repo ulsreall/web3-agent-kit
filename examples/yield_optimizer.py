@@ -1,7 +1,7 @@
 """Example: Yield Optimizer — Scan, compare, and auto-compound yield across DeFi."""
 
 from web3_agent_kit import Wallet, Chain
-from web3_agent_kit.yield_optimizer import YieldOptimizer, YieldConfig, RiskLevel, Protocol
+from web3_agent_kit.defi import YieldOptimizer, YieldConfig, RiskLevel, Protocol
 
 # Initialize
 wallet = Wallet(private_key="0xYOUR_KEY", chain=Chain.ETHEREUM)

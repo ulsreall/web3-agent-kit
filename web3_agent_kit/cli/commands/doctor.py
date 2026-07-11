@@ -29,6 +29,13 @@ def doctor():
     py_ok = sys.version_info >= (3, 10)
     all_ok &= _check("Python >= 3.10", py_ok, py_ver)
 
+    # ── Package import path ──
+    try:
+        import web3_agent_kit
+        all_ok &= _check("web3_agent_kit import", True, getattr(web3_agent_kit, "__version__", "ok"))
+    except Exception as e:
+        all_ok &= _check("web3_agent_kit import", False, str(e))
+
     # ── Core dependencies ──
     deps = [
         ("web3", "web3"),

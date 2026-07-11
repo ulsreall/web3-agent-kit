@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.solana.nft import SolanaNFT, SolanaNFTConfig
-from src.solana.client import SolanaClientConfig
+from web3_agent_kit.solana.nft import SolanaNFT, SolanaNFTConfig
+from web3_agent_kit.solana.client import SolanaClientConfig
 
 
 @pytest.fixture

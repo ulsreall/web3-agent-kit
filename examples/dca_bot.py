@@ -1,7 +1,7 @@
 """Example: DCA Bot — Dollar-Cost Average into tokens automatically."""
 
 from web3_agent_kit import Wallet, Chain, ChainManager
-from web3_agent_kit.dca_bot import DCABot, Interval, DCAStatus
+from web3_agent_kit.trading import DCABot, Interval, DCAStatus
 
 # Initialize
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])

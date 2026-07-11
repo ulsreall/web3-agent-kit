@@ -73,10 +73,25 @@ class Agent:
         result = agent.run("Swap 0.1 ETH to USDC")
     """
 
-    def __init__(self, config: Optional[AgentConfig] = None, **kwargs):
-        if config:
+    def __init__(
+        self,
+        config: Optional[AgentConfig] = None,
+        private_key: Optional[str] = None,
+        wallet: Optional[Wallet] = None,
+        **kwargs,
+    ):
+        if config is not None:
             self.config = config
         else:
+            if wallet is None and private_key:
+                wallet = Wallet.from_key(private_key)
+            if wallet is not None:
+                kwargs["wallet"] = wallet
+            if "wallet" not in kwargs:
+                raise TypeError(
+                    "Agent requires wallet=... or private_key=... "
+                    "(or pass a full AgentConfig)"
+                )
             self.config = AgentConfig(**kwargs)
 
         self.wallet = self.config.wallet
@@ -141,6 +156,10 @@ class Agent:
                 logger.info(f"Result: {result}")
 
         return f"Max steps ({steps}) reached without completion"
+
+    def execute(self, goal: str, max_steps: Optional[int] = None) -> str:
+        """Alias for :meth:`run` — natural-language goal execution."""
+        return self.run(goal, max_steps=max_steps)
 
     def _observe(self) -> str:
         """Observe current blockchain state."""

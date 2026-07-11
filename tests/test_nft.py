@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.nft import (
+from web3_agent_kit.nft import (
     NFTManager,
     NFTMarketplace,
     NFTMinter,
@@ -307,7 +307,7 @@ class TestNFTMarketplace:
         mp = NFTMarketplace(NFTConfig(opensea_api_key="mykey"))
         assert mp.session.headers.get("X-API-KEY") == "mykey"
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_collection_success(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -328,7 +328,7 @@ class TestNFTMarketplace:
         assert col.floor_price_eth == 1.0
         assert col.verified is True
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_collection_not_found(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 404
@@ -338,14 +338,14 @@ class TestNFTMarketplace:
         col = mp.get_collection("0xABC")
         assert col is None
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_collection_request_error(self, mock_get):
         mock_get.side_effect = ConnectionError("timeout")
         mp = NFTMarketplace(NFTConfig())
         col = mp.get_collection("0xABC")
         assert col is None
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_wallet_nfts_with_alchemy(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -369,13 +369,13 @@ class TestNFTMarketplace:
         assert nfts[0].name == "Cool NFT"
         assert nfts[0].token_id == "42"
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_wallet_nfts_no_alchemy_key(self, mock_get):
         mp = NFTMarketplace(NFTConfig())
         nfts = mp.get_wallet_nfts("0xOwner")
         assert nfts == []
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_floor_price(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -390,7 +390,7 @@ class TestNFTMarketplace:
         price = mp.get_floor_price("0xABC")
         assert price == 2.0
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_floor_price_not_found(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 404
@@ -400,7 +400,7 @@ class TestNFTMarketplace:
         price = mp.get_floor_price("0xABC")
         assert price == 0.0
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_listings(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -419,7 +419,7 @@ class TestNFTMarketplace:
         assert len(listings) == 1
         assert listings[0].price == 0.5
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_trending(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -438,7 +438,7 @@ class TestNFTMarketplace:
         assert len(trending) == 1
         assert trending[0].name == "Trending NFT"
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_search_collections(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -473,7 +473,7 @@ class TestNFTManager:
         nm = NFTManager(NFTConfig(opensea_api_key="testkey"))
         assert nm.session.headers.get("X-API-KEY") == "testkey"
 
-    @patch("src.nft.marketplace.requests.Session.get")
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_delegates_get_collection(self, mock_get):
         mock_resp = MagicMock()
         mock_resp.status_code = 200

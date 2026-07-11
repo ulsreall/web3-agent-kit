@@ -187,7 +187,7 @@ sniper.start(chain=Chain.BASE, poll_interval=12)
 The LLM client automatically detects available providers from environment variables and cascades through them on failure:
 
 ```python
-from web3_agent_kit.llm import LLM
+from web3_agent_kit.agent import LLM
 
 # Auto-detect from environment variables
 llm = LLM()

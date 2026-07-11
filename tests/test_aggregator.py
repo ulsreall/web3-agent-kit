@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.defi.aggregator import DEXAggregator, AggregatorConfig, Chain, AggregatorError
+from web3_agent_kit.defi.aggregator import DEXAggregator, AggregatorConfig, Chain, AggregatorError
 
 
 @pytest.fixture
@@ -31,7 +31,7 @@ class TestChain:
         assert Chain.BASE.value == "base"
 
     def test_chain_ids(self):
-        from src.defi.aggregator import CHAIN_IDS
+        from web3_agent_kit.defi.aggregator import CHAIN_IDS
         assert CHAIN_IDS[Chain.ETHEREUM] == 1
         assert CHAIN_IDS[Chain.BSC] == 56
         assert CHAIN_IDS[Chain.POLYGON] == 137

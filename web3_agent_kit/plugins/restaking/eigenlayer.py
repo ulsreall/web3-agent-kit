@@ -15,8 +15,8 @@ try:
     from ...chains.chain import CHAIN_IDS, Chain, ChainManager
     from ...wallet.wallet import Wallet
 except ImportError:
-    from src.chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
-    from src.wallet.wallet import Wallet  # type: ignore[no-redef]
+    from web3_agent_kit.chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
+    from web3_agent_kit.wallet.wallet import Wallet  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 

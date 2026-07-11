@@ -4,7 +4,7 @@ import pytest
 import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.solana.client import SolanaClient, SolanaClientConfig, SolanaRPCError
+from web3_agent_kit.solana.client import SolanaClient, SolanaClientConfig, SolanaRPCError
 
 
 @pytest.fixture

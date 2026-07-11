@@ -2,13 +2,13 @@
 
 import click
 
-from src.cli.commands.agent import agent
-from src.cli.commands.doctor import doctor
-from src.cli.commands.examples import examples
-from src.cli.commands.gas import gas
-from src.cli.commands.info import info
-from src.cli.commands.token import token
-from src.cli.commands.wallet import wallet
+from web3_agent_kit.cli.commands.agent import agent
+from web3_agent_kit.cli.commands.doctor import doctor
+from web3_agent_kit.cli.commands.examples import examples
+from web3_agent_kit.cli.commands.gas import gas
+from web3_agent_kit.cli.commands.info import info
+from web3_agent_kit.cli.commands.token import token
+from web3_agent_kit.cli.commands.wallet import wallet
 
 BANNER = r"""
  ██╗    ██╗ █████╗ ██╗
@@ -22,7 +22,7 @@ BANNER = r"""
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="1.9.1", prog_name="wak")
+@click.version_option(version="1.12.0", prog_name="wak")
 @click.pass_context
 def main(ctx):
     """WAK — Web3 Agent Kit CLI.

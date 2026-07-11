@@ -105,7 +105,7 @@ Anthropic → Kimi → OpenRouter → DeepSeek → Groq → OpenAI
 ### Chat Interface
 
 ```python
-from web3_agent_kit.llm import LLM
+from web3_agent_kit.agent import LLM
 
 llm = LLM()
 
@@ -125,7 +125,7 @@ data = llm.chat_json("Give me a swap analysis as JSON")
 ### Custom Configuration
 
 ```python
-from web3_agent_kit.llm import LLM, LLMConfig
+from web3_agent_kit.agent import LLM, LLMConfig
 
 config = LLMConfig(
     providers=[

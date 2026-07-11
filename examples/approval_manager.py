@@ -1,7 +1,7 @@
 """Example: Approval Manager — Scan and revoke risky approvals."""
 
 from web3_agent_kit import Wallet, Chain, ChainManager
-from web3_agent_kit.approval_manager import ApprovalManager, ApprovalRisk
+from web3_agent_kit.wallet import ApprovalManager, ApprovalRisk
 
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=ChainManager(chains=[Chain.ETHEREUM]))
 manager = ApprovalManager(wallet, ChainManager(chains=[Chain.ETHEREUM]))

@@ -1,7 +1,7 @@
 """Example: Wallet Watcher — Monitor whale wallets."""
 
 from web3_agent_kit import Chain, ChainManager
-from web3_agent_kit.wallet_watcher import WalletWatcher, AlertSeverity
+from web3_agent_kit.wallet import WalletWatcher, AlertSeverity
 
 watcher = WalletWatcher(ChainManager(chains=[Chain.ETHEREUM, Chain.BASE]))
 

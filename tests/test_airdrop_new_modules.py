@@ -6,14 +6,14 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.airdrop.discovery import (
+from web3_agent_kit.airdrop.discovery import (
     CampaignDiscovery,
     DiscoveryConfig,
     DiscoveredCampaign,
     CampaignStatus,
     CampaignCategory,
 )
-from src.airdrop.onchain import (
+from web3_agent_kit.airdrop.onchain import (
     OnChainAirdropFarmer,
     OnChainConfig,
     TransactionResult,
@@ -21,26 +21,26 @@ from src.airdrop.onchain import (
     DeFiProtocol,
     FARMING_PLANS,
 )
-from src.airdrop.scheduler import (
+from web3_agent_kit.airdrop.scheduler import (
     AirdropScheduler,
     SchedulerConfig,
     ScheduledTask,
     ScheduleFrequency,
     TaskExecutionStatus,
 )
-from src.airdrop.dashboard import (
+from web3_agent_kit.airdrop.dashboard import (
     PointsDashboard,
     DashboardConfig,
     PlatformPoints,
     PointsSnapshot,
 )
-from src.airdrop.referral import (
+from web3_agent_kit.airdrop.referral import (
     ReferralManager,
     ReferralLink,
     ReferralPlatform,
     ReferralStats,
 )
-from src.airdrop.faucet import (
+from web3_agent_kit.airdrop.faucet import (
     FaucetClaimer,
     FaucetConfig,
     ClaimResult,
@@ -588,7 +588,7 @@ class TestFaucetClaimer:
         assert claimer._in_cooldown("base_sepolia") is True
 
     @pytest.mark.asyncio
-    @patch("src.airdrop.faucet.requests.Session.post")
+    @patch("web3_agent_kit.airdrop.faucet.requests.Session.post")
     async def test_claim_success(self, mock_post):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -608,7 +608,7 @@ class TestIntegration:
     """Test module integration."""
 
     def test_import_all_new_modules(self):
-        from src.airdrop import (
+        from web3_agent_kit.airdrop import (
             CampaignDiscovery,
             OnChainAirdropFarmer,
             AirdropScheduler,

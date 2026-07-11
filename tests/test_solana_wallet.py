@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.solana.wallet import SolanaWallet, SolanaWalletConfig
-from src.solana.client import SolanaClientConfig
+from web3_agent_kit.solana.wallet import SolanaWallet, SolanaWalletConfig
+from web3_agent_kit.solana.client import SolanaClientConfig
 
 
 class TestSolanaWalletConfig:

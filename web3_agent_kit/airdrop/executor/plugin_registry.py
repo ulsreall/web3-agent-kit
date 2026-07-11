@@ -140,7 +140,7 @@ class PlatformPluginRegistry:
                 # Import the module
                 module = importlib.import_module(
                     module_path,
-                    package="src.airdrop.executor",
+                    package="web3_agent_kit.airdrop.executor",
                 )
 
                 # Find executor classes in the module

@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.security import (
+from web3_agent_kit.security import (
     ContractAudit,
     ContractPattern,
     HolderInfo,
@@ -207,7 +207,7 @@ class TestTokenAnalyzer:
         analyzer = TokenAnalyzer(config)
         assert analyzer.config.chain == "ethereum"
 
-    @patch("src.security.requests.Session.get")
+    @patch("web3_agent_kit.security.requests.Session.get")
     def test_quick_check(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -227,7 +227,7 @@ class TestTokenAnalyzer:
         assert result["is_honeypot"] is False
         assert result["buy_tax"] == 0.02
 
-    @patch("src.security.requests.Session.get")
+    @patch("web3_agent_kit.security.requests.Session.get")
     def test_check_honeypot(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -246,7 +246,7 @@ class TestTokenAnalyzer:
         tax = analyzer.check_honeypot("0x123")
         assert tax.is_honeypot is True
 
-    @patch("src.security.requests.Session.get")
+    @patch("web3_agent_kit.security.requests.Session.get")
     def test_check_rug_risk(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -270,7 +270,7 @@ class TestTokenAnalyzer:
         assert "risk_score" in result
         assert "risk_factors" in result
 
-    @patch("src.security.requests.Session.get")
+    @patch("web3_agent_kit.security.requests.Session.get")
     def test_analyze_token(self, mock_get):
         mock_response = MagicMock()
         mock_response.status_code = 200
@@ -386,7 +386,7 @@ class TestIntegration:
     """Integration tests."""
 
     def test_import(self):
-        from src.security import (
+        from web3_agent_kit.security import (
             TokenAnalyzer,
             SecurityConfig,
             SecurityReport,
@@ -398,7 +398,7 @@ class TestIntegration:
 
     def test_full_analysis_mock(self):
         """Test full analysis with mocked APIs."""
-        with patch("src.security.requests.Session.get") as mock_get:
+        with patch("web3_agent_kit.security.requests.Session.get") as mock_get:
             mock_response = MagicMock()
             mock_response.status_code = 200
             mock_response.json.return_value = {

@@ -6,17 +6,17 @@ import time
 
 import pytest
 
-from src.airdrop.base import (
+from web3_agent_kit.airdrop.base import (
     AirdropCampaign,
     AirdropTask,
     PlatformConfig,
     TaskStatus,
     TaskType,
 )
-from src.airdrop.gleam import GleamCampaign
-from src.airdrop.zealy import ZealyPlatform, ZealyLeaderboardEntry
-from src.airdrop.galxe import GalxePlatform, GalxeCredential
-from src.airdrop.social import (
+from web3_agent_kit.airdrop.gleam import GleamCampaign
+from web3_agent_kit.airdrop.zealy import ZealyPlatform, ZealyLeaderboardEntry
+from web3_agent_kit.airdrop.galxe import GalxePlatform, GalxeCredential
+from web3_agent_kit.airdrop.social import (
     SocialTaskManager,
     SocialAccount,
     SocialPlatform,
@@ -26,8 +26,8 @@ from src.airdrop.social import (
     YouTubeHelper,
     GitHubHelper,
 )
-from src.airdrop.tracker import AirdropTracker, AirdropReward
-from src.airdrop.multi_wallet import (
+from web3_agent_kit.airdrop.tracker import AirdropTracker, AirdropReward
+from web3_agent_kit.airdrop.multi_wallet import (
     AirdropFarmer,
     SybilAvoidanceConfig,
     WalletFarmProgress,

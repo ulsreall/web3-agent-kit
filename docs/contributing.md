@@ -90,7 +90,7 @@ Example: `feat: add Aerodrome DEX integration`
 pytest tests/
 
 # Run with coverage
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=web3_agent_kit --cov-report=html
 
 # Run specific test file
 pytest tests/test_core.py -v

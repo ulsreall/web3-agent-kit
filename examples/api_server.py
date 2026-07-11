@@ -38,7 +38,7 @@ import sys
 # Add parent dir to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from src.api import app, main
+from web3_agent_kit.api import app, main
 
 if __name__ == "__main__":
     print("🚀 Starting Web3 Agent Kit API...")

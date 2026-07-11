@@ -3,8 +3,8 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.trading.sniper import TokenSniper, SniperConfig, NewPair, RiskLevel
-from src.chains.chain import Chain
+from web3_agent_kit.trading.sniper import TokenSniper, SniperConfig, NewPair, RiskLevel
+from web3_agent_kit.chains.chain import Chain
 
 
 class TestSniperConfig:

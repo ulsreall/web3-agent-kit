@@ -14,8 +14,8 @@ Provides HTTP endpoints for all framework modules:
 - Token sniper
 
 Usage:
-    uvicorn src.api:app --host 0.0.0.0 --port 8000
-    python -m src.api
+    uvicorn web3_agent_kit.api:app --host 0.0.0.0 --port 8000
+    python -m web3_agent_kit.api
 """
 
 from __future__ import annotations

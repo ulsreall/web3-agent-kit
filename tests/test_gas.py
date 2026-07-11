@@ -3,15 +3,15 @@
 import pytest
 from unittest.mock import MagicMock, patch
 
-from src.gas import (
+from web3_agent_kit.gas import (
     GasOptimizer,
     GasEstimate,
     GasRecommendation,
     GasPriority,
     BatchResult,
 )
-from src.chains.chain import Chain, ChainManager
-from src.wallet.wallet import Wallet
+from web3_agent_kit.chains.chain import Chain, ChainManager
+from web3_agent_kit.wallet.wallet import Wallet
 
 
 # ---------------------------------------------------------------------------

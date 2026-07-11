@@ -18,8 +18,8 @@ import logging
 # Add parent directory to path for local development
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src import Agent, Wallet, Chain, ChainManager
-from src.defi import Uniswap
+from web3_agent_kit import Agent, Wallet, Chain, ChainManager
+from web3_agent_kit.defi import Uniswap
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

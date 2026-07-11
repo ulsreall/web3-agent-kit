@@ -16,9 +16,9 @@ import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src import Wallet, Chain, ChainManager
-from src.defi import Uniswap
-from src.sniper import TokenSniper, SniperConfig, RiskLevel
+from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit.defi import Uniswap
+from web3_agent_kit.trading import TokenSniper, SniperConfig, RiskLevel
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

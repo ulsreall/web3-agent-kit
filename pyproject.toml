@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web3-agent-kit"
-version = "1.11.0"
+version = "1.12.0"
 description = "Open-source framework for building autonomous AI agents that interact with blockchain networks"
 readme = "README.md"
 license = {text = "MIT"}
@@ -34,7 +34,7 @@ dependencies = [
     "rich>=13.0",
 ]
 [project.scripts]
-wak = "src.cli:main"
+wak = "web3_agent_kit.cli:main"
 
 
 [project.optional-dependencies]
@@ -58,17 +58,17 @@ Documentation = "https://ulsreall.github.io/web3-agent-kit/"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["src*"]
+include = ["web3_agent_kit*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short --cov=src --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml:coverage.xml"
+addopts = "-v --tb=short --cov=web3_agent_kit --cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml:coverage.xml"
 
 [tool.coverage.run]
-source = ["src"]
+source = ["web3_agent_kit"]
 omit = ["tests/*", "examples/*", "showcase/*"]
 
 [tool.coverage.report]

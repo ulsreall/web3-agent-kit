@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 
-from src.notifications import (
+from web3_agent_kit.notifications import (
     Notifier,
     TelegramNotifier,
     DiscordNotifier,
@@ -11,7 +11,7 @@ from src.notifications import (
     AlertLevel,
     Notification,
 )
-from src.notifications.utils import NotifierConfig, log_notification_to_file
+from web3_agent_kit.notifications.utils import NotifierConfig, log_notification_to_file
 
 
 # ---------------------------------------------------------------------------
@@ -134,7 +134,7 @@ class TestTelegramNotifier:
         n = _make_notification()
         assert tg.send(n) is False
 
-    @patch("src.notifications.telegram.requests.Session.post")
+    @patch("web3_agent_kit.notifications.telegram.requests.Session.post")
     def test_send_success(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -146,7 +146,7 @@ class TestTelegramNotifier:
         assert tg.send(n) is True
         mock_post.assert_called_once()
 
-    @patch("src.notifications.telegram.requests.Session.post")
+    @patch("web3_agent_kit.notifications.telegram.requests.Session.post")
     def test_send_failure(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 400
@@ -156,7 +156,7 @@ class TestTelegramNotifier:
         tg = TelegramNotifier(config)
         assert tg.send(_make_notification()) is False
 
-    @patch("src.notifications.telegram.requests.Session.post")
+    @patch("web3_agent_kit.notifications.telegram.requests.Session.post")
     def test_send_connection_error(self, mock_post):
         mock_post.side_effect = ConnectionError("no network")
         config = _make_config(telegram_bot_token="123:ABC", telegram_chat_id="-100")
@@ -174,7 +174,7 @@ class TestDiscordNotifier:
         dc = DiscordNotifier(config)
         assert dc.send(_make_notification()) is False
 
-    @patch("src.notifications.discord.requests.Session.post")
+    @patch("web3_agent_kit.notifications.discord.requests.Session.post")
     def test_send_success(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 204
@@ -184,7 +184,7 @@ class TestDiscordNotifier:
         dc = DiscordNotifier(config)
         assert dc.send(_make_notification()) is True
 
-    @patch("src.notifications.discord.requests.Session.post")
+    @patch("web3_agent_kit.notifications.discord.requests.Session.post")
     def test_send_success_200(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -194,7 +194,7 @@ class TestDiscordNotifier:
         dc = DiscordNotifier(config)
         assert dc.send(_make_notification()) is True
 
-    @patch("src.notifications.discord.requests.Session.post")
+    @patch("web3_agent_kit.notifications.discord.requests.Session.post")
     def test_send_failure(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 500
@@ -204,7 +204,7 @@ class TestDiscordNotifier:
         dc = DiscordNotifier(config)
         assert dc.send(_make_notification()) is False
 
-    @patch("src.notifications.discord.requests.Session.post")
+    @patch("web3_agent_kit.notifications.discord.requests.Session.post")
     def test_send_connection_error(self, mock_post):
         mock_post.side_effect = ConnectionError("fail")
         config = _make_config(discord_webhook_url="https://discord.com/api/webhooks/test")
@@ -226,7 +226,7 @@ class TestEmailNotifier:
         em = EmailNotifier(config)
         assert em.send(_make_notification()) is False
 
-    @patch("src.notifications.email_notifier.smtplib.SMTP")
+    @patch("web3_agent_kit.notifications.email_notifier.smtplib.SMTP")
     def test_send_success(self, MockSMTP):
         mock_server = MagicMock()
         MockSMTP.return_value.__enter__ = MagicMock(return_value=mock_server)
@@ -243,7 +243,7 @@ class TestEmailNotifier:
         em = EmailNotifier(config)
         assert em.send(_make_notification()) is True
 
-    @patch("src.notifications.email_notifier.smtplib.SMTP")
+    @patch("web3_agent_kit.notifications.email_notifier.smtplib.SMTP")
     def test_send_smtp_error(self, MockSMTP):
         MockSMTP.side_effect = ConnectionError("refused")
         config = _make_config(
@@ -278,7 +278,7 @@ class TestNotifierSend:
         notifier = Notifier(config)
         assert notifier.send("test") is False
 
-    @patch("src.notifications.telegram.requests.Session.post")
+    @patch("web3_agent_kit.notifications.telegram.requests.Session.post")
     def test_send_to_telegram(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -293,7 +293,7 @@ class TestNotifierSend:
         result = notifier.send("Hello", level="info")
         assert result is True
 
-    @patch("src.notifications.discord.requests.Session.post")
+    @patch("web3_agent_kit.notifications.discord.requests.Session.post")
     def test_send_to_discord(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -307,7 +307,7 @@ class TestNotifierSend:
         result = notifier.send("Hello", level="info")
         assert result is True
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_to_slack(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -321,7 +321,7 @@ class TestNotifierSend:
         result = notifier.send("Hello", level="info")
         assert result is True
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_to_webhook(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -348,7 +348,7 @@ class TestNotifierSend:
 
 
 class TestNotifierChannel:
-    @patch("src.notifications.telegram.requests.Session.post")
+    @patch("web3_agent_kit.notifications.telegram.requests.Session.post")
     def test_send_specific_channel(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -393,7 +393,7 @@ class TestNotifierHistory:
 
 
 class TestNotifierAlertMethods:
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_trade_alert(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -407,7 +407,7 @@ class TestNotifierAlertMethods:
         result = notifier.send_trade_alert("buy", "ETH", 1.0, 3500.0, "0xabcdef")
         assert isinstance(result, bool)
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_gas_alert(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -418,7 +418,7 @@ class TestNotifierAlertMethods:
         result = notifier.send_gas_alert("ethereum", 15.0, 30.0)
         assert isinstance(result, bool)
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_wallet_alert(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -429,7 +429,7 @@ class TestNotifierAlertMethods:
         result = notifier.send_wallet_alert("0xABCDEF", "swap", "Swapped 1 ETH")
         assert isinstance(result, bool)
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_price_alert_up(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -440,7 +440,7 @@ class TestNotifierAlertMethods:
         result = notifier.send_price_alert("ETH", 3500.0, 15.0)
         assert isinstance(result, bool)
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_price_alert_down(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200
@@ -451,7 +451,7 @@ class TestNotifierAlertMethods:
         result = notifier.send_price_alert("ETH", 3000.0, -5.0)
         assert isinstance(result, bool)
 
-    @patch("src.notifications.notifier.requests.Session.post")
+    @patch("web3_agent_kit.notifications.notifier.requests.Session.post")
     def test_send_airdrop_alert(self, mock_post):
         mock_resp = MagicMock()
         mock_resp.status_code = 200

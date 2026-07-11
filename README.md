@@ -35,11 +35,14 @@ wak examples    # List 19 example scripts
 Run your first swap:
 
 ```python
-from web3_agent_kit import Agent
+from web3_agent_kit import Agent, Wallet, Chain
 
-agent = Agent(private_key="0x...")
-result = agent.execute("swap 0.01 ETH to USDC on Base")
-print(result.tx_hash)
+wallet = Wallet.from_key("0x...")
+agent = Agent(wallet=wallet, chains=[Chain.BASE])
+# or: agent = Agent(private_key="0x...", chains=[Chain.BASE])
+
+result = agent.run("check my balances")  # agent.execute(...) also works
+print(result)
 ```
 
 ---
@@ -325,10 +328,10 @@ Full HTTP API for all modules — use from any language (JavaScript, curl, etc):
 
 ```bash
 # Start the API server
-python -m src.api
+python -m web3_agent_kit.api
 
 # Or with API key
-WEB3_API_KEY=your-secret python -m src.api
+WEB3_API_KEY=your-secret python -m web3_agent_kit.api
 ```
 
 **Endpoints:**
@@ -508,7 +511,7 @@ claimer.claim_all(wallet="0x...")
 Optimize yields across restaking protocols:
 
 ```python
-from web3_agent_kit.restaking import (
+from web3_agent_kit.plugins.restaking import (
     EigenLayer,
     EigenLayerConfig,
     RestakingOptimizer,

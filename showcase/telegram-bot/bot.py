@@ -39,7 +39,7 @@ from web3_agent_kit import (
     YieldConfig,
     MultiWalletManager,
 )
-from web3_agent_kit.dca_bot import DCABot, Interval, DCAStatus
+from web3_agent_kit.trading import DCABot, Interval, DCAStatus
 
 # === Config ===
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")

@@ -19,7 +19,7 @@ pytestmark = pytest.mark.skipif(
 
 def test_wallet_address_derivation():
     """Verify wallet address is correctly derived from private key."""
-    from src.wallet.wallet import Wallet
+    from web3_agent_kit.wallet.wallet import Wallet
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     wallet = Wallet.from_key(key)
@@ -28,7 +28,7 @@ def test_wallet_address_derivation():
 
 def test_wallet_from_seed():
     """Verify wallet from seed phrase."""
-    from src.wallet.wallet import Wallet
+    from web3_agent_kit.wallet.wallet import Wallet
 
     seed = "test test test test test test test test test test test junk"
     wallet = Wallet.from_seed(seed)
@@ -38,7 +38,7 @@ def test_wallet_from_seed():
 
 def test_wallet_repr():
     """Verify wallet repr."""
-    from src.wallet.wallet import Wallet
+    from web3_agent_kit.wallet.wallet import Wallet
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     wallet = Wallet.from_key(key)
@@ -47,7 +47,7 @@ def test_wallet_repr():
 
 def test_wallet_no_key_error():
     """Verify wallet raises when no key configured."""
-    from src.wallet.wallet import Wallet, WalletConfig
+    from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
     import pytest
 
     w = Wallet(WalletConfig())
@@ -57,8 +57,8 @@ def test_wallet_no_key_error():
 
 def test_wallet_sign_transaction():
     """Verify wallet can sign a transaction."""
-    from src.wallet.wallet import Wallet
-    from src.chains.chain import Chain
+    from web3_agent_kit.wallet.wallet import Wallet
+    from web3_agent_kit.chains.chain import Chain
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     wallet = Wallet.from_key(key)

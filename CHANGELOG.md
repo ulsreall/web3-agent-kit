@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-07-12
+
+### Fixed
+- **CRITICAL DX:** package import path is now `web3_agent_kit` (was incorrectly installed as `src`)
+- README/docs/examples import paths aligned with real package name
+- CLI version string synced to release version
+- Notification module duplication: `notifications/` is canonical; `utils/notif_*` are thin shims
+- Runtime `__version__` and packaging metadata kept in sync
+
+### Added
+- `Agent(private_key=...)` convenience constructor
+- `Agent.execute()` alias for `Agent.run()`
+- CI import smoke test for public package path
+
+### Changed
+- Source tree renamed: `src/` → `web3_agent_kit/`
+- Pytest/coverage config now tracks `web3_agent_kit`
+
+## [1.11.0] - 2026-07-11
+
+### Added
+- **Solana module** — client, wallet, Jupiter DEX, NFT helpers
+- **DEX Aggregator** — 1inch + Paraswap + 0x + Jupiter unified quote/swap interface
+- Expanded test coverage for Solana + aggregator paths
+
+### Stats
+- 24+ modules
+- 1100+ tests
+- 8 chains supported
+
 ## [1.10.0] - 2026-07-06
 
 ### Added

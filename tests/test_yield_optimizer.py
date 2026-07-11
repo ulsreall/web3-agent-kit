@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.defi.yield_optimizer import (
+from web3_agent_kit.defi.yield_optimizer import (
     YieldOptimizer,
     YieldConfig,
     YieldOpportunity,
@@ -13,7 +13,7 @@ from src.defi.yield_optimizer import (
     Protocol,
     RiskLevel,
 )
-from src.chains.chain import Chain
+from web3_agent_kit.chains.chain import Chain
 
 
 @pytest.fixture

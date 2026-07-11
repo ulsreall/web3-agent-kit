@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-# Support both `from src.restaking import *` and `from restaking import *` (when src is on sys.path)
+# Support both `from web3_agent_kit.restaking import *` and `from restaking import *` (when src is on sys.path)
 try:
     from .eigenlayer import (
         EIGEN_TOKEN,
@@ -44,7 +44,7 @@ try:
     )
 except ImportError:
     # Fallback: when imported as top-level package (sys.path includes src/)
-    from src.plugins.restaking.eigenlayer import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.eigenlayer import (  # type: ignore[no-redef]
         EIGEN_TOKEN,
         EIGENLAYER_ABI,
         EIGENLAYER_DELEGATION_MANAGER,
@@ -56,7 +56,7 @@ except ImportError:
         RestakeResult,
         RestakingStrategy,
     )
-    from src.plugins.restaking.monitor import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.monitor import (  # type: ignore[no-redef]
         Alert,
         AlertType,
         MonitoredPosition,
@@ -64,14 +64,14 @@ except ImportError:
         RestakingMonitor,
         SlashingEvent,
     )
-    from src.plugins.restaking.optimizer import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.optimizer import (  # type: ignore[no-redef]
         OptimizationResult,
         OptimizationStrategy,
         RestakingOpportunity,
         RestakingOptimizer,
         RiskAdjustedYield,
     )
-    from src.plugins.restaking.protocols import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.protocols import (  # type: ignore[no-redef]
         BABYLON_STAKING_ABI,
         BABYLON_VAULT_ADDRESS,
         SOLAYER_RESTAKING_ABI,

@@ -15,8 +15,8 @@ import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from src import Wallet, Chain, ChainManager
-from src.bridge import BridgeAgent
+from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit.bridge import BridgeAgent
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

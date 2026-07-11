@@ -7,7 +7,7 @@ import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 from dataclasses import dataclass
 
-from src.plugins.restaking import (
+from web3_agent_kit.plugins.restaking import (
     # EigenLayer
     EigenLayer,
     EigenLayerConfig,
@@ -43,8 +43,8 @@ from src.plugins.restaking import (
     Alert,
     PortfolioSnapshot,
 )
-from src.chains.chain import Chain, ChainManager, CHAIN_IDS
-from src.wallet.wallet import Wallet
+from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
+from web3_agent_kit.wallet.wallet import Wallet
 
 
 # ---------------------------------------------------------------------------

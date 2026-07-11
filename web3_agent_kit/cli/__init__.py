@@ -1,6 +1,6 @@
 """CLI module for web3-agent-kit — `wak` command."""
 
-from src.cli.main import main
+from web3_agent_kit.cli.main import main
 
 __all__ = ["main"]
 

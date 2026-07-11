@@ -1,7 +1,7 @@
 """Example: Gas Optimizer — Smart gas estimation and timing."""
 
 from web3_agent_kit import Wallet, Chain, ChainManager
-from web3_agent_kit.gas_optimizer import GasOptimizer, GasPriority
+from web3_agent_kit.gas import GasOptimizer, GasPriority
 
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=ChainManager(chains=[Chain.ETHEREUM]))
 optimizer = GasOptimizer(wallet, ChainManager(chains=[Chain.ETHEREUM, Chain.BASE]))

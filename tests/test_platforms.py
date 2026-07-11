@@ -9,26 +9,26 @@ import pytest
 from unittest.mock import MagicMock, patch, PropertyMock
 from dataclasses import fields
 
-from src.airdrop.executor.base_executor import (
+from web3_agent_kit.airdrop.executor.base_executor import (
     BasePlatformExecutor,
     ExecutorConfig,
     ExecutorResult,
     PlatformTask,
     TaskDifficulty,
 )
-from src.airdrop.executor.questn import QuestNExecutor, QuestNTask, QuestNResult
-from src.airdrop.executor.taskon import TaskOnExecutor, TaskOnTask, TaskOnResult
-from src.airdrop.executor.intract_exec import IntractExecutor, IntractTask, IntractResult
-from src.airdrop.executor.port3_exec import Port3Executor, Port3Task, Port3Result
-from src.airdrop.executor.galxe_exec import GalxeExecutor, GalxeTask, GalxeResult
-from src.airdrop.executor.layer3_exec import Layer3Executor, Layer3Task, Layer3Result
-from src.airdrop.executor.captcha_solver import (
+from web3_agent_kit.airdrop.executor.questn import QuestNExecutor, QuestNTask, QuestNResult
+from web3_agent_kit.airdrop.executor.taskon import TaskOnExecutor, TaskOnTask, TaskOnResult
+from web3_agent_kit.airdrop.executor.intract_exec import IntractExecutor, IntractTask, IntractResult
+from web3_agent_kit.airdrop.executor.port3_exec import Port3Executor, Port3Task, Port3Result
+from web3_agent_kit.airdrop.executor.galxe_exec import GalxeExecutor, GalxeTask, GalxeResult
+from web3_agent_kit.airdrop.executor.layer3_exec import Layer3Executor, Layer3Task, Layer3Result
+from web3_agent_kit.airdrop.executor.captcha_solver import (
     CaptchaSolver,
     CaptchaConfig,
     CaptchaProvider,
     CaptchaSolvingError,
 )
-from src.airdrop.executor.plugin_registry import PlatformPluginRegistry
+from web3_agent_kit.airdrop.executor.plugin_registry import PlatformPluginRegistry
 
 
 # ─── Helpers ──────────────────────────────────────────────────
@@ -133,7 +133,7 @@ class TestPlatformTask:
     def test_to_airdrop_task_completed(self):
         task = PlatformTask(task_id="t1", title="Done", is_completed=True)
         airdrop = task.to_airdrop_task("platform")
-        from src.airdrop.base import TaskStatus
+        from web3_agent_kit.airdrop.base import TaskStatus
         assert airdrop.status == TaskStatus.COMPLETED
 
 
@@ -865,7 +865,7 @@ class TestCaptchaSolver:
         assert hasattr(solver, "solve_turnstile")
         assert hasattr(solver, "get_balance")
 
-    @patch("src.airdrop.executor.captcha_solver.requests.Session")
+    @patch("web3_agent_kit.airdrop.executor.captcha_solver.requests.Session")
     def test_get_balance_anticaptcha(self, mock_session_cls):
         mock_session = MagicMock()
         mock_session_cls.return_value = mock_session
@@ -877,7 +877,7 @@ class TestCaptchaSolver:
         balance = solver.get_balance()
         assert balance == 15.5
 
-    @patch("src.airdrop.executor.captcha_solver.requests.Session")
+    @patch("web3_agent_kit.airdrop.executor.captcha_solver.requests.Session")
     def test_get_balance_2captcha(self, mock_session_cls):
         mock_session = MagicMock()
         mock_session_cls.return_value = mock_session

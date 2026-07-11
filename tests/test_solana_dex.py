@@ -3,7 +3,7 @@
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from src.solana.dex import JupiterDEX, JupiterDEXConfig, JupiterAPIError
+from web3_agent_kit.solana.dex import JupiterDEX, JupiterDEXConfig, JupiterAPIError
 
 
 @pytest.fixture

@@ -28,10 +28,21 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-timeout httpx pytest-asyncio solders base58 solana
 
+
+    - name: Import smoke test
+      run: |
+        pip install -e .
+        python - <<'PY'
+        import web3_agent_kit
+        from web3_agent_kit import Agent, Wallet, Chain
+        assert web3_agent_kit.__version__
+        print("import ok", web3_agent_kit.__version__)
+        PY
+
     - name: Run tests
       timeout-minutes: 5
       run: |
-        pytest tests/ -v --cov=src --cov-report=xml --timeout=30 -x
+        pytest tests/ -v --cov=web3_agent_kit --cov-report=xml --timeout=30 -x
 
     - name: Upload coverage
       if: matrix.python-version == '3.11'

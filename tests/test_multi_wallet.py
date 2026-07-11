@@ -7,13 +7,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.wallet.multi_wallet import (
+from web3_agent_kit.wallet.multi_wallet import (
     MultiWalletManager,
     WalletInfo,
     BatchTxResult,
     ConsolidatedBalance,
 )
-from src.chains.chain import Chain
+from web3_agent_kit.chains.chain import Chain
 
 
 @pytest.fixture
@@ -228,7 +228,7 @@ class TestBatchOperations:
         label = "w1"
         key = "e8f3c8b9a6d4f2e1c0b7a5d3f9e6c4a2b8d0f7e5c3a1b9d6f4e2c0a8b7d5f3"
         # Manually create wallet info but skip instance
-        from src.wallet.multi_wallet import WalletInfo
+        from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0x1234567890123456789012345678901234567890")
         manager.wallets["orphan"] = info
         # No instance in _wallet_instances
@@ -306,7 +306,7 @@ class TestBatchOperations:
 
     def test_batch_send_token_skipped(self, manager):
         """Test batch_send_token skips wallets without instance."""
-        from src.wallet.multi_wallet import WalletInfo
+        from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0x1234567890123456789012345678901234567890")
         manager.wallets["orphan"] = info
 
@@ -361,7 +361,7 @@ class TestBatchOperations:
 
     def test_batch_execute_skipped(self, manager):
         """Test batch_execute skips wallets without instance."""
-        from src.wallet.multi_wallet import WalletInfo
+        from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 
@@ -452,7 +452,7 @@ class TestConsolidation:
         main = manager.get_wallet("main")
         main.get_balance = MagicMock(return_value={"native": 10.0})
 
-        from src.wallet.multi_wallet import WalletInfo
+        from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 
@@ -488,7 +488,7 @@ class TestGetConsolidatedBalance:
 
     def test_skips_missing_instance(self, manager):
         manager.create_wallet("w1")
-        from src.wallet.multi_wallet import WalletInfo
+        from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 

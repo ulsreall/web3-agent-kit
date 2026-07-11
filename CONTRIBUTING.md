@@ -83,7 +83,7 @@ pytest tests/ -v
 pytest tests/test_llm.py -v
 
 # Run with coverage
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=web3_agent_kit --cov-report=html
 ```
 
 ## Project Structure

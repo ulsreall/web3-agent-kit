@@ -65,8 +65,8 @@ class AirdropFarmer:
 
     Example::
 
-        from src.multi_wallet import MultiWalletManager
-        from src.airdrop.multi_wallet import AirdropFarmer, SybilAvoidanceConfig
+        from web3_agent_kit.multi_wallet import MultiWalletManager
+        from web3_agent_kit.airdrop.multi_wallet import AirdropFarmer, SybilAvoidanceConfig
 
         manager = MultiWalletManager(chain=Chain.ETHEREUM)
         for i in range(5):
