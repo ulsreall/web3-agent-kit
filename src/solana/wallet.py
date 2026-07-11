@@ -9,8 +9,6 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
 
-from solders.keypair import Keypair
-
 from .client import SolanaClient, SolanaClientConfig
 
 
@@ -38,12 +36,13 @@ class SolanaWallet:
 
     def __init__(self, config: Optional[SolanaWalletConfig] = None):
         self.config = config or SolanaWalletConfig()
-        self._keypair: Keypair  # set in _load_keypair
+        self._keypair: Any  # solders.keypair.Keypair (lazy import)
         self._client = SolanaClient(self.config.client_config)
         self._load_keypair()
 
     def _load_keypair(self):
         """Load or create keypair."""
+        from solders.keypair import Keypair  # noqa: F811
         if self.config.private_key:
             pk_bytes = self._decode_private_key(self.config.private_key)
             self._keypair = Keypair.from_bytes(pk_bytes)
