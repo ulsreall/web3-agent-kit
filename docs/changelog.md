@@ -4,6 +4,25 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.11.0] - 2026-07-11
+
+### Added
+- **Solana module** — full Solana blockchain integration
+  - `SolanaClient` — async RPC client (getBalance, getTokenAccounts, sendTransaction, getTransaction, getTokenSupply)
+  - `SolanaWallet` — keypair management, send SOL/SPL tokens, sign messages (base58/base64)
+  - `JupiterDEX` — Jupiter aggregator (quote, swap, token search, price API)
+  - `SolanaNFT` — Metaplex DAS API (getAssetsByOwner, getAsset, collections, portfolio summary)
+- **DEX Aggregator** — unified multi-chain DEX interface
+  - EVM: 1inch, Paraswap, 0x Protocol
+  - Solana: Jupiter
+  - `get_best_quote()` auto-selects best provider across all chains
+- **73 new tests** — 45 Solana + 14 Aggregator + 14 NFT
+- `pyproject.toml`: added `solana` optional deps (solders, spl-token, base58)
+
+### Changed
+- `Chain.SOLANA` enum now backed by real implementation (was stub)
+- `solders` import is lazy — only loaded when `SolanaWallet` is instantiated
+
 ## [1.10.0] - 2026-07-06
 
 ### Added
