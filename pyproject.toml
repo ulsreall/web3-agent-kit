@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "web3-agent-kit"
-version = "1.10.0"
+version = "1.11.0"
 description = "Open-source framework for building autonomous AI agents that interact with blockchain networks"
 readme = "README.md"
 license = {text = "MIT"}
