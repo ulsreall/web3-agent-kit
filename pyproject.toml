@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     {name = "Maulana", email = "khasbim240803@gmail.com"},
 ]
-keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm", "yield", "multi-wallet", "plugins", "oracle", "account-abstraction", "erc4337", "governance", "cross-chain", "layerzero", "simulation"]
+keywords = ["web3", "ai", "agent", "blockchain", "defi", "ethereum", "uniswap", "llm", "yield", "multi-wallet", "plugins", "oracle", "account-abstraction", "erc4337", "governance", "cross-chain", "layerzero", "simulation", "solana", "jupiter", "spl", "metaplex", "dex-aggregator"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -42,6 +42,12 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "ruff>=0.1.0",
+]
+solana = [
+    "solders>=0.21.0",
+    "spl-token>=0.6.0",
+    "base58>=2.1.0",
+    "httpx>=0.25.0",
 ]
 
 [project.urls]
