@@ -4,6 +4,7 @@ from .client import SolanaClient, SolanaClientConfig
 from .wallet import SolanaWallet, SolanaWalletConfig
 from .dex import JupiterDEX, JupiterDEXConfig
 from .nft import SolanaNFT, SolanaNFTConfig
+from .lp import SolanaLPManager, LPConfig, DEXProtocol, PoolInfo
 
 __all__ = [
     "SolanaClient",
@@ -14,4 +15,8 @@ __all__ = [
     "JupiterDEXConfig",
     "SolanaNFT",
     "SolanaNFTConfig",
+    "SolanaLPManager",
+    "LPConfig",
+    "DEXProtocol",
+    "PoolInfo",
 ]
