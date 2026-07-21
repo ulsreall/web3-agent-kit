@@ -45,16 +45,35 @@ RULES:
 
 @dataclass
 class AgentConfig:
-    """Configuration for an autonomous agent."""
+    """Configuration for an autonomous agent.
+
+    By default, a conservative spending governor is attached automatically
+    (max 0.05 ETH-equivalent per tx, 0.5/day, 1.0/session) so an agent never
+    signs unbounded transactions out of the box. To use different limits,
+    pass your own ``governor=SpendGovernor(SpendLimits(...))``. To run with
+    NO spending caps (not recommended), explicitly pass ``governor=None``
+    after construction is not supported — instead pass a governor with very
+    high limits, or set ``config.governor = None`` right after creating the
+    config if you fully understand the risk.
+    """
 
     wallet: Wallet
     chains: list[Chain] = field(default_factory=lambda: [Chain.ETHEREUM])
     llm: str = "auto"  # "auto" for auto-detect, or specific model
     max_steps: int = 20
     tools: list[Any] = field(default_factory=list)
-    governor: Optional[Any] = None
+    governor: Optional[Any] = field(default_factory=lambda: _default_governor())
     confirm_fn: Optional[Callable] = None
     verbose: bool = False
+
+
+def _default_governor():
+    """Build the conservative default SpendGovernor lazily (avoids import cycles)."""
+    from ..utils import SpendGovernor, SpendLimits
+
+    return SpendGovernor(
+        SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+    )
 
 
 class Agent:
@@ -237,7 +256,10 @@ class Agent:
 
         # Check governor before executing
         if self.config.governor:
-            decision = self.config.governor.authorize(action)
+            tx_value = self._estimate_tx_value(args)
+            decision = self.config.governor.authorize(
+                tx_value=tx_value, action=tool_name
+            )
             if not decision.allowed:
                 return f"Blocked by governor: {decision.reason}"
 
@@ -252,6 +274,22 @@ class Agent:
     def get_history(self) -> list[dict]:
         """Get action history."""
         return self.history
+
+    @staticmethod
+    def _estimate_tx_value(args: dict) -> float:
+        """Best-effort extraction of native-token transaction value from tool args.
+
+        Looks for common arg names used across the built-in tools
+        (amount / amount_in / value / eth_amount). Falls back to 0.0
+        for read-only actions (get_balance, etc.) that don't move funds.
+        """
+        for key in ("value", "amount", "amount_in", "eth_amount", "tx_value"):
+            if key in args:
+                try:
+                    return float(args[key])
+                except (TypeError, ValueError):
+                    continue
+        return 0.0
 
     def __repr__(self) -> str:
         return f"Agent(chains={[c.name for c in self.chains]}, tools={list(self.tools.keys())})"

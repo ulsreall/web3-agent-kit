@@ -33,6 +33,7 @@ class Wallet:
         wallet = Wallet.from_env("PRIVATE_KEY")
         wallet = Wallet.from_key("0x...")
         wallet = Wallet.from_seed("word1 word2 ... word12")
+        wallet = Wallet.from_keystore("keystore.json", password="...")
     """
 
     def __init__(self, config: WalletConfig, chain_manager: Optional[ChainManager] = None):
@@ -61,6 +62,32 @@ class Wallet:
         wallet = cls(config, **kwargs)
         wallet._derive_account(index)
         return wallet
+
+    @classmethod
+    def from_keystore(cls, keystore_path: str, password: str, **kwargs) -> "Wallet":
+        """Create wallet from a standard Ethereum JSON keystore (UTC / V3) file.
+
+        Args:
+            keystore_path: path to the keystore JSON file.
+            password: password used to decrypt the keystore.
+
+        Raises:
+            FileNotFoundError: if the keystore file doesn't exist.
+            ValueError: if the password is wrong or the keystore is malformed
+                (raised by ``eth_account`` as a ``ValueError``).
+        """
+        import json
+
+        from eth_account import Account
+
+        with open(keystore_path, "r", encoding="utf-8") as f:
+            keystore_json = json.load(f)
+
+        private_key = Account.decrypt(keystore_json, password)
+        config = WalletConfig(
+            private_key=private_key.hex(), keystore_path=keystore_path
+        )
+        return cls(config, **kwargs)
 
     def _get_account(self):
         """Get or create web3 Account from private key."""

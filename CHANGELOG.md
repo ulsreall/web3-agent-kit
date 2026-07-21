@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.14.0] - 2026-07-21
+
+### Security
+- REST API now requires authentication (`X-API-Key` / `WEB3_API_KEY`) on all sensitive endpoints; server fails closed and refuses to start if `WEB3_API_KEY` is unset
+- Default API bind host changed from `0.0.0.0` to `127.0.0.1`; explicit `0.0.0.0` now logs a clear network-exposure warning
+- CORS configuration hardened — origins are now driven by `CORS_ALLOWED_ORIGINS` (empty by default) and the unsafe `allow_origins=["*"]` + `allow_credentials=True` combination is rejected at startup
+- `/wallet/create` is now disabled by default (`ENABLE_WALLET_CREATE_ENDPOINT=false`) and returns a clearer one-time-secret warning
+
+### Fixed
+- Spend governor is now enforced by default on every `Agent` (conservative limits) and no longer crashes when wired into `Agent._act()` — it now receives the correct `tx_value`/`action` arguments instead of a raw dict
+- `GET /wallet/balance/{address}` now queries the requested address instead of always returning the configured env wallet's balance
+
+### Added
+- `Wallet.from_keystore(path, password)` — load and decrypt a standard Ethereum JSON keystore file
+
+### Removed
+- Unused `httpx2` dependency
+
+### BREAKING CHANGES
+- `WEB3_API_KEY` is now mandatory to start the REST API server
+- `AgentConfig.governor` is active by default with conservative spend limits — pass a custom governor or explicitly set `governor=None` to opt out
+
 ## [1.13.0] - 2026-07-14
 
 ### Changed
