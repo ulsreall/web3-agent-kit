@@ -107,6 +107,7 @@ nav:
   - Home: index.md
   - Getting Started: getting-started.md
   - CLI Tool: cli.md
+  - REST API Server: api-server.md
   - Features: features.md
   - Examples: examples.md
   - API Reference:

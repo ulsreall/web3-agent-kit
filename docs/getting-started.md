@@ -257,5 +257,6 @@ governor.unkill() # resume
 ## 📚 Next Steps
 
 - [Features](features.md) — Detailed feature overview
+- [REST API Server](api-server.md) — Run the toolkit as an HTTP service
 - [Examples](examples.md) — Ready-to-use code examples
 - [API Reference](api/agent.md) — Full API documentation
