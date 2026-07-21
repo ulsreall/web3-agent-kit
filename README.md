@@ -205,6 +205,24 @@ result = agent.run("Swap 0.1 ETH to USDC on Base")
 
 That's it. One `pip install`, two env vars, five lines of Python, and your AI agent is swapping on-chain.
 
+> 🔐 **Governed by default:** every `Agent` ships with a conservative
+> `SpendGovernor` out of the box (max 0.05 ETH/tx, 0.5 ETH/day, 1.0 ETH/session)
+> — the swap above would be **blocked** unless you raise the limits or pass
+> your own governor:
+> ```python
+> from web3_agent_kit.utils import SpendGovernor, SpendLimits
+>
+> config = AgentConfig(
+>     wallet=wallet,
+>     chains=[Chain.BASE],
+>     tools=[Uniswap(chain_manager=chain)],
+>     governor=SpendGovernor(SpendLimits(max_per_tx=1.0, daily_limit=5.0, session_limit=10.0)),
+> )
+> agent = Agent(config=config)
+> ```
+> To run with no spending caps (not recommended), set `config.governor = None`
+> after construction, only if you fully understand the risk.
+
 **CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --chain base`
 
 **More examples:** `wak examples` or browse [`examples/`](examples/) — 19 working scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more).
@@ -327,12 +345,23 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 Full HTTP API for all modules — use from any language (JavaScript, curl, etc):
 
 ```bash
-# Start the API server
+# WEB3_API_KEY is required — the server refuses to start without it
+export WEB3_API_KEY=your-secret
+
+# Start the API server (binds to 127.0.0.1 by default)
 python -m web3_agent_kit.api
 
-# Or with API key
-WEB3_API_KEY=your-secret python -m web3_agent_kit.api
+# Every request must include the key
+curl -H "X-API-Key: $WEB3_API_KEY" http://127.0.0.1:8000/wallet/info
 ```
+
+> ⚠️ **Breaking change (v1.14.0+):** `WEB3_API_KEY` is now mandatory — the
+> server raises an error at startup and refuses to run if it's unset. The
+> default bind host also changed from `0.0.0.0` to `127.0.0.1`. To expose the
+> API on your network, set `API_HOST=0.0.0.0` explicitly (a startup warning
+> will remind you that this exposes wallet-signing endpoints). CORS origins
+> must be set explicitly via `CORS_ALLOWED_ORIGINS` (comma-separated) — no
+> origins are allowed by default.
 
 **Endpoints:**
 

@@ -4,6 +4,28 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.14.0] - 2026-07-21
+
+### Security
+- REST API now requires authentication (`X-API-Key` / `WEB3_API_KEY`) on all sensitive endpoints; server fails closed and refuses to start if `WEB3_API_KEY` is unset
+- Default API bind host changed from `0.0.0.0` to `127.0.0.1`; explicit `0.0.0.0` now logs a network-exposure warning
+- CORS configuration hardened via `CORS_ALLOWED_ORIGINS` env var; unsafe `*` + credentials combination is rejected at startup
+- `/wallet/create` disabled by default (`ENABLE_WALLET_CREATE_ENDPOINT=false`), clearer one-time-secret warning
+
+### Fixed
+- Spend governor now enforced by default on every `Agent`, and no longer crashes when integrated into `Agent._act()`
+- `GET /wallet/balance/{address}` now queries the requested address instead of the env wallet's balance
+
+### Added
+- `Wallet.from_keystore(path, password)` for standard Ethereum JSON keystore files
+
+### Removed
+- Unused `httpx2` dependency
+
+### Breaking Changes
+- `WEB3_API_KEY` is now mandatory to start the REST API server
+- `AgentConfig.governor` is active by default with conservative spend limits
+
 ## [1.13.0] - 2026-07-14
 
 ### Changed

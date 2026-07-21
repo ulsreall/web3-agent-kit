@@ -36,7 +36,7 @@ pip install web3-agent-kit
 <!-- Stats Bar -->
 <div class="tx-stats" markdown>
 <div class="stat" markdown>
-<div class="stat-num">v1.13.0</div>
+<div class="stat-num">v1.14.0</div>
 <div class="stat-label">Version</div>
 </div>
 <div class="stat" markdown>
