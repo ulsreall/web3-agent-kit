@@ -23,11 +23,11 @@ Display package information and version.
 ```bash
 $ wak info
 ╔══════════════════════════════════════════════╗
-║         🤖 Web3 Agent Kit v1.12.0             ║
+║         🤖 Web3 Agent Kit v1.13.0             ║
 ║    Open-source AI agent framework for Web3   ║
 ╚══════════════════════════════════════════════╝
 
-📦 Version: 1.12.0
+📦 Version: 1.13.0
 🔗 GitHub: https://github.com/ulsreall/web3-agent-kit
 📦 PyPI: https://pypi.org/project/web3-agent-kit/
 ```

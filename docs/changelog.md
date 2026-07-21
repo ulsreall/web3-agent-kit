@@ -4,6 +4,11 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.13.0] - 2026-07-14
+
+### Changed
+- Version bump to 1.13.0 across package metadata (`__init__.py`, `pyproject.toml`)
+
 ## [1.12.0] - 2026-07-12
 
 ### Fixed
