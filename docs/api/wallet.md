@@ -9,6 +9,7 @@ and balance queries across multiple chains.
         - from_key
         - from_env
         - from_seed
+        - from_keystore
         - address
         - private_key
         - get_balance
@@ -36,6 +37,11 @@ wallet = Wallet.from_key("0x...", chain_manager=chain_manager)
 ### Create from Seed Phrase
 ```python
 wallet = Wallet.from_seed("word1 word2 ... word12", chain_manager=chain_manager)
+```
+### Create from Keystore File
+```python
+# Standard Ethereum JSON (V3/UTC) keystore file, e.g. exported from geth/Parity
+wallet = Wallet.from_keystore("path/to/keystore.json", password="your-password", chain_manager=chain_manager)
 ```
 ### Check Balance
 ```python

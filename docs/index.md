@@ -44,7 +44,7 @@ pip install web3-agent-kit
 <div class="stat-label">Modules</div>
 </div>
 <div class="stat" markdown>
-<div class="stat-num">1,149</div>
+<div class="stat-num">1,225</div>
 <div class="stat-label">Tests</div>
 </div>
 <div class="stat" markdown>

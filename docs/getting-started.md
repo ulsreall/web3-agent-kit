@@ -216,7 +216,10 @@ data = llm.chat_json("Analyze this swap: 0.1 ETH to USDC")
 
 ## 🔐 Safety Features
 
-Web3 Agent Kit includes built-in safety features:
+Web3 Agent Kit includes built-in safety features. **Since v1.14.0, every
+`Agent` ships with a conservative `SpendGovernor` attached by default** (max
+0.05 ETH/tx, 0.5 ETH/day, 1.0 ETH/session) — transactions above those limits
+are blocked automatically unless you configure your own limits:
 
 ```python
 from web3_agent_kit.utils import SpendGovernor, SpendLimits

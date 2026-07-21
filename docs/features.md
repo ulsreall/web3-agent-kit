@@ -384,6 +384,10 @@ Built-in safety features to protect your wallet.
 
 ### Spend Governor
 
+**Since v1.14.0, every `Agent` has a conservative `SpendGovernor` attached by
+default** (max 0.05 ETH/tx, 0.5 ETH/day, 1.0 ETH/session) — no opt-in needed.
+Pass your own `governor=` to customize the limits:
+
 ```python
 from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
