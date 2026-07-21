@@ -108,5 +108,85 @@ class TestGovernor:
         assert governor.authorize(1.0).allowed is False
 
 
+class TestAgentGovernorIntegration:
+    """Integration test: Agent._act() must actually call the governor
+    correctly (tx_value as float, action as tool name string) and must
+    block over-limit actions gracefully instead of crashing with a
+    TypeError (regression test for the dict-vs-float bug)."""
+
+    def _make_agent(self, governor):
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+
+        mock_tool = MagicMock()
+        mock_tool.name = "swap"
+        mock_tool.execute.return_value = "swapped ok"
+
+        config = AgentConfig(
+            wallet=wallet,
+            chains=[Chain.ETHEREUM],
+            tools=[mock_tool],
+            governor=governor,
+        )
+        return Agent(config=config), mock_tool
+
+    def test_act_blocks_over_limit_tx_without_crashing(self):
+        """A tool call whose args imply a tx value above the governor's
+        per-tx limit must be blocked with a clean message, not raise."""
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
+        governor = SpendGovernor(
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+        )
+        agent, mock_tool = self._make_agent(governor)
+
+        result = agent._act({"tool": "swap", "args": {"amount": 1.0}})
+
+        assert result.startswith("Blocked by governor:")
+        mock_tool.execute.assert_not_called()
+
+    def test_act_allows_under_limit_tx(self):
+        """A tool call under the governor's limits must pass through and
+        actually execute the tool."""
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
+        governor = SpendGovernor(
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+        )
+        agent, mock_tool = self._make_agent(governor)
+
+        result = agent._act({"tool": "swap", "args": {"amount": 0.01}})
+
+        assert result == "swapped ok"
+        mock_tool.execute.assert_called_once()
+
+    def test_act_defaults_to_zero_value_for_read_only_tools(self):
+        """Tools with no recognizable value arg (e.g. get_balance) must
+        not be blocked by the governor (tx_value defaults to 0.0)."""
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
+        governor = SpendGovernor(
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+        )
+        agent, mock_tool = self._make_agent(governor)
+
+        result = agent._act({"tool": "swap", "args": {"address": "0xabc"}})
+
+        assert result == "swapped ok"
+        mock_tool.execute.assert_called_once()
+
+    def test_agent_config_has_default_governor(self):
+        """AgentConfig must attach a conservative governor by default so
+        agents never run with unbounded spending out of the box."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+        config = AgentConfig(wallet=wallet)
+
+        assert config.governor is not None
+        assert config.governor.limits.max_per_tx == 0.05
+        assert config.governor.limits.daily_limit == 0.5
+        assert config.governor.limits.session_limit == 1.0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
