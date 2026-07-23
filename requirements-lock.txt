@@ -618,9 +618,9 @@ eth-hash[pycryptodome]==0.8.0 \
     # via
     #   eth-utils
     #   web3
-eth-keyfile==0.8.1 \
-    --hash=sha256:65387378b82fe7e86d7cb9f8d98e6d639142661b2f6f490629da09fddbef6d64 \
-    --hash=sha256:9708bc31f386b52cca0969238ff35b1ac72bd7a7186f2a84b86110d3c973bec1
+eth-keyfile==0.9.1 \
+    --hash=sha256:9789c3b4fa0bb6e2616cdc2bdd71b8755b42947d78ef1e900a0149480fabb5c2 \
+    --hash=sha256:c7a8bc6af4527d1ab2eb1d1b949d59925252e17663eaf90087da121327b51df6
     # via eth-account
 eth-keys==0.7.0 \
     --hash=sha256:79d24fd876201df67741de3e3fefb3f4dbcbb6ace66e47e6fe662851a4547814 \
