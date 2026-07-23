@@ -80,7 +80,7 @@ class MultiWalletManager:
         self.chain = chain
         self.wallets: dict[str, WalletInfo] = {}
         self._wallet_instances: dict[str, Wallet] = {}  # label -> Wallet
-        self._private_keys: dict[str, str] = {}  # label -> encrypted PK (in memory only)
+        self._private_keys: dict[str, str] = {}  # label -> plaintext PK in-memory (NOT encrypted; will be cleared on .clear())
 
         # Storage for wallet metadata (NOT private keys)
         self.storage_path = storage_path or os.path.expanduser("~/.web3-agent-kit/wallets.json")

@@ -598,7 +598,9 @@ class TestSwapExactOutput:
         v3 = UniswapV3(chain_manager=cm)
         result = v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                                        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                       100.0, fee_tier=3000)
+                                       100.0, fee_tier=3000,
+                                       amount_in_max=200.0,
+                                       recipient="0x1234567890123456789012345678901234567890")
 
         assert result["function"] == "exactOutputSingle"
         assert result["params"]["fee"] == 3000
@@ -609,7 +611,9 @@ class TestSwapExactOutput:
         with pytest.raises(ValueError, match="Invalid fee tier"):
             v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
                                   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                  100.0, fee_tier=999)
+                                  100.0, fee_tier=999,
+                                  amount_in_max=200.0,
+                                  recipient="0x1234567890123456789012345678901234567890")
 
 
 # ---------------------------------------------------------------------------

@@ -72,7 +72,8 @@ def _default_governor():
     from ..utils import SpendGovernor, SpendLimits
 
     return SpendGovernor(
-        SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+        SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0),
+        require_confirm=False,  # No confirm_fn by default; caps-only protection
     )
 
 
@@ -112,6 +113,11 @@ class Agent:
                     "(or pass a full AgentConfig)"
                 )
             self.config = AgentConfig(**kwargs)
+
+        # Wire confirm_fn from config to governor if not already connected
+        if self.config.governor and self.config.confirm_fn:
+            if not self.config.governor.confirm_fn:
+                self.config.governor.confirm_fn = self.config.confirm_fn
 
         self.wallet = self.config.wallet
         self.chains = self.config.chains
@@ -257,6 +263,12 @@ class Agent:
         # Check governor before executing
         if self.config.governor:
             tx_value = self._estimate_tx_value(args)
+            if tx_value is None:
+                return (
+                    "Blocked by governor: unknown transaction value — "
+                    "set the value explicitly or provide a confirm_fn to approve "
+                    "actions with unspecified amounts."
+                )
             decision = self.config.governor.authorize(
                 tx_value=tx_value, action=tool_name
             )
@@ -276,12 +288,13 @@ class Agent:
         return self.history
 
     @staticmethod
-    def _estimate_tx_value(args: dict) -> float:
+    def _estimate_tx_value(args: dict) -> Optional[float]:
         """Best-effort extraction of native-token transaction value from tool args.
 
         Looks for common arg names used across the built-in tools
-        (amount / amount_in / value / eth_amount). Falls back to 0.0
-        for read-only actions (get_balance, etc.) that don't move funds.
+        (amount / amount_in / value / eth_amount). Returns None when
+        the value can't be determined — the caller (governor) should
+        require explicit operator approval for unknown-value actions.
         """
         for key in ("value", "amount", "amount_in", "eth_amount", "tx_value"):
             if key in args:
@@ -289,7 +302,7 @@ class Agent:
                     return float(args[key])
                 except (TypeError, ValueError):
                     continue
-        return 0.0
+        return None
 
     def __repr__(self) -> str:
         return f"Agent(chains={[c.name for c in self.chains]}, tools={list(self.tools.keys())})"

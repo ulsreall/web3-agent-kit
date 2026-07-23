@@ -178,7 +178,8 @@ class TestAgentGovernorIntegration:
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
         governor = SpendGovernor(
-            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0),
+            require_confirm=False,
         )
         agent, mock_tool = self._make_agent(governor)
 
@@ -193,7 +194,8 @@ class TestAgentGovernorIntegration:
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
         governor = SpendGovernor(
-            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0),
+            require_confirm=False,
         )
         agent, mock_tool = self._make_agent(governor)
 
@@ -202,20 +204,21 @@ class TestAgentGovernorIntegration:
         assert result == "swapped ok"
         mock_tool.execute.assert_called_once()
 
-    def test_act_defaults_to_zero_value_for_read_only_tools(self):
-        """Tools with no recognizable value arg (e.g. get_balance) must
-        not be blocked by the governor (tx_value defaults to 0.0)."""
+    def test_act_blocks_action_with_unknown_value(self):
+        """Tools with no recognizable value arg must be blocked
+        (tx_value is None, not 0.0)."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
         governor = SpendGovernor(
-            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0)
+            SpendLimits(max_per_tx=0.05, daily_limit=0.5, session_limit=1.0),
+            require_confirm=False,
         )
         agent, mock_tool = self._make_agent(governor)
 
         result = agent._act({"tool": "swap", "args": {"address": "0xabc"}})
 
-        assert result == "swapped ok"
-        mock_tool.execute.assert_called_once()
+        assert "blocked" in result.lower() or "unknown" in result.lower()
+        mock_tool.execute.assert_not_called()
 
     def test_agent_config_has_default_governor(self):
         """AgentConfig must attach a conservative governor by default so
@@ -228,6 +231,149 @@ class TestAgentGovernorIntegration:
         assert config.governor.limits.max_per_tx == 0.05
         assert config.governor.limits.daily_limit == 0.5
         assert config.governor.limits.session_limit == 1.0
+
+
+class TestSpendGovernorIntegration:
+    """Tests for SpendGovernor interaction with Agent."""
+
+    def test_require_confirm_without_fn_raises(self):
+        """require_confirm=True without confirm_fn must raise ValueError."""
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
+        with pytest.raises(ValueError, match="require_confirm=True requires a confirm_fn"):
+            SpendGovernor(
+                limits=SpendLimits(max_per_tx=0.01),
+                require_confirm=True,
+                confirm_fn=None,
+            )
+
+    def test_require_confirm_false_allows_none_fn(self):
+        """require_confirm=False should not require confirm_fn."""
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
+        gov = SpendGovernor(
+            limits=SpendLimits(max_per_tx=0.01),
+            require_confirm=False,
+            confirm_fn=None,
+        )
+        assert gov.confirm_fn is None
+
+    def test_confirm_fn_wired_from_config_to_governor(self):
+        """confirm_fn set on AgentConfig must be wired to the governor."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+        confirm_called = False
+
+        def my_confirm(payload):
+            nonlocal confirm_called
+            confirm_called = True
+            return True
+
+        config = AgentConfig(
+            wallet=wallet,
+            governor=None,  # no auto governor—we'll create our own
+        )
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+        config.governor = SpendGovernor(
+            limits=SpendLimits(max_per_tx=1.0),
+            require_confirm=True,
+            confirm_fn=my_confirm,
+        )
+
+        agent = Agent(config=config)
+        assert agent.config.governor.confirm_fn is my_confirm
+
+    def test_confirm_fn_called_during_act(self):
+        """confirm_fn must be invoked when agent executes a tool action."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+        confirm_payload = []
+
+        def my_confirm(payload):
+            confirm_payload.append(payload)
+            return True
+
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+        gov = SpendGovernor(
+            limits=SpendLimits(max_per_tx=1.0, daily_limit=10.0, session_limit=50.0),
+            require_confirm=True,
+            confirm_fn=my_confirm,
+        )
+
+        mock_tool = MagicMock()
+        mock_tool.name = "swap"
+        mock_tool.supported_chains = [Chain.ETHEREUM]
+        mock_tool.execute.return_value = "swapped ok"
+
+        config = AgentConfig(wallet=wallet, governor=gov, tools=[mock_tool])
+        agent = Agent(config=config)
+
+        result = agent._act({"tool": "swap", "args": {"amount": 0.1, "address": "0xabc"}})
+
+        assert confirm_payload, "confirm_fn was never called"
+        assert confirm_payload[0]["action"] == "swap"
+        assert confirm_payload[0]["value"] == 0.1
+        assert "swapped ok" in result
+
+    def test_confirm_fn_rejects_blocks_action(self):
+        """When confirm_fn returns False, the action must be blocked."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+
+        def rejecting_confirm(payload):
+            return False
+
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+        gov = SpendGovernor(
+            limits=SpendLimits(max_per_tx=1.0),
+            require_confirm=True,
+            confirm_fn=rejecting_confirm,
+        )
+
+        mock_tool = MagicMock()
+        mock_tool.name = "swap"
+        mock_tool.supported_chains = [Chain.ETHEREUM]
+        mock_tool.execute.return_value = "should not be called"
+
+        config = AgentConfig(wallet=wallet, governor=gov, tools=[mock_tool])
+        agent = Agent(config=config)
+
+        result = agent._act({"tool": "swap", "args": {"amount": 0.1}})
+        assert "rejected" in result.lower() or "blocked" in result.lower()
+        mock_tool.execute.assert_not_called()
+
+    def test_estimate_tx_value_unknown_key_returns_none(self):
+        """Keys not in the recognised list must return None, not 0.0."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+        config = AgentConfig(wallet=wallet, governor=None)
+        agent = Agent(config=config)
+
+        value = agent._estimate_tx_value({"some_random_key": 100})
+        assert value is None, f"Expected None, got {value}"
+
+    def test_unknown_tx_value_blocked_by_governor(self):
+        """When tx_value is None (unknown), _act must block."""
+        key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+        wallet = Wallet.from_key(key)
+
+        from web3_agent_kit.utils import SpendGovernor, SpendLimits
+        gov = SpendGovernor(
+            limits=SpendLimits(max_per_tx=1.0),
+            require_confirm=False,
+        )
+
+        mock_tool = MagicMock()
+        mock_tool.name = "swap"
+        mock_tool.supported_chains = [Chain.ETHEREUM]
+        mock_tool.execute.return_value = "should not execute"
+
+        config = AgentConfig(wallet=wallet, governor=gov, tools=[mock_tool])
+        agent = Agent(config=config)
+
+        result = agent._act({"tool": "swap", "args": {"unknown_key": 99}})
+        assert "blocked" in result.lower() or "unknown" in result.lower()
+        mock_tool.execute.assert_not_called()
 
 
 if __name__ == "__main__":
