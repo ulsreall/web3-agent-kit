@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.15.0] - 2026-07-23
+
+### BREAKING CHANGE
+
+- **`TaxInfo.is_honeypot` and `TaxInfo.can_sell` types changed from `bool` to `Optional[bool]`.**
+  Previously, both fields defaulted to `False` / `True`, which meant a failed API
+  call was silently treated as "safe" (fail-open). The new default is `None`
+  (unverified/unknown). `SecurityReport.is_safe` now returns `False` when the
+  honeypot status is `None`. All internal callers have been updated to use
+  explicit 3-state comparisons (`is True` / `is None` / `is False`). External
+  code using truthy checks (`if tax.is_honeypot:`) will still work syntactically
+  but will treat `None` as falsy — upgrade your callers to use
+  `tax.is_honeypot is True` for the old behaviour.
+
+### Security
+
+- **`SpendGovernor` now raises `ValueError` at construction time** when
+  `require_confirm=True` is set without a `confirm_fn` callable. Previously it
+  silently skipped the confirmation gate.
+- **`AgentConfig.confirm_fn` is now wired to `SpendGovernor.confirm_fn`**
+  automatically in `Agent.__init__`. Previously setting a `confirm_fn` on the
+  config had no effect — the governor never called it.
+- **`_estimate_tx_value` returns `None`** (instead of `0.0`) for unrecognised
+  argument keys. The governor now blocks execution when the transaction value
+  is unknown, requiring explicit operator approval.
+- **`swap_exact_output()` hardened**: `amount_in_max` and `recipient` are now
+  required parameters. The previous defaults (`2**256-1` and `0x0`) exposed
+  callers to unlimited token spend and fund loss. A warning docstring marks the
+  method as not production-ready.
+
+### Fixed
+
+- **Honeypot/tax check no longer fail-open.** When GoPlus API calls fail
+  (timeout, network error, rate limit), `is_honeypot` and `can_sell` now remain
+  `None` (unknown) instead of defaulting to safe. The error message is saved in
+  `TaxInfo.error` for debugging.
+- **`quick_check()` returns `is_honeypot=None`** on API failure, with the error
+  stored in a new `error` key in the result dict.
+- **Corrected misleading comment** in `MultiWalletManager._private_keys`:
+  private keys are stored as plaintext in memory (not encrypted).
+
+### Changed
+
+- **Coverage gate raised from 40% to 60%** (`pyproject.toml` `fail_under`).
+  Current coverage: 62.26%.
+
 ## [1.14.0] - 2026-07-21
 
 ### Security
