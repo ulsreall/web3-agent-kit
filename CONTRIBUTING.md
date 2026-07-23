@@ -90,19 +90,36 @@ pytest tests/ --cov=web3_agent_kit --cov-report=html
 
 ```
 web3-agent-kit/
-├── src/                    # Source code
-│   ├── agent.py           # Agent framework
-│   ├── llm.py             # LLM integration
-│   ├── wallet.py          # Wallet management
-│   ├── chain.py           # Multi-chain support
-│   ├── sniper.py          # Token sniper
-│   ├── portfolio.py       # Portfolio tracking
-│   ├── bridge.py          # Cross-chain bridges
-│   └── defi/              # DeFi protocols
-├── tests/                  # Test suite
-├── examples/               # Usage examples
-├── .github/                # GitHub templates
-└── docs/                   # Documentation
+├── web3_agent_kit/          # Source code
+│   ├── agent/              # AI agent framework (core, LLM integration)
+│   ├── wallet/             # Wallet management (single, multi-wallet, approvals, watcher)
+│   ├── chains/             # Multi-chain support
+│   ├── defi/               # DeFi protocols (Uniswap V3, Aave, yield optimizer)
+│   ├── airdrop/            # Airdrop automation (discovery, farming, multi-wallet)
+│   ├── trading/            # Trading (DCA bot, token sniper)
+│   ├── security/           # Security analysis (honeypot, rug check, contract audit)
+│   ├── solana/             # Solana module (client, wallet, DEX, LP, NFT)
+│   ├── bridge/             # Cross-chain bridges
+│   ├── portfolio/          # Portfolio tracking
+│   ├── notifications/      # Alert system (Telegram, Email, Discord)
+│   ├── oracle/             # Multi-source price oracle aggregator
+│   ├── api/                # REST API server
+│   ├── cli/                # Command-line interface
+│   ├── simulator/          # Transaction simulation
+│   ├── mev/                # MEV strategies
+│   ├── governance/         # Governance interactions
+│   ├── nft/                # NFT operations
+│   ├── gas/                # Gas optimization
+│   ├── messaging/          # Cross-chain messaging
+│   ├── events/             # On-chain event monitoring
+│   ├── account_abstraction/ # ERC-4337 account abstraction
+│   ├── plugins/            # Plugin system (restaking, custom integrations)
+│   ├── oracle/             # Price feed aggregation
+│   └── utils/              # Shared utilities & safety (SpendGovernor, Notifier)
+├── tests/                  # Test suite (1,248+ tests)
+├── examples/               # Usage examples (20+ runnable examples)
+├── .github/                # GitHub templates, workflows
+└── docs/                   # Documentation (GitHub Pages)
 ```
 
 ## Questions?

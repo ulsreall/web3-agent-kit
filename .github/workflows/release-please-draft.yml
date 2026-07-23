@@ -1,0 +1,59 @@
+# Release-please workflow — automated changelog + version bump
+# Based on Conventional Commits already used in this repo.
+#
+# !!! NOT YET ACTIVE !!!
+# This workflow is a DRAFT for review. It:
+# - Auto-creates release PRs from the release-please bot
+# - Does NOT auto-publish to PyPI — publish step requires manual approval
+# - Requires a GitHub App or PAT with contents:write and pull-requests:write
+#
+# To activate:
+#   1. Create a GitHub App or PAT token named GH_TOKEN_RELEASE_PLEASE
+#   2. Add it as a repository secret
+#   3. Change the secret name below from THIS_IS_A_DRAFT to GH_TOKEN_RELEASE_PLEASE
+#   4. Remove the 'if: false' line
+#   5. For auto-publish to PyPI, uncomment the publish step and configure
+#      Trusted Publishing on PyPI first.
+
+name: Release Please
+
+on:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    if: false  # DRAFT — remove this line to activate
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.THIS_IS_A_DRAFT }}  # Replace with GH_TOKEN_RELEASE_PLEASE
+          release-type: python
+          package-name: web3-agent-kit
+          changelog-types: >
+            [
+              {"type":"feat","section":"Features","hidden":false},
+              {"type":"fix","section":"Bug Fixes","hidden":false},
+              {"type":"docs","section":"Documentation","hidden":false},
+              {"type":"chore","section":"Miscellaneous","hidden":false},
+              {"type":"refactor","section":"Code Refactoring","hidden":false},
+              {"type":"test","section":"Tests","hidden":false},
+              {"type":"security","section":"Security","hidden":true},
+              {"type":"style","section":"Style","hidden":true}
+            ]
+
+      # Publish to PyPI — only on actual releases (not release PRs)
+      # Uncomment and configure Trusted Publishing on PyPI first.
+      # - if: ${{ steps.release.outputs.release_created }}
+      #   name: Publish to PyPI
+      #   run: |
+      #     pip install build
+      #     python -m build
+      #     pip install twine
+      #     twine upload dist/* --username __token__ --password ${{ secrets.PYPI_TOKEN }}
