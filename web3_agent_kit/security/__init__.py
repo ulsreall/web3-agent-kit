@@ -90,11 +90,11 @@ class TaxInfo:
     """Token tax information."""
     buy_tax: float = 0.0
     sell_tax: float = 0.0
-    is_honeypot: bool = False
-    can_sell: bool = True
+    is_honeypot: Optional[bool] = None  # None = unverified (unknown state)
+    can_sell: Optional[bool] = None     # None = unverified (unknown state)
     buy_gas: int = 0
     sell_gas: int = 0
-    error: str = ""
+    error: Optional[str] = None         # Error message if API call failed
 
     @property
     def is_high_tax(self) -> bool:
@@ -207,12 +207,21 @@ class SecurityReport:
 
     @property
     def is_safe(self) -> bool:
-        """Check if token is considered safe."""
+        """Check if token is considered safe.
+
+        If honeypot status is unknown (None), the token is treated as
+        NOT safe — unknown == unsafe.
+        """
+        if self.tax.is_honeypot is None:
+            return False
         return self.safety_score >= 70 and not self.tax.is_honeypot
 
     @property
-    def is_honeypot(self) -> bool:
-        """Check if token is a honeypot."""
+    def is_honeypot(self) -> Optional[bool]:
+        """Check if token is a honeypot.
+
+        Returns None if the status could not be verified (API failure).
+        """
         return self.tax.is_honeypot
 
     @property
@@ -521,10 +530,11 @@ class TokenAnalyzer:
         """
         result = {
             "address": address,
-            "is_honeypot": False,
+            "is_honeypot": None,
             "buy_tax": 0.0,
             "sell_tax": 0.0,
             "risk_level": "unknown",
+            "error": None,
         }
 
         try:
@@ -538,12 +548,19 @@ class TokenAnalyzer:
                 data = resp.json()
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
-                    result["is_honeypot"] = token_data.get("is_honeypot") == "1"
+                    is_hp = token_data.get("is_honeypot")
+                    result["is_honeypot"] = is_hp == "1"
                     result["buy_tax"] = float(token_data.get("buy_tax", "0"))
                     result["sell_tax"] = float(token_data.get("sell_tax", "0"))
-                    result["risk_level"] = "high" if result["is_honeypot"] else "low"
+                    if result["is_honeypot"]:
+                        result["risk_level"] = "high"
+                    elif result["is_honeypot"] is False:
+                        result["risk_level"] = "low"
+                    # remains "unknown" if is_honeypot is None
         except Exception as e:
             logger.error(f"Quick check failed: {e}")
+            result["error"] = str(e)
+            # is_honeypot remains None (unknown)
 
         return result
 
@@ -650,10 +667,14 @@ class TokenAnalyzer:
                 if token_data:
                     tax.buy_tax = float(token_data.get("buy_tax", "0")) * 100
                     tax.sell_tax = float(token_data.get("sell_tax", "0")) * 100
-                    tax.is_honeypot = token_data.get("is_honeypot") == "1"
-                    tax.can_sell = not tax.is_honeypot
+                    is_hp = token_data.get("is_honeypot")
+                    tax.is_honeypot = is_hp == "1"
+                    tax.can_sell = not tax.is_honeypot if tax.is_honeypot is not None else None
         except Exception as e:
-            logger.error(f"Tax check failed: {e}")
+            msg = f"Tax check failed: {e}"
+            logger.error(msg)
+            tax.error = msg
+            # is_honeypot and can_sell remain None (unknown)
 
         return tax
 
@@ -822,8 +843,10 @@ class TokenAnalyzer:
         """Generate security warnings."""
         warnings = []
 
-        if tax.is_honeypot:
+        if tax.is_honeypot is True:
             warnings.append("🚨 HONEYPOT: Cannot sell tokens!")
+        elif tax.is_honeypot is None:
+            warnings.append("⚠️ Honeypot status unknown (API failure)")
         if tax.is_high_tax:
             warnings.append(f"⚠️ High tax: Buy {tax.buy_tax}%, Sell {tax.sell_tax}%")
         if liquidity.is_low_liquidity:

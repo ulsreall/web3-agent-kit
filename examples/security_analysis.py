@@ -33,7 +33,7 @@ def example_quick_check():
     for address, name in tokens:
         print(f"\nChecking {name} ({address[:10]}...)")
         result = analyzer.quick_check(address)
-        status = "⚠️ HONEYPOT" if result["is_honeypot"] else "✓ Safe"
+        status = "⚠️ HONEYPOT" if result["is_honeypot"] is True else ("❓ Unknown" if result["is_honeypot"] is None else "✓ Safe")
         print(f"  Status: {status}")
         print(f"  Buy Tax: {result['buy_tax']}%")
         print(f"  Sell Tax: {result['sell_tax']}%")
@@ -84,11 +84,15 @@ def example_honeypot_check():
 
     tax = analyzer.check_honeypot(address)
 
-    if tax.is_honeypot:
-        print("🚨 HONEYPOT DETECTED!")
+    if tax.is_honeypot is True:
+        print("  ⚠️ Is Honeypot: YES")
         print(f"  Buy Tax: {tax.buy_tax}%")
         print(f"  Sell Tax: {tax.sell_tax}%")
         print("  ⚠️ DO NOT BUY — you won't be able to sell!")
+    elif tax.is_honeypot is None:
+        print("❓ Honeypot status unknown (API failure)")
+        print(f"  Buy Tax: {tax.buy_tax}%")
+        print(f"  Sell Tax: {tax.sell_tax}%")
     else:
         print("✓ Not a honeypot")
         print(f"  Buy Tax: {tax.buy_tax}%")
