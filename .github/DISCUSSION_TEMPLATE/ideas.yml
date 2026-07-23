@@ -1,0 +1,28 @@
+title: "Ideas & Feature Requests"
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Share ideas for new features or improvements.
+  - type: textarea
+    attributes:
+      label: What problem does this solve?
+      description: Describe the use case or pain point.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Proposed solution
+      description: How should this work?
+  - type: textarea
+    attributes:
+      label: Alternative approaches
+      description: Any other ways to solve this?
+  - type: checkboxes
+    attributes:
+      label: Would you be willing to contribute this?
+      options:
+        - label: Yes, I can help build this
+        - label: I'd need guidance
+        - label: Just suggesting, not building

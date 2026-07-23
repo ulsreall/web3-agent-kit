@@ -1,0 +1,38 @@
+title: "Q&A - Get Help"
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ask questions about using Web3 Agent Kit.
+  - type: textarea
+    attributes:
+      label: What are you trying to build or automate?
+      description: Describe your use case.
+      placeholder: "I'm trying to build an automated trading bot on Base..."
+    validations:
+      required: true
+  - type: dropdown
+    attributes:
+      label: Which chains / modules?
+      multiple: true
+      options:
+        - Ethereum
+        - Base
+        - Solana
+        - Polygon
+        - Arbitrum
+        - Optimism
+        - BSC
+        - Avalanche
+        - Other
+  - type: input
+    attributes:
+      label: Web3 Agent Kit version
+      description: Run `pip show web3-agent-kit` or check `import web3_agent_kit; print(web3_agent_kit.__version__)`
+      placeholder: "e.g. 1.15.0"
+  - type: textarea
+    attributes:
+      label: What have you tried so far?
+      description: Any code snippets or errors.
+      render: python
