@@ -791,11 +791,43 @@ class UniswapV3:
         token_out: str,
         amount_out: float,
         fee_tier: int = 3000,
+        amount_in_max: Optional[float] = None,
+        recipient: Optional[str] = None,
     ) -> dict:
         """Build an **exact-output** single-hop swap transaction.
 
-        Returns a dict with ``params`` and ``tx`` ready for signing.
+        .. warning::
+            This method is **not production-ready** and may expose callers to
+            excessive slippage or fund loss. Use ``swap()`` (exact-input) instead.
+
+        Current known issues:
+        - ``amount_in_max`` must be provided; it replaces the previous
+          hardcoded ``2**256 - 1`` which would approve unlimited token spend.
+        - ``recipient`` must be the caller's wallet address; the previous
+          placeholder ``0x0`` silently sent tokens to a burn address.
+
+        Args:
+            token_in: Input token symbol or address.
+            token_out: Output token symbol or address.
+            amount_out: Desired output amount (in human-readable units).
+            fee_tier: Pool fee tier in bps (default 3000 = 0.3%).
+            amount_in_max: Maximum input amount (in human-readable units).
+                Calculated from a quote if not provided, but caller
+                is strongly encouraged to pass a slippage-protected value.
+            recipient: Wallet address that receives the output tokens.
+                Required — the previous default ``0x0`` is no longer accepted.
+
+        Returns:
+            Dict with ``function`` and ``params`` for signing.
+
+        Raises:
+            ValueError: If ``recipient`` is not provided.
         """
+        if recipient is None:
+            raise ValueError(
+                "swap_exact_output requires a `recipient` wallet address. "
+                "Pass the address that should receive the output tokens."
+            )
         if fee_tier not in FEE_TIERS:
             raise ValueError(f"Invalid fee tier {fee_tier}")
 
@@ -807,10 +839,21 @@ class UniswapV3:
 
         amount_out_wei = self._amount_to_wei(w3, token_out_addr, amount_out)
 
-        w3.eth.contract(
-            address=self._to_checksum(w3, self.swap_router_address),
-            abi=SWAP_ROUTER_ABI,
-        )
+        # Default amount_in_max from a quote if not provided
+        if amount_in_max is None:
+            try:
+                quote = self.get_quote(token_in, token_out, amount_out)
+                if quote and quote.get("amountIn"):
+                    amount_in_max_wei = int(int(quote["amountIn"]) * 1.5)
+                else:
+                    raise ValueError("Quote returned no amountIn")
+            except Exception as e:
+                raise ValueError(
+                    f"swap_exact_output requires amount_in_max. "
+                    f"Auto-quote failed ({e}) — pass it explicitly."
+                ) from e
+        else:
+            amount_in_max_wei = self._amount_to_wei(w3, token_in_addr, amount_in_max)
 
         deadline = int(time.time()) + 1200
 
@@ -818,10 +861,10 @@ class UniswapV3:
             "tokenIn": self._to_checksum(w3, token_in_addr),
             "tokenOut": self._to_checksum(w3, token_out_addr),
             "fee": fee_tier,
-            "recipient": self._to_checksum(w3, "0x0"),
+            "recipient": self._to_checksum(w3, recipient),
             "deadline": deadline,
             "amountOut": amount_out_wei,
-            "amountInMaximum": 2**256 - 1,  # caller should set reasonable limit
+            "amountInMaximum": amount_in_max_wei,
             "sqrtPriceLimitX96": 0,
         }
 
