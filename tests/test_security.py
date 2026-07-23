@@ -59,6 +59,13 @@ class TestTaxInfo:
         assert tax.is_honeypot is True
         assert tax.can_sell is False
 
+    def test_default_unknown(self):
+        """Default TaxInfo must have is_honeypot=None (unknown state)."""
+        tax = TaxInfo()
+        assert tax.is_honeypot is None
+        assert tax.can_sell is None
+        assert tax.error is None
+
 
 class TestLiquidityInfo:
     """Test LiquidityInfo dataclass."""
@@ -121,7 +128,7 @@ class TestSecurityReport:
     def test_safe_report(self):
         report = SecurityReport(
             token=TokenInfo(address="0x123", name="Safe", symbol="SAFE"),
-            tax=TaxInfo(buy_tax=2, sell_tax=2),
+            tax=TaxInfo(buy_tax=2, sell_tax=2, is_honeypot=False, can_sell=True),
             liquidity=LiquidityInfo(total_liquidity_usd=100000, locked_percent=90),
             holders=HolderInfo(top10_percent=20, total_holders=1000),
             contract=ContractAudit(is_verified=True, is_ownership_renounced=True),
@@ -145,6 +152,20 @@ class TestSecurityReport:
         assert report.is_honeypot is True
         assert report.is_safe is False
 
+    def test_unknown_honeypot_is_unsafe(self):
+        """When honeypot status is None (unknown), is_safe must return False."""
+        report = SecurityReport(
+            token=TokenInfo(address="0x123", name="Test", symbol="TST"),
+            tax=TaxInfo(),  # is_honeypot=None by default
+            liquidity=LiquidityInfo(total_liquidity_usd=100000, locked_percent=90),
+            holders=HolderInfo(top10_percent=20, total_holders=1000),
+            contract=ContractAudit(is_verified=True, is_ownership_renounced=True),
+            safety_score=85,
+            risk_level=RiskLevel.SAFE,
+        )
+        assert report.is_honeypot is None
+        assert report.is_safe is False  # unknown == unsafe
+
     def test_rug_risk_report(self):
         report = SecurityReport(
             token=TokenInfo(address="0x123", name="Rug", symbol="RUG"),
@@ -160,7 +181,7 @@ class TestSecurityReport:
     def test_to_dict(self):
         report = SecurityReport(
             token=TokenInfo(address="0x123", name="Test", symbol="TST"),
-            tax=TaxInfo(buy_tax=2, sell_tax=2),
+            tax=TaxInfo(buy_tax=2, sell_tax=2, is_honeypot=False, can_sell=True),
             liquidity=LiquidityInfo(total_liquidity_usd=50000),
             holders=HolderInfo(total_holders=500),
             contract=ContractAudit(is_verified=True),
@@ -432,3 +453,31 @@ class TestIntegration:
             assert report.safety_score > 50
             assert report.is_honeypot is False
             assert report.risk_level in [RiskLevel.SAFE, RiskLevel.LOW]
+
+    def test_quick_check_api_failure_returns_unknown(self):
+        """When API call fails, quick_check must return is_honeypot=None."""
+        with patch("web3_agent_kit.security.requests.Session.get") as mock_get:
+            mock_get.side_effect = Exception("API timeout")
+            analyzer = TokenAnalyzer()
+            result = analyzer.quick_check("0x123")
+            assert result["is_honeypot"] is None
+            assert result["error"] is not None
+
+    def test_check_tax_api_failure_returns_unknown(self):
+        """When API call fails, _check_tax must return TaxInfo with is_honeypot=None."""
+        with patch("web3_agent_kit.security.requests.Session.get") as mock_get:
+            mock_get.side_effect = Exception("GoPlus API down")
+            analyzer = TokenAnalyzer()
+            tax = analyzer._check_tax("0x123")
+            assert tax.is_honeypot is None
+            assert tax.can_sell is None
+            assert tax.error is not None
+
+    def test_full_analysis_api_failure_is_not_safe(self):
+        """When APIs fail, analysis must return is_safe=False (unknown)."""
+        with patch("web3_agent_kit.security.requests.Session.get") as mock_get:
+            mock_get.side_effect = Exception("All APIs down")
+            analyzer = TokenAnalyzer()
+            report = analyzer.analyze_token("0x123")
+            assert report.is_honeypot is None
+            assert report.is_safe is False  # unknown == unsafe
