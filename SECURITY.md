@@ -8,6 +8,14 @@
 | 1.5.x | ✅ |
 | < 1.5 | ❌ |
 
+## Safe Harbor
+
+Web3 Agent Kit considers security research conducted under this policy as authorized conduct. We will not pursue legal action against researchers who:
+
+- Follow this disclosure policy
+- Make a good-faith effort to avoid privacy violations, data destruction, and service interruption
+- Do not exploit vulnerabilities beyond what is necessary to demonstrate the issue
+
 ## Reporting a Vulnerability
 
 **DO NOT** open a public GitHub issue for security vulnerabilities.
