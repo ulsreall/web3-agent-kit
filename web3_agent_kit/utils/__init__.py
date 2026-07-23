@@ -56,6 +56,12 @@ class SpendGovernor:
         require_confirm: bool = True,
         confirm_fn: Optional[callable] = None,
     ):
+        if require_confirm and confirm_fn is None:
+            raise ValueError(
+                "require_confirm=True requires a confirm_fn callable. "
+                "Pass confirm_fn=lambda payload: ... to let the operator review "
+                "and approve/deny transactions."
+            )
         self.limits = limits or SpendLimits()
         self.require_confirm = require_confirm
         self.confirm_fn = confirm_fn
