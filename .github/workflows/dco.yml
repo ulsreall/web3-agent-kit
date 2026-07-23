@@ -1,0 +1,25 @@
+name: DCO
+on:
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+      - name: Check Signed-off-by
+        run: |
+          MISSING=$(git log --no-merges --format="%h %an <%ae>" origin/master..HEAD | while read hash author; do
+            if ! git log --format="%B" -1 "$hash" | grep -q "^Signed-off-by:"; then
+              echo "$hash $author"
+            fi
+          done)
+          if [ -n "$MISSING" ]; then
+            echo "❌ Commits missing Signed-off-by:"
+            echo "$MISSING"
+            exit 1
+          fi
+          echo "✅ All commits have Signed-off-by"

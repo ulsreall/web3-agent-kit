@@ -1,0 +1,23 @@
+# CODEOWNERS — Mandatory review paths
+# Each line must match a GitHub team or user with write access.
+# Pattern: glob pattern @owner
+
+# Default owner
+* @ulsreall
+
+# Security-critical paths — at least one review required
+web3_agent_kit/wallet/ @ulsreall
+web3_agent_kit/agent/ @ulsreall
+web3_agent_kit/security/ @ulsreall
+web3_agent_kit/defi/ @ulsreall
+
+# Infrastructure
+.github/workflows/ @ulsreall
+pyproject.toml @ulsreall
+requirements*.txt @ulsreall
+
+# Documentation
+docs/security*.md @ulsreall
+docs/adr/ @ulsreall
+SECURITY.md @ulsreall
+GOVERNANCE.md @ulsreall
