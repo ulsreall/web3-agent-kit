@@ -19,7 +19,7 @@ jobs:
       - run: pip install build cyclonedx-py
       - run: python -m build
       - name: Generate SBOM
-        run: python -m cyclonedx_py pyproject.toml --output-format json > sbom.cdx.json
+        run: python -m cyclonedx_py requirements requirements.txt --output-format json > sbom.cdx.json
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: sbom
