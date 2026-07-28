@@ -81,7 +81,7 @@ exclude_lines = [
     "except ImportError",
 ]
 show_missing = true
-fail_under = 60
+fail_under = 70
 
 [tool.coverage.html]
 directory = "htmlcov"
