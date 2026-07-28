@@ -10,15 +10,15 @@ Usage:
     python examples/token_sniper.py
 """
 
+import logging
 import os
 import sys
-import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
-from web3_agent_kit.trading import TokenSniper, SniperConfig, RiskLevel
+from web3_agent_kit.trading import RiskLevel, SniperConfig, TokenSniper
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 

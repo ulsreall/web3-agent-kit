@@ -8,8 +8,8 @@ Requirements:
 """
 
 import os
-import pytest
 
+import pytest
 
 pytestmark = pytest.mark.skipif(
     not os.environ.get("PRIVATE_KEY"),
@@ -47,8 +47,9 @@ def test_wallet_repr():
 
 def test_wallet_no_key_error():
     """Verify wallet raises when no key configured."""
-    from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
     import pytest
+
+    from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
     w = Wallet(WalletConfig())
     with pytest.raises(ValueError, match="No private key"):
@@ -57,8 +58,8 @@ def test_wallet_no_key_error():
 
 def test_wallet_sign_transaction():
     """Verify wallet can sign a transaction."""
-    from web3_agent_kit.wallet.wallet import Wallet
     from web3_agent_kit.chains.chain import Chain
+    from web3_agent_kit.wallet.wallet import Wallet
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     wallet = Wallet.from_key(key)

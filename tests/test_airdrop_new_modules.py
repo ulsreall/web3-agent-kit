@@ -6,47 +6,39 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from web3_agent_kit.airdrop.dashboard import (
+    DashboardConfig,
+    PlatformPoints,
+    PointsDashboard,
+    PointsSnapshot,
+)
 from web3_agent_kit.airdrop.discovery import (
     CampaignDiscovery,
-    DiscoveryConfig,
     DiscoveredCampaign,
-    CampaignStatus,
-    CampaignCategory,
+    DiscoveryConfig,
+)
+from web3_agent_kit.airdrop.faucet import (
+    ClaimResult,
+    FaucetClaimer,
+    FaucetConfig,
 )
 from web3_agent_kit.airdrop.onchain import (
+    FARMING_PLANS,
+    Chain,
     OnChainAirdropFarmer,
     OnChainConfig,
     TransactionResult,
-    Chain,
-    DeFiProtocol,
-    FARMING_PLANS,
+)
+from web3_agent_kit.airdrop.referral import (
+    ReferralLink,
+    ReferralManager,
 )
 from web3_agent_kit.airdrop.scheduler import (
     AirdropScheduler,
-    SchedulerConfig,
     ScheduledTask,
     ScheduleFrequency,
     TaskExecutionStatus,
 )
-from web3_agent_kit.airdrop.dashboard import (
-    PointsDashboard,
-    DashboardConfig,
-    PlatformPoints,
-    PointsSnapshot,
-)
-from web3_agent_kit.airdrop.referral import (
-    ReferralManager,
-    ReferralLink,
-    ReferralPlatform,
-    ReferralStats,
-)
-from web3_agent_kit.airdrop.faucet import (
-    FaucetClaimer,
-    FaucetConfig,
-    ClaimResult,
-    FAUCETS,
-)
-
 
 # ─── Discovery Tests ─────────────────────────────────────────────
 
@@ -448,7 +440,7 @@ class TestReferralManager:
         manager.add_platform("galxe", "https://app.galxe.com/quest", "ref")
         links = manager.generate_links(platform="galxe", count=3)
         assert len(links) == 3
-        assert all(l.platform == "galxe" for l in links)
+        assert all(link.platform == "galxe" for link in links)
 
     def test_generate_chain(self):
         manager = ReferralManager()
@@ -609,12 +601,12 @@ class TestIntegration:
 
     def test_import_all_new_modules(self):
         from web3_agent_kit.airdrop import (
-            CampaignDiscovery,
-            OnChainAirdropFarmer,
             AirdropScheduler,
+            CampaignDiscovery,
+            FaucetClaimer,
+            OnChainAirdropFarmer,
             PointsDashboard,
             ReferralManager,
-            FaucetClaimer,
         )
         assert CampaignDiscovery is not None
         assert OnChainAirdropFarmer is not None
@@ -625,7 +617,7 @@ class TestIntegration:
 
     def test_full_workflow_dry_run(self):
         # 1. Discover campaigns
-        discovery = CampaignDiscovery()
+        CampaignDiscovery()
         # (would normally scan, but just test init)
 
         # 2. On-chain farming

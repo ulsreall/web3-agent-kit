@@ -1,20 +1,14 @@
 """Tests for DCA Bot."""
 
-import json
-import os
-import tempfile
-import time
 
 import pytest
 
+from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.trading.dca import (
     DCABot,
-    DCAOrder,
-    DCAResult,
-    Interval,
     DCAStatus,
+    Interval,
 )
-from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
 
@@ -191,7 +185,7 @@ class TestDCAList:
 
 class TestPendingOrders:
     def test_pending_orders(self, bot):
-        order = bot.create_order("USDC", "ETH", 100, Chain.BASE, Interval.DAILY)
+        bot.create_order("USDC", "ETH", 100, Chain.BASE, Interval.DAILY)
         pending = bot.get_pending_orders()
         assert len(pending) == 1
 

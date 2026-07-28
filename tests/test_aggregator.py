@@ -1,13 +1,14 @@
 """Tests for DEX Aggregator module."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
 from web3_agent_kit.defi.aggregator import (
-    DEXAggregator,
     AggregatorConfig,
     AggregatorError,
     Chain,
+    DEXAggregator,
     ProviderHealth,
 )
 

@@ -17,29 +17,25 @@ Setup:
     5. python bot.py
 """
 
-import os
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+import os
+
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import (
     Application,
-    CommandHandler,
     CallbackQueryHandler,
-    MessageHandler,
+    CommandHandler,
     ContextTypes,
-    filters,
 )
 
 # web3-agent-kit imports
 from web3_agent_kit import (
-    Wallet,
     Chain,
     ChainManager,
     PortfolioTracker,
-    YieldOptimizer,
-    YieldConfig,
-    MultiWalletManager,
+    Wallet,
 )
-from web3_agent_kit.trading import DCABot, Interval, DCAStatus
+from web3_agent_kit.trading import DCABot
 
 # === Config ===
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
@@ -114,7 +110,7 @@ async def balance(update: Update, context: ContextTypes.DEFAULT_TYPE):
         native = bal.get("native", 0)
         tokens = bal.get("tokens", {})
 
-        text = f"💰 *Balance*\n\n"
+        text = "💰 *Balance*\n\n"
         text += f"ETH: `{native:.6f}`\n"
 
         for symbol, amount in tokens.items():
@@ -139,7 +135,7 @@ async def portfolio_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         summary = portfolio.get_summary()
 
-        text = f"📊 *Portfolio*\n\n"
+        text = "📊 *Portfolio*\n\n"
         text += f"💰 Total: `${summary.get('total_value_usd', 0):,.2f}`\n\n"
 
         for chain_name, chain_data in summary.get("chains", {}).items():
@@ -230,7 +226,7 @@ async def gas(update: Update, context: ContextTypes.DEFAULT_TYPE):
         gas_price = w3.eth.gas_price
         gas_gwei = w3.from_wei(gas_price, "gwei")
 
-        text = f"⛽ *Gas Price*\n\n"
+        text = "⛽ *Gas Price*\n\n"
         text += f"Ethereum: `{gas_gwei:.1f}` gwei\n"
 
         if gas_gwei < 20:

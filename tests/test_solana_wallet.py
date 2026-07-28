@@ -1,10 +1,11 @@
 """Tests for Solana wallet module."""
 
-import pytest
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock
 
-from web3_agent_kit.solana.wallet import SolanaWallet, SolanaWalletConfig
+import pytest
+
 from web3_agent_kit.solana.client import SolanaClientConfig
+from web3_agent_kit.solana.wallet import SolanaWallet, SolanaWalletConfig
 
 
 class TestSolanaWalletConfig:
@@ -34,6 +35,7 @@ class TestSolanaWallet:
 
     def test_init_with_keypair_path(self, tmp_path):
         import json
+
         from solders.keypair import Keypair
 
         kp = Keypair()

@@ -1,10 +1,11 @@
 """Tests for token sniper."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from web3_agent_kit.trading.sniper import TokenSniper, SniperConfig, NewPair, RiskLevel
+import pytest
+
 from web3_agent_kit.chains.chain import Chain
+from web3_agent_kit.trading.sniper import NewPair, RiskLevel, SniperConfig, TokenSniper
 
 
 class TestSniperConfig:

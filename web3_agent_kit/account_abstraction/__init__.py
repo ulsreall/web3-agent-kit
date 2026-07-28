@@ -23,10 +23,9 @@ Usage::
 from __future__ import annotations
 
 import logging
-import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -304,7 +303,6 @@ class AAWallet:
         Returns:
             UserOpResult with hash and status
         """
-        from web3 import Web3
 
         if not sender and owner:
             sender = self.get_counterfactual_address(owner)
@@ -347,7 +345,6 @@ class AAWallet:
 
     def _submit_to_bundler(self, user_op: UserOperation) -> str:
         """Submit UserOperation to bundler via eth_sendUserOperation."""
-        import json
 
         import requests
 

@@ -1,9 +1,10 @@
 """Tests for bridge agent."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
-from web3_agent_kit.bridge.bridge import BridgeAgent, BridgeRoute, BridgeResult
+import pytest
+
+from web3_agent_kit.bridge.bridge import BridgeAgent, BridgeResult, BridgeRoute
 from web3_agent_kit.chains.chain import Chain
 
 

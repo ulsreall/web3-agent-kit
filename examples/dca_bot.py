@@ -1,7 +1,7 @@
 """Example: DCA Bot — Dollar-Cost Average into tokens automatically."""
 
-from web3_agent_kit import Wallet, Chain, ChainManager
-from web3_agent_kit.trading import DCABot, Interval, DCAStatus
+from web3_agent_kit import Chain, ChainManager, Wallet
+from web3_agent_kit.trading import DCABot, Interval
 
 # Initialize
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
@@ -64,13 +64,13 @@ for order in bot.list_orders():
 
 # 5. Cost average analysis
 avg = bot.get_cost_average(eth_order.id)
-print(f"\n=== Cost Average ===")
+print("\n=== Cost Average ===")
 print(f"  Avg price: ${avg.get('average_price', 0):.2f}")
 print(f"  Range: {avg.get('price_range', 'N/A')}")
 
 # 6. Summary
 summary = bot.get_summary()
-print(f"\n=== Summary ===")
+print("\n=== Summary ===")
 print(f"  Active: {summary['active_orders']}")
 print(f"  Total spent: ${summary['total_spent']:,.2f}")
 print(f"  Total bought: {summary['total_bought']:.6f}")

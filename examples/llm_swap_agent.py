@@ -11,14 +11,14 @@ Usage:
     python examples/llm_swap_agent.py
 """
 
+import logging
 import os
 import sys
-import logging
 
 # Add parent directory to path for local development
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from web3_agent_kit import Agent, Wallet, Chain, ChainManager
+from web3_agent_kit import Agent, Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

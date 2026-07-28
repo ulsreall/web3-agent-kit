@@ -1,12 +1,11 @@
 """Tests for Plugin System."""
 
-import tempfile
 import os
+import tempfile
 
 import pytest
 
-from web3_agent_kit.plugins import Plugin, PluginMeta, PluginRegistry, PluginManager
-
+from web3_agent_kit.plugins import Plugin, PluginManager, PluginMeta, PluginRegistry
 
 # === Test Plugins ===
 

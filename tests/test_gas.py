@@ -1,18 +1,16 @@
 """Tests for src/gas/ — Gas optimizer, estimation, batching."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from web3_agent_kit.gas import (
-    GasOptimizer,
-    GasEstimate,
-    GasRecommendation,
-    GasPriority,
-    BatchResult,
-)
 from web3_agent_kit.chains.chain import Chain, ChainManager
+from web3_agent_kit.gas import (
+    BatchResult,
+    GasEstimate,
+    GasOptimizer,
+    GasPriority,
+    GasRecommendation,
+)
 from web3_agent_kit.wallet.wallet import Wallet
-
 
 # ---------------------------------------------------------------------------
 # Helpers

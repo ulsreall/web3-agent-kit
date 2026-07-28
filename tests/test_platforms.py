@@ -4,10 +4,9 @@ Covers all new platform executors: QuestN, TaskOn, Intract, Port3, Galxe, Layer3
 Also covers CaptchaSolver, PlatformPluginRegistry, and BasePlatformExecutor.
 """
 
-import json
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
-from dataclasses import fields
 
 from web3_agent_kit.airdrop.executor.base_executor import (
     BasePlatformExecutor,
@@ -16,20 +15,19 @@ from web3_agent_kit.airdrop.executor.base_executor import (
     PlatformTask,
     TaskDifficulty,
 )
-from web3_agent_kit.airdrop.executor.questn import QuestNExecutor, QuestNTask, QuestNResult
-from web3_agent_kit.airdrop.executor.taskon import TaskOnExecutor, TaskOnTask, TaskOnResult
-from web3_agent_kit.airdrop.executor.intract_exec import IntractExecutor, IntractTask, IntractResult
-from web3_agent_kit.airdrop.executor.port3_exec import Port3Executor, Port3Task, Port3Result
-from web3_agent_kit.airdrop.executor.galxe_exec import GalxeExecutor, GalxeTask, GalxeResult
-from web3_agent_kit.airdrop.executor.layer3_exec import Layer3Executor, Layer3Task, Layer3Result
 from web3_agent_kit.airdrop.executor.captcha_solver import (
-    CaptchaSolver,
     CaptchaConfig,
     CaptchaProvider,
+    CaptchaSolver,
     CaptchaSolvingError,
 )
+from web3_agent_kit.airdrop.executor.galxe_exec import GalxeExecutor, GalxeResult, GalxeTask
+from web3_agent_kit.airdrop.executor.intract_exec import IntractExecutor, IntractResult, IntractTask
+from web3_agent_kit.airdrop.executor.layer3_exec import Layer3Executor, Layer3Result, Layer3Task
 from web3_agent_kit.airdrop.executor.plugin_registry import PlatformPluginRegistry
-
+from web3_agent_kit.airdrop.executor.port3_exec import Port3Executor, Port3Result, Port3Task
+from web3_agent_kit.airdrop.executor.questn import QuestNExecutor, QuestNResult, QuestNTask
+from web3_agent_kit.airdrop.executor.taskon import TaskOnExecutor, TaskOnResult, TaskOnTask
 
 # ─── Helpers ──────────────────────────────────────────────────
 

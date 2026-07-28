@@ -1,9 +1,10 @@
 """Tests for Solana DEX (Jupiter) module."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from web3_agent_kit.solana.dex import JupiterDEX, JupiterDEXConfig, JupiterAPIError
+import pytest
+
+from web3_agent_kit.solana.dex import JupiterAPIError, JupiterDEX, JupiterDEXConfig
 
 
 @pytest.fixture

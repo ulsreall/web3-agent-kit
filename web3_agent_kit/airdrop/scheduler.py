@@ -522,7 +522,7 @@ class AirdropScheduler:
         """
         logs = self._execution_log
         if task_id:
-            logs = [l for l in logs if l.task_id == task_id]
+            logs = [entry for entry in logs if entry.task_id == task_id]
         return logs[-limit:]
 
     def get_summary(self) -> dict:
@@ -550,7 +550,7 @@ class AirdropScheduler:
         state = {
             "exported_at": datetime.now(timezone.utc).isoformat(),
             "tasks": {k: v.to_dict() for k, v in self._tasks.items()},
-            "execution_log": [l.to_dict() for l in self._execution_log[-100:]],
+            "execution_log": [entry.to_dict() for entry in self._execution_log[-100:]],
         }
         Path(path).parent.mkdir(parents=True, exist_ok=True)
         Path(path).write_text(json.dumps(state, indent=2, default=str))

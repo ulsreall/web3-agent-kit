@@ -1,9 +1,10 @@
 """Tests for Solana LP management module."""
 
-import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from web3_agent_kit.solana.lp import SolanaLPManager, LPConfig, DEXProtocol, LPError
+import pytest
+
+from web3_agent_kit.solana.lp import DEXProtocol, LPConfig, SolanaLPManager
 from web3_agent_kit.solana.wallet import SolanaWallet
 
 

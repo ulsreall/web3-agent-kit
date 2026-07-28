@@ -1,18 +1,16 @@
 """Tests for src/mev/ — MEV protection, sandwich detection, frontrunning."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from web3_agent_kit.mev import (
-    MEVProtector,
-    check_sandwich_risk,
-    detect_frontrun,
+    BundleResult,
     MEVConfig,
+    MEVProtector,
     MEVStrategy,
     ProtectedTx,
-    BundleResult,
+    check_sandwich_risk,
+    detect_frontrun,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

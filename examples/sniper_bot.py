@@ -1,9 +1,6 @@
 """Example: Token sniper — detect and snipe new token launches."""
 
-import os
-import time
-from datetime import datetime
-from web3_agent_kit import Agent, Wallet, Chain
+from web3_agent_kit import Agent, Chain, Wallet
 from web3_agent_kit.defi import Uniswap
 
 

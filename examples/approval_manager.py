@@ -1,6 +1,6 @@
 """Example: Approval Manager — Scan and revoke risky approvals."""
 
-from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.wallet import ApprovalManager, ApprovalRisk
 
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=ChainManager(chains=[Chain.ETHEREUM]))
@@ -32,7 +32,7 @@ print(f"🔓 {len(unlimited)} unlimited approvals")
 
 # 5. Summary
 summary = manager.get_summary()
-print(f"\nSummary:")
+print("\nSummary:")
 print(f"  Total: {summary['total_approvals']}")
 print(f"  Unlimited: {summary['unlimited']}")
 print(f"  High risk: {summary['high_risk']}")

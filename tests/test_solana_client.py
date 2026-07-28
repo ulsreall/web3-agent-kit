@@ -1,8 +1,8 @@
 """Tests for Solana client module."""
 
-import pytest
-import asyncio
 from unittest.mock import AsyncMock, MagicMock, patch
+
+import pytest
 
 from web3_agent_kit.solana.client import SolanaClient, SolanaClientConfig, SolanaRPCError
 

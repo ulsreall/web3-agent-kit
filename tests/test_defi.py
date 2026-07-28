@@ -1,25 +1,25 @@
 """Tests for src/defi/__init__.py — Uniswap V2 integration."""
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock
 
+import pytest
+
+from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.defi import (
-    Uniswap,
-    Aerodrome,
+    ERC20_ABI,
+    NATIVE,
+    STABLECOINS,
+    UNISWAP_V2_ROUTER_ABI,
+    WETH,
     Aave,
+    Aerodrome,
     Curve,
     DeFiTool,
     SwapResult,
+    Uniswap,
     YieldOpportunity,
-    UNISWAP_V2_ROUTER_ABI,
-    ERC20_ABI,
-    WETH,
-    NATIVE,
-    STABLECOINS,
 )
-from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
 from web3_agent_kit.wallet.wallet import Wallet
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -299,7 +299,7 @@ class TestExecuteSwap:
 
         router_contract = _setup_router_mock(w3)
         in_token = _setup_token_contract(w3, decimals=decimals)
-        out_token = _setup_token_contract(w3, decimals=out_decimals)
+        _setup_token_contract(w3, decimals=out_decimals)
 
         def contract_factory(address, abi):
             if abi == UNISWAP_V2_ROUTER_ABI:

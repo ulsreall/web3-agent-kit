@@ -1,18 +1,16 @@
 """Tests for src/notifications/ — Notifier, Telegram, Discord, Email."""
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock, patch
 
 from web3_agent_kit.notifications import (
-    Notifier,
-    TelegramNotifier,
+    AlertLevel,
     DiscordNotifier,
     EmailNotifier,
-    AlertLevel,
     Notification,
+    Notifier,
+    TelegramNotifier,
 )
 from web3_agent_kit.notifications.utils import NotifierConfig, log_notification_to_file
-
 
 # ---------------------------------------------------------------------------
 # Helpers

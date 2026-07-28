@@ -15,7 +15,7 @@ import logging
 import os
 import sys
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -225,9 +225,9 @@ def handle_swap(args: dict) -> dict:
         return {"error": "WALLET_PRIVATE_KEY not configured", "preview": False}
 
     try:
+        from web3_agent_kit import ChainManager
         from web3_agent_kit.chains.chain import Chain
         from web3_agent_kit.defi import UniswapV3
-        from web3_agent_kit import ChainManager
 
         chain_name = args.get("chain", "ethereum").upper()
         chain = Chain[chain_name]

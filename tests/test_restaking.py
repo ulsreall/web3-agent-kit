@@ -3,49 +3,48 @@
 from __future__ import annotations
 
 import time
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
-from dataclasses import dataclass
+from unittest.mock import MagicMock
 
+import pytest
+
+from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.plugins.restaking import (
+    BABYLON_STAKING_ABI,
+    BABYLON_VAULT_ADDRESS,
+    EIGEN_TOKEN,
+    EIGENLAYER_ABI,
+    EIGENLAYER_DELEGATION_MANAGER,
+    EIGENLAYER_SLASHER,
+    EIGENLAYER_STRATEGY_MANAGER,
+    SOLAYER_RESTAKING_ABI,
+    SOLAYER_VAULT_ADDRESS,
+    Alert,
+    AlertType,
+    BabylonBtcRestaking,
     # EigenLayer
     EigenLayer,
     EigenLayerConfig,
-    RestakeResult,
+    MonitoredPosition,
     OperatorInfo,
-    RestakingStrategy,
-    EIGENLAYER_ABI,
-    EIGENLAYER_STRATEGY_MANAGER,
-    EIGENLAYER_DELEGATION_MANAGER,
-    EIGENLAYER_SLASHER,
-    EIGEN_TOKEN,
-    # Protocols
-    RestakingProtocol,
-    BabylonBtcRestaking,
-    SolanaRestaking,
+    OptimizationResult,
+    OptimizationStrategy,
+    PortfolioSnapshot,
     ProtocolPosition,
     ProtocolReward,
-    BABYLON_STAKING_ABI,
-    BABYLON_VAULT_ADDRESS,
-    SOLAYER_RESTAKING_ABI,
-    SOLAYER_VAULT_ADDRESS,
-    # Optimizer
-    RestakingOptimizer,
-    RestakingOpportunity,
-    RiskAdjustedYield,
-    OptimizationStrategy,
-    OptimizationResult,
+    RestakeResult,
     # Monitor
     RestakingMonitor,
-    MonitoredPosition,
+    RestakingOpportunity,
+    # Optimizer
+    RestakingOptimizer,
+    # Protocols
+    RestakingProtocol,
+    RestakingStrategy,
+    RiskAdjustedYield,
     SlashingEvent,
-    AlertType,
-    Alert,
-    PortfolioSnapshot,
+    SolanaRestaking,
 )
-from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
 from web3_agent_kit.wallet.wallet import Wallet
-
 
 # ---------------------------------------------------------------------------
 # Helpers

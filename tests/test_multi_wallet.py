@@ -7,13 +7,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from web3_agent_kit.chains.chain import Chain
 from web3_agent_kit.wallet.multi_wallet import (
-    MultiWalletManager,
-    WalletInfo,
     BatchTxResult,
     ConsolidatedBalance,
+    MultiWalletManager,
+    WalletInfo,
 )
-from web3_agent_kit.chains.chain import Chain
 
 
 @pytest.fixture
@@ -225,8 +225,6 @@ class TestBatchOperations:
         """Test batch_send skips wallets without instance."""
         manager.create_wallet("w1")
         # Remove wallet instance to simulate missing
-        label = "w1"
-        key = "e8f3c8b9a6d4f2e1c0b7a5d3f9e6c4a2b8d0f7e5c3a1b9d6f4e2c0a8b7d5f3"
         # Manually create wallet info but skip instance
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
         info = WalletInfo(label="orphan", address="0x1234567890123456789012345678901234567890")

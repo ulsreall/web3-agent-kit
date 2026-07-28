@@ -355,9 +355,9 @@ class ReferralManager:
         """
         links = self._links
         if platform:
-            links = [l for l in links if l.platform == platform]
+            links = [link for link in links if link.platform == platform]
         if active_only:
-            links = [l for l in links if l.is_active]
+            links = [link for link in links if link.is_active]
         return links
 
     def record_click(self, code: str) -> bool:
@@ -418,20 +418,20 @@ class ReferralManager:
         """
         stats = ReferralStats(
             total_links=len(self._links),
-            active_links=sum(1 for l in self._links if l.is_active),
-            total_clicks=sum(l.clicks for l in self._links),
-            total_conversions=sum(l.conversions for l in self._links),
-            total_points=sum(l.points_earned for l in self._links),
+            active_links=sum(1 for link in self._links if link.is_active),
+            total_clicks=sum(link.clicks for link in self._links),
+            total_conversions=sum(link.conversions for link in self._links),
+            total_points=sum(link.points_earned for link in self._links),
         )
 
         # Per-platform stats
-        for platform in set(l.platform for l in self._links):
-            plat_links = [l for l in self._links if l.platform == platform]
+        for platform in set(link.platform for link in self._links):
+            plat_links = [link for link in self._links if link.platform == platform]
             stats.platforms[platform] = {
                 "links": len(plat_links),
-                "clicks": sum(l.clicks for l in plat_links),
-                "conversions": sum(l.conversions for l in plat_links),
-                "points": sum(l.points_earned for l in plat_links),
+                "clicks": sum(link.clicks for link in plat_links),
+                "conversions": sum(link.conversions for link in plat_links),
+                "points": sum(link.points_earned for link in plat_links),
             }
 
         return stats
@@ -482,7 +482,7 @@ class ReferralManager:
         data = {
             "exported_at": datetime.now(timezone.utc).isoformat(),
             "stats": self.get_stats().to_dict(),
-            "links": [l.to_dict() for l in self._links],
+            "links": [link.to_dict() for link in self._links],
             "platforms": {k: v.to_dict() for k, v in self._platforms.items()},
         }
         json_str = json.dumps(data, indent=2, default=str)

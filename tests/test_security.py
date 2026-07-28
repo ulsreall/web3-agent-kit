@@ -1,9 +1,6 @@
 """Tests for Security Module."""
 
-import json
 from unittest.mock import MagicMock, patch
-
-import pytest
 
 from web3_agent_kit.security import (
     ContractAudit,
@@ -408,11 +405,8 @@ class TestIntegration:
 
     def test_import(self):
         from web3_agent_kit.security import (
-            TokenAnalyzer,
             SecurityConfig,
-            SecurityReport,
-            RiskLevel,
-            ContractPattern,
+            TokenAnalyzer,
         )
         assert TokenAnalyzer is not None
         assert SecurityConfig is not None

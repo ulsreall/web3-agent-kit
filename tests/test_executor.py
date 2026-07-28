@@ -1,22 +1,29 @@
 """Tests for airdrop executor layer — browser automation."""
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
 try:
-    from playwright.sync_api import sync_playwright
+    from playwright.sync_api import sync_playwright  # noqa: F401
     HAS_PLAYWRIGHT = True
 except ImportError:
     HAS_PLAYWRIGHT = False
 
 requires_playwright = pytest.mark.skipif(not HAS_PLAYWRIGHT, reason="playwright not installed")
 
-from web3_agent_kit.airdrop.executor.browser import BrowserManager, BrowserConfig
-from web3_agent_kit.airdrop.executor.gleam_exec import GleamExecutor, GleamResult, GleamTaskEntry
-from web3_agent_kit.airdrop.executor.social_exec import (
-    TwitterExecutor, DiscordExecutor, TelegramExecutor, SocialExecutorConfig,
+from web3_agent_kit.airdrop.executor.browser import BrowserConfig, BrowserManager  # noqa: E402
+from web3_agent_kit.airdrop.executor.gleam_exec import (  # noqa: E402
+    GleamExecutor,
+    GleamResult,
+    GleamTaskEntry,
 )
-from web3_agent_kit.airdrop.executor.zealy_exec import ZealyExecutor, ZealyResult
-
+from web3_agent_kit.airdrop.executor.social_exec import (  # noqa: E402
+    DiscordExecutor,
+    SocialExecutorConfig,
+    TelegramExecutor,
+    TwitterExecutor,
+)
+from web3_agent_kit.airdrop.executor.zealy_exec import ZealyExecutor, ZealyResult  # noqa: E402
 
 # ─── BrowserConfig ────────────────────────────────────────────
 

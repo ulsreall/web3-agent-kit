@@ -1,32 +1,32 @@
 """Tests for src/defi/uniswap_v3.py — Uniswap V3 integration."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
+import pytest
+
+from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.defi.uniswap_v3 import (
-    UniswapV3,
-    V3SwapResult,
-    PoolInfo,
-    PositionInfo,
+    FACTORY,
+    FACTORY_ABI,
     FEE_TIERS,
+    MAX_TICK,
+    MIN_TICK,
+    NONFUNGIBLE_POSITION_MANAGER,
+    NONFUNGIBLE_POSITION_MANAGER_ABI,
+    POOL_ABI,
+    QUOTER_V2,
+    QUOTER_V2_ABI,
     SWAP_ROUTER,
     SWAP_ROUTER_02,
-    QUOTER_V2,
-    NONFUNGIBLE_POSITION_MANAGER,
-    FACTORY,
     SWAP_ROUTER_ABI,
-    QUOTER_V2_ABI,
-    FACTORY_ABI,
-    POOL_ABI,
-    NONFUNGIBLE_POSITION_MANAGER_ABI,
-    MIN_TICK,
-    MAX_TICK,
+    PoolInfo,
+    PositionInfo,
+    UniswapV3,
+    V3SwapResult,
     get_sqrt_ratio_at_tick,
     get_tick_at_sqrt_ratio,
     nearest_usable_tick,
 )
-from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
-
 
 # ---------------------------------------------------------------------------
 # Helpers
