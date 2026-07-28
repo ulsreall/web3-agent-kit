@@ -1,10 +1,10 @@
 """Tests for Transaction Simulator module."""
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
-from dataclasses import dataclass
+from unittest.mock import MagicMock, patch
 
-from web3_agent_kit.simulator import TxSimulator, SimResult, SimConfig, SimMode
+import pytest
+
+from web3_agent_kit.simulator import SimConfig, SimMode, SimResult, TxSimulator
 
 
 class TestSimResult:

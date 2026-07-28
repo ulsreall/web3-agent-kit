@@ -1,49 +1,47 @@
 """Comprehensive tests for Aave, Curve, and UniswapV3 DeFi modules."""
 
-import pytest
-from unittest.mock import MagicMock, patch, PropertyMock
+from unittest.mock import MagicMock
 
+import pytest
+
+from web3_agent_kit.chains.chain import Chain, ChainManager
 from web3_agent_kit.defi import (
-    Aave,
-    Curve,
-    UniswapV3,
-    SwapResult,
-    YieldOpportunity,
-    AaveUserData,
-    AaveReserveData,
-    CurvePoolInfo,
-    V3SwapResult,
-    PoolInfo,
-    PositionInfo,
     AAVE_POOL_ABI,
-    AAVE_RATE_MODE_VARIABLE,
     AAVE_RATE_MODE_STABLE,
+    AAVE_RATE_MODE_VARIABLE,
     CURVE_POOL_ABI,
-    ERC20_ABI,
-    NATIVE,
-    WETH,
+    FACTORY,
     FEE_TIERS,
+    NONFUNGIBLE_POSITION_MANAGER,
+    QUOTER_V2,
     SWAP_ROUTER,
     SWAP_ROUTER_02,
-    QUOTER_V2,
-    NONFUNGIBLE_POSITION_MANAGER,
-    FACTORY,
+    WETH,
+    Aave,
+    AaveReserveData,
+    AaveUserData,
+    Curve,
+    CurvePoolInfo,
+    PoolInfo,
+    PositionInfo,
+    SwapResult,
+    UniswapV3,
+    V3SwapResult,
+    YieldOpportunity,
 )
 from web3_agent_kit.defi.uniswap_v3 import (
-    MIN_TICK,
+    FACTORY_ABI,
     MAX_TICK,
+    MIN_TICK,
+    NONFUNGIBLE_POSITION_MANAGER_ABI,
+    POOL_ABI,
+    QUOTER_V2_ABI,
+    SWAP_ROUTER_ABI,
     get_sqrt_ratio_at_tick,
     get_tick_at_sqrt_ratio,
     nearest_usable_tick,
-    SWAP_ROUTER_ABI,
-    QUOTER_V2_ABI,
-    FACTORY_ABI,
-    POOL_ABI,
-    NONFUNGIBLE_POSITION_MANAGER_ABI,
 )
-from web3_agent_kit.chains.chain import Chain, ChainManager, CHAIN_IDS
 from web3_agent_kit.wallet.wallet import Wallet
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -190,19 +188,19 @@ class TestAaveExecute:
     def test_execute_withdraw_dispatches(self):
         aave = Aave(chain_manager=_mock_chain_manager())
         aave.withdraw = MagicMock(return_value={"tx_hash": "0x2"})
-        result = aave.execute(_mock_wallet(), "withdraw", asset="0xToken", amount=1.0)
+        aave.execute(_mock_wallet(), "withdraw", asset="0xToken", amount=1.0)
         aave.withdraw.assert_called_once()
 
     def test_execute_borrow_dispatches(self):
         aave = Aave(chain_manager=_mock_chain_manager())
         aave.borrow = MagicMock(return_value={"tx_hash": "0x3"})
-        result = aave.execute(_mock_wallet(), "borrow", asset="0xToken", amount=1.0)
+        aave.execute(_mock_wallet(), "borrow", asset="0xToken", amount=1.0)
         aave.borrow.assert_called_once()
 
     def test_execute_repay_dispatches(self):
         aave = Aave(chain_manager=_mock_chain_manager())
         aave.repay = MagicMock(return_value={"tx_hash": "0x4"})
-        result = aave.execute(_mock_wallet(), "repay", asset="0xToken", amount=1.0)
+        aave.execute(_mock_wallet(), "repay", asset="0xToken", amount=1.0)
         aave.repay.assert_called_once()
 
     def test_execute_unknown_action_raises(self):
@@ -302,7 +300,7 @@ class TestAaveWithdraw:
 
     def test_withdraw_negative_uses_max(self):
         aave, wallet, w3, pool = self._prepare_aave()
-        result = aave.withdraw(wallet, "0xWETH", -1, chain=Chain.ETHEREUM)
+        aave.withdraw(wallet, "0xWETH", -1, chain=Chain.ETHEREUM)
         call_args = pool.functions.withdraw.call_args
         assert call_args[0][1] == 2**256 - 1
 
@@ -338,7 +336,7 @@ class TestAaveBorrow:
 
     def test_borrow_stable_rate(self):
         aave, wallet, w3, pool = self._prepare_aave()
-        result = aave.borrow(wallet, "0xUSDC", 500.0, rate_mode="stable", chain=Chain.ETHEREUM)
+        aave.borrow(wallet, "0xUSDC", 500.0, rate_mode="stable", chain=Chain.ETHEREUM)
         call_args = pool.functions.borrow.call_args[0]
         assert call_args[2] == AAVE_RATE_MODE_STABLE
 
@@ -372,7 +370,7 @@ class TestAaveRepay:
 
     def test_repay_max(self):
         aave, wallet, w3, pool = self._prepare_aave()
-        result = aave.repay(wallet, "0xUSDC", -1, rate_mode="variable", chain=Chain.ETHEREUM)
+        aave.repay(wallet, "0xUSDC", -1, rate_mode="variable", chain=Chain.ETHEREUM)
         call_args = pool.functions.repay.call_args[0]
         assert call_args[1] == 2**256 - 1
 

@@ -25,7 +25,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,6 @@ class TxSimulator:
         warnings: list[str],
     ) -> SimResult:
         """Simulate using eth_call."""
-        from web3 import Web3
 
         block = block_number or self.config.block_number or "latest"
 
@@ -242,10 +241,8 @@ class TxSimulator:
         if not self.config.tenderly_api_key or not self.config.tenderly_user or not self.config.tenderly_project:
             raise ValueError("Tenderly API key, user, and project required for Tenderly mode")
 
-        import json
 
         import requests
-        from web3 import Web3
 
         chain_id = self.w3.eth.chain_id
         url = f"https://api.tenderly.co/api/v1/account/{self.config.tenderly_user}/project/{self.config.tenderly_project}/simulate"

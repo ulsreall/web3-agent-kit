@@ -1,10 +1,11 @@
 """Example: Airdrop farmer — multi-chain airdrop farming with tracking."""
 
-import os
 import json
+import os
 from datetime import datetime
-from web3_agent_kit import Agent, Wallet, Chain
-from web3_agent_kit.defi import Uniswap, Aerodrome
+
+from web3_agent_kit import Agent, Chain, Wallet
+from web3_agent_kit.defi import Aerodrome, Uniswap
 
 
 def main():

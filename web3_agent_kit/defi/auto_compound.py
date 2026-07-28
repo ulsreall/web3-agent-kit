@@ -6,11 +6,9 @@ compound frequency based on gas costs vs rewards.
 
 from __future__ import annotations
 
-import asyncio
-import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Optional
 
 
 class Protocol(Enum):

@@ -13,7 +13,7 @@ from ..chains.chain import CHAIN_IDS, Chain, ChainManager
 from ..wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
-from .uniswap_v3 import (
+from .uniswap_v3 import (  # noqa: E402
     FACTORY,
     FEE_TIERS,
     NONFUNGIBLE_POSITION_MANAGER,
@@ -25,13 +25,13 @@ from .uniswap_v3 import (
     UniswapV3,
     V3SwapResult,
 )
-from .yield_optimizer import (
+from .yield_optimizer import (  # noqa: E402
     Protocol as YieldProtocol,
 )
-from .yield_optimizer import (
+from .yield_optimizer import (  # noqa: E402
     RiskLevel as YieldRiskLevel,
 )
-from .yield_optimizer import (
+from .yield_optimizer import (  # noqa: E402
     YieldConfig,
     YieldOptimizer,
     YieldPosition,

@@ -1,8 +1,8 @@
 """Tests for LLM integration."""
 
-import json
+from unittest.mock import MagicMock
+
 import pytest
-from unittest.mock import MagicMock, patch
 
 from web3_agent_kit.agent.llm import LLM, LLMConfig
 

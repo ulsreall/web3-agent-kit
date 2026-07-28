@@ -413,7 +413,6 @@ class GovernanceTracker:
         Returns:
             Transaction hash
         """
-        from web3 import Web3
 
         account = self.w3.eth.account.from_key(private_key)
         token_contract = self.w3.eth.contract(

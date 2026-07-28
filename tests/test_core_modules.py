@@ -1,9 +1,10 @@
 """Tests for core modules — chains, gas optimizer, and portfolio."""
 
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-from web3_agent_kit.chains.chain import Chain, CHAIN_IDS, DEFAULT_RPCS, ChainConfig, ChainManager
+import pytest
+
+from web3_agent_kit.chains.chain import CHAIN_IDS, DEFAULT_RPCS, Chain, ChainConfig, ChainManager
 
 
 class TestChain:

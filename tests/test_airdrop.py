@@ -13,26 +13,24 @@ from web3_agent_kit.airdrop.base import (
     TaskStatus,
     TaskType,
 )
+from web3_agent_kit.airdrop.galxe import GalxePlatform
 from web3_agent_kit.airdrop.gleam import GleamCampaign
-from web3_agent_kit.airdrop.zealy import ZealyPlatform, ZealyLeaderboardEntry
-from web3_agent_kit.airdrop.galxe import GalxePlatform, GalxeCredential
-from web3_agent_kit.airdrop.social import (
-    SocialTaskManager,
-    SocialAccount,
-    SocialPlatform,
-    TwitterHelper,
-    DiscordHelper,
-    TelegramHelper,
-    YouTubeHelper,
-    GitHubHelper,
-)
-from web3_agent_kit.airdrop.tracker import AirdropTracker, AirdropReward
 from web3_agent_kit.airdrop.multi_wallet import (
     AirdropFarmer,
     SybilAvoidanceConfig,
     WalletFarmProgress,
 )
-
+from web3_agent_kit.airdrop.social import (
+    DiscordHelper,
+    GitHubHelper,
+    SocialAccount,
+    SocialPlatform,
+    SocialTaskManager,
+    TelegramHelper,
+    TwitterHelper,
+)
+from web3_agent_kit.airdrop.tracker import AirdropReward, AirdropTracker
+from web3_agent_kit.airdrop.zealy import ZealyPlatform
 
 # === Base Module Tests ===
 

@@ -14,22 +14,20 @@ Usage:
 """
 
 from web3_agent_kit.airdrop import (
+    AirdropScheduler,
     # Discovery
     CampaignDiscovery,
+    DashboardConfig,
     DiscoveryConfig,
+    # Faucet
+    FaucetClaimer,
     # On-chain
     OnChainAirdropFarmer,
     OnChainConfig,
-    Chain,
-    # Scheduler
-    AirdropScheduler,
     # Dashboard
     PointsDashboard,
-    DashboardConfig,
     # Referral
     ReferralManager,
-    # Faucet
-    FaucetClaimer,
 )
 
 
@@ -166,6 +164,7 @@ def example_dashboard():
 
     # Manually add some data for demo
     from datetime import datetime, timezone
+
     from web3_agent_kit.airdrop.dashboard import PlatformPoints, PointsSnapshot
 
     dashboard._current = PointsSnapshot(
@@ -233,7 +232,7 @@ def example_referral():
         ["galxe", "zealy", "layer3"],
         wallet="0xYOUR_WALLET_ADDRESS",
     )
-    print(f"\nReferral chain: {' → '.join(l.platform for l in chain)}")
+    print(f"\nReferral chain: {' → '.join(link.platform for link in chain)}")
 
     # Print stats
     manager.print_stats()

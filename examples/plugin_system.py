@@ -1,6 +1,6 @@
 """Example: Plugin System — Load, register, and use plugins."""
 
-from web3_agent_kit.plugins import PluginManager, Plugin, PluginMeta
+from web3_agent_kit.plugins import Plugin, PluginManager, PluginMeta
 
 # === Custom Plugin Example ===
 

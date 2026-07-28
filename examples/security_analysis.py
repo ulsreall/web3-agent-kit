@@ -9,9 +9,8 @@ Usage:
 """
 
 from web3_agent_kit.security import (
-    TokenAnalyzer,
     SecurityConfig,
-    RiskLevel,
+    TokenAnalyzer,
 )
 
 
@@ -62,7 +61,7 @@ def example_full_analysis():
     report.print_report()
 
     # Programmatic access
-    print(f"\nProgrammatic Access:")
+    print("\nProgrammatic Access:")
     print(f"  Safety Score: {report.safety_score}/100")
     print(f"  Risk Level: {report.risk_level.value}")
     print(f"  Is Safe: {report.is_safe}")

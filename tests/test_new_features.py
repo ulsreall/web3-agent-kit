@@ -1,16 +1,19 @@
 """Tests for Gas Optimizer, Wallet Watcher, and Approval Manager."""
 
-import time
-import pytest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
-from web3_agent_kit.gas.optimizer import GasOptimizer, GasPriority, GasEstimate, GasRecommendation
-from web3_agent_kit.wallet.watcher import (
-    WalletWatcher, WatchedWallet, WalletAlert, AlertType, AlertSeverity
-)
-from web3_agent_kit.wallet.approval import ApprovalManager, TokenApproval, RevokeResult, ApprovalRisk
+import pytest
+
 from web3_agent_kit.chains.chain import Chain, ChainManager
+from web3_agent_kit.gas.optimizer import GasOptimizer, GasPriority
+from web3_agent_kit.wallet.approval import (
+    ApprovalManager,
+    ApprovalRisk,
+    RevokeResult,
+    TokenApproval,
+)
 from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
+from web3_agent_kit.wallet.watcher import AlertSeverity, AlertType, WalletAlert, WalletWatcher
 
 
 @pytest.fixture

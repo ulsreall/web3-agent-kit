@@ -9,13 +9,13 @@ Usage:
     python examples/portfolio_dashboard.py
 """
 
+import logging
 import os
 import sys
-import logging
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.portfolio import PortfolioTracker
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")

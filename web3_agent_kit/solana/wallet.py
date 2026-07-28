@@ -103,11 +103,11 @@ class SolanaWallet:
         Returns:
             dict with 'signature', 'status', 'explorer_url'
         """
+        from solders.hash import Hash
+        from solders.message import Message
         from solders.pubkey import Pubkey
         from solders.system_program import TransferParams, transfer
-        from solders.message import Message
         from solders.transaction import Transaction
-        from solders.hash import Hash
 
         to_pubkey = Pubkey.from_string(to_address)
         from_pubkey = self._keypair.pubkey()
@@ -156,17 +156,17 @@ class SolanaWallet:
 
         Creates the associated token account if needed.
         """
-        from solders.pubkey import Pubkey
-        from solders.message import Message
-        from solders.transaction import Transaction
         from solders.hash import Hash
         from solders.instruction import Instruction
-        from spl.token.constants import TOKEN_PROGRAM_ID, ASSOCIATED_TOKEN_PROGRAM_ID
+        from solders.message import Message
+        from solders.pubkey import Pubkey
+        from solders.transaction import Transaction
+        from spl.token.constants import TOKEN_PROGRAM_ID
         from spl.token.instructions import (
-            get_associated_token_address,
-            create_associated_token_account,
-            transfer_checked,
             TransferCheckedParams,
+            create_associated_token_account,
+            get_associated_token_address,
+            transfer_checked,
         )
 
         from_pubkey = self._keypair.pubkey()

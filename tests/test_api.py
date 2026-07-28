@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import json
 import os
 from unittest.mock import MagicMock, patch
 
@@ -562,7 +561,8 @@ class TestStartupGuard:
         """Task 1.2: the server must refuse to start at all if WEB3_API_KEY
         is not set, rather than silently defaulting to open access."""
         monkeypatch.delenv("WEB3_API_KEY", raising=False)
-        from web3_agent_kit.api import lifespan, app as _app
+        from web3_agent_kit.api import app as _app
+        from web3_agent_kit.api import lifespan
 
         async def _run():
             async with lifespan(_app):
@@ -575,7 +575,8 @@ class TestStartupGuard:
 
     def test_lifespan_succeeds_with_api_key(self, monkeypatch):
         monkeypatch.setenv("WEB3_API_KEY", TEST_API_KEY)
-        from web3_agent_kit.api import lifespan, app as _app
+        from web3_agent_kit.api import app as _app
+        from web3_agent_kit.api import lifespan
 
         async def _run():
             async with lifespan(_app):

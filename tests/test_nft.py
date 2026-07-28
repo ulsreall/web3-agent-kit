@@ -1,24 +1,20 @@
 """Tests for src/nft/ — NFT manager, marketplace, minter, whitelist, utils."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 from web3_agent_kit.nft import (
+    MintResult,
+    NFTCollection,
+    NFTConfig,
+    NFTItem,
+    NFTListing,
     NFTManager,
     NFTMarketplace,
     NFTMinter,
-    WhitelistManager,
-    WhitelistEntry,
-    WhitelistResult,
-    NFTConfig,
-    NFTCollection,
-    NFTItem,
-    NFTListing,
-    MintResult,
     NFTStandard,
+    WhitelistManager,
     calculate_rarity,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers

@@ -1,13 +1,13 @@
 """Tests for core agent functionality."""
 
 import json
-
-import pytest
 from unittest.mock import MagicMock
 
+import pytest
+
 from web3_agent_kit.agent.core import Agent, AgentConfig
-from web3_agent_kit.wallet.wallet import Wallet
 from web3_agent_kit.chains.chain import Chain
+from web3_agent_kit.wallet.wallet import Wallet
 
 
 class TestWallet:

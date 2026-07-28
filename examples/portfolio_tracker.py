@@ -1,9 +1,10 @@
 """Example: Portfolio tracker — monitor positions across chains."""
 
-import os
 import json
+import os
 from datetime import datetime
-from web3_agent_kit import Agent, Wallet, Chain
+
+from web3_agent_kit import Agent, Chain, Wallet
 
 
 def main():

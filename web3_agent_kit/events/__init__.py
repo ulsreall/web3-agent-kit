@@ -236,7 +236,6 @@ class EventListener:
 
     def _send_webhook(self, event_data: dict, config: EventConfig):
         """Send event data to webhook URL."""
-        import json
 
         import requests
         try:

@@ -1,12 +1,12 @@
 """Tests for Yield Auto-Compound module."""
 
 import pytest
+
 from web3_agent_kit.defi.auto_compound import (
     AutoCompound,
     CompoundConfig,
     Position,
     Protocol,
-    CompoundResult,
 )
 
 

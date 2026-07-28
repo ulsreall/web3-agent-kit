@@ -1,19 +1,19 @@
 """Tests for Yield Optimizer."""
 
 import time
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
+from web3_agent_kit.chains.chain import Chain
 from web3_agent_kit.defi.yield_optimizer import (
-    YieldOptimizer,
-    YieldConfig,
-    YieldOpportunity,
-    YieldPosition,
     Protocol,
     RiskLevel,
+    YieldConfig,
+    YieldOpportunity,
+    YieldOptimizer,
+    YieldPosition,
 )
-from web3_agent_kit.chains.chain import Chain
 
 
 @pytest.fixture
@@ -206,7 +206,7 @@ class TestYieldOptimizer:
         optimizer.deposit(sample_opportunity, amount=10000)
         position = optimizer.positions[0]
 
-        result = optimizer.withdraw(position, percentage=50)
+        optimizer.withdraw(position, percentage=50)
         assert optimizer.positions[0].deposited_amount == 5000
 
     def test_auto_compound_respects_threshold(self, optimizer, sample_opportunity):
