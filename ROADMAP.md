@@ -55,9 +55,9 @@
 |---------|--------|
 | CONTRIBUTING.md updated | ✅ |
 | ROADMAP.md | ✅ | *[this file]* |
-| GitHub Discussions | ⬜ | [`has_discussions`=false] — buka Settings → Features → Discussions
-| **Supply-chain security** | ⬜ ***Next up*** |
-| **Governance documentation** | ⬜ ***Next up*** |
+| GitHub Discussions | ✅ | Enabled |
+| **Supply-chain security** | ✅ | Scorecard, SBOM, lockfile, pinned actions |
+| **Governance documentation** | ✅ | DCO, versioning-policy, SECURITY.md, fuzz tests |
 
 ## Phase 5 — Supply-Chain Security (planned)
 

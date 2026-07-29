@@ -1,0 +1,35 @@
+# Code ownership for Web3 Agent Kit
+#
+# Each line is a file pattern followed by one or more owners.
+# Order matters: last matching pattern takes precedence.
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-features/customizing-your-repository/about-code-owners
+
+# Global default — everyone reviews
+* @ulsreall
+
+# Wallet — funds are at stake
+/web3_agent_kit/wallet/ @ulsreall
+
+# Agent core — spending logic
+/web3_agent_kit/agent/ @ulsreall
+
+# Security-critical modules
+/web3_agent_kit/security/ @ulsreall
+/web3_agent_kit/trading/ @ulsreall
+/web3_agent_kit/simulator/ @ulsreall
+
+# DeFi protocols — swap, LP, bridge
+/web3_agent_kit/defi/ @ulsreall
+/web3_agent_kit/bridge/ @ulsreall
+
+# Solana module
+/web3_agent_kit/solana/ @ulsreall
+
+# MCP server
+/mcp_server/ @ulsreall
+
+# CI/CD workflows
+/.github/workflows/ @ulsreall
+
+# Docs
+/docs/ @ulsreall
