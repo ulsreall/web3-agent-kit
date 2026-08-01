@@ -39,7 +39,7 @@ async def execute_swap(
     from ...wallet.wallet import Wallet
 
     try:
-        wallet = Wallet.from_env(chain)
+        wallet = Wallet.from_env("PRIVATE_KEY")
         uni = Uniswap(chain)
         result = uni.execute(wallet, token_in, token_out, amount_in, slippage)
         return result

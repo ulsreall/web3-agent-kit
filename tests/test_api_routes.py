@@ -45,7 +45,9 @@ pytestmark = pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not insta
 
 class TestWalletRoutes:
     def test_info_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
+            "web3_agent_kit.chains.chain.ChainManager"
+        ) as MockManager:
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 2.0
@@ -56,6 +58,10 @@ class TestWalletRoutes:
             assert data["address"] == "0xabc"
             assert data["chain"] == "ethereum"
             assert data["balance"] == "2.0"
+            MockWallet.from_env.assert_called_once_with(
+                "PRIVATE_KEY", chain_manager=MockManager.return_value
+            )
+            assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_info_error_path(self):
         with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
@@ -63,6 +69,11 @@ class TestWalletRoutes:
             resp = client.get("/wallet/info", headers=AUTH_HEADERS)
             assert resp.status_code == 400
             assert "no wallet" in resp.json()["detail"]
+
+    def test_info_rejects_unsupported_chain(self):
+        resp = client.get("/wallet/info?chain=bogus", headers=AUTH_HEADERS)
+        assert resp.status_code == 400
+        assert "bogus" in resp.json()["detail"]
 
     def test_create_disabled_by_default(self, monkeypatch):
         monkeypatch.delenv("ENABLE_WALLET_CREATE_ENDPOINT", raising=False)
@@ -168,6 +179,7 @@ class TestSwapRoutes:
             )
             assert resp.status_code == 200
             assert resp.json()["status"] == "success"
+            MockWallet.from_env.assert_called_once_with("PRIVATE_KEY")
 
     def test_execute_error(self):
         with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
@@ -200,7 +212,9 @@ class TestSwapRoutes:
 
 class TestPortfolioRoutes:
     def test_portfolio_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
+            "web3_agent_kit.chains.chain.ChainManager"
+        ) as MockManager:
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 1.0
@@ -210,6 +224,10 @@ class TestPortfolioRoutes:
             data = resp.json()
             assert data["address"] == "0xabc"
             assert data["native_balance"] == "1.0"
+            MockWallet.from_env.assert_called_once_with(
+                "PRIVATE_KEY", chain_manager=MockManager.return_value
+            )
+            assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_portfolio_error(self):
         with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
@@ -217,8 +235,15 @@ class TestPortfolioRoutes:
             resp = client.get("/portfolio/", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
+    def test_portfolio_rejects_unsupported_chain(self):
+        resp = client.get("/portfolio/?chain=bogus", headers=AUTH_HEADERS)
+        assert resp.status_code == 400
+        assert "bogus" in resp.json()["detail"]
+
     def test_portfolio_value_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
+            "web3_agent_kit.chains.chain.ChainManager"
+        ) as MockManager:
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 4.2
@@ -226,6 +251,10 @@ class TestPortfolioRoutes:
             resp = client.get("/portfolio/value", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             assert resp.json()["native_balance"] == "4.2"
+            MockWallet.from_env.assert_called_once_with(
+                "PRIVATE_KEY", chain_manager=MockManager.return_value
+            )
+            assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_portfolio_value_error(self):
         with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
@@ -705,6 +734,7 @@ class TestBridgeRoutes:
             resp = client.post("/bridge/execute", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             assert resp.json()["tx_hash"] == "0xbridge"
+            MockWallet.from_env.assert_called_once_with("PRIVATE_KEY")
 
     def test_execute_error(self):
         with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
