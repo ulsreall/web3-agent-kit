@@ -5,24 +5,6 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
-
-### Changed
-
-- Added a formal module-maturity policy, surfaced the beta status and safe-use
-  guidance in the README and CLI, and synchronized the supported-version policy.
-
-### Fixed
-
-- REST wallet, portfolio, swap, and bridge routes now read `PRIVATE_KEY` instead of
-  mistakenly treating the requested chain name as an environment variable. Balance
-  routes also configure a chain manager and pass the selected chain to wallet lookups.
-- The `dev` extra now includes Hypothesis, which is required to collect the fuzz tests.
-
-### Added
-
-- Added an `api` installation extra for the FastAPI and Uvicorn server dependencies.
-
 ## [1.15.0] - 2026-07-23
 
 ### BREAKING CHANGE
