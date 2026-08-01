@@ -109,6 +109,7 @@ nav:
   - CLI Tool: cli.md
   - REST API Server: api-server.md
   - Features: features.md
+  - Project Maturity: project-maturity.md
   - Examples: examples.md
   - API Reference:
     - api/agent.md
