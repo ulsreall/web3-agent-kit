@@ -2,6 +2,12 @@
 
 > **Build autonomous AI agents that interact with blockchains — in minutes, not months.**
 
+> [!WARNING]
+> Web3 Agent Kit is beta software. Module readiness ranges from stable to
+> experimental, and availability does not imply unattended mainnet safety.
+> Review the [maturity policy](docs/project-maturity.md) and [risk disclosure](RISKS.md)
+> before using real funds.
+
 [![PyPI](https://img.shields.io/pypi/v/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
 [![Downloads](https://img.shields.io/pypi/dm/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
