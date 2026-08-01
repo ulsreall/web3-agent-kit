@@ -12,11 +12,14 @@ router = APIRouter()
 @router.get("/info")
 async def get_wallet_info(chain: str = "ethereum"):
     """Get current wallet info and balance."""
+    from ...chains.chain import Chain, ChainManager
     from ...wallet.wallet import Wallet
 
     try:
-        wallet = Wallet.from_env(chain)
-        balance = wallet.get_balance()
+        chain_enum = Chain(chain)
+        manager = ChainManager([chain_enum])
+        wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=manager)
+        balance = wallet.get_balance(chain_enum)
         return {
             "address": wallet.address,
             "chain": chain,

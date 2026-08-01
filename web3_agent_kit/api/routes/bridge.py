@@ -37,7 +37,7 @@ async def execute_bridge(
     from ...wallet.wallet import Wallet
 
     try:
-        wallet = Wallet.from_env(from_chain)
+        wallet = Wallet.from_env("PRIVATE_KEY")
         agent = BridgeAgent(from_chain)
         result = agent.transfer(wallet, to_chain, token, amount)
         return result
