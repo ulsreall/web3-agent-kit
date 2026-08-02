@@ -3,7 +3,7 @@
 > **Current version:** v1.15.0  
 > **Updated:** 2026-07-23  
 > **Modules:** 25  
-> **Tests:** 1,248+ (70% coverage gate)
+> **Tests:** 1,248+ (62% coverage)  
 > **Chains:** 8 (Ethereum, Base, Polygon, Arbitrum, Optimism, BSC, Avalanche, Solana)
 
 ---
@@ -41,7 +41,7 @@
 | SpendGovernor + confirm_fn wiring | ✅ |
 | Honeypot fail-open fix (3-state) | ✅ |
 | `swap_exact_output` protections | ✅ |
-| Coverage gate 70% | ✅ |
+| Coverage gate 60% | ✅ |
 | Dependabot + pip-audit CI | ✅ |
 | Release-please draft workflow | ✅ |
 | MCP server scaffold | ✅ |
@@ -59,39 +59,37 @@
 | **Supply-chain security** | ✅ | Scorecard, SBOM, lockfile, pinned actions |
 | **Governance documentation** | ✅ | DCO, versioning-policy, SECURITY.md, fuzz tests |
 
-## Phase 5 — Stabilization & Trust (current)
+## Phase 5 — Supply-Chain Security (planned)
 
-New integrations are lower priority until the execution path is safe,
-observable, and consistently tested.
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| PyPI Trusted Publishing (OIDC) | High | Replace static API token |
+| Pin GH Actions to commit SHA | High | Supply-chain attack protection |
+| SBOM generation per release | Medium | `cyclonedx-py` |
+| Sigstore/cosign signing | Medium | Keyless via OIDC |
+| Hash-pinned lockfile | Medium | `pip-compile --generate-hashes` |
+| OpenSSF Scorecard | Medium | Public trust badge |
+| 2FA for PyPI + GitHub org | Low | Manual setup required |
 
-| Outcome | Priority | Exit criterion |
-|---------|----------|----------------|
-| Module maturity policy | High | Every capability is classified as stable, beta, or experimental |
-| Unified transaction policy | High | Every write path uses limits, allowlists, and explicit confirmation rules |
-| Pre-flight simulation | High | Every supported write path can be simulated before signing |
-| Signer abstraction | High | Core execution does not require direct access to a raw private key |
-| Typed public API | Medium | Public interfaces pass static type checking in CI |
-| Test isolation | Medium | Unit, integration, network, and security suites are independently runnable |
-| Documentation consistency | Medium | Version, support, coverage, and readiness claims have one source of truth |
-| External security review | Medium | Critical execution paths reviewed before a v2.0 stable release |
+## Phase 6 — Governance (planned)
 
-## Phase 6 — Production Proof (planned)
-
-| Outcome | Priority | Exit criterion |
-|---------|----------|----------------|
-| Safe portfolio reference agent | High | Read-only by default, simulated writes, human approval |
-| Policy-controlled DCA agent | High | Allowlisted assets, bounded value/slippage, complete audit trail |
-| Testnet soak testing | High | Continuous multi-day runs without unresolved critical failures |
-| Design partners | Medium | At least three external projects validate real workflows |
-| Maintainer ownership | Medium | Named owners and support expectations for stable modules |
-| v2.0 release candidate | Medium | Migration guide, compatibility policy, and security review complete |
+| Feature | Priority | Notes |
+|---------|----------|-------|
+| `GOVERNANCE.md` | High | Maintainer roles, decision process, bus factor |
+| `CODEOWNERS` | High | Mandatory review for wallet/security/agent paths |
+| DCO (Signed-off-by) check | Medium | Lighter than CLA |
+| `SECURITY.md` upgrade | Medium | GHSA workflow, safe-harbor statement |
+| `RISKS.md` | Medium | Specific disclaimer for fund-loss risk |
+| `versioning-policy.md` | Medium | SemVer commitment, deprecation process |
+| Fuzz testing (`hypothesis`) | Low | Slippage, gas, approval edge cases |
+| External security audit | Low | Post-2.0, fundable via ecosystem grants |
 
 ## Beyond
 
 | Idea | Status |
 |------|--------|
 | Hardware wallet support | Exploring |
-| Transaction simulation in Agent | Phase 5 priority |
+| Transaction simulation in Agent | Exploring |
 | Webhook notifications | Exploring |
 | Zeroisation of private keys | Researching |
 | On-chain incident monitoring | Researching |

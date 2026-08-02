@@ -4,11 +4,9 @@
 
 | Version | Supported |
 |---------|-----------|
-| 1.15.x | ✅ |
-| < 1.15 | ❌ |
-
-Security fixes are released for the latest minor series. Users should upgrade
-before reporting an issue that has already been fixed in a newer release.
+| 1.6.x | ✅ |
+| 1.5.x | ✅ |
+| < 1.5 | ❌ |
 
 ## Safe Harbor
 

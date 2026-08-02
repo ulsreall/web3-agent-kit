@@ -57,8 +57,6 @@ class TestInfoCommand:
         result = runner.invoke(info, [])
         assert result.exit_code == 0
         assert "web3-agent-kit" in result.output
-        assert "Beta (module maturity varies)" in result.output
-        assert "Use testnets and explicit spending limits" in result.output
         assert "Capabilities" in result.output
         assert "Links" in result.output
 

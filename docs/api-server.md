@@ -13,9 +13,6 @@ non-Python client.
 ## Quick Start
 
 ```bash
-# Install the optional API dependencies when using the PyPI package
-pip install "web3-agent-kit[api]"
-
 # 1. Generate a strong API key
 python -c "import secrets; print(secrets.token_hex(32))"
 
