@@ -64,3 +64,10 @@ level only after satisfying the release criteria below.
 Production readiness is a property of the complete deployment—not only the
 library. RPC providers, signers, policies, monitoring, network exposure, and
 upstream protocols must all be assessed together.
+
+## Architecture audits
+
+- [Transaction execution paths](architecture/execution-paths.md) inventories
+  the signing and broadcast boundaries found across the package.
+- [Transaction safety gap matrix](security/safety-gap-matrix.md) prioritizes the
+  controls required to move write paths toward production readiness.
