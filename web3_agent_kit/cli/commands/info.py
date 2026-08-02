@@ -73,6 +73,14 @@ def info():
     click.echo(click.style("  Chains:   ", fg="yellow") + f"{chain_count} networks (EVM + Solana)")
     click.echo(click.style("  Python:   ", fg="yellow") + ">=3.10")
     click.echo(click.style("  License:  ", fg="yellow") + "MIT")
+    click.echo(click.style("  Status:   ", fg="yellow") + "Beta (module maturity varies)")
+    click.echo()
+
+    click.echo(
+        click.style("  ⚠ Safety: ", fg="yellow", bold=True)
+        + "Use testnets and explicit spending limits before risking real funds."
+    )
+    click.echo("    Maturity → https://ulsreall.github.io/web3-agent-kit/project-maturity/")
     click.echo()
 
     # Capabilities
