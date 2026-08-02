@@ -31,6 +31,7 @@ from .defi import (
 
 # Events
 from .events import EventConfig, EventListener, Subscription
+from .execution import ActionType, TransactionIntent
 from .gas import GasEstimate, GasOptimizer, GasPriority, GasRecommendation
 
 # Governance
@@ -217,6 +218,9 @@ __all__ = [
     "EventListener",
     "EventConfig",
     "Subscription",
+    # Execution
+    "ActionType",
+    "TransactionIntent",
     # Simulator
     "TxSimulator",
     "SimResult",
