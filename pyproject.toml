@@ -57,7 +57,7 @@ api = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/ulsreall/web3-agent-kit"
+Homepage = "https://web3-agent-kit.vercel.app/"
 Repository = "https://github.com/ulsreall/web3-agent-kit"
 Issues = "https://github.com/ulsreall/web3-agent-kit/issues"
 Documentation = "https://ulsreall.github.io/web3-agent-kit/"
