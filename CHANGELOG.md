@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.0] - 2026-08-10
+
+### Added
+
+- Immutable transaction intents and a centralized execution policy for consistent
+  authorization across write paths.
+- Execution-path documentation and expanded tests for policy enforcement.
+
+### Changed
+
+- Chain and wallet handling in API routes now follows the unified execution path.
+
 ### Fixed
 
 - REST wallet, portfolio, swap, and bridge routes now read `PRIVATE_KEY` instead of
