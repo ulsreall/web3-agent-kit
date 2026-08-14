@@ -27,7 +27,7 @@ Three changes:
 
 Self-audits are uncomfortable because you find your own mistakes. But they're worth it. Every safety feature in this kit now has a test proving it works — not just that the field exists.
 
-The full audit results are in `CHANGELOG.md` under v1.15.0.
+The full audit results are in `CHANGELOG.md` under v1.16.0.
 
 ---
 

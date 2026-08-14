@@ -1,9 +1,9 @@
 # Roadmap
 
-> **Current version:** v1.15.0  
-> **Updated:** 2026-07-23  
+> **Current version:** v1.16.0
+> **Updated:** 2026-08-10
 > **Modules:** 25  
-> **Tests:** 1,248+ (70% coverage gate)
+> **Tests:** 1,791+ (70% coverage gate)
 > **Chains:** 8 (Ethereum, Base, Polygon, Arbitrum, Optimism, BSC, Avalanche, Solana)
 
 ---

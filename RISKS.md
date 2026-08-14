@@ -1,6 +1,6 @@
 # Risk Disclosure
 
-> **Last updated:** v1.15.0 (2026-07-23)
+> **Last updated:** v1.16.0 (2026-08-10)
 
 This document describes known risks of using Web3 Agent Kit. **By using this software, you accept these risks.**
 
