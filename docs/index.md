@@ -1,312 +1,156 @@
---- 
-title: Web3 Agent Kit
-description: Build autonomous AI agents that interact with blockchains — in minutes, not months.
-hide:
-  - navigation
-  - toc
-  - title
----
+<div class="docs-hero" markdown>
+<div class="docs-hero-copy" markdown>
 
-<!-- Hero Section -->
-<div class="tx-hero tx-hero-gradient" markdown>
+<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.16.1</p>
 
-# Web3 Agent Kit
+# Build agents that can actually execute.
 
-<div class="tx-hero-sub" markdown>
+Web3 Agent Kit gives autonomous agents a controlled path from intent to on-chain execution: wallets, chains, protocol tools, transaction simulation, and operator-defined policy in one Python framework.
 
-Build autonomous AI agents that interact with blockchains — **in minutes, not months.**
-
+<div class="docs-actions" markdown>
+[Get started](getting-started.md){ .md-button .md-button--primary }
+[View source](https://github.com/ulsreall/web3-agent-kit){ .md-button }
 </div>
 
-<div class="tx-hero-code" markdown>
-
-```bash
-pip install web3-agent-kit
-```
-
-</div>
-
-<div class="tx-hero-buttons" markdown>
-[Get Started](getting-started.md){ .md-button .md-button--primary }
-[View on GitHub](https://github.com/ulsreall/web3-agent-kit){ .md-button }
+<div class="docs-install" markdown>
+<span>INSTALL</span>
+`pip install web3-agent-kit`
 </div>
 
 </div>
 
-<!-- Stats Bar -->
-<div class="tx-stats" markdown>
-<div class="stat" markdown>
-<div class="stat-num">v1.16.1</div>
-<div class="stat-label">Version</div>
-</div>
-<div class="stat" markdown>
-<div class="stat-num">25</div>
-<div class="stat-label">Modules</div>
-</div>
-<div class="stat" markdown>
-<div class="stat-num">1,791</div>
-<div class="stat-label">Tests</div>
-</div>
-<div class="stat" markdown>
-<div class="stat-num">8</div>
-<div class="stat-label">Chains</div>
-</div>
-<div class="stat" markdown>
-<div class="stat-num">MIT</div>
-<div class="stat-label">License</div>
-</div>
-</div>
-
-<!-- One-liner Demo -->
-<div class="tx-divider"></div>
-
-## 🚀 From Zero to Agent in 5 Lines
+<div class="docs-terminal" markdown>
+<div class="terminal-bar"><span></span><span></span><span></span><b>agent.py</b><i>READY</i></div>
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain
 from web3_agent_kit.defi import Uniswap
 
-agent = Agent(wallet=Wallet.from_env("PRIVATE_KEY"), chains=[Chain.BASE], tools=[Uniswap()])
-result = agent.run("Swap 0.1 ETH to USDC on Base")
+agent = Agent(
+    wallet=Wallet.from_env("PRIVATE_KEY"),
+    chains=[Chain.BASE],
+    tools=[Uniswap()],
+)
+
+result = agent.run("check my balances")
 print(result)
 ```
 
-Or use the **CLI** — no Python needed:
-
-```bash
-wak agent --goal "Swap 0.1 ETH to USDC on Base" --wallet 0x...
-```
-
-<div class="tx-divider"></div>
-
-## ✨ Everything You Need
-
-<div class="tx-features" markdown>
-
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🤖</span>
-### Agent Framework
-Goal-driven autonomous agents with LLM reasoning. Natural language in, on-chain actions out.
+<div class="terminal-foot">intent → policy → simulation → execution</div>
+</div>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">💰</span>
-### DeFi Tools
-Uniswap V2/V3, Aerodrome, Aave, Curve. Real swaps, quotes, approvals, slippage protection.
+<div class="docs-metrics" markdown>
+<div><strong>25</strong><span>modules</span></div>
+<div><strong>1,791</strong><span>tests passing</span></div>
+<div><strong>8</strong><span>supported chains</span></div>
+<div><strong>74%</strong><span>coverage</span></div>
+<div><strong>MIT</strong><span>license</span></div>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🎯</span>
-### Airdrop Suite
-Galxe, Zealy, Layer3, Gleam, QuestN, Intract. Multi-wallet farming, auto-discovery.
+<div class="docs-rule"></div>
+
+<div class="docs-section-intro" markdown>
+<p class="docs-section-number">01 / THE FRAMEWORK</p>
+
+## Everything around the transaction.
+
+The hard part of an on-chain agent is not calling a contract. It is making the full path observable, composable, and safe to operate. The kit keeps those concerns in one surface.
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🔐</span>
-### Security Audit
-Static analysis, fuzzing, exploit PoC, forensics. 10 specialized audit skills built-in.
+<div class="docs-capabilities" markdown>
+<div class="docs-capability" markdown>
+<span class="capability-number">01</span>
+### Agent runtime
+
+Goal-driven execution with pluggable LLM providers, tool routing, structured results, and a Python API that stays readable.
+
+[Read the agent API →](api/agent.md)
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">⚡</span>
-### MEV Bots
-Cross-DEX arbitrage, liquidation bot, Flashbot support. Extract value from mempool.
+<div class="docs-capability docs-capability-dark" markdown>
+<span class="capability-number">02</span>
+### Execution policy
+
+Spend limits, operator confirmation, kill switches, and transaction simulation sit between an agent decision and a broadcast.
+
+[Review the security model →](security-model.md)
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🖼️</span>
-### NFT Tools
-Deploy collections, batch mint, marketplace listing. ERC-721A optimized.
+<div class="docs-capability" markdown>
+<span class="capability-number">03</span>
+### Protocol primitives
+
+DeFi, bridges, wallets, gas, portfolio, NFT, trading, oracle, and account-abstraction modules share the same chain-aware foundation.
+
+[Explore features →](features.md)
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">📈</span>
-### Trading Bots
-DCA with price triggers, yield optimizer, token sniper. Automated strategies.
+<div class="docs-capability docs-capability-wide" markdown>
+<span class="capability-number">04</span>
+### Multi-chain by default
+
+Use one interface across Ethereum, Base, Arbitrum, Polygon, Optimism, BSC, Solana, and Avalanche. Add a new chain without rebuilding every tool around it.
+
+<div class="chain-list"><span>Ethereum</span><span>Base</span><span>Arbitrum</span><span>Polygon</span><span>Optimism</span><span>BSC</span><span>Solana</span><span>Avalanche</span></div>
+</div>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🌉</span>
-### Cross-Chain Bridge
-Li.Fi + Socket aggregators. Best routes, lowest fees, 8 chains.
+<div class="docs-rule"></div>
+
+<div class="docs-section-intro" markdown>
+<p class="docs-section-number">02 / EXECUTION MODEL</p>
+
+## One controlled path from goal to chain.
+
+Every write operation should be explainable before it becomes irreversible. The framework makes the execution boundary explicit.
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🔮</span>
-### Oracle Aggregator
-Multi-source price feeds — Chainlink, DexScreener, CoinGecko. Weighted median, auto-fallback, cache.
+<div class="execution-path" markdown>
+<div><span>01</span><strong>Intent</strong><small>Natural language or Python call</small></div>
+<div><span>02</span><strong>Plan</strong><small>Tool routing and parameters</small></div>
+<div><span>03</span><strong>Policy</strong><small>Limits, approval, simulation</small></div>
+<div><span>04</span><strong>Execute</strong><small>Signed transaction on-chain</small></div>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">📡</span>
-### Event Listener
-On-chain event subscription with webhooks, callbacks, and background polling. Real-time monitoring.
+<div class="docs-callout" markdown>
+<span>i</span>
+<p><strong>Designed for controlled automation.</strong> The framework is beta software. Review the [maturity policy](project-maturity.md) and [risk disclosure](../RISKS.md) before using real funds.</p>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🧪</span>
-### Transaction Simulator
-Pre-flight TX verification via eth_call, Tenderly, or local fork. Catch reverts before broadcasting.
+<div class="docs-rule"></div>
+
+<div class="docs-section-intro docs-section-intro-small" markdown>
+<p class="docs-section-number">03 / START HERE</p>
+
+## Small surface. Serious foundations.
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🔑</span>
-### Account Abstraction
-ERC-4337 bundler, paymaster integration, smart account factory. SimpleAccount, Safe, Kernel support.
+<div class="docs-start-grid" markdown>
+<div markdown>
+<span class="start-label">FIRST RUN</span>
+### Build your first agent
+Install the package, configure a wallet, and run a read-only balance check.
+
+[Open Getting Started →](getting-started.md)
+</div>
+<div markdown>
+<span class="start-label">TERMINAL</span>
+### Use the `wak` CLI
+Inspect chains, check dependencies, run examples, and operate without writing Python.
+
+[Open CLI reference →](cli.md)
+</div>
+<div markdown>
+<span class="start-label">REFERENCE</span>
+### Browse the API
+Go deeper into wallets, chains, LLMs, DeFi, bridges, security, and execution modules.
+
+[Open API reference →](api/agent.md)
+</div>
 </div>
 
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🔗</span>
-### Cross-Chain Messaging
-LayerZero + Wormhole + CCIP unified API. Send messages, query status, estimate fees.
-</div>
-
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🗳️</span>
-### Governance
-Snapshot + Tally + on-chain governor. Proposal tracking, voting power, delegation management.
-</div>
-
-<div class="tx-feature" markdown>
-<span class="tx-feature-icon">🛠️</span>
-### CLI Tool
-`wak` — 7 commands for terminal usage. Check balances, gas, run agents, zero Python.
-</div>
-
-</div>
-
-<div class="tx-divider"></div>
-
-## 🏗️ Architecture
-
-```
-User / Application
-        │
-        ▼
-┌───────────────────────────┐
-│     Agent Framework       │
-│  Goal → LLM → Tool → TX  │
-└─────────────┬─────────────┘
-              │
-   ┌──────────┼──────────┐
-   │   Safety Layer      │
-   │  Governor + Kill SW │
-   └──────────┼──────────┘
-              │
-   ┌──────────┼────────────────────────────────────────┐
-   │          Tool Ecosystem                            │
-   │  DeFi · Airdrop · Security · MEV · NFT · Trading   │
-   │  Portfolio · Bridge · Gas · Wallet · Oracle        │
-   │  Events · Simulator · Account Abstraction          │
-   │  Messaging · Governance · Plugins · Utils          │
-   └──────────┼────────────────────────────────────────┘
-              │
-   ┌──────────┼──────────┐
-   │  Chain Abstraction   │
-   │  ETH · BASE · ARB   │
-   │  OP · MATIC · BSC   │
-   │  AVAX · SOLANA   │
-   └─────────────────────┘
-```
-
-<div class="tx-divider"></div>
-
-## ⚡ Quick Start
-
-=== "Python"
-
-    ```python
-    from web3_agent_kit import Agent, Wallet, Chain, ChainManager
-    from web3_agent_kit.defi import Uniswap
-
-    chain_manager = ChainManager(chains=[Chain.BASE])
-    wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
-    uniswap = Uniswap(chain_manager=chain_manager)
-
-    agent = Agent(wallet=wallet, chains=[Chain.BASE], tools=[uniswap])
-    result = agent.run("Swap 0.1 ETH to USDC on Base")
-    ```
-
-=== "CLI"
-
-    ```bash
-    # Check your wallet
-    wak wallet
-
-    # Check gas prices
-    wak gas
-
-    # Run an agent
-    wak agent --goal "Swap 0.1 ETH to USDC on Base" --wallet 0x...
-    ```
-
-=== "Airdrop Farming"
-
-    ```python
-    from web3_agent_kit.airdrop import MultiWalletManager
-
-    manager = MultiWalletManager.from_csv("wallets.csv")
-    manager.execute_on_all("swap", token_in="ETH", token_out="USDC", amount=0.01)
-    ```
-
-=== "Security Audit"
-
-    ```python
-    from web3_agent_kit.security import StaticAnalyzer
-
-    analyzer = StaticAnalyzer()
-    results = analyzer.analyze("contracts/Token.sol")
-    for vuln in results.vulnerabilities:
-        print(f"[{vuln.severity}] {vuln.name}")
-    ```
-
-=== "Oracle"
-
-    ```python
-    from web3_agent_kit.oracle import OracleAggregator
-
-    oracle = OracleAggregator()
-    price = oracle.get_price("ETH")
-    print(f"ETH: ${price.usd:.2f} (sources: {price.sources})")
-    ```
-
-=== "Simulate TX"
-
-    ```python
-    from web3_agent_kit.simulator import TransactionSimulator
-
-    sim = TransactionSimulator(chain_manager=cm)
-    result = sim.simulate(to=router, data=calldata, from_addr=wallet.address)
-    print(f"Would revert: {result.would_revert}, gas: {result.gas_used}")
-    ```
-
-<div class="tx-divider"></div>
-
-## 📦 Supported Chains
-
-| Chain | Status | DeFi | Bridge |
-|-------|:------:|:----:|:------:|
-| Ethereum | ✅ | ✅ | ✅ |
-| Base | ✅ | ✅ | ✅ |
-| Arbitrum | ✅ | ✅ | ✅ |
-| Optimism | ✅ | ✅ | ✅ |
-| Polygon | ✅ | ✅ | ✅ |
-| Avalanche | ✅ | — | ✅ |
-| BSC | ✅ | — | ✅ |
-| Solana | ✅ | — | — |
-
-<div class="tx-divider"></div>
-
-## 🤝 Contributing
-
-We welcome contributions! Whether it's bug reports, feature requests, documentation improvements, or code contributions.
-
-[Contributing Guide](contributing.md){ .md-button .md-button--primary }
-
-<div class="tx-divider"></div>
-
-<div style="text-align: center; opacity: 0.6; font-size: 0.85rem;">
-
-Built by [Maulana](https://github.com/ulsreall) · [Twitter](https://twitter.com/itseywacc) · [PyPI](https://pypi.org/project/web3-agent-kit/)
-
+<div class="docs-footer-cta" markdown>
+<div><span class="docs-section-number">OPEN SOURCE · MIT LICENSE</span><strong>Build on the source, not a black box.</strong></div>
+[GitHub repository →](https://github.com/ulsreall/web3-agent-kit){ .md-button .md-button--primary }
 </div>
