@@ -46,8 +46,8 @@ theme:
     - announce.dismiss
   icon:
     repo: fontawesome/brands/github
-    logo: fontawesome/solid/robot
-  favicon: assets/favicon.png
+  logo: assets/logo-mark.svg
+  favicon: assets/favicon.svg
 
 plugins:
   - search
