@@ -8,6 +8,8 @@
 > Review the [maturity policy](docs/project-maturity.md) and [risk disclosure](RISKS.md)
 > before using real funds.
 
+> Feature readiness is tracked in the [capability matrix](docs/capability-matrix.md).
+
 [![PyPI](https://img.shields.io/pypi/v/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
 [![Downloads](https://img.shields.io/pypi/dm/web3-agent-kit.svg)](https://pypi.org/project/web3-agent-kit/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
@@ -15,6 +17,7 @@
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
 [![Website](https://img.shields.io/badge/website-live-10b981.svg)](https://web3agentkit.site/)
 [![Docs](https://img.shields.io/badge/docs-gh--pages-blue.svg)](https://ulsreall.github.io/web3-agent-kit/)
+[![Release](https://img.shields.io/github/v/release/ulsreall/web3-agent-kit?label=release)](https://github.com/ulsreall/web3-agent-kit/releases)
 [![Coverage](https://codecov.io/gh/ulsreall/web3-agent-kit/branch/master/graph/badge.svg)](https://codecov.io/gh/ulsreall/web3-agent-kit)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
@@ -67,7 +70,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2, Uniswap V3, Aave V3, Curve, bridges |
-| **Airdrops** | Manual quest hunting | Auto-track 8 platforms, multi-wallet farming |
+| **Airdrops** | Manual quest hunting | Experimental tracking across 8 platforms |
 | **Token Security** | Manual pre-trade checks | Honeypot, tax, liquidity, holder, and contract-pattern analysis |
 | **MEV** | Build from scratch | Arbitrage, liquidation, Flashbot support |
 | **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
@@ -190,7 +193,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 
 ## 🎯 Quick Start
 
-**5 lines of code. No ceremony.**
+**A small, policy-controlled starting point.**
 
 ```bash
 pip install web3-agent-kit
@@ -209,7 +212,7 @@ agent = Agent(wallet=wallet, chains=[Chain.BASE], tools=[Uniswap(chain_manager=c
 result = agent.run("Swap 0.1 ETH to USDC on Base")
 ```
 
-That's it. One `pip install`, two env vars, five lines of Python, and your AI agent is swapping on-chain.
+That's it. Install the package, configure the provider and wallet, then run a policy-controlled agent.
 
 > 🔐 **Governed by default:** every `Agent` ships with a conservative
 > `SpendGovernor` out of the box (max 0.05 ETH/tx, 0.5 ETH/day, 1.0 ETH/session)
@@ -274,18 +277,18 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 - 🌐 **GoPlus API** — Real-time token security data when configured
 - 📈 **DexScreener** — Liquidity data integration
 
-### 🪂 Airdrop Automation (NEW!)
+### 🪂 Airdrop Automation (Experimental)
 - 🔍 **Campaign Discovery** — Auto-scan 8 platforms (Galxe, Zealy, Layer3, QuestN, TaskOn, Intract, Port3, Gleam)
 - ⛓️ **On-chain Farming** — DeFi interactions for airdrops (Base, Ethereum, Arbitrum, Optimism, Scroll, Linea, zkSync)
 - ⏰ **Daily Scheduler** — Automate recurring tasks with retry logic
 - 📊 **Points Dashboard** — Track points across all platforms with history
 - 🔗 **Referral Manager** — Generate, track, and optimize referral links
 - 🚰 **Faucet Claimer** — Auto-claim testnet tokens from 12+ faucets
-- 🤖 **Multi-wallet** — Sybil avoidance, wallet rotation
+- 🤖 **Multi-wallet** — Explicit wallet rotation primitives; platform rules and eligibility remain your responsibility
 - 🔌 **Plugin System** — Extend with custom platform executors
 
 ### 🌐 REST API
-- 📡 **37+ endpoints** — Full HTTP API for all modules
+- 📡 **37+ endpoints** — HTTP API for supported modules
 - 🔑 **API key auth** — Secure access control
 - 📖 **Swagger UI** — Interactive API documentation
 - 🔄 **Auto-fallback** — Multi-provider LLM cascade
@@ -348,7 +351,7 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 
 ## 🌐 REST API
 
-Full HTTP API for all modules — use from any language (JavaScript, curl, etc):
+HTTP API for supported modules — use it from any language (JavaScript, curl, etc):
 
 ```bash
 # WEB3_API_KEY is required — the server refuses to start without it
@@ -358,7 +361,7 @@ export WEB3_API_KEY=your-secret
 python -m web3_agent_kit.api
 
 # Every request must include the key
-curl -H "X-API-Key: $WEB3_API_KEY" http://127.0.0.1:8000/wallet/info
+curl -H "X-API-Key: ***" http://127.0.0.1:8000/wallet/info
 ```
 
 > ⚠️ **Breaking change (v1.14.0+):** `WEB3_API_KEY` is now mandatory — the

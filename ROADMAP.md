@@ -1,6 +1,6 @@
 # Roadmap
 
-> **Current version:** v1.16.2
+> **Current version:** v1.16.3
 > **Updated:** 2026-08-10
 > **Modules:** 25  
 > **Tests:** 1,791+ (70% coverage gate)
