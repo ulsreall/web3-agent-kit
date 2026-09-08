@@ -1,107 +1,44 @@
-# Security Module
+# Token Security Module
 
-Smart contract security auditing tools — static analysis, fuzzing, and exploit development.
+The security module provides token and contract risk signals for pre-trade and pre-interaction checks. It is intentionally narrower than a full smart-contract audit suite.
 
----
-
-## Modules
-
-### Static Analysis
-
-Automated vulnerability detection using Slither.
+## Public API
 
 ```python
-from web3_agent_kit.security import StaticAnalyzer
+from web3_agent_kit.security import SecurityConfig, TokenAnalyzer
 
-analyzer = StaticAnalyzer()
-results = analyzer.analyze("contracts/Token.sol")
-
-for vuln in results.vulnerabilities:
-    print(f"[{vuln.severity}] {vuln.name}: {vuln.description}")
-```
-
-### Fuzzing
-
-Property-based testing with Echidna/Foundry.
-
-```python
-from web3_agent_kit.security import FuzzTester
-
-fuzzer = FuzzTester()
-fuzzer.add_property("balance_never_negative", "assert(balanceOf(user) >= 0)")
-results = fuzzer.run("contracts/Vault.sol", duration="10m")
-```
-
-### Exploit Development
-
-Build PoC exploits for discovered vulnerabilities.
-
-```python
-from web3_agent_kit.security import ExploitBuilder
-
-builder = ExploitBuilder(chain=Chain.ETHEREUM)
-exploit = builder.build_reentrancy(
-    target="0x...",
-    attack_contract="contracts/Exploit.sol",
+config = SecurityConfig(
+    rpc_url="https://your-rpc.example",
+    goplus_api_key="optional",
 )
-result = exploit.simulate()
-print(f"Profit: ${result.profit_usd:.2f}")
+analyzer = TokenAnalyzer(config)
+report = analyzer.analyze_token("0x...")
+
+print(report.safety_score)
+print(report.risk_level)
+print(report.is_honeypot)
 ```
 
-### Forensics
+## Signals
 
-On-chain transaction tracing and analysis.
+- Honeypot and sellability status
+- Buy and sell tax estimates
+- Liquidity amount, lock status, and lock duration
+- Holder concentration and whale signals
+- Contract patterns such as proxy, hidden mint, blacklist, pause, ownership, fee changes, and transfer restrictions
+- Verified-source and ownership signals
+- Safety score, risk level, warnings, and recommendations
 
-```python
-from web3_agent_kit.security import OnchainForensics
+Unknown honeypot status is treated as unsafe by `SecurityReport.is_safe`. An API failure must not be interpreted as a safe result.
 
-forensics = OnchainForensics(chain=Chain.ETHEREUM)
-trace = forensics.trace_tx("0x...")
-print(f"From: {trace.from_addr}")
-print(f"Total value moved: ${trace.total_value_usd:.2f}")
-print(f"Contracts involved: {trace.contracts}")
-```
+## Integrations
 
-### Protocol Audit
+- GoPlus token security data when configured
+- DexScreener liquidity and pair data when configured
+- Direct RPC reads for supported contract checks
 
-Full DeFi protocol security audit.
+External provider responses are signals, not guarantees. A security report does not replace transaction simulation, spend policy, allowlists, or human confirmation.
 
-```python
-from web3_agent_kit.security import ProtocolAuditor
+## Scope boundary
 
-auditor = ProtocolAuditor()
-report = auditor.audit(
-    contracts=["contracts/Vault.sol", "contracts/Token.sol"],
-    checks=["reentrancy", "overflow", "access_control", "oracle_manipulation"],
-)
-report.save("audit-report.md")
-```
-
----
-
-## Supported Tools
-
-| Tool | Purpose |
-|------|---------|
-| **Slither** | Static analysis |
-| **Echidna** | Property-based fuzzing |
-| **Foundry** | Fuzz testing + simulation |
-| **Mythril** | Symbolic execution |
-| **Securify2** | Security patterns |
-
----
-
-## 10 Built-in Skills
-
-The security module includes 10 specialized skills for different attack vectors:
-
-- `smart-contract-exploit` — Exploit development
-- `smart-contract-static-analysis` — Automated detection
-- `smart-contract-fuzzing` — Property-based testing
-- `onchain-forensics` — Transaction tracing
-- `recon-and-osint` — Target reconnaissance
-- `web-app-pentest` — Web application testing
-- `defi-protocol-audit` — Full protocol audit
-- `wallet-compromise-rescue` — Rescue compromised assets
-- `evm-7702-rescue` — EIP-7702 asset rescue
-- `web3-bug-bounty-hunter` — Bug bounty automation
+This package does not currently expose `StaticAnalyzer`, `FuzzTester`, `ExploitBuilder`, `OnchainForensics`, or `ProtocolAuditor` classes. General Slither/Echidna workflows, exploit development, and forensic tracing should be documented and shipped as separate integrations only after they exist in the package and have deterministic tests.

@@ -110,6 +110,8 @@ nav:
   - REST API Server: api-server.md
   - Features: features.md
   - Project Maturity: project-maturity.md
+  - Capability Matrix: capability-matrix.md
+  - Safety and Transaction Pipeline: safety-and-transaction-pipeline.md
   - Security Model: security-model.md
   - Versioning Policy: versioning-policy.md
   - Examples: examples.md

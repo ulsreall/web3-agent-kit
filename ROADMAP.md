@@ -75,6 +75,17 @@ observable, and consistently tested.
 | Documentation consistency | Medium | Version, support, coverage, and readiness claims have one source of truth |
 | External security review | Medium | Critical execution paths reviewed before a v2.0 stable release |
 
+## Feature cleanup queue
+
+These items are intentionally prioritized before adding more protocol integrations:
+
+- Consolidate duplicate notification helpers under `notifications/` and publish a deprecation path for legacy imports.
+- Replace blocking airdrop retry sleeps with an async-compatible scheduler path.
+- Complete wallet-watcher token-balance retrieval or mark the field explicitly unsupported.
+- Add local-fork integration fixtures for swaps, bridges, Aave, sniper preflight, and DCA execution.
+- Add a shared preflight context so write-capable modules consistently apply validation, allowlists, simulation, spend limits, confirmation, and receipt verification.
+- Keep browser, CAPTCHA, social, MEV, NFT, restaking, messaging, governance, and account-abstraction modules classified as experimental until their integration evidence meets the maturity policy.
+
 ## Phase 6 — Production Proof (planned)
 
 | Outcome | Priority | Exit criterion |

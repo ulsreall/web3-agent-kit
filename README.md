@@ -67,8 +67,8 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2, Uniswap V3, Aave V3, Curve, bridges |
-| **Airdrops** | Manual quest hunting | Auto-track 7 platforms, multi-wallet farming |
-| **Security Audit** | Manual code review | Static analysis, fuzzing, exploit PoC |
+| **Airdrops** | Manual quest hunting | Auto-track 8 platforms, multi-wallet farming |
+| **Token Security** | Manual pre-trade checks | Honeypot, tax, liquidity, holder, and contract-pattern analysis |
 | **MEV** | Build from scratch | Arbitrage, liquidation, Flashbot support |
 | **NFT** | Write ERC-721 manually | Deploy, batch mint, marketplace listing |
 | **Trading** | Manual recurring buys | DCA bot, yield optimizer, token sniper |
@@ -117,10 +117,10 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
        │                                                     │        │
        │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌────────┐│        │
        │  │ DeFi     │ │ Airdrop  │ │ Security │ │ MEV    ││        │
-       │  │ •Uniswap │ │ •Galxe   │ │ •Static  │ │ •Arb   ││        │
-       │  │ •Aerodrome│ │ •Zealy   │ │ •Fuzzing │ │ •Liq   ││        │
-       │  │ •Aave    │ │ •Layer3  │ │ •Exploit │ │ •Flash ││        │
-       │  │ •Curve   │ │ •Gleam   │ │ •Audit   │ │  bots  ││        │
+       │  │ •Uniswap │ │ •Galxe   │ │ •Honeypot│ │ •Arb   ││        │
+       │  │ •Aerodrome│ │ •Zealy   │ │ •Tax     │ │ •Liq   ││        │
+       │  │ •Aave    │ │ •Layer3  │ │ •Liquidity│ │ •Flash ││        │
+       │  │ •Curve   │ │ •Gleam   │ │ •Holders │ │  bots  ││        │
        │  ├──────────┤ ├──────────┤ ├──────────┤ ├────────┤│        │
        │  │ Trading  │ │ NFT      │ │ Portfolio│ │ Bridge ││        │
        │  │ •DCA Bot │ │ •Deploy  │ │ •Tracker │ │ •Li.Fi ││        │
@@ -171,8 +171,8 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **CLI Tool** | `wak` (7 cmds) | ❌ | ❌ | ❌ |
 | **DeFi Tools** | Uniswap V2, Uniswap V3, Aave V3, Curve | ❌ | ❌ | Limited |
-| **Airdrop Suite** | 7 platforms | ❌ | ❌ | ❌ |
-| **Security Audit** | Static + Fuzz + Exploit | ❌ | ❌ | ❌ |
+| **Airdrop Suite** | 8 platforms | ❌ | ❌ | ❌ |
+| **Token Security** | Honeypot + tax + liquidity + holder signals | ❌ | ❌ | ❌ |
 | **MEV Bots** | Arbitrage + Liquidation | ❌ | ❌ | ❌ |
 | **NFT Tools** | Deploy + Mint + Market | ❌ | ❌ | ❌ |
 | **Token Sniper** | ✅ | ❌ | ❌ | ❌ |
@@ -240,7 +240,7 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 ## ✨ Features
 
 ### 🤖 Core
-- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC
+- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana
 - 🧠 **LLM-powered reasoning** — Multi-provider cascade (OpenAI, Anthropic, Groq, DeepSeek, OpenRouter, Kimi)
 - 🎯 **Natural language goals** — Tell the agent what to do in plain English
 - 🔐 **Governed signing** — Safety caps, kill-switch, operator confirmation
@@ -263,19 +263,19 @@ That's it. One `pip install`, two env vars, five lines of Python, and your AI ag
 - 💾 **Persistent orders** — Survives restarts, stored on disk
 - 🔔 **Callbacks** — Hook into execution events for notifications
 
-### 🔒 Security Module (NEW!)
+### 🔐 Token Security Module
 - 🍯 **Honeypot detection** — Check if token can be sold before buying
 - 🧶 **Rug pull checker** — Assess rug pull risk factors
-- 📝 **Contract audit** — Detect hidden mint, blacklist, pause, proxy patterns
+- 📝 **Contract-pattern analysis** — Detect hidden mint, blacklist, pause, proxy patterns
 - 💰 **Tax checker** — Buy/sell tax analysis
 - 💧 **Liquidity analysis** — Locked %, lock duration
 - 👥 **Holder analysis** — Concentration, whale detection
 - 📊 **Safety score** — 0-100 score with risk levels
-- 🌐 **GoPlus API** — Real-time token security data
+- 🌐 **GoPlus API** — Real-time token security data when configured
 - 📈 **DexScreener** — Liquidity data integration
 
 ### 🪂 Airdrop Automation (NEW!)
-- 🔍 **Campaign Discovery** — Auto-scan 7 platforms (Galxe, Zealy, Layer3, QuestN, TaskOn, Intract, Port3)
+- 🔍 **Campaign Discovery** — Auto-scan 8 platforms (Galxe, Zealy, Layer3, QuestN, TaskOn, Intract, Port3, Gleam)
 - ⛓️ **On-chain Farming** — DeFi interactions for airdrops (Base, Ethereum, Arbitrum, Optimism, Scroll, Linea, zkSync)
 - ⏰ **Daily Scheduler** — Automate recurring tasks with retry logic
 - 📊 **Points Dashboard** — Track points across all platforms with history

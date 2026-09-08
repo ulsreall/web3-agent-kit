@@ -263,7 +263,6 @@ def main():
     chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM])
     wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 
-    # Note: Aave integration is coming soon
     agent = Agent(
         wallet=wallet,
         chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM],

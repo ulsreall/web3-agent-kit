@@ -199,6 +199,8 @@ Full airdrop farming automation — discover, track, and claim airdrops across m
 - **Layer3** — Task completion
 - **QuestN** — Quest participation
 - **Intract** — Campaign automation
+- **TaskOn** — Task and campaign participation
+- **Port3** — Campaign and social task participation
 - **Gleam** — Giveaway entry
 
 ### Multi-Wallet Farming
@@ -216,13 +218,15 @@ manager.execute_on_all("swap", token_in="ETH", token_out="USDC", amount=0.01)
 
 ## 🔐 Security Tools
 
-Smart contract security auditing — static analysis, fuzzing, exploit development, and forensics.
+Token and contract risk analysis before interacting with a token or protocol.
 
-- **Static Analysis** — Slither-based vulnerability detection
-- **Fuzzing** — Property-based testing with Echidna/Foundry
-- **Exploit Development** — PoC builder for discovered vulnerabilities
-- **Forensics** — On-chain transaction tracing
-- **Protocol Audit** — Full DeFi protocol security audit
+- **Honeypot detection** — Detect unknown or unsellable token states
+- **Contract patterns** — Flag proxy, mint, blacklist, pause, ownership, and transfer restrictions
+- **Tax analysis** — Buy/sell tax and gas signals
+- **Liquidity and holders** — Liquidity lock and holder concentration signals
+- **Safety score** — Risk classification with warnings and recommendations
+
+This module is not a general Slither/Echidna exploit-development or on-chain-forensics framework.
 
 ---
 
@@ -242,7 +246,7 @@ NFT collection creation, minting, and marketplace integration.
 
 - **Collection Deploy** — Deploy ERC-721A contracts
 - **Batch Minting** — Mint to multiple recipients
-- **Marketplace** — OpenSea-compatible listing
+- **Marketplace data** — Collection, floor, listing, trending, and search adapters
 
 ---
 
