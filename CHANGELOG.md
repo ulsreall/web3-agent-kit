@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.16.4](https://github.com/ulsreall/web3-agent-kit/compare/v1.16.3...v1.16.4) (2026-09-08)
+
+
+### Documentation
+
+* refresh README demo and release metadata ([44eb34b](https://github.com/ulsreall/web3-agent-kit/commit/44eb34b6eab2c832ec0ce96b51807dd4e3ee5e67))
+
 ## [1.16.3](https://github.com/ulsreall/web3-agent-kit/compare/v1.16.2...v1.16.3) (2026-09-08)
 
 
