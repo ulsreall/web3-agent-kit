@@ -44,7 +44,7 @@ print(result)
 <div><strong>25</strong><span>modules</span></div>
 <div><strong>1,791</strong><span>tests passing</span></div>
 <div><strong>8</strong><span>supported chains</span></div>
-<div><strong>33%</strong><span>coverage</span></div>
+<div><strong>74%</strong><span>coverage</span></div>
 <div><strong>MIT</strong><span>license</span></div>
 </div>
 
