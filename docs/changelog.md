@@ -4,6 +4,13 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.16.2] - 2026-09-08
+
+### Fixed
+- Synchronized package, CLI, documentation, and website metadata.
+- Corrected the published coverage statistic and canonical website links.
+- Fixed broken documentation anchors and completed the MkDocs navigation.
+
 ## [1.14.0] - 2026-07-21
 
 ### Security

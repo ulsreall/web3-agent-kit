@@ -1,6 +1,6 @@
 # Governance
 
-> **Last updated:** v1.16.0 (2026-08-10)
+> **Last updated:** v1.16.2 (2026-09-08)
 
 ## Maintainers
 

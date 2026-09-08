@@ -110,7 +110,15 @@ nav:
   - REST API Server: api-server.md
   - Features: features.md
   - Project Maturity: project-maturity.md
+  - Security Model: security-model.md
+  - Versioning Policy: versioning-policy.md
   - Examples: examples.md
+  - Architecture:
+    - architecture/execution-paths.md
+  - Architecture Decision Records:
+    - adr/adr-001-public-rpc-defaults.md
+    - adr/adr-002-builder-pattern.md
+    - adr/adr-003-multi-source-oracle.md
   - API Reference:
     - api/agent.md
     - api/wallet.md
@@ -133,4 +141,14 @@ nav:
     - api/messaging.md
     - api/governance.md
   - Contributing: contributing.md
+  - Contributing Platforms: contributing-platforms.md
+  - Research:
+    - research/airdrop_landscape_2026.md
+  - Promotion:
+    - promotion/awesome-list-submissions.md
+    - promotion/hn-post-draft.md
+  - Blog:
+    - blog/comparison-vs-alternatives.md
+  - Security:
+    - security/safety-gap-matrix.md
   - Changelog: changelog.md

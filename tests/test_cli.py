@@ -41,7 +41,7 @@ class TestMainGroup:
     def test_version(self):
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
-        assert "1.12.0" in result.output
+        assert "1.16.2" in result.output
 
     def test_subcommands_registered(self):
         result = runner.invoke(main, ["--help"])

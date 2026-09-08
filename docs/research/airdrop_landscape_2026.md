@@ -13,7 +13,7 @@
 3. [DeFi/On-chain Airdrops](#3-defion-chain-airdrops)
 4. [Social Tasks Commonly Required](#4-social-tasks-commonly-required)
 5. [Anti-bot Measures](#5-anti-bot-measures)
-6. [Farming Tools & Bots](#6-farming-tools--bots)
+6. [Farming Tools & Bots](#6-farming-tools-bots)
 7. [Platform Comparison Matrix](#7-platform-comparison-matrix)
 8. [Automation Strategy](#8-automation-strategy)
 

@@ -7,11 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.16.2] - 2026-09-08
+
+### Fixed
+
+- Synced package, CLI, documentation, and website references to the `1.16.2` release.
+- Corrected the published coverage statistic to match the current test suite measurement.
+- Switched canonical project links from the Vercel fallback URL to `https://web3agentkit.site/`.
+- Fixed broken documentation anchors and completed the MkDocs navigation.
+
 ## [1.16.1] - 2026-08-14
 
 ### Changed
 
-- Synced the PyPI project homepage with the active Vercel deployment.
+- Synced the PyPI project homepage with the active website deployment.
 
 ## [1.16.0] - 2026-08-10
 

@@ -1,6 +1,6 @@
 # Security Model
 
-> **Last updated:** v1.16.0 (2026-08-10)
+> **Last updated:** v1.16.2 (2026-09-08)
 > **Scope:** Wallet safety, transaction governance, API security, and known limitations.
 
 ---

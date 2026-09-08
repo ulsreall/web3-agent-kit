@@ -13,7 +13,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![CI](https://github.com/ulsreall/web3-agent-kit/actions/workflows/ci.yml/badge.svg)](https://github.com/ulsreall/web3-agent-kit/actions)
-[![Website](https://img.shields.io/badge/website-live-10b981.svg)](https://web3-agent-kit.vercel.app/)
+[![Website](https://img.shields.io/badge/website-live-10b981.svg)](https://web3agentkit.site/)
 [![Docs](https://img.shields.io/badge/docs-gh--pages-blue.svg)](https://ulsreall.github.io/web3-agent-kit/)
 [![Coverage](https://codecov.io/gh/ulsreall/web3-agent-kit/branch/master/graph/badge.svg)](https://codecov.io/gh/ulsreall/web3-agent-kit)
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)

@@ -57,7 +57,7 @@ bot = DCABot(wallet=wallet, chain_manager=chain_manager, config=config)
 
 ## Sniper Bot
 
-See [Token Sniper](../features.md#-token-sniper) in Features.
+See [Token Sniper](../features.md#token-sniper) in Features.
 
 ---
 
