@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.17.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.16.4...v1.17.0) (2026-09-09)
+
+
+### Features
+
+* add Robinhood Chain network configuration ([5c63836](https://github.com/ulsreall/web3-agent-kit/commit/5c638363755dfe992951fdd8bf891f312782eef4))
+
 ## [1.16.4](https://github.com/ulsreall/web3-agent-kit/compare/v1.16.3...v1.16.4) (2026-09-08)
 
 
