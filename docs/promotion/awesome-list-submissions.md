@@ -7,7 +7,7 @@
 ## awesome-web3-ai (github.com/edwardtay/awesome-web3-ai)
 
 ```markdown
-- [Web3 Agent Kit](https://github.com/ulsreall/web3-agent-kit) — Python framework for building autonomous AI agents that interact with blockchains. 25+ modules, 8 chains, built-in safety governor.
+- [Web3 Agent Kit](https://github.com/ulsreall/web3-agent-kit) — Python framework for building autonomous AI agents that interact with blockchains. 25+ modules, 9 chains, built-in safety governor.
 ```
 
 ## awesome-python (github.com/vinta/awesome-python)

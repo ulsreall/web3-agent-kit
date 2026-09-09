@@ -82,6 +82,7 @@ class TestChain:
         """Test chain enum values."""
         assert Chain.ETHEREUM.value == "ethereum"
         assert Chain.BASE.value == "base"
+        assert Chain.ROBINHOOD.value == "robinhood"
         assert Chain.SOLANA.value == "solana"
 
     def test_chain_config(self):
@@ -97,6 +98,16 @@ class TestChain:
         from web3_agent_kit.chains.chain import ChainConfig
         config = ChainConfig(chain=Chain.SOLANA)
         assert config.is_evm is False
+
+    def test_robinhood_chain_config(self):
+        """Robinhood Chain is configured as EVM mainnet chain 4663."""
+        from web3_agent_kit.chains.chain import ChainConfig
+
+        config = ChainConfig(chain=Chain.ROBINHOOD)
+        assert config.is_evm is True
+        assert config.chain_id == 4663
+        assert config.rpc_url == "https://rpc.mainnet.chain.robinhood.com"
+        assert config.explorer == "https://robinscan.io"
 
 
 class TestGovernor:

@@ -17,6 +17,7 @@ class Chain(Enum):
     POLYGON = "polygon"
     AVALANCHE = "avalanche"
     BSC = "bsc"
+    ROBINHOOD = "robinhood"
     SOLANA = "solana"
 
 
@@ -29,6 +30,7 @@ DEFAULT_RPCS = {
     Chain.POLYGON: "https://polygon-rpc.com",
     Chain.AVALANCHE: "https://api.avax.network/ext/bc/C/rpc",
     Chain.BSC: "https://bsc-dataseed1.binance.org",
+    Chain.ROBINHOOD: "https://rpc.mainnet.chain.robinhood.com",
     Chain.SOLANA: "https://api.mainnet-beta.solana.com",
 }
 
@@ -41,6 +43,7 @@ CHAIN_IDS = {
     Chain.POLYGON: 137,
     Chain.AVALANCHE: 43114,
     Chain.BSC: 56,
+    Chain.ROBINHOOD: 4663,
 }
 
 
@@ -75,6 +78,7 @@ class ChainConfig:
             Chain.POLYGON: "https://polygonscan.com",
             Chain.AVALANCHE: "https://snowtrace.io",
             Chain.BSC: "https://bscscan.com",
+            Chain.ROBINHOOD: "https://robinscan.io",
             Chain.SOLANA: "https://solscan.io",
         }
         return self.explorer_url or explorers.get(self.chain, "")

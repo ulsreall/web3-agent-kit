@@ -66,7 +66,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 |------------|------------------------|---------------------|
 | **Setup** | Days of boilerplate | `pip install` → 5 lines of code |
 | **CLI** | Write Python for everything | `wak` — 7 commands, zero code |
-| **Multi-chain** | Write adapters per chain | Built-in for 8 chains |
+| **Multi-chain** | Write adapters per chain | Built-in for 9 EVM/Solana chains |
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
 | **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2, Uniswap V3, Aave V3, Curve, bridges |
@@ -158,7 +158,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
                                │  ├──────┤ ├──────┤ ├────┤ │        │
                                │  │ OP   │ │ MATIC│ │AVAX│ │        │
                                │  ├──────┤ ├──────┤ ├────┤ │        │
-                               │  │ BSC  │ │ SOL  │ │    │ │        │
+                               │  │ BSC  │ │ SOL  │ │ RH 4663 │ │    │ │        │
                                │  └──────┘ └──────┘ └────┘ │        │
                                └────────────────────────────────────┘
 ```
@@ -170,7 +170,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | Feature | Web3 Agent Kit | LangChain + Web3 | Custom Bot | Goat SDK |
 |---------|:--------------:|:----------------:|:----------:|:--------:|
 | **Setup Time** | Minutes | Hours | Days | Hours |
-| **Multi-chain** | 8 chains | Manual | Manual | Limited |
+| **Multi-chain** | 9 chains | Manual | Manual | Limited |
 | **Built-in LLM** | 6 providers | DIY | ❌ | ❌ |
 | **CLI Tool** | `wak` (7 cmds) | ❌ | ❌ | ❌ |
 | **DeFi Tools** | Uniswap V2, Uniswap V3, Aave V3, Curve | ❌ | ❌ | Limited |
@@ -243,7 +243,7 @@ That's it. Install the package, configure the provider and wallet, then run a po
 ## ✨ Features
 
 ### 🤖 Core
-- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Solana
+- 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Robinhood Chain, Solana
 - 🧠 **LLM-powered reasoning** — Multi-provider cascade (OpenAI, Anthropic, Groq, DeepSeek, OpenRouter, Kimi)
 - 🎯 **Natural language goals** — Tell the agent what to do in plain English
 - 🔐 **Governed signing** — Safety caps, kill-switch, operator confirmation

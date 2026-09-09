@@ -250,6 +250,7 @@ governor.unkill() # resume
 | Polygon | ✅ | ✅ | ✅ |
 | Avalanche | ✅ | — | ✅ |
 | BSC | ✅ | — | ✅ |
+| Robinhood Chain | ✅ EVM connectivity | — | ✅ (chain ID 4663) |
 | Solana | ✅ | — | — |
 
 ---

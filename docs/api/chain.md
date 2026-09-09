@@ -60,6 +60,7 @@ print(chains)  # [Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM]
 | `Chain.POLYGON` | 137 | `https://polygon-rpc.com` |
 | `Chain.AVALANCHE` | 43114 | `https://api.avax.network/ext/bc/C/rpc` |
 | `Chain.BSC` | 56 | `https://bsc-dataseed1.binance.org` |
+| `Chain.ROBINHOOD` | 4663 | `https://rpc.mainnet.chain.robinhood.com` |
 | `Chain.SOLANA` | — | `https://api.mainnet-beta.solana.com` |
 ---
 ## Block Explorers

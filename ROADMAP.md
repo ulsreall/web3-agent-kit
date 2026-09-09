@@ -4,7 +4,7 @@
 > **Updated:** 2026-08-10
 > **Modules:** 25  
 > **Tests:** 1,791+ (70% coverage gate)
-> **Chains:** 8 (Ethereum, Base, Polygon, Arbitrum, Optimism, BSC, Avalanche, Solana)
+> **Chains:** 9 (Ethereum, Base, Polygon, Arbitrum, Optimism, BSC, Avalanche, Robinhood Chain, Solana)
 
 ---
 

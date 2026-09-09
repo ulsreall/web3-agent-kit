@@ -57,7 +57,7 @@ agent = Agent(config=config)
 
 ## 🔗 Multi-Chain Support
 
-Web3 Agent Kit supports **8** blockchain networks out of the box.
+Web3 Agent Kit supports **9** blockchain networks out of the box.
 
 ### Supported Chains
 
@@ -68,6 +68,7 @@ Web3 Agent Kit supports **8** blockchain networks out of the box.
 - **Polygon** — Ethereum sidechain with low fees
 - **Avalanche** — High-throughput L1
 - **BSC** — Binance Smart Chain
+- **Robinhood Chain** — EVM L2, chain ID 4663, ETH gas
 - **Solana** — High-performance L1, low fees
 
 ### Custom RPC Endpoints

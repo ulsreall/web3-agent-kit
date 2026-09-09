@@ -14,6 +14,7 @@ This matrix is the canonical feature-status reference. A module's maturity level
 |---|---|---:|---|
 | Agent planning and LLM adapters | `agent/` | Beta | Core tests exist; provider responses remain untrusted input. |
 | Chain and RPC configuration | `chains/` | Stable | Read-only chain abstraction and provider fallback. |
+| Robinhood Chain connectivity | `Chain.ROBINHOOD` | Beta | EVM mainnet configuration: chain ID 4663, ETH gas, Robinscan explorer; DEX/bridge protocol adapters are not claimed. |
 | Wallet and signing primitives | `wallet/` | Beta | Local signer boundary; requires explicit operational controls. |
 | Spend policy and execution intent | `execution/`, `utils/` | Beta | Limits, confirmation, and kill-switch primitives exist. |
 | Uniswap V2/V3, Aave V3, Curve, Aerodrome | `defi/` | Beta | Offline protocol tests; live protocol state is external. |
