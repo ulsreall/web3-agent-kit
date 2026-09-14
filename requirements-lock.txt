@@ -707,9 +707,9 @@ eth-keys==0.7.0 \
     # via
     #   eth-account
     #   eth-keyfile
-eth-rlp==2.2.0 \
-    --hash=sha256:5692d595a741fbaef1203db6a2fedffbd2506d31455a6ad378c8449ee5985c47 \
-    --hash=sha256:5e4b2eb1b8213e303d6a232dfe35ab8c29e2d3051b86e8d359def80cd21db83d
+eth-rlp==3.0.0 \
+    --hash=sha256:32f355261c36ad2c369db098170f873123795667e50d496b034f369e2c9d2346 \
+    --hash=sha256:9663e54a4a1c1c847d2d328c1d07e4174ec1c082953fbb42b60e61c501c4931c
     # via eth-account
 eth-typing==6.0.0 \
     --hash=sha256:315dd460dc0b71c15a6cd51e3c0b70d237eec8771beb844144f3a1fb4adb2392 \
