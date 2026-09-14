@@ -1517,9 +1517,9 @@ toolz==1.1.0 \
     --hash=sha256:15ccc861ac51c53696de0a5d6d4607f99c210739caf987b5d2054f3efed429d8 \
     --hash=sha256:27a5c770d068c110d9ed9323f24f1543e83b2f300a687b7891c1a6d56b697b5b
     # via cytoolz
-types-requests==2.33.0.20260712 \
-    --hash=sha256:2141b67ab534a5c5cd2dac5034f2a35f42e699c5bf185eee608c5246a069d7fb \
-    --hash=sha256:de027e28c171d3da529689cbfa023b0b4eab188c8dfa22fd834eebd2cee6e7bb
+types-requests==2.33.0.20260906 \
+    --hash=sha256:76ab8a0fb736744a0c3deee7aa57b2927e301f078d9e61f5391b3e92002416b9 \
+    --hash=sha256:9f53622652bd921ead7a54d665be1b8d518165c8b51cc9d68d944cd6b6bfa8fb
     # via web3
 typing-extensions==4.16.0 \
     --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8 \
