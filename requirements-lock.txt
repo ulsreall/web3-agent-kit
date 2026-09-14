@@ -685,9 +685,9 @@ eth-abi==6.0.0b1 \
     # via
     #   eth-account
     #   web3
-eth-account==0.13.7 \
-    --hash=sha256:39727de8c94d004ff61d10da7587509c04d2dc7eac71e04830135300bdfc6d24 \
-    --hash=sha256:5853ecbcbb22e65411176f121f5f24b8afeeaf13492359d254b16d8b18c77a46
+eth-account==0.14.0 \
+    --hash=sha256:2c8291b1a8fcbd29a55b07f75f0a0aaffd04704d3ec28d1396587f18a5541c6d \
+    --hash=sha256:efdcb57f32f133e9152510e44772a4bcfe519317dfd8f7e7c5ead8189f73a2b6
     # via
     #   -r requirements.txt
     #   web3
