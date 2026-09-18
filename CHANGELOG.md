@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.17.0...v1.18.0) (2026-09-18)
+
+
+### Features
+
+* **execution:** enforce a single pre-sign authorization gate ([#69](https://github.com/ulsreall/web3-agent-kit/issues/69)) ([a9400be](https://github.com/ulsreall/web3-agent-kit/commit/a9400bed06f3f1ca76add24aa0e1b91ae133e454))
+
 ## [1.17.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.16.4...v1.17.0) (2026-09-09)
 
 
