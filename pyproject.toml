@@ -35,6 +35,8 @@ dependencies = [
 ]
 [project.scripts]
 wak = "web3_agent_kit.cli:main"
+wak-p0-probe = "web3_agent_kit.execution.p0_probe:main"
+wak-signing-surface = "web3_agent_kit.execution.check_signing_surface:main"
 
 
 [project.optional-dependencies]
@@ -44,6 +46,8 @@ dev = [
     "pytest-asyncio>=0.23.0",
     "hypothesis>=6.0",
     "ruff>=0.1.0",
+    # tomllib is stdlib from 3.11. Packaging tests parse pyproject.toml.
+    "tomli>=2.0; python_version < '3.11'",
 ]
 solana = [
     "solders>=0.21.0",

@@ -30,6 +30,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov pytest-timeout httpx pytest-asyncio solders base58 solana hypothesis
+        pip install "tomli>=2.0; python_version < '3.11'"
 
     - name: Import smoke test
       run: |

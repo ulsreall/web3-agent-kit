@@ -6,7 +6,6 @@ tests pin its detection behaviour and its fail-closed exit codes.
 
 from __future__ import annotations
 
-import importlib.util
 import subprocess
 import sys
 import textwrap
@@ -15,19 +14,12 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-TOOL_PATH = REPO_ROOT / "tools" / "check_signing_surface.py"
+# The check lives in the package so it ships in the wheel. tools/ keeps a thin
+# wrapper for the source-checkout workflow, covered by
+# test_p0_probe_packaging.py.
+TOOL_PATH = REPO_ROOT / "web3_agent_kit" / "execution" / "check_signing_surface.py"
 
-
-def _load_tool():
-    spec = importlib.util.spec_from_file_location("check_signing_surface", TOOL_PATH)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    sys.modules[spec.name] = module
-    spec.loader.exec_module(module)
-    return module
-
-
-tool = _load_tool()
+from web3_agent_kit.execution import check_signing_surface as tool  # noqa: E402
 
 
 def _write(package: Path, relative: str, source: str) -> None:
