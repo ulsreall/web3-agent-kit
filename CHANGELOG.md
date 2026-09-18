@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.1](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.0...v1.18.1) (2026-09-18)
+
+
+### Bug Fixes
+
+* **execution:** close the three P0 signing gaps and bind call identity ([#73](https://github.com/ulsreall/web3-agent-kit/issues/73)) ([1ea0a7a](https://github.com/ulsreall/web3-agent-kit/commit/1ea0a7acb5d02c5a35ca4e59e4c562c34255a216))
+
+
+### Documentation
+
+* sync all version surfaces to 1.18.0 ([ec4ffda](https://github.com/ulsreall/web3-agent-kit/commit/ec4ffda0bb96141d13d478c09310cc578d394156))
+
 ## [1.18.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.17.0...v1.18.0) (2026-09-18)
 
 
