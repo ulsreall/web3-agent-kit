@@ -17,12 +17,15 @@ import pytest
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
     ActionType,
+    AuthorizationDenied,
+    AuthorizationEvidence,
     AuthorizationRequest,
     AuthorizationVerdict,
     EnforcementDenied,
     ExecutionPolicy,
     InvalidIntentError,
     PolicyReason,
+    NullAuthorizationProvider,
     PreSignInterceptor,
 )
 
@@ -43,7 +46,7 @@ def _tx(**overrides) -> dict:
         "data": CALLDATA,
         "value": 1_000_000_000_000,
         "nonce": 265,
-        "chainId": 84532,
+        "chainId": 8453,
         "gas": 300_000,
     }
     tx.update(overrides)
@@ -73,6 +76,46 @@ class _RecordingSigner:
         return b"\x01" * 64
 
 
+class _AllowingProvider:
+    """Verifier that authorizes exactly the call it is handed.
+
+    Stands in for a real principal authorization service. It is deliberately
+    permissive: every gate test below is about what the *gate* does with
+    evidence, not about what a verifier should refuse.
+    """
+
+    def __init__(self, *, valid_from: int = 0, valid_until: int = 2**31) -> None:
+        self._valid_from = valid_from
+        self._valid_until = valid_until
+
+    @property
+    def policy_id(self) -> str:
+        return "test-allowing-provider"
+
+    def authorize(self, context):
+        return AuthorizationEvidence(
+            authorization_id="test-auth",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer="0x" + "99" * 20,
+            valid_from=self._valid_from,
+            valid_until=self._valid_until,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
+
+
+class _RefusingProvider:
+    """Verifier that denies every call."""
+
+    @property
+    def policy_id(self) -> str:
+        return "test-refusing-provider"
+
+    def authorize(self, context):
+        raise AuthorizationDenied("no authorization on file")
+
+
 def _request(**overrides) -> AuthorizationRequest:
     return AuthorizationRequest(
         chain=Chain.BASE,
@@ -83,7 +126,11 @@ def _request(**overrides) -> AuthorizationRequest:
 
 def test_allowed_transaction_is_signed_and_audited():
     signer = _RecordingSigner()
-    gate = PreSignInterceptor(policy=_permissive_policy(), signer=signer)
+    gate = PreSignInterceptor(
+        policy=_permissive_policy(),
+        signer=signer,
+        authorization_provider=_AllowingProvider(),
+    )
 
     result = gate.sign(_request())
 
@@ -102,7 +149,9 @@ def test_allowed_transaction_is_signed_and_audited():
 def test_denied_policy_never_reaches_the_signer():
     signer = _RecordingSigner()
     policy = _permissive_policy(allowed_contracts=frozenset({"0x" + "11" * 20}))
-    gate = PreSignInterceptor(policy=policy, signer=signer)
+    gate = PreSignInterceptor(
+        policy=policy, signer=signer, authorization_provider=_AllowingProvider()
+    )
 
     with pytest.raises(EnforcementDenied) as excinfo:
         gate.sign(_request())
@@ -147,6 +196,7 @@ def test_confirmation_handler_approval_allows_signing():
         policy=policy,
         signer=signer,
         confirmation_fn=lambda request, decision: True,
+        authorization_provider=_AllowingProvider(),
     )
 
     gate.sign(_request())
@@ -185,7 +235,9 @@ def test_incomplete_transaction_rejected_before_signer():
 def test_disallowed_chain_is_denied():
     signer = _RecordingSigner()
     policy = _permissive_policy(allowed_chains=frozenset({Chain.ETHEREUM}))
-    gate = PreSignInterceptor(policy=policy, signer=signer)
+    gate = PreSignInterceptor(
+        policy=policy, signer=signer, authorization_provider=_AllowingProvider()
+    )
 
     with pytest.raises(EnforcementDenied):
         gate.sign(_request())
@@ -199,7 +251,6 @@ def test_call_fingerprint_binds_every_envelope_field():
         _request(to="0x" + "22" * 20),
         _request(value=999),
         _request(nonce=266),
-        _request(chainId=8453),
         _request(data=bytes.fromhex("deadbeef")),
     ]
 
@@ -210,13 +261,46 @@ def test_call_fingerprint_binds_every_envelope_field():
 
     assert _request().call_fingerprint == base.call_fingerprint
 
+    # The executor is part of the identity: the same call from another sender
+    # must not share an envelope digest.
+    other_sender = _tx()
+    other_sender["from"] = "0x" + "55" * 20
+    assert (
+        AuthorizationRequest(
+            chain=Chain.BASE, action=ActionType.SWAP, transaction=other_sender
+        ).call_fingerprint
+        != base.call_fingerprint
+    ), "fingerprint must change when the executor changes"
+
 
 def test_audit_log_accumulates_in_order():
     signer = _RecordingSigner()
     policy = _permissive_policy(
         allowed_contracts=frozenset({ROUTER, "0x" + "33" * 20})
     )
-    gate = PreSignInterceptor(policy=policy, signer=signer)
+    class _PerCallProvider(_AllowingProvider):
+        """Authorizes whatever it is handed, with a fresh authorization each time."""
+
+        def __init__(self) -> None:
+            super().__init__()
+            self._n = 0
+
+        def authorize(self, context):
+            self._n += 1
+            return AuthorizationEvidence(
+                authorization_id=f"test-auth-{self._n}",
+                envelope_digest=context.envelope_digest,
+                executor=context.envelope.executor,
+                authorizer="0x" + "99" * 20,
+                valid_from=0,
+                valid_until=2**31,
+                nonce=str(self._n),
+                policy_commitment_digest=context.policy_commitment.digest(),
+            )
+
+    gate = PreSignInterceptor(
+        policy=policy, signer=signer, authorization_provider=_PerCallProvider()
+    )
 
     gate.sign(_request())
     with pytest.raises(EnforcementDenied):
@@ -234,7 +318,30 @@ def test_audit_log_accumulates_in_order():
 
 def test_audit_log_is_immutable_snapshot():
     signer = _RecordingSigner()
-    gate = PreSignInterceptor(policy=_permissive_policy(), signer=signer)
+
+    class _PerCallProvider(_AllowingProvider):
+        def __init__(self) -> None:
+            super().__init__()
+            self._n = 0
+
+        def authorize(self, context):
+            self._n += 1
+            return AuthorizationEvidence(
+                authorization_id=f"snap-{self._n}",
+                envelope_digest=context.envelope_digest,
+                executor=context.envelope.executor,
+                authorizer="0x" + "99" * 20,
+                valid_from=0,
+                valid_until=2**31,
+                nonce=str(self._n),
+                policy_commitment_digest=context.policy_commitment.digest(),
+            )
+
+    gate = PreSignInterceptor(
+        policy=_permissive_policy(),
+        signer=signer,
+        authorization_provider=_PerCallProvider(),
+    )
 
     gate.sign(_request())
     snapshot = gate.audit_log

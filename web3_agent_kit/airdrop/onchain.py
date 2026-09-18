@@ -31,7 +31,9 @@ from typing import Optional
 from ..chains import Chain as EvmChain
 from ..execution import (
     ActionType,
+    AuthorizationProvider,
     AuthorizationRequest,
+    ExecutionPolicy,
     PreSignInterceptor,
 )
 
@@ -364,17 +366,41 @@ class OnChainAirdropFarmer:
         },
     }
 
-    def __init__(self, config: OnChainConfig):
+    def __init__(
+        self,
+        config: OnChainConfig,
+        *,
+        policy: ExecutionPolicy | None = None,
+        authorization_provider: AuthorizationProvider | None = None,
+        gate: PreSignInterceptor | None = None,
+    ):
         """Initialize on-chain farmer.
 
         Args:
             config: On-chain farming configuration.
+            policy: Execution policy the gate enforces. Ignored when ``gate``
+                is supplied.
+            authorization_provider: Principal exact-call authorization
+                verifier. Required for any signature to be produced; without
+                one the gate denies every write. Ignored when ``gate`` is
+                supplied.
+            gate: A preconfigured gate to use instead of building one. Inject
+                this to share one gate -- and therefore one continuous
+                authorization sequence and replay set -- across callers.
+
+        Creating the gate here rather than inside the signing method keeps
+        authorization authority separate from the transaction key: the caller
+        supplies the verifier, the config supplies the key, and neither is
+        derived from the other at call time.
         """
         self.config = config
         self._results: list[TransactionResult] = []
         self._tx_count = 0
         self._web3 = None
         self._account = None
+        self._policy = policy
+        self._authorization_provider = authorization_provider
+        self._gate_instance = gate
 
         if config.private_key:
             self._init_web3()
@@ -774,15 +800,19 @@ class OnChainAirdropFarmer:
         return self._tx_count < self.config.max_daily_txs
 
     def _gate(self) -> PreSignInterceptor:
-        """Build the enforced pre-sign gate for this farmer.
+        """Return the enforced pre-sign gate for this farmer.
 
-        The farmer is constructed without a policy, so unless one is supplied
-        the gate denies every signature rather than signing unprotected.
+        A gate supplied at construction is returned as-is, so one gate can be
+        shared across a process and its authorization sequence and replay set
+        stay continuous. Otherwise a gate is built from the injected policy and
+        authorization provider. With neither, the gate denies every signature
+        rather than signing unprotected.
         """
-        if getattr(self, "_gate_instance", None) is None:
+        if self._gate_instance is None:
             self._gate_instance = PreSignInterceptor(
-                policy=getattr(self, "_policy", None),
+                policy=self._policy,
                 signer=self._raw_signer,
+                authorization_provider=self._authorization_provider,
             )
         return self._gate_instance
 

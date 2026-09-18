@@ -1,5 +1,20 @@
 """Safety-first transaction execution primitives."""
 
+from .authorization import (
+    AuthorizationContext,
+    AuthorizationDenied,
+    AuthorizationEvidence,
+    AuthorizationProvider,
+    CallableAuthorizationProvider,
+    NullAuthorizationProvider,
+)
+from .envelope import (
+    CALL_ENVELOPE_SCHEMA,
+    POLICY_DECISION_SCHEMA,
+    CallEnvelopeError,
+    CallEnvelopeV1,
+    PolicyDecisionCommitment,
+)
 from .errors import (
     ExecutionError,
     InvalidAddressError,
@@ -31,10 +46,19 @@ from .policy import (
 )
 
 __all__ = [
+    "CALL_ENVELOPE_SCHEMA",
+    "POLICY_DECISION_SCHEMA",
     "ActionType",
     "AuditEntry",
+    "AuthorizationContext",
+    "AuthorizationDenied",
+    "AuthorizationEvidence",
+    "AuthorizationProvider",
     "AuthorizationRequest",
     "AuthorizationVerdict",
+    "CallEnvelopeError",
+    "CallEnvelopeV1",
+    "CallableAuthorizationProvider",
     "EnforcementDenied",
     "ExecutionError",
     "ExecutionPolicy",
@@ -47,7 +71,9 @@ __all__ = [
     "InvalidPolicyAllowlistError",
     "InvalidPolicyError",
     "InvalidPolicyLimitError",
+    "NullAuthorizationProvider",
     "PolicyDecision",
+    "PolicyDecisionCommitment",
     "PolicyReason",
     "PreSignInterceptor",
     "TransactionIntent",
@@ -56,4 +82,3 @@ __all__ = [
     "UnsupportedActionError",
     "UnsupportedChainError",
 ]
-

@@ -29,6 +29,7 @@ from typing import Any, Optional
 from ..chains import Chain
 from ..execution import (
     ActionType,
+    AuthorizationProvider,
     AuthorizationRequest,
     ExecutionPolicy,
     PreSignInterceptor,
@@ -216,31 +217,49 @@ class GovernanceTracker:
         config: Optional[GovConfig] = None,
         chain: Optional["Chain"] = None,
         policy: Optional[ExecutionPolicy] = None,
+        authorization_provider: Optional[AuthorizationProvider] = None,
+        gate: Optional[PreSignInterceptor] = None,
     ):
         self.rpc_url = rpc_url
         self.config = config or GovConfig(rpc_url=rpc_url)
         self._cache: dict[str, tuple[float, Any]] = {}
         self._chain = chain or Chain.ETHEREUM
         self._policy = policy
+        self._authorization_provider = authorization_provider
+        self._gate_instance = gate
 
         from web3 import Web3
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
 
     def _gate(self, private_key: str) -> PreSignInterceptor:
-        """Build an enforced pre-sign gate for a signing operation.
+        """Return the enforced pre-sign gate for a signing operation.
 
-        A governance tracker constructed without a policy denies every
-        signature rather than signing unprotected.
+        The gate is built once and reused. Building a fresh gate per call reset
+        the authorization sequence and the consumed-nonce set on every
+        invocation, so a single-use authorization could be replayed by calling
+        twice -- and the diagnostic log read as if it were continuous when it
+        was not.
+
+        The signer closure still binds the caller-supplied key, because this
+        class has no key store of its own. Supplying a gate at construction
+        avoids that: an injected gate carries its own signer, so authorization
+        authority and key custody are not decided in the same expression.
         """
+        if self._gate_instance is None:
 
-        def signer(tx) -> bytes:
-            signed = self.w3.eth.account.sign_transaction(dict(tx), private_key)
-            raw = getattr(signed, "raw_transaction", None)
-            if raw is None:
-                raw = signed.rawTransaction
-            return raw
+            def signer(tx) -> bytes:
+                signed = self.w3.eth.account.sign_transaction(dict(tx), private_key)
+                raw = getattr(signed, "raw_transaction", None)
+                if raw is None:
+                    raw = signed.rawTransaction
+                return raw
 
-        return PreSignInterceptor(policy=self._policy, signer=signer)
+            self._gate_instance = PreSignInterceptor(
+                policy=self._policy,
+                signer=signer,
+                authorization_provider=self._authorization_provider,
+            )
+        return self._gate_instance
 
     def get_active_proposals(
         self,

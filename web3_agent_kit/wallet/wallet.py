@@ -187,26 +187,30 @@ class Wallet:
         """Sign a transaction for a specific chain.
 
         When a pre-sign gate is bound, the transaction is evaluated against the
-        execution policy before any signature is produced. A denial raises
+        execution policy and the principal authorization verifier before any
+        signature is produced. A denial raises
         :class:`~web3_agent_kit.execution.EnforcementDenied` and no signature
         is created.
 
-        When no gate is bound the call fails closed for transactions that
-        carry a destination contract, because an unguarded signature of a
-        write-capable call is indistinguishable from an authorized one.
+        When no gate is bound the call fails closed for *every* write-capable
+        EVM transaction. That includes contract creation (``to`` is ``None``):
+        deploying a contract spends the nonce, consumes gas, and executes
+        arbitrary init code, so it is write-capable in every sense that matters.
+        Keying the refusal on a non-null destination would leave contract
+        creation as an unenforced path.
         """
         gate = self.enforcement
 
         if gate is None:
-            if tx.get("to") is not None:
-                from ..execution import EnforcementDenied
+            from ..execution import EnforcementDenied
 
-                raise EnforcementDenied(
-                    "wallet has no bound pre-sign gate; refusing to sign a "
-                    "write-capable transaction. Call wallet.bind_enforcement(gate) "
-                    "or route the call through an AuthorizedExecutor."
-                )
-            return self._raw_signer(tx)
+            raise EnforcementDenied(
+                "wallet has no bound pre-sign gate; refusing to sign. Every "
+                "write-capable EVM transaction -- including contract creation "
+                "with to=None -- must pass policy evaluation and principal "
+                "exact-call authorization first. Call "
+                "wallet.bind_enforcement(gate), or sign through a gate directly."
+            )
 
         from ..execution import ActionType as _ActionType, AuthorizationRequest
 
