@@ -15,11 +15,15 @@ from __future__ import annotations
 
 import subprocess
 import sys
-import tomllib
 import zipfile
 from pathlib import Path
 
 import pytest
+
+try:  # Python 3.11+
+    import tomllib
+except ModuleNotFoundError:  # Python 3.10
+    import tomli as tomllib
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PYPROJECT = REPO_ROOT / "pyproject.toml"
