@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
+    AuthorizationEvidence,
     ActionType,
     EnforcementDenied,
     ExecutionPolicy,
@@ -31,6 +32,31 @@ TEST_KEY = "0x" + "11" * 32
 SIGNER = "0x19E7E376E7C213B7E7e7e46cc70A5dD086DAff2A"
 
 
+class _AllowingProvider:
+    """Verifier that authorizes exactly the call it is handed.
+
+    The gate requires principal exact-call authorization in addition to a
+    policy allow, so every wallet signing test needs evidence bound to the
+    call under test.
+    """
+
+    @property
+    def policy_id(self) -> str:
+        return "wallet-enforcement-test-provider"
+
+    def authorize(self, context):
+        return AuthorizationEvidence(
+            authorization_id="wallet-enforcement-test-auth",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer="0x" + "99" * 20,
+            valid_from=0,
+            valid_until=2**31,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
+
+
 def _tx(**overrides) -> dict:
     tx = {
         "to": ROUTER,
@@ -38,7 +64,7 @@ def _tx(**overrides) -> dict:
         "data": "0xdeadbeef",
         "value": 0,
         "nonce": 1,
-        "chainId": 84532,
+        "chainId": 8453,
         "gas": 300_000,
         "gasPrice": 1_000_000_000,
     }
@@ -60,7 +86,9 @@ def _gate(wallet: Wallet, **policy_overrides) -> PreSignInterceptor:
     }
     kwargs.update(policy_overrides)
     return PreSignInterceptor(
-        policy=ExecutionPolicy(**kwargs), signer=wallet._raw_signer
+        policy=ExecutionPolicy(**kwargs),
+        signer=wallet._raw_signer,
+        authorization_provider=_AllowingProvider(),
     )
 
 

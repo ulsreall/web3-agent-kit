@@ -28,6 +28,7 @@ from typing import Optional
 from ..chains import Chain
 from ..execution import (
     ActionType,
+    AuthorizationProvider,
     AuthorizationRequest,
     ExecutionPolicy,
     PreSignInterceptor,
@@ -194,30 +195,35 @@ class CrossChainMessenger:
         src_chain: str = "arbitrum",
         private_key: Optional[str] = None,
         policy: Optional[ExecutionPolicy] = None,
+        authorization_provider: Optional[AuthorizationProvider] = None,
+        gate: Optional[PreSignInterceptor] = None,
     ):
         self.bridge = BridgeProtocol(bridge)
         self.rpc_url = rpc_url
         self.src_chain = src_chain
         self.private_key = private_key or ""
         self._policy = policy
+        self._authorization_provider = authorization_provider
+        self._gate_instance = gate
 
         from web3 import Web3
         self.w3 = Web3(Web3.HTTPProvider(rpc_url)) if rpc_url else None
 
     def _gate(self):
-        """Build the enforced pre-sign gate for this messenger.
+        """Return the enforced pre-sign gate for this messenger.
 
-        Constructed lazily so a messenger that never signs never needs a
-        policy. When a private key is configured but no policy was supplied,
-        the gate is created with no policy and therefore denies every
-        signature rather than signing unprotected.
+        A gate supplied at construction is returned as-is so a shared gate keeps
+        one continuous authorization sequence. Otherwise one is built from the
+        injected policy and authorization provider; with neither, the gate
+        denies every signature rather than signing unprotected.
         """
-        if getattr(self, "_gate_instance", None) is None:
+        if self._gate_instance is None:
             if self.w3 is None:
                 raise ValueError("Web3 not configured")
             self._gate_instance = PreSignInterceptor(
                 policy=self._policy,
                 signer=self._raw_signer,
+                authorization_provider=self._authorization_provider,
             )
         return self._gate_instance
 

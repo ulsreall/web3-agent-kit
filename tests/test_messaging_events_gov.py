@@ -10,6 +10,7 @@ import pytest
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
     ActionType,
+    AuthorizationEvidence,
     EnforcementDenied,
     ExecutionPolicy,
 )
@@ -388,15 +389,41 @@ class TestEvents:
         assert sub.events_processed == 0
 
 
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
 # Governance
-# ----------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+class _GovernanceProvider:
+    """Verifier that authorizes the exact call it is handed.
+
+    The gate requires principal exact-call authorization in addition to a
+    policy allow, so governance signing tests need a verifier that returns
+    evidence bound to the call under test.
+    """
+
+    @property
+    def policy_id(self) -> str:
+        return "gov-test-provider"
+
+    def authorize(self, context):
+        return AuthorizationEvidence(
+            authorization_id="gov-test-auth",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer="0x" + "99" * 20,
+            valid_from=0,
+            valid_until=2**31,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
+
+
 class TestGovernance:
     def _tracker(self):
         with patch("web3.Web3"):
             t = GovernanceTracker(rpc_url="https://x")
         t.w3 = MagicMock()
         t.w3.to_checksum_address.side_effect = lambda a: a
+        t._authorization_provider = _GovernanceProvider()
         return t
 
     def test_proposal_to_dict(self):
@@ -544,7 +571,7 @@ class TestGovernance:
             "data": "0xdeadbeef",
             "value": 0,
             "nonce": 1,
-            "chainId": 8453,
+            "chainId": 1,
             "gas": 200000,
             "gasPrice": 1_000_000_000,
         }
@@ -565,6 +592,9 @@ class TestGovernance:
             ),
             require_confirmation=False,
         )
+        # Policy allow is not authority: the gate also requires a principal
+        # exact-call authorization verifier.
+        t._authorization_provider = _GovernanceProvider()
 
         result = t.delegate(delegatee="0xdel", token="0xt", private_key="0xkey")
         assert result == "0xdelegatehash"
@@ -582,7 +612,7 @@ class TestGovernance:
             "data": "0xdeadbeef",
             "value": 0,
             "nonce": 1,
-            "chainId": 8453,
+            "chainId": 1,
             "gas": 200000,
             "gasPrice": 1_000_000_000,
         }

@@ -123,7 +123,20 @@ def _is_test_path(relative: str) -> bool:
 
 
 def find_signer_calls(root: Path) -> list[SignerCall]:
-    """Enumerate every ``<something>.sign_transaction(...)`` call expression."""
+    """Enumerate every call expression that reaches a signer.
+
+    Two shapes are detected:
+
+    1. Direct attribute calls -- ``account.sign_transaction(tx)``.
+    2. Aliased calls -- ``signer = account.sign_transaction; signer(tx)``.
+
+    The second shape is not a theoretical concern. Binding the bound method to a
+    local and calling it through that name evades a check that only looks at
+    attribute access, and the resulting signature is identical. Aliases are
+    resolved within a module scope: a name assigned from a ``.sign_transaction``
+    attribute, or from another name already known to be an alias, is tracked and
+    any later call through it is reported.
+    """
     found: list[SignerCall] = []
     for path in sorted(root.rglob("*.py")):
         if _is_excluded(path):
@@ -135,10 +148,14 @@ def find_signer_calls(root: Path) -> list[SignerCall]:
             print(f"warning: could not parse {relative}: {exc}", file=sys.stderr)
             continue
 
+        aliases = _collect_signer_aliases(tree, relative, found)
+
         for node in ast.walk(tree):
             if not isinstance(node, ast.Call):
                 continue
             func = node.func
+
+            # Shape 1: <something>.sign_transaction(...)
             if isinstance(func, ast.Attribute) and func.attr == SIGNER_ATTRIBUTE:
                 found.append(
                     SignerCall(
@@ -149,7 +166,74 @@ def find_signer_calls(root: Path) -> list[SignerCall]:
                         is_test=_is_test_path(relative),
                     )
                 )
+                continue
+
+            # Shape 2: <alias>(...) where <alias> was bound to a signer method
+            if isinstance(func, ast.Name) and func.id in aliases:
+                found.append(
+                    SignerCall(
+                        path=relative,
+                        line=node.lineno,
+                        column=node.col_offset,
+                        expression=f"{_unparse(func)}(...)  [aliased from "
+                        f"{aliases[func.id]}]",
+                        is_test=_is_test_path(relative),
+                    )
+                )
     return found
+
+
+def _collect_signer_aliases(
+    tree: ast.AST, relative: str, found: list[SignerCall]
+) -> dict[str, str]:
+    """Return ``{local_name: origin}`` for names bound to a signer method.
+
+    Only module-level and function-level assignments are considered. Names are
+    resolved transitively so ``a = account.sign_transaction; b = a; b(tx)`` is
+    still caught. Aliases created through attribute access on a module (for
+    example ``from x import sign_transaction as st``) are also recorded, with
+    their origin recorded so the report is readable.
+    """
+    aliases: dict[str, str] = {}
+
+    def origin_of(node: ast.AST) -> str | None:
+        """Return a description if ``node`` resolves to a signer callable."""
+        if isinstance(node, ast.Attribute) and node.attr == SIGNER_ATTRIBUTE:
+            return _unparse(node)
+        if isinstance(node, ast.Name) and node.id in aliases:
+            return aliases[node.id]
+        return None
+
+    # Repeated passes so a chain of aliases in any order still resolves.
+    for _ in range(3):
+        changed = False
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Assign):
+                resolved = origin_of(node.value)
+                if resolved is None:
+                    continue
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and aliases.get(target.id) != resolved:
+                        aliases[target.id] = resolved
+                        changed = True
+            elif isinstance(node, ast.AnnAssign) and node.value is not None:
+                resolved = origin_of(node.value)
+                if resolved is not None and isinstance(node.target, ast.Name):
+                    if aliases.get(node.target.id) != resolved:
+                        aliases[node.target.id] = resolved
+                        changed = True
+            elif isinstance(node, ast.ImportFrom):
+                for alias in node.names:
+                    if alias.name == SIGNER_ATTRIBUTE:
+                        local = alias.asname or alias.name
+                        resolved = f"{node.module}.{SIGNER_ATTRIBUTE}"
+                        if aliases.get(local) != resolved:
+                            aliases[local] = resolved
+                            changed = True
+        if not changed:
+            break
+
+    return aliases
 
 
 def main(argv: list[str] | None = None) -> int:

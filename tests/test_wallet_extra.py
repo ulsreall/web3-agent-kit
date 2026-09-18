@@ -9,7 +9,13 @@ import pytest
 from eth_account import Account
 
 from web3_agent_kit.chains.chain import Chain
-from web3_agent_kit.execution import EnforcementDenied
+from web3_agent_kit.execution import (
+    ActionType,
+    AuthorizationEvidence,
+    EnforcementDenied,
+    ExecutionPolicy,
+    PreSignInterceptor,
+)
 from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
 
@@ -18,6 +24,54 @@ def test_key():
     """A deterministic test private key."""
     acct = Account.create()
     return acct.key.hex(), acct.address
+
+
+class _AllowingProvider:
+    """Verifier that authorizes the call it is handed."""
+
+    @property
+    def policy_id(self) -> str:
+        return "wallet-test-provider"
+
+    def authorize(self, context):
+        return AuthorizationEvidence(
+            authorization_id="wallet-test-auth",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer="0x" + "99" * 20,
+            valid_from=0,
+            valid_until=2**31,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
+
+
+def _authorizing_gate(signer) -> PreSignInterceptor:
+    """A gate that allows ETHEREUM contract calls through, using ``signer``."""
+    return PreSignInterceptor(
+        policy=ExecutionPolicy(
+            allowed_chains=frozenset({Chain.ETHEREUM}),
+            allowed_actions=frozenset({ActionType.CONTRACT_CALL}),
+            allowed_contracts=frozenset({"0x" + "11" * 20}),
+            max_native_value_wei=10**18,
+            require_confirmation=False,
+        ),
+        signer=signer,
+        authorization_provider=_AllowingProvider(),
+    )
+
+
+def _signed_tx(sender: str) -> dict:
+    return {
+        "to": "0x" + "11" * 20,
+        "from": sender,
+        "data": "0xdeadbeef",
+        "value": 0,
+        "nonce": 0,
+        "chainId": 1,
+        "gas": 300_000,
+        "gasPrice": 10**9,
+    }
 
 
 class TestWalletConfig:
@@ -143,12 +197,20 @@ class TestWalletBalance:
 
 
 class TestWalletTransactions:
-    def test_sign_transaction_no_key(self):
-        wallet = Wallet(WalletConfig())
-        with pytest.raises(ValueError, match="No private key"):
-            wallet.sign_transaction({}, Chain.ETHEREUM)
+    def test_sign_transaction_requires_a_gate(self, test_key):
+        """Every write-capable transaction needs a bound gate.
 
-    def test_sign_transaction(self, test_key):
+        This test previously asserted the opposite for a payload with no
+        destination: it reached the raw signer because the refusal was keyed on
+        a non-null ``to``. Contract creation spends the nonce and runs arbitrary
+        init code, so that path is now closed as well.
+        """
+        key, _ = test_key
+        wallet = Wallet.from_key(key)
+        with pytest.raises(EnforcementDenied, match="no bound pre-sign gate"):
+            wallet.sign_transaction({"nonce": 0}, Chain.ETHEREUM)
+
+    def test_sign_transaction_reaches_signer_when_gate_authorizes(self, test_key):
         key, _ = test_key
         wallet = Wallet.from_key(key)
         with patch.object(Account, "sign_transaction") as mock_sign:
@@ -156,10 +218,20 @@ class TestWalletTransactions:
             signed.rawTransaction = b"\x01\x02"
             signed.raw_transaction = b"\x01\x02"
             mock_sign.return_value = signed
-            # A payload with no destination contract is not a write-capable
-            # call, so it reaches the raw signer without a bound gate.
-            raw = wallet.sign_transaction({"nonce": 0}, Chain.ETHEREUM)
+            wallet.bind_enforcement(_authorizing_gate(wallet._raw_signer))
+            raw = wallet.sign_transaction(
+                _signed_tx(wallet.address), Chain.ETHEREUM
+            )
             assert raw == b"\x01\x02"
+
+    def test_sign_transaction_unbound_refuses_contract_creation(self, test_key):
+        """to=None is write-capable and must be refused too."""
+        key, _ = test_key
+        wallet = Wallet.from_key(key)
+        with pytest.raises(EnforcementDenied, match="to=None"):
+            wallet.sign_transaction(
+                {"nonce": 0, "data": "0x60806040", "chainId": 1}, Chain.ETHEREUM
+            )
 
     def test_sign_transaction_with_destination_requires_a_gate(self, test_key):
         """A write-capable call must never be signed by an unbound wallet."""

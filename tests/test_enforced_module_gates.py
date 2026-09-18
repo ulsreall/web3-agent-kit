@@ -14,10 +14,36 @@ import pytest
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
     ActionType,
+    AuthorizationEvidence,
     EnforcementDenied,
     ExecutionPolicy,
     PreSignInterceptor,
 )
+from web3_agent_kit.execution.envelope import CallEnvelopeV1
+
+
+class _AllowingProvider:
+    """Verifier that authorizes exactly the call it is handed.
+
+    All three migrated modules now require principal exact-call authorization
+    on top of a policy allow, so each signing test supplies this.
+    """
+
+    @property
+    def policy_id(self) -> str:
+        return "module-gate-test-provider"
+
+    def authorize(self, context):
+        return AuthorizationEvidence(
+            authorization_id="module-gate-test-auth",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer="0x" + "99" * 20,
+            valid_from=0,
+            valid_until=2**31,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
 from web3_agent_kit.messaging import CrossChainMessenger
 
 # Address derived from TEST_KEY, so the "from" field matches the signer.
@@ -26,14 +52,20 @@ ENDPOINT = "0x7564105E977516C53bE337314c7E53838967bDaC"
 TEST_KEY = "0x" + "33" * 32
 
 
-def _tx(to: str = ENDPOINT, value: int = 0) -> dict:
+def _tx(to: str = ENDPOINT, value: int = 0, chainId: int = 42161) -> dict:
+    """A fully constructed transaction.
+
+    ``chainId`` is explicit so each test states which chain it is signing on.
+    A transaction whose chainId disagrees with the chain the gate evaluated is
+    now refused, so an implicit default would hide the mismatch.
+    """
     return {
         "to": to,
         "from": SENDER,
         "data": "0xdeadbeef",
         "value": value,
         "nonce": 5,
-        "chainId": 42161,
+        "chainId": chainId,
         "gas": 300_000,
         "gasPrice": 1_000_000_000,
     }
@@ -44,12 +76,13 @@ def _tx(to: str = ENDPOINT, value: int = 0) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _messenger(policy=None) -> CrossChainMessenger:
+def _messenger(policy=None, provider=True) -> CrossChainMessenger:
     m = CrossChainMessenger(
         rpc_url="http://localhost:8545",
         src_chain="arbitrum",
         private_key=TEST_KEY,
         policy=policy,
+        authorization_provider=_AllowingProvider() if provider else None,
     )
     return m
 
@@ -100,8 +133,10 @@ def test_messaging_gate_signs_when_policy_allows():
     )
     m = _messenger(policy=policy)
     gate = m._gate()
-
-    raw = gate.sign(_authorization_request()).raw_transaction
+    request = _authorization_request()
+    # The request's chain and the transaction's chainId must agree; the
+    # fixture's chainId is 42161, so the request is built on Arbitrum.
+    raw = gate.sign(request).raw_transaction
 
     assert isinstance(raw, bytes)
     assert len(raw) > 0
@@ -157,8 +192,11 @@ def test_messaging_resolves_known_and_unknown_chains():
 def _farmer(policy=None):
     from web3_agent_kit.airdrop.onchain import OnChainAirdropFarmer, OnChainConfig
 
-    farmer = OnChainAirdropFarmer(OnChainConfig(chain="ethereum", dry_run=True))
-    farmer._policy = policy
+    farmer = OnChainAirdropFarmer(
+        OnChainConfig(chain="ethereum", dry_run=True),
+        policy=policy,
+        authorization_provider=_AllowingProvider(),
+    )
     farmer._web3 = MagicMock()
     farmer._account = MagicMock()
     farmer._account.address = "0x" + "ac" * 20
@@ -201,7 +239,9 @@ def test_airdrop_gate_signs_when_policy_allows():
     receipt.transactionHash.hex.return_value = "0xairdrop"
     f._web3.eth.wait_for_transaction_receipt.return_value = receipt
 
-    result = f._send_transaction(_tx(to="0x" + "dd" * 20))
+    result = f._send_transaction(
+        _tx(to="0x" + "dd" * 20, chainId=1)
+    )
 
     assert result == "0xairdrop"
     f._web3.eth.send_raw_transaction.assert_called_once_with(b"raw-bytes")
