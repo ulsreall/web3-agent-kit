@@ -4,6 +4,36 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.0] - 2026-09-18
+
+### Features
+- **execution:** enforced pre-sign authorization gate. Every write-capable
+  module now signs through a single approved API that evaluates the execution
+  policy before any signature is produced. A missing policy is fail-closed, a
+  confirmation-required policy refuses to sign unattended, and every
+  evaluation is recorded in an append-only audit log with the authorized call
+  fingerprint.
+- Added `PreSignInterceptor` and `Wallet.bind_enforcement()`. A wallet with no
+  bound gate refuses to sign write-capable transactions.
+- Migrated the airdrop, messaging, governance, bridge and restaking signing
+  paths behind the gate, including the three that previously bypassed the
+  Wallet wrapper.
+- Added `tools/check_signing_surface.py`, enforced in CI, which fails on any
+  new unapproved direct signer call.
+
+### Security
+- `ExecutionPolicy` is now exported and enforced on the signing path. It was
+  previously unreachable from the modules that build transactions.
+
+### Breaking
+- Modules that previously signed without a policy now raise
+  `EnforcementDenied`. `messaging`, `governance` and airdrop accept an optional
+  `policy=` argument; when omitted, they deny rather than sign unprotected.
+
+### Dependencies
+- Bumped web3, eth-account, eth-abi, eth-keys, eth-keyfile, eth-rlp, and
+  several utility packages.
+
 ## [1.16.2] - 2026-09-08
 
 ### Fixed

@@ -1,7 +1,7 @@
 <div class="docs-hero" markdown>
 <div class="docs-hero-copy" markdown>
 
-<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.16.3</p>
+<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.18.0</p>
 
 # Build agents that can actually execute.
 
@@ -42,9 +42,9 @@ print(result)
 
 <div class="docs-metrics" markdown>
 <div><strong>25</strong><span>modules</span></div>
-<div><strong>1,791</strong><span>tests passing</span></div>
+<div><strong>1,840</strong><span>tests passing</span></div>
 <div><strong>8</strong><span>supported chains</span></div>
-<div><strong>74%</strong><span>coverage</span></div>
+<div><strong>75%</strong><span>coverage</span></div>
 <div><strong>MIT</strong><span>license</span></div>
 </div>
 
