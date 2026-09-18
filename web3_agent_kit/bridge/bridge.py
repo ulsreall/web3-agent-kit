@@ -24,6 +24,7 @@ from typing import Optional
 import requests
 
 from ..chains.chain import CHAIN_IDS, Chain, ChainManager
+from ..execution import ActionType
 from ..wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
@@ -393,7 +394,9 @@ class BridgeAgent:
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
-        signed = self.wallet.sign_transaction(tx, route.from_chain)
+        signed = self.wallet.sign_transaction(
+            tx, route.from_chain, action=ActionType.BRIDGE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -449,7 +452,9 @@ class BridgeAgent:
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
-        signed = self.wallet.sign_transaction(tx, route.from_chain)
+        signed = self.wallet.sign_transaction(
+            tx, route.from_chain, action=ActionType.BRIDGE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 

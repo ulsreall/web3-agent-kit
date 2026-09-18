@@ -28,6 +28,13 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Optional
 
+from ..chains import Chain as EvmChain
+from ..execution import (
+    ActionType,
+    AuthorizationRequest,
+    PreSignInterceptor,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -766,17 +773,49 @@ class OnChainAirdropFarmer:
         """Check if daily transaction limit is reached."""
         return self._tx_count < self.config.max_daily_txs
 
+    def _gate(self) -> PreSignInterceptor:
+        """Build the enforced pre-sign gate for this farmer.
+
+        The farmer is constructed without a policy, so unless one is supplied
+        the gate denies every signature rather than signing unprotected.
+        """
+        if getattr(self, "_gate_instance", None) is None:
+            self._gate_instance = PreSignInterceptor(
+                policy=getattr(self, "_policy", None),
+                signer=self._raw_signer,
+            )
+        return self._gate_instance
+
+    def _raw_signer(self, tx) -> bytes:
+        """Underlying signer wrapped by the gate. Not for direct use."""
+        signed = self._account.sign_transaction(dict(tx))
+        raw = getattr(signed, "raw_transaction", None)
+        if raw is None:
+            raw = signed.rawTransaction
+        return raw
+
+    def _resolve_chain(self) -> EvmChain:
+        """Resolve the configured chain name into a Chain member."""
+        try:
+            return EvmChain(str(self.config.chain).lower())
+        except ValueError:
+            return EvmChain.ETHEREUM
+
     def _send_transaction(self, tx: dict) -> Optional[str]:
-        """Send a transaction (placeholder for real implementation)."""
+        """Send a transaction through the enforced pre-sign gate."""
         if not self._web3 or not self._account:
             logger.error("Web3 not initialized")
             return None
 
         try:
-            signed = self._account.sign_transaction(tx)
-            tx_hash = self._web3.eth.send_raw_transaction(
-                signed.raw_transaction
-            )
+            signed = self._gate().sign(
+                AuthorizationRequest(
+                    chain=self._resolve_chain(),
+                    action=ActionType.CONTRACT_CALL,
+                    transaction=tx,
+                )
+            ).raw_transaction
+            tx_hash = self._web3.eth.send_raw_transaction(signed)
             receipt = self._web3.eth.wait_for_transaction_receipt(
                 tx_hash, timeout=120
             )

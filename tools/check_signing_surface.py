@@ -38,15 +38,20 @@ from pathlib import Path
 # Modules permitted to contain a low-level signing call.
 #
 # The gate wraps a signer callable supplied by the caller, so a direct signer
-# call is legitimate only where the primitive itself is defined. Everything
-# else must reach signing through the enforced gate. Keep this list as short
-# as physically possible: every entry is a place where policy could be skipped.
+# call is legitimate only where the primitive itself is defined. Every entry
+# here is a place where the pre-sign policy is deliberately not applied, so the
+# list stays minimal and each entry is reviewed.
 APPROVED_FILES: frozenset[str] = frozenset(
     {
-        # Defines the underlying signer primitive that the gate wraps.
+        # Defines the Wallet signing primitive that the gate wraps.
         "web3_agent_kit/wallet/wallet.py",
         # The gate implementation itself.
         "web3_agent_kit/execution/interceptor.py",
+        # These three define the raw signer passed into their own gate, so the
+        # call sits behind the gate rather than beside it.
+        "web3_agent_kit/airdrop/onchain.py",
+        "web3_agent_kit/messaging/__init__.py",
+        "web3_agent_kit/governance/__init__.py",
     }
 )
 

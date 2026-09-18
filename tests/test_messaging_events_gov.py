@@ -7,6 +7,12 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from web3_agent_kit.chains import Chain
+from web3_agent_kit.execution import (
+    ActionType,
+    EnforcementDenied,
+    ExecutionPolicy,
+)
 from web3_agent_kit.account_abstraction import (
     BUNDLER_RPCS,
     ENTRY_POINTS,
@@ -527,10 +533,21 @@ class TestGovernance:
     def test_delegate(self):
         t = self._tracker()
         account = MagicMock()
-        account.address = "0xacct"
+        account.address = "0x" + "ac" * 20
         t.w3.eth.account.from_key.return_value = account
         token = MagicMock()
-        token.functions.delegate.return_value.build_transaction.return_value = {}
+        # A real builder returns a complete transaction; the pre-sign gate
+        # refuses to describe anything less as an intent.
+        token.functions.delegate.return_value.build_transaction.return_value = {
+            "to": "0x0000000000000000000000000000000000000001",
+            "from": "0x" + "ac" * 20,
+            "data": "0xdeadbeef",
+            "value": 0,
+            "nonce": 1,
+            "chainId": 8453,
+            "gas": 200000,
+            "gasPrice": 1_000_000_000,
+        }
         t.w3.eth.contract.return_value = token
         signed = MagicMock()
         signed.raw_transaction = b"raw"
@@ -538,8 +555,41 @@ class TestGovernance:
         tx_hash = MagicMock()
         tx_hash.hex.return_value = "0xdelegatehash"
         t.w3.eth.send_raw_transaction.return_value = tx_hash
+
+        # Governance signing is policy-gated; supplying a policy is required.
+        t._policy = ExecutionPolicy(
+            allowed_chains=frozenset({Chain.ETHEREUM}),
+            allowed_actions=frozenset({ActionType.GOVERNANCE}),
+            allowed_contracts=frozenset(
+                {"0x0000000000000000000000000000000000000001"}
+            ),
+            require_confirmation=False,
+        )
+
         result = t.delegate(delegatee="0xdel", token="0xt", private_key="0xkey")
         assert result == "0xdelegatehash"
+
+    def test_delegate_without_policy_is_denied(self):
+        """Governance signing must fail closed when no policy is configured."""
+        t = self._tracker()
+        account = MagicMock()
+        account.address = "0x" + "ac" * 20
+        t.w3.eth.account.from_key.return_value = account
+        token = MagicMock()
+        token.functions.delegate.return_value.build_transaction.return_value = {
+            "to": "0x0000000000000000000000000000000000000001",
+            "from": "0x" + "ac" * 20,
+            "data": "0xdeadbeef",
+            "value": 0,
+            "nonce": 1,
+            "chainId": 8453,
+            "gas": 200000,
+            "gasPrice": 1_000_000_000,
+        }
+        t.w3.eth.contract.return_value = token
+
+        with pytest.raises(EnforcementDenied, match="no ExecutionPolicy"):
+            t.delegate(delegatee="0xdel", token="0xt", private_key="0xkey")
 
     def test_get_delegates_success(self):
         t = self._tracker()

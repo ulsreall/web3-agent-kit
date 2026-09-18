@@ -25,7 +25,25 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
+from ..chains import Chain
+from ..execution import (
+    ActionType,
+    AuthorizationRequest,
+    ExecutionPolicy,
+    PreSignInterceptor,
+)
+
 logger = logging.getLogger(__name__)
+
+
+def _resolve_chain(value) -> Chain:
+    """Resolve a chain name, slug or enum into a Chain member."""
+    if isinstance(value, Chain):
+        return value
+    try:
+        return Chain(str(value).lower())
+    except ValueError as exc:
+        raise ValueError(f"unsupported chain for pre-sign authorization: {value}") from exc
 
 
 class BridgeProtocol(Enum):
@@ -175,14 +193,41 @@ class CrossChainMessenger:
         rpc_url: str = "",
         src_chain: str = "arbitrum",
         private_key: Optional[str] = None,
+        policy: Optional[ExecutionPolicy] = None,
     ):
         self.bridge = BridgeProtocol(bridge)
         self.rpc_url = rpc_url
         self.src_chain = src_chain
         self.private_key = private_key or ""
+        self._policy = policy
 
         from web3 import Web3
         self.w3 = Web3(Web3.HTTPProvider(rpc_url)) if rpc_url else None
+
+    def _gate(self):
+        """Build the enforced pre-sign gate for this messenger.
+
+        Constructed lazily so a messenger that never signs never needs a
+        policy. When a private key is configured but no policy was supplied,
+        the gate is created with no policy and therefore denies every
+        signature rather than signing unprotected.
+        """
+        if getattr(self, "_gate_instance", None) is None:
+            if self.w3 is None:
+                raise ValueError("Web3 not configured")
+            self._gate_instance = PreSignInterceptor(
+                policy=self._policy,
+                signer=self._raw_signer,
+            )
+        return self._gate_instance
+
+    def _raw_signer(self, tx) -> bytes:
+        """Underlying signer wrapped by the gate. Not for direct use."""
+        signed = self.w3.eth.account.sign_transaction(dict(tx), self.private_key)
+        raw = getattr(signed, "raw_transaction", None)
+        if raw is None:
+            raw = signed.rawTransaction
+        return raw
 
     def send_message(
         self,
@@ -275,8 +320,16 @@ class CrossChainMessenger:
         })
 
         if self.private_key:
-            signed = self.w3.eth.account.sign_transaction(tx, self.private_key)
-            tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
+            # Route through the enforced gate. The raw signer is wrapped so a
+            # denial produces no signature at all.
+            signed = self._gate().sign(
+                AuthorizationRequest(
+                    chain=_resolve_chain(self.src_chain),
+                    action=ActionType.BRIDGE,
+                    transaction=tx,
+                )
+            ).raw_transaction
+            tx_hash = self.w3.eth.send_raw_transaction(signed)
         else:
             tx_hash = "0x" + "0" * 64  # Read-only mode
 

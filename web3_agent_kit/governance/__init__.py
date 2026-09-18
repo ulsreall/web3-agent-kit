@@ -26,6 +26,14 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Optional
 
+from ..chains import Chain
+from ..execution import (
+    ActionType,
+    AuthorizationRequest,
+    ExecutionPolicy,
+    PreSignInterceptor,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -202,13 +210,37 @@ class GovernanceTracker:
         7: ProposalStatus.EXECUTED,
     }
 
-    def __init__(self, rpc_url: str, config: Optional[GovConfig] = None):
+    def __init__(
+        self,
+        rpc_url: str,
+        config: Optional[GovConfig] = None,
+        chain: Optional["Chain"] = None,
+        policy: Optional[ExecutionPolicy] = None,
+    ):
         self.rpc_url = rpc_url
         self.config = config or GovConfig(rpc_url=rpc_url)
         self._cache: dict[str, tuple[float, Any]] = {}
+        self._chain = chain or Chain.ETHEREUM
+        self._policy = policy
 
         from web3 import Web3
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
+
+    def _gate(self, private_key: str) -> PreSignInterceptor:
+        """Build an enforced pre-sign gate for a signing operation.
+
+        A governance tracker constructed without a policy denies every
+        signature rather than signing unprotected.
+        """
+
+        def signer(tx) -> bytes:
+            signed = self.w3.eth.account.sign_transaction(dict(tx), private_key)
+            raw = getattr(signed, "raw_transaction", None)
+            if raw is None:
+                raw = signed.rawTransaction
+            return raw
+
+        return PreSignInterceptor(policy=self._policy, signer=signer)
 
     def get_active_proposals(
         self,
@@ -428,8 +460,14 @@ class GovernanceTracker:
             "gas": 200000,
         })
 
-        signed = self.w3.eth.account.sign_transaction(tx, private_key)
-        tx_hash = self.w3.eth.send_raw_transaction(signed.raw_transaction)
+        signed = self._gate(private_key).sign(
+            AuthorizationRequest(
+                chain=self._chain,
+                action=ActionType.GOVERNANCE,
+                transaction=tx,
+            )
+        ).raw_transaction
+        tx_hash = self.w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
 
     def get_delegates(self, dao: str) -> list[DelegateInfo]:
