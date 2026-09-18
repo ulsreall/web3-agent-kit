@@ -35,6 +35,8 @@ dependencies = [
 ]
 [project.scripts]
 wak = "web3_agent_kit.cli:main"
+wak-p0-probe = "web3_agent_kit.execution.p0_probe:main"
+wak-signing-surface = "web3_agent_kit.execution.check_signing_surface:main"
 
 
 [project.optional-dependencies]

@@ -26,6 +26,7 @@ from .errors import (
     UnsupportedChainError,
 )
 from .intent import ActionType, TransactionIntent
+from .p0_probe import run_all_probes
 from .interceptor import (
     AuditEntry,
     AuthorizationRequest,
@@ -47,6 +48,7 @@ from .policy import (
 
 __all__ = [
     "CALL_ENVELOPE_SCHEMA",
+    "run_all_probes",
     "POLICY_DECISION_SCHEMA",
     "ActionType",
     "AuditEntry",
