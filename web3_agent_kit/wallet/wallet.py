@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from ..chains.chain import Chain, ChainManager
+from ..execution import ActionType
 
 
 @dataclass
@@ -132,22 +133,125 @@ class Wallet:
         balance_wei = w3.eth.get_balance(self.address)
         return w3.from_wei(balance_wei, "ether")
 
-    def sign_transaction(self, tx: dict, chain: Chain) -> bytes:
-        """Sign a transaction for a specific chain."""
+    def _raw_signer(self, tx: dict) -> bytes:
+        """Low-level signing primitive. Do not call this directly.
+
+        This is the single underlying signer the pre-sign gate wraps. Every
+        other write path in the package must reach signing through
+        :meth:`sign_transaction`, which enforces policy first.
+        """
         if not self.config.private_key:
             raise ValueError("No private key configured")
 
         from eth_account import Account
         signed = Account.sign_transaction(tx, self.config.private_key)
-        return signed.rawTransaction
+        raw = getattr(signed, "raw_transaction", None)
+        if raw is None:
+            raw = signed.rawTransaction
+        return raw
 
-    def send_transaction(self, tx: dict, chain: Chain) -> str:
-        """Sign and send a transaction."""
+    def bind_enforcement(self, gate) -> "Wallet":
+        """Attach an enforced pre-sign gate to this wallet.
+
+        Once bound, :meth:`sign_transaction` routes every transaction through
+        the gate. A wallet with no bound gate refuses to sign write-capable
+        transactions rather than signing them unprotected.
+
+        Returns self so it can be chained at construction time.
+        """
+        from ..execution import PreSignInterceptor
+
+        if not isinstance(gate, PreSignInterceptor):
+            raise ValueError("gate must be a PreSignInterceptor")
+        self._gate = gate
+        return self
+
+    @property
+    def enforcement(self):
+        """Return the bound pre-sign gate, if any."""
+        return getattr(self, "_gate", None)
+
+    @property
+    def is_enforced(self) -> bool:
+        """Return whether an enforced pre-sign gate is bound."""
+        return self.enforcement is not None
+
+    def sign_transaction(
+        self,
+        tx: dict,
+        chain: Chain,
+        *,
+        action: Optional[ActionType] = None,
+        metadata: Optional[dict] = None,
+    ) -> bytes:
+        """Sign a transaction for a specific chain.
+
+        When a pre-sign gate is bound, the transaction is evaluated against the
+        execution policy before any signature is produced. A denial raises
+        :class:`~web3_agent_kit.execution.EnforcementDenied` and no signature
+        is created.
+
+        When no gate is bound the call fails closed for transactions that
+        carry a destination contract, because an unguarded signature of a
+        write-capable call is indistinguishable from an authorized one.
+        """
+        gate = self.enforcement
+
+        if gate is None:
+            if tx.get("to") is not None:
+                from ..execution import EnforcementDenied
+
+                raise EnforcementDenied(
+                    "wallet has no bound pre-sign gate; refusing to sign a "
+                    "write-capable transaction. Call wallet.bind_enforcement(gate) "
+                    "or route the call through an AuthorizedExecutor."
+                )
+            return self._raw_signer(tx)
+
+        from ..execution import ActionType as _ActionType, AuthorizationRequest
+
+        resolved_action = action or _ActionType.CONTRACT_CALL
+        if not isinstance(resolved_action, _ActionType):
+            raise ValueError("action must be an ActionType member")
+
+        # Most builders omit "from"; the wallet owns the signer, so it supplies
+        # the sender the intent requires. An explicit conflicting sender is an
+        # error rather than a silent override.
+        sender = tx.get("from")
+        if sender is None:
+            tx = {**tx, "from": self.address}
+        elif str(sender).lower() != str(self.address).lower():
+            from ..execution import EnforcementDenied
+
+            raise EnforcementDenied(
+                "transaction sender does not match the wallet address: "
+                f"{sender} != {self.address}"
+            )
+
+        request = AuthorizationRequest(
+            chain=chain,
+            action=resolved_action,
+            transaction=tx,
+            metadata=metadata or {},
+        )
+        return gate.sign(request).raw_transaction
+
+    def send_transaction(
+        self,
+        tx: dict,
+        chain: Chain,
+        *,
+        action: Optional[ActionType] = None,
+        metadata: Optional[dict] = None,
+    ) -> str:
+        """Sign and send a transaction. Signing is policy-gated when bound."""
         if not self.chain_manager:
             raise ValueError("ChainManager not configured")
 
         w3 = self.chain_manager.get_web3(chain)
-        signed = self.sign_transaction(tx, chain)
+        signed = self.sign_transaction(
+            tx, chain, action=action, metadata=metadata
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
 

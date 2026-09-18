@@ -41,6 +41,10 @@ jobs:
         print("import ok", web3_agent_kit.__version__)
         PY
 
+    - name: Enforce the signing surface
+      run: |
+        python tools/check_signing_surface.py
+
     - name: Run tests
       timeout-minutes: 5
       run: |

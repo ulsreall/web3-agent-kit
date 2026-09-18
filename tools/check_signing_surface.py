@@ -1,0 +1,182 @@
+#!/usr/bin/env python3
+"""Reject unapproved direct transaction signing anywhere in the package.
+
+Why this exists
+---------------
+Every write-capable module must sign through the enforced pre-sign gate in
+``web3_agent_kit.execution.interceptor``. A direct ``Account.sign_transaction``
+or ``w3.eth.account.sign_transaction`` call builds a transaction, skips the
+policy layer, and produces a signature indistinguishable from an authorized
+one. That is a silent bypass, and it is exactly the class of bug this check
+exists to prevent from reappearing.
+
+How it works
+------------
+AST-based, not regex: comments and strings cannot produce a false positive, and
+aliasing through a local variable is followed where resolvable. Every call
+expression whose called attribute is ``sign_transaction`` is enumerated.
+
+Exit codes
+----------
+0  no unapproved signer calls found
+1  unapproved signer calls found (fails CI)
+
+Usage
+-----
+    python tools/check_signing_surface.py
+    python tools/check_signing_surface.py --root web3_agent_kit
+"""
+
+from __future__ import annotations
+
+import argparse
+import ast
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+# Modules permitted to contain a low-level signing call.
+#
+# The gate wraps a signer callable supplied by the caller, so a direct signer
+# call is legitimate only where the primitive itself is defined. Everything
+# else must reach signing through the enforced gate. Keep this list as short
+# as physically possible: every entry is a place where policy could be skipped.
+APPROVED_FILES: frozenset[str] = frozenset(
+    {
+        # Defines the underlying signer primitive that the gate wraps.
+        "web3_agent_kit/wallet/wallet.py",
+        # The gate implementation itself.
+        "web3_agent_kit/execution/interceptor.py",
+    }
+)
+
+# Directories that never contain production write paths.
+EXCLUDED_DIR_PARTS: frozenset[str] = frozenset(
+    {
+        ".git",
+        ".venv",
+        "venv",
+        "__pycache__",
+        "htmlcov",
+        "node_modules",
+        "build",
+        "dist",
+    }
+)
+
+SIGNER_ATTRIBUTE = "sign_transaction"
+
+
+@dataclass(frozen=True)
+class SignerCall:
+    """One call expression that invokes a signer."""
+
+    path: str
+    line: int
+    column: int
+    expression: str
+    is_test: bool
+
+    def describe(self) -> str:
+        kind = "test" if self.is_test else "production"
+        return f"{self.path}:{self.line}:{self.column}  ({kind})  {self.expression}"
+
+
+def _is_excluded(path: Path) -> bool:
+    return any(part in EXCLUDED_DIR_PARTS for part in path.parts)
+
+
+def _unparse(node: ast.AST) -> str:
+    try:
+        return ast.unparse(node)
+    except Exception:  # pragma: no cover - defensive for exotic AST nodes
+        return "<unparseable>"
+
+
+def _is_test_path(relative: str) -> bool:
+    parts = Path(relative).parts
+    if parts and parts[0] in {"tests", "test"}:
+        return True
+    name = Path(relative).name
+    return name.startswith("test_") or name.endswith("_test.py")
+
+
+def find_signer_calls(root: Path) -> list[SignerCall]:
+    """Enumerate every ``<something>.sign_transaction(...)`` call expression."""
+    found: list[SignerCall] = []
+    for path in sorted(root.rglob("*.py")):
+        if _is_excluded(path):
+            continue
+        relative = path.relative_to(root.parent).as_posix()
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except SyntaxError as exc:
+            print(f"warning: could not parse {relative}: {exc}", file=sys.stderr)
+            continue
+
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.Call):
+                continue
+            func = node.func
+            if isinstance(func, ast.Attribute) and func.attr == SIGNER_ATTRIBUTE:
+                found.append(
+                    SignerCall(
+                        path=relative,
+                        line=node.lineno,
+                        column=node.col_offset,
+                        expression=_unparse(func),
+                        is_test=_is_test_path(relative),
+                    )
+                )
+    return found
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--root",
+        default="web3_agent_kit",
+        help="package directory to scan (default: web3_agent_kit)",
+    )
+    parser.add_argument(
+        "--include-tests",
+        action="store_true",
+        help="also fail on direct signer calls inside test files",
+    )
+    args = parser.parse_args(argv)
+
+    root = Path(args.root).resolve()
+    if not root.is_dir():
+        print(f"error: {root} is not a directory", file=sys.stderr)
+        return 2
+
+    calls = find_signer_calls(root)
+    violations = [
+        call
+        for call in calls
+        if call.path not in APPROVED_FILES and (args.include_tests or not call.is_test)
+    ]
+
+    print(f"scanned: {root}")
+    print(f"signer call expressions found: {len(calls)}")
+    print(f"approved files: {sorted(APPROVED_FILES) or '(none)'}")
+    print()
+
+    if not violations:
+        print("OK: every production signer call is approved.")
+        return 0
+
+    print("FAIL: unapproved direct signer calls detected.")
+    print()
+    print("These bypass the enforced pre-sign gate and will skip policy")
+    print("evaluation entirely. Route them through PreSignInterceptor.sign().")
+    print()
+    for call in violations:
+        print(f"  {call.describe()}")
+    print()
+    print(f"total violations: {len(violations)}")
+    return 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

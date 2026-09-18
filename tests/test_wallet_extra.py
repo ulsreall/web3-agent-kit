@@ -9,6 +9,7 @@ import pytest
 from eth_account import Account
 
 from web3_agent_kit.chains.chain import Chain
+from web3_agent_kit.execution import EnforcementDenied
 from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 
 
@@ -153,9 +154,21 @@ class TestWalletTransactions:
         with patch.object(Account, "sign_transaction") as mock_sign:
             signed = MagicMock()
             signed.rawTransaction = b"\x01\x02"
+            signed.raw_transaction = b"\x01\x02"
             mock_sign.return_value = signed
+            # A payload with no destination contract is not a write-capable
+            # call, so it reaches the raw signer without a bound gate.
             raw = wallet.sign_transaction({"nonce": 0}, Chain.ETHEREUM)
             assert raw == b"\x01\x02"
+
+    def test_sign_transaction_with_destination_requires_a_gate(self, test_key):
+        """A write-capable call must never be signed by an unbound wallet."""
+        key, _ = test_key
+        wallet = Wallet.from_key(key)
+        with pytest.raises(EnforcementDenied, match="no bound pre-sign gate"):
+            wallet.sign_transaction(
+                {"nonce": 0, "to": "0x" + "11" * 20, "data": "0x"}, Chain.ETHEREUM
+            )
 
     def test_send_transaction_no_chain_manager(self, test_key):
         key, _ = test_key
