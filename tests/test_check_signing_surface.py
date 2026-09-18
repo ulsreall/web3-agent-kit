@@ -193,3 +193,76 @@ def test_virtualenv_is_excluded(tmp_path: Path):
 
 if __name__ == "__main__":
     raise SystemExit(pytest.main([__file__, "-v"]))
+
+
+def _classify(calls, baseline):
+    """Reproduce the tool's classification without spawning a subprocess."""
+    by_file: dict[str, list] = {}
+    for call in calls:
+        if call.is_test or call.path in tool.APPROVED_FILES:
+            continue
+        by_file.setdefault(call.path, []).append(call)
+
+    new = [c for p, g in by_file.items() if p not in baseline for c in g]
+    regressions = [
+        p for p, g in by_file.items() if p in baseline and len(g) > baseline[p]
+    ]
+    migrated = [
+        p for p, n in baseline.items() if len(by_file.get(p, [])) < n
+    ]
+    return new, regressions, migrated
+
+
+def test_new_file_with_signer_is_a_violation(tmp_path: Path):
+    """A file absent from the baseline must fail, not be silently allowed."""
+    package = tmp_path / "pkg"
+    _write(package, "module.py", "account.sign_transaction(tx)")
+
+    new, regressions, _ = _classify(tool.find_signer_calls(package), {})
+    assert len(new) == 1
+    assert not regressions
+
+
+def test_baseline_file_growing_a_call_is_a_regression(tmp_path: Path):
+    """A baseline entry is a ceiling, not a blanket exemption."""
+    package = tmp_path / "pkg"
+    _write(package, "bridge/bridge.py", "a.sign_transaction(b)\nc.sign_transaction(d)")
+
+    calls = tool.find_signer_calls(package)
+    path = calls[0].path
+
+    new, regressions, _ = _classify(calls, {path: 1})
+    assert not new
+    assert regressions == [path]
+
+
+def test_baseline_file_shrinking_is_reported_for_cleanup(tmp_path: Path):
+    """Dropping below the baseline passes but asks for the entry to be removed."""
+    package = tmp_path / "pkg"
+    _write(package, "bridge/bridge.py", "a.sign_transaction(b)")
+
+    calls = tool.find_signer_calls(package)
+    path = calls[0].path
+
+    new, regressions, migrated = _classify(calls, {path: 2})
+    assert not new
+    assert not regressions
+    assert migrated == [path]
+
+
+def test_repo_baseline_is_accurate():
+    """The committed baseline must match the actual repository state."""
+    package = REPO_ROOT / "web3_agent_kit"
+    if not package.is_dir():  # pragma: no cover - repo layout guard
+        pytest.skip("package directory not present")
+
+    by_file: dict[str, int] = {}
+    for call in tool.find_signer_calls(package):
+        if call.is_test or call.path in tool.APPROVED_FILES:
+            continue
+        by_file[call.path] = by_file.get(call.path, 0) + 1
+
+    assert by_file == tool.LEGACY_BASELINE, (
+        "LEGACY_BASELINE is out of date. Migrated a call? Remove its entry. "
+        f"Actual: {by_file}"
+    )

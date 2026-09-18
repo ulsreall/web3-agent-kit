@@ -71,6 +71,22 @@ EXCLUDED_DIR_PARTS: frozenset[str] = frozenset(
 
 SIGNER_ATTRIBUTE = "sign_transaction"
 
+# Known, not-yet-migrated call sites.
+#
+# These still reach signing without passing through the gate. They are listed
+# rather than silently tolerated so the remaining surface is visible and the
+# count only moves down. Removing an entry requires the call to be migrated.
+#
+# Keyed by path with the expected number of unapproved calls in that file, so
+# adding a new call to an already-listed file still fails the check.
+LEGACY_BASELINE: dict[str, int] = {
+    "web3_agent_kit/bridge/bridge.py": 2,
+    "web3_agent_kit/defi/__init__.py": 6,
+    "web3_agent_kit/defi/uniswap_v3.py": 2,
+    "web3_agent_kit/plugins/restaking/eigenlayer.py": 5,
+    "web3_agent_kit/plugins/restaking/protocols.py": 4,
+}
+
 
 @dataclass(frozen=True)
 class SignerCall:
@@ -162,13 +178,42 @@ def main(argv: list[str] | None = None) -> int:
         if call.path not in APPROVED_FILES and (args.include_tests or not call.is_test)
     ]
 
+    # Group by file so an already-known file growing a new call is still caught.
+    by_file: dict[str, list[SignerCall]] = {}
+    for call in violations:
+        by_file.setdefault(call.path, []).append(call)
+
     print(f"scanned: {root}")
     print(f"signer call expressions found: {len(calls)}")
     print(f"approved files: {sorted(APPROVED_FILES) or '(none)'}")
     print()
 
-    if not violations:
-        print("OK: every production signer call is approved.")
+    new_violations: list[SignerCall] = []
+    regressions: list[str] = []
+    for path, group in sorted(by_file.items()):
+        expected = LEGACY_BASELINE.get(path)
+        if expected is None:
+            new_violations.extend(group)
+        elif len(group) > expected:
+            regressions.append(
+                f"{path}: {len(group)} unapproved calls, baseline allows {expected}"
+            )
+
+    if not new_violations and not regressions:
+        migrated = [
+            path
+            for path, expected in LEGACY_BASELINE.items()
+            if len(by_file.get(path, [])) < expected
+        ]
+        print(f"OK: no new unapproved signer calls. {len(violations)} known legacy")
+        print("    call sites remain on the baseline.")
+        if migrated:
+            print()
+            print("    These files dropped below their baseline and should be")
+            print("    removed from LEGACY_BASELINE:")
+            for path in sorted(migrated):
+                actual = len(by_file.get(path, []))
+                print(f"      {path} (now {actual}, baseline {LEGACY_BASELINE[path]})")
         return 0
 
     print("FAIL: unapproved direct signer calls detected.")
@@ -176,10 +221,12 @@ def main(argv: list[str] | None = None) -> int:
     print("These bypass the enforced pre-sign gate and will skip policy")
     print("evaluation entirely. Route them through PreSignInterceptor.sign().")
     print()
-    for call in violations:
-        print(f"  {call.describe()}")
+    for call in new_violations:
+        print(f"  NEW       {call.describe()}")
+    for line in regressions:
+        print(f"  INCREASED {line}")
     print()
-    print(f"total violations: {len(violations)}")
+    print(f"new violations: {len(new_violations)}, regressions: {len(regressions)}")
     return 1
 
 
