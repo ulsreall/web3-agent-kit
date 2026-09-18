@@ -39,9 +39,45 @@ class TestMainGroup:
         assert "WAK" in result.output
 
     def test_version(self):
+        """The CLI must report the version the package actually declares.
+
+        Asserting a literal version string here means every release breaks this
+        test, and the failure says nothing about whether the CLI is wrong.
+        Compare against the package's own __version__ instead, so this catches
+        a CLI pin that has drifted from the package -- which is the real bug
+        it is here to prevent.
+        """
+        from web3_agent_kit import __version__
+
         result = runner.invoke(main, ["--version"])
         assert result.exit_code == 0
-        assert "1.16.2" in result.output
+        assert __version__ in result.output
+
+    def test_cli_version_matches_package_metadata(self):
+        """pyproject.toml, __version__ and the CLI option must all agree."""
+        import re
+        from pathlib import Path
+
+        from web3_agent_kit import __version__
+
+        pyproject = Path(__file__).resolve().parents[1] / "pyproject.toml"
+        declared = re.search(
+            r'^version\s*=\s*"([^"]+)"', pyproject.read_text(), re.MULTILINE
+        ).group(1)
+        cli_source = (
+            Path(__file__).resolve().parents[1]
+            / "web3_agent_kit"
+            / "cli"
+            / "main.py"
+        ).read_text()
+        pinned = re.search(r'version_option\(version="([^"]+)"', cli_source).group(1)
+
+        assert declared == __version__, (
+            f"pyproject says {declared}, package says {__version__}"
+        )
+        assert pinned == __version__, (
+            f"CLI is pinned to {pinned}, package is {__version__}"
+        )
 
     def test_subcommands_registered(self):
         result = runner.invoke(main, ["--help"])
