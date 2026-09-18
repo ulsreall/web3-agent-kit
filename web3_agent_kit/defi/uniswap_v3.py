@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from ..chains.chain import CHAIN_IDS, Chain, ChainManager  # noqa: E402
+from ..execution import ActionType
 from ..wallet.wallet import Wallet
 
 # Minimal ERC20 ABI (duplicated here to avoid circular import with __init__)
@@ -600,7 +601,9 @@ class UniswapV3:
             "chainId": CHAIN_IDS.get(self.chain, 1),
         })
 
-        signed = wallet.sign_transaction(approve_tx, self.chain)
+        signed = wallet.sign_transaction(
+            approve_tx, self.chain, action=ActionType.APPROVE_TOKEN
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
         logger.info(f"Approved {spender} for {token_addr}: {tx_hash.hex()} (gas: {receipt.gasUsed})")
@@ -767,7 +770,7 @@ class UniswapV3:
             "chainId": CHAIN_IDS.get(self.chain, 1),
         })
 
-        signed = wallet.sign_transaction(tx, self.chain)
+        signed = wallet.sign_transaction(tx, self.chain, action=ActionType.SWAP)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 

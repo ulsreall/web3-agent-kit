@@ -10,8 +10,10 @@ from enum import Enum
 
 try:
     from ...chains.chain import CHAIN_IDS, Chain, ChainManager
+    from ...execution import ActionType
 except ImportError:
     from chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
+    from web3_agent_kit.execution import ActionType  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
 
@@ -278,7 +280,7 @@ class BabylonBtcRestaking(RestakingProtocol):
             "chainId": CHAIN_IDS.get(self._chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self._chain)
+        signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -321,7 +323,7 @@ class BabylonBtcRestaking(RestakingProtocol):
             "chainId": CHAIN_IDS.get(self._chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self._chain)
+        signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -449,7 +451,7 @@ class SolanaRestaking(RestakingProtocol):
             "chainId": CHAIN_IDS.get(self._chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self._chain)
+        signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -493,7 +495,7 @@ class SolanaRestaking(RestakingProtocol):
             "chainId": CHAIN_IDS.get(self._chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self._chain)
+        signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 

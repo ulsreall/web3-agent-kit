@@ -232,6 +232,54 @@ That's it. Install the package, configure the provider and wallet, then run a po
 > To run with no spending caps (not recommended), set `config.governor = None`
 > after construction, only if you fully understand the risk.
 
+### Enforced pre-sign authorization
+
+`SpendGovernor` decides *whether* an agent is allowed to act. The pre-sign gate
+decides *what exactly* gets signed, and it is the only path to a signature.
+
+```python
+from web3_agent_kit import Wallet, Chain, ChainManager
+from web3_agent_kit.execution import (
+    ActionType, ExecutionPolicy, PreSignInterceptor,
+)
+
+chain = ChainManager(chains=[Chain.BASE])
+wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain)
+
+policy = ExecutionPolicy(
+    allowed_chains=frozenset({Chain.BASE}),
+    allowed_actions=frozenset({ActionType.SWAP}),
+    allowed_contracts=frozenset({"0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4"}),
+    max_native_value_wei=10**18,
+    require_confirmation=True,
+)
+
+wallet.bind_enforcement(
+    PreSignInterceptor(
+        policy=policy,
+        signer=wallet._raw_signer,
+        confirmation_fn=lambda request, decision: operator_approves(request),
+    )
+)
+
+# Any write-capable call now passes through the gate before signing.
+uniswap.swap_with_wallet(wallet, "ETH", "USDC", 0.1)
+```
+
+What this guarantees:
+
+- A transaction is signed **only** after policy evaluation returns `allowed`.
+- A denial raises `EnforcementDenied` and produces **no signature at all**.
+- A wallet with no bound gate **refuses** to sign write-capable calls.
+- A policy that requires confirmation **fails closed** when no confirmation
+  handler is configured — unattended execution cannot silently proceed.
+- Every evaluation, authorized or denied, is recorded in an append-only
+  audit log with the exact call fingerprint that was authorized.
+
+`tools/check_signing_surface.py` runs in CI and fails the build if any module
+introduces a new direct `sign_transaction` call, so this boundary cannot
+silently erode.
+
 **CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --chain base`
 
 **More examples:** `wak examples` or browse [`examples/`](examples/) — 19 working scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more).

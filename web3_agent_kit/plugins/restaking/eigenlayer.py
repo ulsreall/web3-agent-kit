@@ -13,9 +13,11 @@ from web3 import Web3
 
 try:
     from ...chains.chain import CHAIN_IDS, Chain, ChainManager
+    from ...execution import ActionType
     from ...wallet.wallet import Wallet
 except ImportError:
     from web3_agent_kit.chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
+    from web3_agent_kit.execution import ActionType  # type: ignore[no-redef]
     from web3_agent_kit.wallet.wallet import Wallet  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
@@ -314,7 +316,9 @@ class EigenLayer:
             "chainId": CHAIN_IDS.get(self.config.chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self.config.chain)
+        signed = self.wallet.sign_transaction(
+            tx, self.config.chain, action=ActionType.STAKE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -364,7 +368,9 @@ class EigenLayer:
             "chainId": CHAIN_IDS.get(self.config.chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self.config.chain)
+        signed = self.wallet.sign_transaction(
+            tx, self.config.chain, action=ActionType.STAKE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -402,7 +408,9 @@ class EigenLayer:
             "chainId": CHAIN_IDS.get(self.config.chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self.config.chain)
+        signed = self.wallet.sign_transaction(
+            tx, self.config.chain, action=ActionType.STAKE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -447,7 +455,9 @@ class EigenLayer:
             "chainId": CHAIN_IDS.get(self.config.chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(tx, self.config.chain)
+        signed = self.wallet.sign_transaction(
+            tx, self.config.chain, action=ActionType.STAKE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -716,7 +726,9 @@ class EigenLayer:
             "chainId": CHAIN_IDS.get(self.config.chain, 1),
         })
 
-        signed = self.wallet.sign_transaction(approve_tx, self.config.chain)
+        signed = self.wallet.sign_transaction(
+            approve_tx, self.config.chain, action=ActionType.APPROVE_TOKEN
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
         logger.info("Approved token %s for %s", token_addr, spender)

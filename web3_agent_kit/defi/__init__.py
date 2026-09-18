@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from ..chains.chain import CHAIN_IDS, Chain, ChainManager
+from ..execution import ActionType
 from ..wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
@@ -330,7 +331,7 @@ class Uniswap(DeFiTool):
             })
 
         # Sign and send
-        signed = wallet.sign_transaction(tx, chain)
+        signed = wallet.sign_transaction(tx, chain, action=ActionType.SWAP)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -435,7 +436,9 @@ class Uniswap(DeFiTool):
             "chainId": CHAIN_IDS.get(chain, 1),
         })
 
-        signed = wallet.sign_transaction(approve_tx, chain)
+        signed = wallet.sign_transaction(
+            approve_tx, chain, action=ActionType.APPROVE_TOKEN
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
         logger.info(f"Token approved: {tx_hash.hex()} (gas: {receipt.gasUsed})")
@@ -689,7 +692,7 @@ class Aave(DeFiTool):
             "nonce": nonce,
             "chainId": CHAIN_IDS.get(chain, 1),
         })
-        signed = wallet.sign_transaction(tx, chain)
+        signed = wallet.sign_transaction(tx, chain, action=ActionType.SWAP)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
         logger.info(f"Aave tx confirmed: {tx_hash.hex()} (gas: {receipt.gasUsed})")
@@ -1012,7 +1015,9 @@ class Aave(DeFiTool):
             "nonce": w3.eth.get_transaction_count(wallet.address),
             "chainId": CHAIN_IDS.get(chain, 1),
         })
-        signed = wallet.sign_transaction(approve_tx, chain)
+        signed = wallet.sign_transaction(
+            approve_tx, chain, action=ActionType.APPROVE_TOKEN
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
         logger.info(f"Token approved for Aave: {tx_hash.hex()} (gas: {receipt.gasUsed})")
@@ -1240,7 +1245,7 @@ class Curve(DeFiTool):
             "nonce": nonce,
             "chainId": CHAIN_IDS.get(chain, 1),
         })
-        signed = wallet.sign_transaction(tx, chain)
+        signed = wallet.sign_transaction(tx, chain, action=ActionType.SWAP)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
         logger.info(f"Curve tx confirmed: {tx_hash.hex()} (gas: {receipt.gasUsed})")
@@ -1552,7 +1557,9 @@ class Curve(DeFiTool):
             "nonce": w3.eth.get_transaction_count(wallet.address),
             "chainId": CHAIN_IDS.get(chain, 1),
         })
-        signed = wallet.sign_transaction(approve_tx, chain)
+        signed = wallet.sign_transaction(
+            approve_tx, chain, action=ActionType.APPROVE_TOKEN
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
         logger.info(f"Token approved for Curve: {tx_hash.hex()} (gas: {receipt.gasUsed})")
