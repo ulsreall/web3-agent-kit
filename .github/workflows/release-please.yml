@@ -17,3 +17,21 @@ jobs:
         with:
           token: ${{ github.token }}
           release-type: python
+
+      # A release created with GITHUB_TOKEN does not fire `release: published`
+      # on other workflows, so publishing is not automatic. Surface that here
+      # instead of letting it fail silently as it did for v1.17.0 and v1.18.0.
+      - name: Publishing reminder
+        if: ${{ steps.release.outputs.release_created == 'true' }}
+        env:
+          TAG: ${{ steps.release.outputs.tag_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          echo "### Release ${TAG} created" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "PyPI publishing is manual: a release created with GITHUB_TOKEN" >> "$GITHUB_STEP_SUMMARY"
+          echo "does not trigger other workflows." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Run Publish to PyPI](https://github.com/${REPO}/actions/workflows/publish.yml)" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "RELEASE ${TAG} CREATED - trigger the PyPI publish workflow manually."

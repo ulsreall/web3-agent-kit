@@ -1,8 +1,20 @@
 name: Publish to PyPI
 
+# Manual dispatch is the primary trigger.
+#
+# `release: [published]` used to be here, but it never fired: Release Please
+# creates the release with GITHUB_TOKEN, and GitHub suppresses events raised by
+# that token to avoid run loops. Every publish between v1.17.0 and v1.18.0
+# needed a manual dispatch, which made the pipeline look wired up when it was
+# not. The dead trigger was removed rather than left in place.
+#
+# Automating this properly means publishing from inside the Release Please
+# workflow run and adding a matching trusted publisher on PyPI. Until that
+# binding exists on PyPI, a move would break publishing rather than fix it.
+# When it is set up, keep the workflow name and job name here stable: PyPI
+# binds the trusted publisher to both.
+
 on:
-  release:
-    types: [published]
   workflow_dispatch:
 
 permissions:
