@@ -4,6 +4,43 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.1] - 2026-09-18
+
+### Fixed
+- **execution:** three pre-sign gate gaps that allowed signing without the
+  policy being fully applied. A chain mismatch between the evaluated chain and
+  the transaction's `chainId` was not detected; an unbound wallet signed
+  contract creation (`to=None`); and a policy allow produced a signature with
+  no principal exact-call authorization. Each is reproducible with
+  `tools/p0_probe.py` against the previous revision.
+- The CLI version pin is now covered by a test. It is hardcoded separately from
+  `pyproject.toml` and `__version__`, and had drifted two minor versions behind
+  without anything failing.
+
+### Added
+- `CallEnvelopeV1` (`agent-call-envelope.v1`) as a canonical, versioned call
+  identity, with the policy verdict kept in a separate domain-separated
+  commitment so "policy allowed" and "the principal authorized this exact call"
+  remain independently verifiable.
+- `AuthorizationProvider` protocol and `NullAuthorizationProvider`. Policy allow
+  is no longer sufficient to sign.
+- `tools/p0_probe.py`, which reproduces the enforcement findings against any
+  revision.
+
+### Changed
+- `airdrop`, `messaging` and `governance` accept an injected policy,
+  authorization provider and preconfigured gate. Governance previously built a
+  fresh gate per call, resetting its authorization sequence and replay set.
+
+### Breaking
+- `PreSignInterceptor` requires an authorization provider for any signature.
+- `allow_unattended` is removed; confirmation is UX and cannot substitute for
+  authorization.
+- Transactions must carry `from`; the envelope needs an executor to have an
+  identity.
+- `AuthorizationRequest.call_fingerprint` changed value. It is now the canonical
+  envelope digest: the action label is excluded, the executor is included.
+
 ## [1.18.0] - 2026-09-18
 
 ### Features
