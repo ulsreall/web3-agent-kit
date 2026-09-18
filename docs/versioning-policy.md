@@ -1,6 +1,6 @@
 # Versioning Policy
 
-> **Current version:** v1.18.1
+> **Current version:** v1.18.2
 
 ## SemVer Commitment
 

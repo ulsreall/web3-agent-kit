@@ -4,6 +4,26 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.2] - 2026-09-18
+
+### Fixed
+- The CLI version pin is bumped alongside the package. It is hardcoded
+  separately from `pyproject.toml` and `__version__`, and Release Please has no
+  knowledge of it.
+
+### Changed
+- `p0_probe` and `check_signing_surface` moved into
+  `web3_agent_kit.execution`, so both ship inside the wheel. Previously they
+  lived in `tools/`, which is not packaged, which meant an evidence bundle could
+  reference a verification step that an installed package could not perform.
+  New entry points: `wak-p0-probe` and `wak-signing-surface`.
+- `tools/` keeps thin wrappers for the source-checkout workflow.
+
+### Added
+- Packaging tests that build a wheel and inspect its contents, rather than
+  asserting that a module imports. An import test passes in a source checkout
+  even when the module is absent from the distribution.
+
 ## [1.18.1] - 2026-09-18
 
 ### Fixed

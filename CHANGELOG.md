@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.2](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.1...v1.18.2) (2026-09-18)
+
+
+### Bug Fixes
+
+* **cli:** bump the version pin Release Please left behind, sync docs to 1.18.1 ([53aaefb](https://github.com/ulsreall/web3-agent-kit/commit/53aaefbac72572c2ed22f5cecd679646380aa17a))
+
+
+### Build
+
+* package the verification tools so they ship in the wheel ([#75](https://github.com/ulsreall/web3-agent-kit/pull/75)) ([e9c71c1](https://github.com/ulsreall/web3-agent-kit/commit/e9c71c1b65b536b5d847123b2272547fff6efeab)) — `p0_probe` and `check_signing_surface` moved into `web3_agent_kit.execution` with console entry points; `tools/` wrappers retained for the source checkout
+* packaging tests build a real wheel and inspect it, so the distribution contents are asserted rather than the import
+* Python 3.10 support in the packaging tests via a `tomli` fallback (`tomllib` is stdlib from 3.11)
+
 ## [1.18.1](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.0...v1.18.1) (2026-09-18)
 
 
