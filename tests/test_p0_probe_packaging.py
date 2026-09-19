@@ -147,6 +147,73 @@ def test_built_wheel_contains_the_probe(tmp_path: Path) -> None:
         )
 
 
+def test_module_invocation_emits_no_warnings() -> None:
+    """`python -m` must be clean.
+
+    An eager `from .p0_probe import run_all_probes` in
+    `web3_agent_kit.execution.__init__` places the module in sys.modules before
+    runpy executes it, and runpy then warns about unpredictable behaviour. The
+    exit code and results were always correct, which is why only the module
+    form showed it -- the console entry point never goes through runpy.
+
+    Asserting on stderr, not just the exit code: the bug was a warning, so a
+    pass/fail-only check would not have caught it.
+    """
+    proc = subprocess.run(
+        [sys.executable, "-m", "web3_agent_kit.execution.p0_probe", "--json"],
+        capture_output=True,
+        text=True,
+        cwd="/tmp",  # outside the repo: only the installed package resolves
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "RuntimeWarning" not in proc.stderr, proc.stderr
+    assert proc.stderr.strip() == "", f"unexpected stderr: {proc.stderr!r}"
+    assert '"results"' in proc.stdout
+
+
+def test_checker_module_invocation_emits_no_warnings() -> None:
+    proc = subprocess.run(
+        [sys.executable, "-m", "web3_agent_kit.execution.check_signing_surface"],
+        capture_output=True,
+        text=True,
+        cwd="/tmp",
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "RuntimeWarning" not in proc.stderr, proc.stderr
+
+
+def test_lazy_export_still_resolves() -> None:
+    """The lazy wrapper must behave like the module-level function."""
+    from web3_agent_kit.execution import run_all_probes
+    from web3_agent_kit.execution.p0_probe import run_all_probes as direct
+
+    assert {r["id"] for r in run_all_probes()} == {r["id"] for r in direct()}
+
+
+def test_execution_package_does_not_import_probe_eagerly() -> None:
+    """Importing the package must not pull in the probe.
+
+    This is the property that keeps `python -m` clean. Checked in a subprocess
+    so an already-imported module in this process cannot mask it.
+    """
+    proc = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            "import web3_agent_kit.execution as e; "
+            "import sys; "
+            "print('web3_agent_kit.execution.p0_probe' in sys.modules)",
+        ],
+        capture_output=True,
+        text=True,
+        cwd="/tmp",
+    )
+    assert proc.stdout.strip() == "False", (
+        "importing the execution package eagerly imported p0_probe; "
+        "`python -m web3_agent_kit.execution.p0_probe` will warn again"
+    )
+
+
 def test_probe_exit_code_treats_unknown_as_not_a_pass() -> None:
     """A probe that cannot evaluate must not report success.
 
