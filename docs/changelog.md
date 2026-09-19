@@ -4,6 +4,21 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.3] - 2026-09-18
+
+### Fixed
+- `python -m web3_agent_kit.execution.p0_probe` no longer emits a
+  `RuntimeWarning`. `web3_agent_kit.execution.__init__` imported the probe
+  eagerly, so `runpy` found it in `sys.modules` before executing it. The
+  console entry point was unaffected — it never goes through `runpy` — which is
+  why the warning survived a suite that exercised the entry point.
+- `run_all_probes` remains importable from `web3_agent_kit.execution` via a
+  lazy wrapper, so the documented import path still works.
+
+### Added
+- A test asserting `python -m` produces empty stderr, not merely exit 0. The
+  bug was a warning, so a pass/fail-only check would not have caught it.
+
 ## [1.18.2] - 2026-09-18
 
 ### Fixed

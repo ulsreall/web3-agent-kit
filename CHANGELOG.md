@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.3](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.2...v1.18.3) (2026-09-18)
+
+
+### Bug Fixes
+
+* **execution:** make `python -m web3_agent_kit.execution.p0_probe` warning-free ([#76](https://github.com/ulsreall/web3-agent-kit/pull/76)) — `execution/__init__` imported `p0_probe` eagerly, so runpy found it in `sys.modules` before executing it and emitted a RuntimeWarning. The console entry point was unaffected, which is why only the module form showed it.
+
 ## [1.18.2](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.1...v1.18.2) (2026-09-18)
 
 
