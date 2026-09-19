@@ -172,6 +172,12 @@ def test_module_invocation_emits_no_warnings() -> None:
 
 
 def test_checker_module_invocation_emits_no_warnings() -> None:
+    """Same stderr assertion as the probe test.
+
+    This test previously checked exit 0 and the absence of RuntimeWarning but
+    not that stderr was empty, so a different warning would have passed. The
+    probe test had the stronger assertion; the two are now consistent.
+    """
     proc = subprocess.run(
         [sys.executable, "-m", "web3_agent_kit.execution.check_signing_surface"],
         capture_output=True,
@@ -180,6 +186,7 @@ def test_checker_module_invocation_emits_no_warnings() -> None:
     )
     assert proc.returncode == 0, proc.stderr
     assert "RuntimeWarning" not in proc.stderr, proc.stderr
+    assert proc.stderr.strip() == "", f"unexpected stderr: {proc.stderr!r}"
 
 
 def test_lazy_export_still_resolves() -> None:
@@ -233,3 +240,75 @@ def test_probe_exit_code_treats_unknown_as_not_a_pass() -> None:
         assert p0_probe.main(["--json"]) == 2
     finally:
         p0_probe.run_all_probes = original
+
+
+# ---------------------------------------------------------------------------
+# Excluded-ancestor regression
+#
+# `_is_excluded` tests path components against EXCLUDED_DIR_PARTS, which
+# includes "venv" and ".venv". Applied to an absolute path, any ancestor with
+# one of those names excluded the whole scan: the checker reported zero signer
+# calls and exited 0 while an unapproved call sat in the tree. The same code
+# under a neutrally named ancestor was detected correctly.
+#
+# This was a false negative, not a missing feature. The most likely way to hit
+# it is running the checker from inside a virtualenv, which is the normal way
+# to run it.
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize("ancestor", ["neutral", "venv", ".venv", "build", "dist"])
+def test_checker_detects_an_unapproved_call_under_any_ancestor_name(
+    tmp_path: Path, ancestor: str
+) -> None:
+    """An excluded directory *above* the scan root must not suppress the scan."""
+    from web3_agent_kit.execution.check_signing_surface import main
+
+    root = tmp_path / ancestor / "web3_agent_kit"
+    root.mkdir(parents=True)
+    (root / "unexpected.py").write_text(
+        "def send(account, tx):\n    return account.sign_transaction(tx)\n"
+    )
+
+    assert main(["--root", str(root)]) == 1, (
+        f"a scan rooted under a directory named {ancestor!r} exited 0 while "
+        "an unapproved signer call was present"
+    )
+
+
+@pytest.mark.parametrize("nested", [".venv", "venv", "__pycache__", "node_modules"])
+def test_checker_still_excludes_nested_environment_directories(
+    tmp_path: Path, nested: str
+) -> None:
+    """Exclusions *inside* the scan root must keep working.
+
+    The fix scopes exclusion to the path relative to the root. A nested
+    environment directory still appears in that relative path, so it stays
+    excluded -- otherwise vendored copies of libraries would be reported as
+    violations.
+    """
+    from web3_agent_kit.execution.check_signing_surface import main
+
+    root = tmp_path / "web3_agent_kit"
+    inner = root / nested
+    inner.mkdir(parents=True)
+    (inner / "ignored.py").write_text("account.sign_transaction(tx)\n")
+
+    assert main(["--root", str(root)]) == 0, (
+        f"{nested!r} inside the scan root should still be excluded"
+    )
+
+
+def test_checker_detects_a_call_beside_a_nested_exclusion(tmp_path: Path) -> None:
+    """Both properties at once: nested excluded, real violation reported."""
+    from web3_agent_kit.execution.check_signing_surface import main
+
+    root = tmp_path / "venv" / "web3_agent_kit"
+    inner = root / "node_modules"
+    inner.mkdir(parents=True)
+    (inner / "vendored.py").write_text("account.sign_transaction(tx)\n")
+    (root / "unexpected.py").write_text(
+        "def send(account, tx):\n    return account.sign_transaction(tx)\n"
+    )
+
+    assert main(["--root", str(root)]) == 1

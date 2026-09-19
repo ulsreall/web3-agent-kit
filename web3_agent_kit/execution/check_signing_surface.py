@@ -170,7 +170,20 @@ def find_signer_calls(root: Path) -> list[SignerCall]:
     """
     found: list[SignerCall] = []
     for path in sorted(root.rglob("*.py")):
-        if _is_excluded(path):
+        # Exclusions are relative to the scan root, not to the absolute path.
+        #
+        # `_is_excluded` tests every path component against EXCLUDED_DIR_PARTS,
+        # which contains "venv" and ".venv". Evaluating it on the absolute path
+        # meant any ancestor named venv excluded the entire scan: an installed
+        # package under site-packages/venv/lib/... reported zero signer calls
+        # and exited 0, while the same code under a neutrally named ancestor
+        # reported the real count. A check that silently reports nothing when
+        # run from a virtualenv is worse than no check, because it produces a
+        # passing result for the one invocation most people use.
+        #
+        # Nested environment directories inside the scanned root stay excluded,
+        # since those components survive the relative_to() reduction.
+        if _is_excluded(path.relative_to(root)):
             continue
         relative = _report_path(path, root)
         try:
