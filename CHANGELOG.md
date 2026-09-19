@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.4](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.3...v1.18.4) (2026-09-19)
+
+
+### Bug Fixes
+
+* **execution:** scope signer-surface exclusions to the scan root ([#78](https://github.com/ulsreall/web3-agent-kit/issues/78)) ([d14d804](https://github.com/ulsreall/web3-agent-kit/commit/d14d804814908615150033de74a4c0cb34b168e0))
+
 ## [1.18.3](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.2...v1.18.3) (2026-09-18)
 
 
