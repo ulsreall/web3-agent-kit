@@ -4,6 +4,26 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.4] - 2026-09-19
+
+### Fixed
+- The static signer-surface check no longer misses violations when the scanned
+  package sits under a directory named `venv`, `.venv`, `build` or `dist`.
+  Exclusions were evaluated against the absolute path, so such an ancestor
+  excluded the entire scan: the checker reported zero signer calls and exited 0
+  while an unapproved call was present. Exclusions are now relative to the scan
+  root, so ancestors cannot suppress the scan while nested environment
+  directories remain excluded.
+
+  This affected the most common way to run the check — from inside a
+  virtualenv. CI did not catch it because the runner checks out to a path with
+  no excluded ancestor.
+
+### Added
+- Regression tests parametrised over five ancestor names and four nested
+  directory names, plus the missing empty-stderr assertion on the checker
+  module test.
+
 ## [1.18.3] - 2026-09-18
 
 ### Fixed
