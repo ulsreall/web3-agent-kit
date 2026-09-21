@@ -1541,9 +1541,9 @@ requests==2.34.2 \
     # via
     #   -r requirements.txt
     #   web3
-rlp==4.1.0 \
-    --hash=sha256:8eca394c579bad34ee0b937aecb96a57052ff3716e19c7a578883e767bc5da6f \
-    --hash=sha256:be07564270a96f3e225e2c107db263de96b5bc1f27722d2855bd3459a08e95a9
+rlp==5.0.0 \
+    --hash=sha256:9525fb895d3a6540b7401eadd11c1b64740a5eccb82e543ac7e9735d319b0977 \
+    --hash=sha256:ae8ac791160c160e270f9c7df76e68f4d42bb86a13726d807b9357c312d0bac4
     # via
     #   eth-account
     #   eth-rlp
