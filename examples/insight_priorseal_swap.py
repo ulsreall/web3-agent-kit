@@ -8,11 +8,12 @@ from __future__ import annotations
 
 import argparse
 import json
+import tempfile
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Callable, Protocol, runtime_checkable
 from unittest.mock import patch
 
 from web3_agent_kit.chains import Chain
@@ -29,6 +30,7 @@ try:
         BoundaryError,
         FixtureBundle,
         PriorSealAuthorizationProvider,
+        SQLiteAcceptanceStore,
         insight_pair_commitment,
         verify_insight_attestation,
     )
@@ -37,6 +39,7 @@ except ModuleNotFoundError:  # direct: python examples/insight_priorseal_swap.py
         BoundaryError,
         FixtureBundle,
         PriorSealAuthorizationProvider,
+        SQLiteAcceptanceStore,
         insight_pair_commitment,
         verify_insight_attestation,
     )
@@ -79,6 +82,15 @@ class BoundaryCounters:
         }
 
 
+@dataclass(frozen=True)
+class ExecutionBoundaries:
+    """Injected signing, broadcast, and receipt boundaries for one attempt."""
+
+    signer: SignerProtocol
+    broadcast: BroadcastFn
+    receipt: ReceiptFn
+
+
 class _SyntheticSigner:
     def __init__(self, counters: BoundaryCounters) -> None:
         self._counters = counters
@@ -104,6 +116,19 @@ class _SyntheticReceipt:
     def __call__(self, broadcast_result: Mapping[str, Any]) -> Mapping[str, Any]:
         self._counters.receipt += 1
         return {"status": "SYNTHETIC_CONFIRMED", "txHash": broadcast_result["txHash"]}
+
+
+def synthetic_execution_boundaries(counters: BoundaryCounters) -> ExecutionBoundaries:
+    """Default offline boundaries used by the CLI acceptance suite."""
+
+    return ExecutionBoundaries(
+        signer=_SyntheticSigner(counters),
+        broadcast=_SyntheticBroadcast(counters),
+        receipt=_SyntheticReceipt(counters),
+    )
+
+
+BoundaryFactory = Callable[[BoundaryCounters], ExecutionBoundaries]
 
 
 class _CountingProvider:
@@ -168,9 +193,11 @@ def _run_gate_attempt(
     *,
     transaction: Mapping[str, Any],
     response: Mapping[str, Any],
+    trust_roots: Mapping[str, Any],
     counters: BoundaryCounters,
     now: int,
-    provider_store: set[str] | None,
+    acceptance_store: SQLiteAcceptanceStore | None,
+    boundaries: ExecutionBoundaries,
     gate: PreSignInterceptor | None = None,
     provider: _CountingProvider | None = None,
 ) -> tuple[
@@ -179,19 +206,17 @@ def _run_gate_attempt(
     Mapping[str, Any] | None,
     str | None,
 ]:
-    signer: SignerProtocol = _SyntheticSigner(counters)
-    broadcaster: BroadcastFn = _SyntheticBroadcast(counters)
-    receipt_fn: ReceiptFn = _SyntheticReceipt(counters)
     current_provider = provider or _CountingProvider(
         PriorSealAuthorizationProvider(
             response,
-            consumed_acceptance_ids=provider_store,
+            trust_roots=trust_roots,
+            acceptance_store=acceptance_store,
         ),
         counters,
     )
     current_gate = gate or PreSignInterceptor(
         policy=_policy(transaction),
-        signer=signer.sign_transaction,
+        signer=boundaries.signer.sign_transaction,
         authorization_provider=current_provider,
     )
     if gate is not None and gate.authorization_provider is not current_provider:
@@ -212,8 +237,8 @@ def _run_gate_attempt(
             patch("web3_agent_kit.execution.authorization.time.time", return_value=now),
         ):
             signed = current_gate.sign(request)
-        broadcast_result = broadcaster(signed.raw_transaction)
-        receipt = receipt_fn(broadcast_result)
+        broadcast_result = boundaries.broadcast(signed.raw_transaction)
+        receipt = boundaries.receipt(broadcast_result)
         return current_gate, current_provider, receipt, None
     except EnforcementDenied as exc:
         return current_gate, current_provider, None, str(exc)
@@ -239,7 +264,12 @@ def _case_row(
     }
 
 
-def _run_case(bundle: FixtureBundle, case_id: str) -> dict[str, Any]:
+def _run_case(
+    bundle: FixtureBundle,
+    case_id: str,
+    *,
+    boundary_factory: BoundaryFactory,
+) -> dict[str, Any]:
     vector = bundle.case(case_id)
     baseline = bundle.baseline
     transaction = dict(baseline["transaction"])
@@ -277,9 +307,11 @@ def _run_case(bundle: FixtureBundle, case_id: str) -> dict[str, Any]:
         gate, _, receipt, error = _run_gate_attempt(
             transaction=transaction,
             response=response,
+            trust_roots=bundle.trust_roots,
             counters=counters,
             now=now,
-            provider_store=None,
+            acceptance_store=None,
+            boundaries=boundary_factory(counters),
         )
         gate_reasons = list(gate.audit_log[-1].reasons)
         if receipt is not None or error is None:
@@ -312,18 +344,22 @@ def _run_case(bundle: FixtureBundle, case_id: str) -> dict[str, Any]:
         gate, provider, receipt, error = _run_gate_attempt(
             transaction=transaction,
             response=response,
+            trust_roots=bundle.trust_roots,
             counters=counters,
             now=now,
-            provider_store=None,
+            acceptance_store=None,
+            boundaries=boundary_factory(counters),
         )
         if receipt is None or error is not None:
             raise BoundaryError(f"N5a first use failed: {error}")
         _, _, second_receipt, second_error = _run_gate_attempt(
             transaction=transaction,
             response=response,
+            trust_roots=bundle.trust_roots,
             counters=counters,
             now=now,
-            provider_store=None,
+            acceptance_store=None,
+            boundaries=boundary_factory(counters),
             gate=gate,
             provider=provider,
         )
@@ -339,51 +375,149 @@ def _run_case(bundle: FixtureBundle, case_id: str) -> dict[str, Any]:
         )
 
     if case_id == "N5b":
-        persisted: set[str] = set()
-        _, _, receipt, error = _run_gate_attempt(
-            transaction=transaction,
-            response=response,
-            counters=counters,
-            now=now,
-            provider_store=persisted,
-        )
-        if receipt is None or error is not None:
-            raise BoundaryError(f"N5b first use failed: {error}")
-        _, _, second_receipt, second_error = _run_gate_attempt(
-            transaction=transaction,
-            response=response,
-            counters=counters,
-            now=now,
-            provider_store=persisted,
-        )
+        with tempfile.TemporaryDirectory(prefix="wak-priorseal-") as directory:
+            database = Path(directory) / "acceptances.sqlite3"
+            first_store = SQLiteAcceptanceStore(database)
+            first_boundaries = boundary_factory(counters)
+            first_gate, first_provider, receipt, error = _run_gate_attempt(
+                transaction=transaction,
+                response=response,
+                trust_roots=bundle.trust_roots,
+                counters=counters,
+                now=now,
+                acceptance_store=first_store,
+                boundaries=first_boundaries,
+            )
+            if receipt is None or error is not None:
+                raise BoundaryError(f"N5b first use failed: {error}")
+
+            second_store = SQLiteAcceptanceStore(database)
+            signer_before = counters.signer
+            broadcast_before = counters.broadcast
+            receipt_before = counters.receipt
+            second_boundaries = boundary_factory(counters)
+            second_gate, second_provider, second_receipt, second_error = _run_gate_attempt(
+                transaction=transaction,
+                response=response,
+                trust_roots=bundle.trust_roots,
+                counters=counters,
+                now=now,
+                acceptance_store=second_store,
+                boundaries=second_boundaries,
+            )
+            authorization_id = str(response["signedAuthorization"]["authorizationId"])
+            reconstruction = {
+                "differentGateInstance": first_gate is not second_gate,
+                "differentProviderInstance": first_provider is not second_provider,
+                "differentStoreInstance": first_store is not second_store,
+                "differentSignerInstance": first_boundaries.signer is not second_boundaries.signer,
+                "differentBroadcastInstance": (
+                    first_boundaries.broadcast is not second_boundaries.broadcast
+                ),
+                "differentReceiptInstance": first_boundaries.receipt is not second_boundaries.receipt,
+                "sameDatabase": first_store.database_path == second_store.database_path,
+                "samePersistedAcceptanceId": authorization_id in str(second_error),
+            }
+            denied_before_execution = (
+                counters.signer == signer_before
+                and counters.broadcast == broadcast_before
+                and counters.receipt == receipt_before
+            )
+
         provider_reason = (
             "AUTHORIZATION_REPLAYED"
             if "AUTHORIZATION_REPLAYED" in str(second_error)
             else ""
         )
-        if second_receipt is not None or provider_reason != "AUTHORIZATION_REPLAYED":
+        if (
+            second_receipt is not None
+            or provider_reason != "AUTHORIZATION_REPLAYED"
+            or not denied_before_execution
+            or not all(reconstruction.values())
+        ):
             raise BoundaryError("N5b replay was not rejected by persisted acceptance state")
         row = _case_row(
             vector,
             counters,
             actual_terminal="FIRST_USE_ONLY",
             reason=provider_reason,
-            observed={"providerReason": provider_reason, "gateError": second_error},
+            observed={
+                "providerReason": provider_reason,
+                "gateError": second_error,
+                "deniedBeforeSigner": counters.signer == signer_before,
+                "deniedBeforeBroadcast": counters.broadcast == broadcast_before,
+                "deniedBeforeReceipt": counters.receipt == receipt_before,
+            },
         )
-        row["reconstruction"] = {
-            "differentProviderInstance": True,
-            "samePersistedAcceptanceId": True,
-        }
+        row["reconstruction"] = reconstruction
         return row
 
     raise BoundaryError(f"unsupported negative case: {case_id}")
 
 
-def run_negative_suite(fixture_root: str | Path) -> dict[str, Any]:
+def validate_extended_n5b_evidence(report: Mapping[str, Any]) -> None:
+    """Validate WAK-owned N5b evidence beyond the pinned verifier contract."""
+
+    cases = report.get("cases")
+    if not isinstance(cases, list):
+        raise BoundaryError("N5b evidence is missing from the acceptance report")
+    n5b = next(
+        (case for case in cases if isinstance(case, Mapping) and case.get("id") == "N5b"),
+        None,
+    )
+    if not isinstance(n5b, Mapping):
+        raise BoundaryError("N5b evidence is missing from the acceptance report")
+    reconstruction = n5b.get("reconstruction")
+    observed = n5b.get("observed")
+    if not isinstance(reconstruction, Mapping) or not isinstance(observed, Mapping):
+        raise BoundaryError("N5b reconstruction evidence is malformed")
+    reconstruction_fields = (
+        "differentGateInstance",
+        "differentProviderInstance",
+        "differentStoreInstance",
+        "differentSignerInstance",
+        "differentBroadcastInstance",
+        "differentReceiptInstance",
+        "sameDatabase",
+        "samePersistedAcceptanceId",
+    )
+    denial_fields = (
+        "deniedBeforeSigner",
+        "deniedBeforeBroadcast",
+        "deniedBeforeReceipt",
+    )
+    if not all(reconstruction.get(field) is True for field in reconstruction_fields):
+        raise BoundaryError("N5b reconstruction evidence is incomplete")
+    if not all(observed.get(field) is True for field in denial_fields):
+        raise BoundaryError("N5b denial did not precede every execution boundary")
+    if observed.get("providerReason") != "AUTHORIZATION_REPLAYED":
+        raise BoundaryError("N5b persisted replay denial is missing")
+    if (
+        n5b.get("actualTerminal") != "FIRST_USE_ONLY"
+        or n5b.get("reason") != "AUTHORIZATION_REPLAYED"
+    ):
+        raise BoundaryError("N5b terminal evidence is inconsistent")
+    if n5b.get("counts") != {
+        "authorizationProvider": 2,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1,
+    }:
+        raise BoundaryError("N5b structural counters are inconsistent")
+
+
+def run_negative_suite(
+    fixture_root: str | Path,
+    *,
+    boundary_factory: BoundaryFactory = synthetic_execution_boundaries,
+) -> dict[str, Any]:
     bundle = FixtureBundle.load(fixture_root)
     baseline = bundle.baseline
-    cases = [_run_case(bundle, case_id) for case_id in ("N1", "N2", "N3", "N4", "N5a", "N5b")]
-    return {
+    cases = [
+        _run_case(bundle, case_id, boundary_factory=boundary_factory)
+        for case_id in ("N1", "N2", "N3", "N4", "N5a", "N5b")
+    ]
+    report = {
         "schema": "wak-insight-priorseal.acceptance-report.v1",
         "fixtureVersion": "v1",
         "envelopeDigest": baseline["wak"]["callEnvelope"]["digest"],
@@ -400,6 +534,8 @@ def run_negative_suite(fixture_root: str | Path) -> dict[str, Any]:
         },
         "cases": cases,
     }
+    validate_extended_n5b_evidence(report)
+    return report
 
 
 def write_acceptance_report(fixture_root: str | Path, output: str | Path) -> Path:

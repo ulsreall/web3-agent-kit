@@ -135,12 +135,21 @@
         "caseInputSha256": "87d2a62d49a5b32b314c972f9e39a794dca58df5332983a34fc091de58071d7a"
       },
       "observed": {
-        "gateError": "principal authorization denied: AUTHORIZATION_REPLAYED: PriorSeal acceptance has already been consumed",
+        "deniedBeforeBroadcast": true,
+        "deniedBeforeReceipt": true,
+        "deniedBeforeSigner": true,
+        "gateError": "principal authorization denied: AUTHORIZATION_REPLAYED: PriorSeal acceptance auth_a181c0293b11cf663b65aba351936dff has already been consumed",
         "providerReason": "AUTHORIZATION_REPLAYED"
       },
       "reason": "AUTHORIZATION_REPLAYED",
       "reconstruction": {
+        "differentBroadcastInstance": true,
+        "differentGateInstance": true,
         "differentProviderInstance": true,
+        "differentReceiptInstance": true,
+        "differentSignerInstance": true,
+        "differentStoreInstance": true,
+        "sameDatabase": true,
         "samePersistedAcceptanceId": true
       },
       "wakVersion": "1.18.4"
