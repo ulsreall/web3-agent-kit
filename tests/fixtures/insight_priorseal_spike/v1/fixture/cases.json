@@ -1,0 +1,167 @@
+{
+  "schema": "wak-insight-priorseal.fixture-cases.v1",
+  "note": "These are expected outcomes, not observed WAK results. P1 requires a later live Base Sepolia run.",
+  "cases": [
+    {
+      "id": "N1",
+      "input": {
+        "insightVariant": "signed-block",
+        "now": 1789639170
+      },
+      "terminal": "DENIED_BEFORE_AUTHORIZATION",
+      "reason": "INSIGHT_BLOCK",
+      "counts": {
+        "authorizationProvider": 0,
+        "signer": 0,
+        "broadcast": 0,
+        "receipt": 0
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "9bfb8f89ddd7ebf709244027d0567908e0b5bdb957e770344ae3e0261e292a75"
+      }
+    },
+    {
+      "id": "N2",
+      "input": {
+        "insightVariant": "signed-pass",
+        "now": 1789639680
+      },
+      "terminal": "REASSESS_AND_REAUTHORIZE",
+      "reason": "INSIGHT_STALE",
+      "counts": {
+        "authorizationProvider": 0,
+        "signer": 0,
+        "broadcast": 0,
+        "receipt": 0
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "59dbe965a99927a8b390442c52eb9684005d58d04e54e7269d9085efdc3fbcc9"
+      }
+    },
+    {
+      "id": "N3",
+      "input": {
+        "insightVariant": "signed-pass",
+        "now": 1789639202,
+        "mutateAfterAuthorization": {
+          "field": "data",
+          "value": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e0000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000025f4cc0000000000000000000000000000000000000000000000000000000000000001"
+        }
+      },
+      "terminal": "DENIED_BEFORE_SIGNING",
+      "reason": "AUTHORIZATION_CALL_MISMATCH",
+      "counts": {
+        "authorizationProvider": 1,
+        "signer": 0,
+        "broadcast": 0,
+        "receipt": 0
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "d5138e826e73866079948be550fdfcf0286e4a232a325736b59dff634ab0517f"
+      }
+    },
+    {
+      "id": "N4",
+      "input": {
+        "insightVariant": "signed-pass",
+        "now": 1789639202,
+        "mutateAfterAuthorization": {
+          "field": "nonce",
+          "value": "2049"
+        }
+      },
+      "terminal": "DENIED_BEFORE_SIGNING",
+      "reason": "NONCE_MISMATCH",
+      "counts": {
+        "authorizationProvider": 1,
+        "signer": 0,
+        "broadcast": 0,
+        "receipt": 0
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "9009969a1176d81146779bac69a737d8301944eaccb1a1b4ec0c3a9ecdb1f104"
+      }
+    },
+    {
+      "id": "N5a",
+      "input": {
+        "insightVariant": "signed-pass",
+        "now": 1789639202,
+        "attempts": 2,
+        "providerReconstructed": false
+      },
+      "terminal": "FIRST_USE_ONLY",
+      "reason": "AUTHORIZATION_REPLAYED",
+      "counts": {
+        "authorizationProvider": 2,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "a8dd25081ff05cbdca43f5addfa08a950a147f8da6e961aadbcd1619d7c13fae"
+      }
+    },
+    {
+      "id": "N5b",
+      "input": {
+        "insightVariant": "signed-pass",
+        "now": 1789639202,
+        "attempts": 2,
+        "providerReconstructed": true,
+        "persistedAcceptanceRequired": true
+      },
+      "terminal": "FIRST_USE_ONLY",
+      "reason": "AUTHORIZATION_REPLAYED",
+      "counts": {
+        "authorizationProvider": 2,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "87d2a62d49a5b32b314c972f9e39a794dca58df5332983a34fc091de58071d7a"
+      }
+    },
+    {
+      "id": "P1",
+      "conditionalOn": [
+        "N1",
+        "N2",
+        "N3",
+        "N4",
+        "N5a",
+        "N5b"
+      ],
+      "input": {
+        "freshEvidenceRequired": true,
+        "actualBaseSepoliaExecutionRequired": true
+      },
+      "terminal": "LIVE_RECEIPT_VERIFIED",
+      "reason": "OK",
+      "counts": {
+        "authorizationProvider": 1,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1
+      },
+      "wakVersion": "1.18.4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "a115dc57d55a9c7bb795e58a06b6a74fc0ed9d2553144b1c4e3e9ed2f7e0fe61"
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ class Chain(Enum):
 
     ETHEREUM = "ethereum"
     BASE = "base"
+    BASE_SEPOLIA = "base-sepolia"
     ARBITRUM = "arbitrum"
     OPTIMISM = "optimism"
     POLYGON = "polygon"
@@ -25,6 +26,7 @@ class Chain(Enum):
 DEFAULT_RPCS = {
     Chain.ETHEREUM: "https://eth.llamarpc.com",
     Chain.BASE: "https://mainnet.base.org",
+    Chain.BASE_SEPOLIA: "https://sepolia.base.org",
     Chain.ARBITRUM: "https://arb1.arbitrum.io/rpc",
     Chain.OPTIMISM: "https://mainnet.optimism.io",
     Chain.POLYGON: "https://polygon-rpc.com",
@@ -38,6 +40,7 @@ DEFAULT_RPCS = {
 CHAIN_IDS = {
     Chain.ETHEREUM: 1,
     Chain.BASE: 8453,
+    Chain.BASE_SEPOLIA: 84532,
     Chain.ARBITRUM: 42161,
     Chain.OPTIMISM: 10,
     Chain.POLYGON: 137,
@@ -73,6 +76,7 @@ class ChainConfig:
         explorers = {
             Chain.ETHEREUM: "https://etherscan.io",
             Chain.BASE: "https://basescan.org",
+            Chain.BASE_SEPOLIA: "https://sepolia.basescan.org",
             Chain.ARBITRUM: "https://arbiscan.io",
             Chain.OPTIMISM: "https://optimistic.etherscan.io",
             Chain.POLYGON: "https://polygonscan.com",

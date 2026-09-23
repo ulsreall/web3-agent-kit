@@ -17,11 +17,20 @@ class TestChain:
     def test_chain_ids(self):
         assert CHAIN_IDS[Chain.ETHEREUM] == 1
         assert CHAIN_IDS[Chain.BASE] == 8453
+        assert CHAIN_IDS[Chain.BASE_SEPOLIA] == 84532
         assert CHAIN_IDS[Chain.ARBITRUM] == 42161
         assert CHAIN_IDS[Chain.POLYGON] == 137
         assert CHAIN_IDS[Chain.OPTIMISM] == 10
         assert CHAIN_IDS[Chain.BSC] == 56
         assert CHAIN_IDS[Chain.AVALANCHE] == 43114
+
+    def test_base_sepolia_defaults(self):
+        config = ChainConfig(chain=Chain.BASE_SEPOLIA)
+
+        assert config.is_evm is True
+        assert config.chain_id == 84532
+        assert config.rpc_url == "https://sepolia.base.org"
+        assert config.explorer == "https://sepolia.basescan.org"
 
     def test_solana_not_in_chain_ids(self):
         # Solana doesn't have an EVM chain ID

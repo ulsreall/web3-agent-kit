@@ -1,0 +1,166 @@
+{
+  "adapter": {
+    "newFieldTypes": 0
+  },
+  "adapterAcceptance": {
+    "actualNewFieldTypes": 0,
+    "expectedNewFieldTypes": 0,
+    "terminal": "PASS"
+  },
+  "cases": [
+    {
+      "actualTerminal": "DENIED_BEFORE_AUTHORIZATION",
+      "counts": {
+        "authorizationProvider": 0,
+        "broadcast": 0,
+        "receipt": 0,
+        "signer": 0
+      },
+      "expectedTerminal": "DENIED_BEFORE_AUTHORIZATION",
+      "id": "N1",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "9bfb8f89ddd7ebf709244027d0567908e0b5bdb957e770344ae3e0261e292a75"
+      },
+      "observed": {
+        "boundaryReason": "INSIGHT_BLOCK"
+      },
+      "reason": "INSIGHT_BLOCK",
+      "wakVersion": "1.18.4"
+    },
+    {
+      "actualTerminal": "REASSESS_AND_REAUTHORIZE",
+      "counts": {
+        "authorizationProvider": 0,
+        "broadcast": 0,
+        "receipt": 0,
+        "signer": 0
+      },
+      "expectedTerminal": "REASSESS_AND_REAUTHORIZE",
+      "id": "N2",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "59dbe965a99927a8b390442c52eb9684005d58d04e54e7269d9085efdc3fbcc9"
+      },
+      "observed": {
+        "boundaryReason": "INSIGHT_STALE"
+      },
+      "reason": "INSIGHT_STALE",
+      "wakVersion": "1.18.4"
+    },
+    {
+      "actualTerminal": "DENIED_BEFORE_SIGNING",
+      "counts": {
+        "authorizationProvider": 1,
+        "broadcast": 0,
+        "receipt": 0,
+        "signer": 0
+      },
+      "expectedTerminal": "DENIED_BEFORE_SIGNING",
+      "id": "N3",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "d5138e826e73866079948be550fdfcf0286e4a232a325736b59dff634ab0517f"
+      },
+      "observed": {
+        "gateError": "authorization covers a different call: authorized 0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738, signing 0x7c35bde4db644b4aaba0d3cb86eb37798a905b0c79c5487992df81607d63c556",
+        "gateReasons": [
+          "authorization_call_mismatch"
+        ]
+      },
+      "reason": "AUTHORIZATION_CALL_MISMATCH",
+      "wakVersion": "1.18.4"
+    },
+    {
+      "actualTerminal": "DENIED_BEFORE_SIGNING",
+      "counts": {
+        "authorizationProvider": 1,
+        "broadcast": 0,
+        "receipt": 0,
+        "signer": 0
+      },
+      "expectedTerminal": "DENIED_BEFORE_SIGNING",
+      "id": "N4",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "9009969a1176d81146779bac69a737d8301944eaccb1a1b4ec0c3a9ecdb1f104"
+      },
+      "observed": {
+        "authorizedNonce": "2048",
+        "gateError": "authorization covers a different call: authorized 0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738, signing 0x2961926399654e055486eb2dbee666ab018c76744bb07c6c60ac1056d4d63564",
+        "gateReasons": [
+          "authorization_call_mismatch"
+        ],
+        "nonceMismatch": true,
+        "transactionNonce": "2049"
+      },
+      "reason": "NONCE_MISMATCH",
+      "wakVersion": "1.18.4"
+    },
+    {
+      "actualTerminal": "FIRST_USE_ONLY",
+      "counts": {
+        "authorizationProvider": 2,
+        "broadcast": 1,
+        "receipt": 1,
+        "signer": 1
+      },
+      "expectedTerminal": "FIRST_USE_ONLY",
+      "id": "N5a",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "a8dd25081ff05cbdca43f5addfa08a950a147f8da6e961aadbcd1619d7c13fae"
+      },
+      "observed": {
+        "gateError": "authorization auth_a181c0293b11cf663b65aba351936dff has already been consumed; authorizations are single-use",
+        "gateReasons": [
+          "authorization_replayed"
+        ]
+      },
+      "reason": "AUTHORIZATION_REPLAYED",
+      "wakVersion": "1.18.4"
+    },
+    {
+      "actualTerminal": "FIRST_USE_ONLY",
+      "counts": {
+        "authorizationProvider": 2,
+        "broadcast": 1,
+        "receipt": 1,
+        "signer": 1
+      },
+      "expectedTerminal": "FIRST_USE_ONLY",
+      "id": "N5b",
+      "inputArtifactHashes": {
+        "baselineSha256": "799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
+        "caseInputSha256": "87d2a62d49a5b32b314c972f9e39a794dca58df5332983a34fc091de58071d7a"
+      },
+      "observed": {
+        "deniedBeforeBroadcast": true,
+        "deniedBeforeReceipt": true,
+        "deniedBeforeSigner": true,
+        "gateError": "principal authorization denied: AUTHORIZATION_REPLAYED: PriorSeal acceptance auth_a181c0293b11cf663b65aba351936dff has already been consumed",
+        "providerReason": "AUTHORIZATION_REPLAYED"
+      },
+      "reason": "AUTHORIZATION_REPLAYED",
+      "reconstruction": {
+        "differentBroadcastInstance": true,
+        "differentGateInstance": true,
+        "differentProviderInstance": true,
+        "differentReceiptInstance": true,
+        "differentSignerInstance": true,
+        "differentStoreInstance": true,
+        "sameDatabase": true,
+        "samePersistedAcceptanceId": true
+      },
+      "wakVersion": "1.18.4"
+    }
+  ],
+  "envelopeDigest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738",
+  "fixtureVersion": "v1",
+  "instrumentation": {
+    "explicitBroadcastFn": true,
+    "explicitSignerProtocol": true
+  },
+  "policyCommitmentDigest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea",
+  "schema": "wak-insight-priorseal.acceptance-report.v1"
+}

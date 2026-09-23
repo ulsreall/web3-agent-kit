@@ -1,0 +1,606 @@
+{
+  "schema": "wak-insight-priorseal.fixture-baseline.v1",
+  "mode": "SYNTHETIC_NO_BROADCAST",
+  "evaluatedAt": 1789639170,
+  "issuedAt": 1789639200,
+  "transaction": {
+    "chainId": 84532,
+    "from": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "to": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+    "data": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e0000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000025f4cc0000000000000000000000000000000000000000000000000000000000000000",
+    "value": "1000000000000000",
+    "nonce": "2048"
+  },
+  "wak": {
+    "sourceVersion": "1.18.4",
+    "callEnvelope": {
+      "payload": {
+        "schema": "agent-call-envelope.v1",
+        "chainId": 84532,
+        "executionProfile": "call",
+        "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "nonce": "2048",
+        "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+        "nativeValue": "1000000000000000",
+        "target": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4"
+      },
+      "digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738"
+    },
+    "policyDecisionCommitment": {
+      "payload": {
+        "schema": "web3-agent-kit.policy-decision.v1",
+        "callIdentity": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738",
+        "policyId": "wak-insight-priorseal-spike-v1",
+        "policyVersion": "1",
+        "verdict": "allow",
+        "reasonCodes": [],
+        "evaluatedAt": 1789639170
+      },
+      "digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea"
+    }
+  },
+  "insight": {
+    "subjectChainId": 8453,
+    "executionChainId": 84532,
+    "sourceAttestation": {
+      "uid": "0x69695db62f4a359abb0bfeba197bd86d537ff9ae0e88f911e51284a540eaf810",
+      "schemaVersion": 3,
+      "attester": "0x7564105E977516C53bE337314c7E53838967bDaC",
+      "attesterLabel": "Insight Oracle Safety Attestation",
+      "signedAt": "2026-09-17T09:58:00.000Z",
+      "validForSeconds": 600,
+      "validUntil": 1789639680,
+      "signature": "0xada2e7db2a2a7d46829e61dbf4034809325085958b99fd63c5f16a10915a69560d8584d3b0ad7b90c921491acf33b2af9d20aa610d80430de9f32e0fb7e037f61b",
+      "verifyUrl": "https://www.oracleinsight.xyz/api/v1/safety/attestation/verify",
+      "data": {
+        "verdict": "PASS",
+        "sourceAssetId": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "destinationAssetId": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "subjectChainId": 8453,
+        "action": "swap",
+        "tradeAmountUsd": 2500000,
+        "consensusPrice": 250000000000,
+        "maxDeviationBps": 5,
+        "manipulationRiskBps": 100,
+        "participantCount": 4,
+        "requiredParticipantCount": 3,
+        "coverageStatus": "SUFFICIENT",
+        "independenceStatus": "ASSESSED",
+        "sourceGroupCount": 3,
+        "crossProviderAgreementBps": 9996,
+        "maxStablecoinDepegBps": 0,
+        "maxDataAgeSeconds": 6,
+        "recommendedMaxPositionUsd": 100000000000,
+        "reasonCodesHash": "0x569e75fc77c1a856f6daaf9e69d8a9566ca34aa47f9133711ce065a571af0cfd",
+        "requestHash": "0x5e00ed352d53b75120ce88447fc61a5cdb3bb92e2e5a51b0161a8c7b3db2ba3d",
+        "evaluationScope": "SOURCE_ASSET_ONLY",
+        "evaluatedAssetIdsHash": "0x713f5b2c3e2cc8be3eed423fa12accb87120abe8f1b6636407c07b67f9bf767a",
+        "providerObservationsHash": "0xbe00c3e40a538e23a60539d9f313f4b21a8a1f26014602f27a70be5152c2d47d",
+        "validUntil": 1789639680,
+        "checkedAt": 1789639080,
+        "schemaVersion": 3,
+        "requiredSourceGroupCount": 2
+      },
+      "evidence": {
+        "providerObservations": [
+          {
+            "provider": "chainlink",
+            "feedId": "weth-usd:chainlink:synthetic",
+            "value": "250000000000",
+            "timestamp": 1789639077,
+            "dataAgeSeconds": 3,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "pyth",
+            "feedId": "weth-usd:pyth:synthetic",
+            "value": "249950000000",
+            "timestamp": 1789639076,
+            "dataAgeSeconds": 4,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "redstone",
+            "feedId": "weth-usd:redstone:synthetic",
+            "value": "250050000000",
+            "timestamp": 1789639075,
+            "dataAgeSeconds": 5,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "uniswap_twap",
+            "feedId": "weth-usd:uniswap_twap:synthetic",
+            "value": "250025000000",
+            "timestamp": 1789639074,
+            "dataAgeSeconds": 6,
+            "included": true,
+            "exclusionReason": ""
+          }
+        ],
+        "providerGroups": {
+          "chainlink": "chainlink",
+          "pyth": "pyth",
+          "redstone": "redstone",
+          "uniswap_twap": "derived"
+        }
+      }
+    },
+    "destinationAttestation": {
+      "uid": "0x566177dbb183ea41caec7d08fd3ee1cc4a3acb07ce057308b667e83591469871",
+      "schemaVersion": 3,
+      "attester": "0x7564105E977516C53bE337314c7E53838967bDaC",
+      "attesterLabel": "Insight Oracle Safety Attestation",
+      "signedAt": "2026-09-17T09:58:00.000Z",
+      "validForSeconds": 600,
+      "validUntil": 1789639680,
+      "signature": "0x834c4996909d28b9766ad3464b0444fa7a43efebe8d365261498d9ac203dc14e729f1b5c9a4bb2b08ca5b090e0b5a904b1144794dbb5b1d2bc5dfb98268fe27f1c",
+      "verifyUrl": "https://www.oracleinsight.xyz/api/v1/safety/attestation/verify",
+      "data": {
+        "verdict": "PASS",
+        "sourceAssetId": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "destinationAssetId": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "subjectChainId": 8453,
+        "action": "swap",
+        "tradeAmountUsd": 2500000,
+        "consensusPrice": 100000000,
+        "maxDeviationBps": 5,
+        "manipulationRiskBps": 100,
+        "participantCount": 4,
+        "requiredParticipantCount": 3,
+        "coverageStatus": "SUFFICIENT",
+        "independenceStatus": "ASSESSED",
+        "sourceGroupCount": 3,
+        "crossProviderAgreementBps": 9998,
+        "maxStablecoinDepegBps": 1,
+        "maxDataAgeSeconds": 6,
+        "recommendedMaxPositionUsd": 100000000000,
+        "reasonCodesHash": "0x569e75fc77c1a856f6daaf9e69d8a9566ca34aa47f9133711ce065a571af0cfd",
+        "requestHash": "0x7c5b604b83e0f2ed7401ec21c1414b6e7795064ea2d2391db4e7d876a07e3f97",
+        "evaluationScope": "SOURCE_ASSET_ONLY",
+        "evaluatedAssetIdsHash": "0xbd233b502a68bb0794e36c3068049cbafa35f6fe21d0695f83718ecb9b613c04",
+        "providerObservationsHash": "0x525047aa6929a823fb0942974d8c332b53f0aa4cfd371ac7bc4e12c150267b61",
+        "validUntil": 1789639680,
+        "checkedAt": 1789639080,
+        "schemaVersion": 3,
+        "requiredSourceGroupCount": 2
+      },
+      "evidence": {
+        "providerObservations": [
+          {
+            "provider": "chainlink",
+            "feedId": "usdc-usd:chainlink:synthetic",
+            "value": "100000000",
+            "timestamp": 1789639077,
+            "dataAgeSeconds": 3,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "pyth",
+            "feedId": "usdc-usd:pyth:synthetic",
+            "value": "99990000",
+            "timestamp": 1789639076,
+            "dataAgeSeconds": 4,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "redstone",
+            "feedId": "usdc-usd:redstone:synthetic",
+            "value": "100010000",
+            "timestamp": 1789639075,
+            "dataAgeSeconds": 5,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "uniswap_twap",
+            "feedId": "usdc-usd:uniswap_twap:synthetic",
+            "value": "100000000",
+            "timestamp": 1789639074,
+            "dataAgeSeconds": 6,
+            "included": true,
+            "exclusionReason": ""
+          }
+        ],
+        "providerGroups": {
+          "chainlink": "chainlink",
+          "pyth": "pyth",
+          "redstone": "redstone",
+          "uniswap_twap": "derived"
+        }
+      }
+    },
+    "blockedDestinationAttestation": {
+      "uid": "0x6c74a800280c5622505fef9aa3f31a8bc27dc70bdd059d5a084b6a5624c5d2fd",
+      "schemaVersion": 3,
+      "attester": "0x7564105E977516C53bE337314c7E53838967bDaC",
+      "attesterLabel": "Insight Oracle Safety Attestation",
+      "signedAt": "2026-09-17T09:58:00.000Z",
+      "validForSeconds": 600,
+      "validUntil": 1789639680,
+      "signature": "0x25542143291ac02133a4d7460185650e58561a552f82daa65243994c4ddbe35a1c58047b255fa361870ce24e74dd12b3aaa0f12fcd0bf3afb4c7e0bb99d849201c",
+      "verifyUrl": "https://www.oracleinsight.xyz/api/v1/safety/attestation/verify",
+      "data": {
+        "verdict": "BLOCK",
+        "sourceAssetId": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "destinationAssetId": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "subjectChainId": 8453,
+        "action": "swap",
+        "tradeAmountUsd": 2500000,
+        "consensusPrice": 100000000,
+        "maxDeviationBps": 5,
+        "manipulationRiskBps": 100,
+        "participantCount": 4,
+        "requiredParticipantCount": 3,
+        "coverageStatus": "SUFFICIENT",
+        "independenceStatus": "ASSESSED",
+        "sourceGroupCount": 3,
+        "crossProviderAgreementBps": 9998,
+        "maxStablecoinDepegBps": 1,
+        "maxDataAgeSeconds": 6,
+        "recommendedMaxPositionUsd": 100000000000,
+        "reasonCodesHash": "0x2a37905b10f7823b24730a3c93e107b7d5ec512ae0270955793b5761463d6fbd",
+        "requestHash": "0x7c5b604b83e0f2ed7401ec21c1414b6e7795064ea2d2391db4e7d876a07e3f97",
+        "evaluationScope": "SOURCE_ASSET_ONLY",
+        "evaluatedAssetIdsHash": "0xbd233b502a68bb0794e36c3068049cbafa35f6fe21d0695f83718ecb9b613c04",
+        "providerObservationsHash": "0x525047aa6929a823fb0942974d8c332b53f0aa4cfd371ac7bc4e12c150267b61",
+        "validUntil": 1789639680,
+        "checkedAt": 1789639080,
+        "schemaVersion": 3,
+        "requiredSourceGroupCount": 2
+      },
+      "evidence": {
+        "providerObservations": [
+          {
+            "provider": "chainlink",
+            "feedId": "usdc-usd:chainlink:synthetic",
+            "value": "100000000",
+            "timestamp": 1789639077,
+            "dataAgeSeconds": 3,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "pyth",
+            "feedId": "usdc-usd:pyth:synthetic",
+            "value": "99990000",
+            "timestamp": 1789639076,
+            "dataAgeSeconds": 4,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "redstone",
+            "feedId": "usdc-usd:redstone:synthetic",
+            "value": "100010000",
+            "timestamp": 1789639075,
+            "dataAgeSeconds": 5,
+            "included": true,
+            "exclusionReason": ""
+          },
+          {
+            "provider": "uniswap_twap",
+            "feedId": "usdc-usd:uniswap_twap:synthetic",
+            "value": "100000000",
+            "timestamp": 1789639074,
+            "dataAgeSeconds": 6,
+            "included": true,
+            "exclusionReason": ""
+          }
+        ],
+        "providerGroups": {
+          "chainlink": "chainlink",
+          "pyth": "pyth",
+          "redstone": "redstone",
+          "uniswap_twap": "derived"
+        }
+      },
+      "reasonCodes": [
+        "SYNTHETIC_SIGNED_BLOCK"
+      ]
+    },
+    "positivePairCommitment": {
+      "namespace": "insight.pretrade-pair.v1",
+      "algorithm": "keccak256",
+      "digest": "0xe9eec7fd06d329bef5146af1df5e39b2046b89b142b80b97905ad7f11813decc"
+    },
+    "blockedPairCommitment": {
+      "namespace": "insight.pretrade-pair.v1",
+      "algorithm": "keccak256",
+      "digest": "0x25f71d2a202fb7f8dbb2d607247e219826dc276f0537443729a5fa4d6c1170e0"
+    },
+    "keyRegistry": {
+      "issuer": "https://www.oracleinsight.xyz",
+      "registryRevision": "synthetic-wak-fixture-1",
+      "public_keys": [
+        {
+          "key_id": "insight-wak-fixture-eip712-1",
+          "public_key": "0x7564105E977516C53bE337314c7E53838967bDaC",
+          "algorithm": "EIP-712/secp256k1",
+          "validFrom": "2026-09-17T00:00:00.000Z",
+          "validUntil": "2026-09-17T10:30:00.000Z",
+          "revoked": false,
+          "role": "attester"
+        },
+        {
+          "key_id": "insight-wak-fixture-eip712-2",
+          "public_key": "0xe1fAE9b4fAB2F5726677ECfA912d96b0B683e6a9",
+          "algorithm": "EIP-712/secp256k1",
+          "validFrom": "2026-09-17T10:30:00.000Z",
+          "validUntil": null,
+          "revoked": false,
+          "role": "attester"
+        }
+      ],
+      "revoked_keys": []
+    }
+  },
+  "priorSeal": {
+    "authorization": {
+      "schema": "priorseal.authorization.v2",
+      "domain": "priorseal/authorization/v2",
+      "intent": {
+        "schema": "priorseal.intent.v2",
+        "executionProfile": "priorseal.execution-profile.exact-call.v1",
+        "intentId": "wak-insight-priorseal-spike-synthetic-v1",
+        "chainId": 84532,
+        "action": "CONTRACT_CALL",
+        "asset": "eip155:84532/native",
+        "amount": "1000000000000000",
+        "sender": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+        "validUntil": 1789639380,
+        "nonce": "2048",
+        "callTarget": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+        "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+        "transactionValue": "1000000000000000",
+        "contextCommitments": [
+          {
+            "namespace": "agent-call-envelope.v1",
+            "algorithm": "sha256",
+            "digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738"
+          },
+          {
+            "namespace": "insight.pretrade-pair.v1",
+            "algorithm": "keccak256",
+            "digest": "0xe9eec7fd06d329bef5146af1df5e39b2046b89b142b80b97905ad7f11813decc"
+          },
+          {
+            "namespace": "web3-agent-kit.policy-decision.v1",
+            "algorithm": "sha256",
+            "digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea"
+          }
+        ],
+        "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392"
+      },
+      "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+      "principal": {
+        "type": "user",
+        "id": "wak-spike-synthetic-principal",
+        "account": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+      },
+      "authorizer": {
+        "type": "eip712",
+        "address": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+      },
+      "delegate": {
+        "agentId": "wak-spike-synthetic-agent",
+        "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      },
+      "issuedAt": 1789639200,
+      "notBefore": 1789639200,
+      "expiresAt": 1789639380,
+      "authorizationNonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+      "maxUses": "1",
+      "audience": "priorseal",
+      "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "signature": "0x004b659a04eba40f8bd4342f1a0df0bd24de89d5bec4429bc8c826140287efbe3ca3f25b4601c3e0db3817d447f7b8959a95d833ae1cca09515d6ab82ec3c5751b",
+      "authorizationId": "auth_a181c0293b11cf663b65aba351936dff"
+    },
+    "acceptance": {
+      "schema": "priorseal.authorization-receipt.v1",
+      "domain": "priorseal/authorization-receipt/v1",
+      "authorizationId": "auth_a181c0293b11cf663b65aba351936dff",
+      "authorizationHash": "0f5a7c79e53a29676b56f66c5128b3d94c270a569425b71fb0c80e2a1bbfb564",
+      "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+      "acceptedAt": 1789639201,
+      "sequence": 1,
+      "previousEntryHash": null,
+      "entryHash": "63f7dc4f41714f8ca38cf6f04c6f0d1602276ff31f03e641b82d7dcf90036e74",
+      "status": "ACCEPTED",
+      "issuer": "priorseal.web3-agent-kit-spike-synthetic",
+      "algorithm": "Ed25519",
+      "keyId": "priorseal-wak-spike-synthetic-1",
+      "signature": "Kb6D-WyZ1MvNHSG1AaZegHCjRoxtYk4bAUXBZjrEjHWMz381jO3W2oZCJxfXQ8fk5t8RmzHaQks4KQiH62duDQ"
+    },
+    "response": {
+      "schema": "priorseal.wak-authorization-response.v1",
+      "authorization_id": "auth_a181c0293b11cf663b65aba351936dff",
+      "envelope_digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738",
+      "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authorizer": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a",
+      "valid_from": 1789639200,
+      "valid_until": 1789639380,
+      "nonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+      "policy_commitment_digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea",
+      "signedAuthorization": {
+        "schema": "priorseal.authorization.v2",
+        "domain": "priorseal/authorization/v2",
+        "intent": {
+          "schema": "priorseal.intent.v2",
+          "executionProfile": "priorseal.execution-profile.exact-call.v1",
+          "intentId": "wak-insight-priorseal-spike-synthetic-v1",
+          "chainId": 84532,
+          "action": "CONTRACT_CALL",
+          "asset": "eip155:84532/native",
+          "amount": "1000000000000000",
+          "sender": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "validUntil": 1789639380,
+          "nonce": "2048",
+          "callTarget": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+          "transactionValue": "1000000000000000",
+          "contextCommitments": [
+            {
+              "namespace": "agent-call-envelope.v1",
+              "algorithm": "sha256",
+              "digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738"
+            },
+            {
+              "namespace": "insight.pretrade-pair.v1",
+              "algorithm": "keccak256",
+              "digest": "0xe9eec7fd06d329bef5146af1df5e39b2046b89b142b80b97905ad7f11813decc"
+            },
+            {
+              "namespace": "web3-agent-kit.policy-decision.v1",
+              "algorithm": "sha256",
+              "digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea"
+            }
+          ],
+          "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392"
+        },
+        "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+        "principal": {
+          "type": "user",
+          "id": "wak-spike-synthetic-principal",
+          "account": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+        },
+        "authorizer": {
+          "type": "eip712",
+          "address": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+        },
+        "delegate": {
+          "agentId": "wak-spike-synthetic-agent",
+          "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        },
+        "issuedAt": 1789639200,
+        "notBefore": 1789639200,
+        "expiresAt": 1789639380,
+        "authorizationNonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+        "maxUses": "1",
+        "audience": "priorseal",
+        "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "signature": "0x004b659a04eba40f8bd4342f1a0df0bd24de89d5bec4429bc8c826140287efbe3ca3f25b4601c3e0db3817d447f7b8959a95d833ae1cca09515d6ab82ec3c5751b",
+        "authorizationId": "auth_a181c0293b11cf663b65aba351936dff"
+      },
+      "verificationResult": {
+        "valid": true,
+        "code": "OK"
+      },
+      "acceptance": {
+        "schema": "priorseal.authorization-receipt.v1",
+        "domain": "priorseal/authorization-receipt/v1",
+        "authorizationId": "auth_a181c0293b11cf663b65aba351936dff",
+        "authorizationHash": "0f5a7c79e53a29676b56f66c5128b3d94c270a569425b71fb0c80e2a1bbfb564",
+        "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+        "acceptedAt": 1789639201,
+        "sequence": 1,
+        "previousEntryHash": null,
+        "entryHash": "63f7dc4f41714f8ca38cf6f04c6f0d1602276ff31f03e641b82d7dcf90036e74",
+        "status": "ACCEPTED",
+        "issuer": "priorseal.web3-agent-kit-spike-synthetic",
+        "algorithm": "Ed25519",
+        "keyId": "priorseal-wak-spike-synthetic-1",
+        "signature": "Kb6D-WyZ1MvNHSG1AaZegHCjRoxtYk4bAUXBZjrEjHWMz381jO3W2oZCJxfXQ8fk5t8RmzHaQks4KQiH62duDQ"
+      }
+    },
+    "expectedWakEvidence": {
+      "authorization_id": "auth_a181c0293b11cf663b65aba351936dff",
+      "envelope_digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738",
+      "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "authorizer": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a",
+      "valid_from": 1789639200,
+      "valid_until": 1789639380,
+      "nonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+      "policy_commitment_digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea",
+      "raw": {
+        "signedAuthorization": {
+          "schema": "priorseal.authorization.v2",
+          "domain": "priorseal/authorization/v2",
+          "intent": {
+            "schema": "priorseal.intent.v2",
+            "executionProfile": "priorseal.execution-profile.exact-call.v1",
+            "intentId": "wak-insight-priorseal-spike-synthetic-v1",
+            "chainId": 84532,
+            "action": "CONTRACT_CALL",
+            "asset": "eip155:84532/native",
+            "amount": "1000000000000000",
+            "sender": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+            "validUntil": 1789639380,
+            "nonce": "2048",
+            "callTarget": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+            "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+            "transactionValue": "1000000000000000",
+            "contextCommitments": [
+              {
+                "namespace": "agent-call-envelope.v1",
+                "algorithm": "sha256",
+                "digest": "0x2420423cd540d07e5be304720b11bb13c5ebba3722d619045847405fea409738"
+              },
+              {
+                "namespace": "insight.pretrade-pair.v1",
+                "algorithm": "keccak256",
+                "digest": "0xe9eec7fd06d329bef5146af1df5e39b2046b89b142b80b97905ad7f11813decc"
+              },
+              {
+                "namespace": "web3-agent-kit.policy-decision.v1",
+                "algorithm": "sha256",
+                "digest": "0x1a28b62b31684723cb2bbd7317a5af71a71b4439ac06b86eb060710b439784ea"
+              }
+            ],
+            "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392"
+          },
+          "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+          "principal": {
+            "type": "user",
+            "id": "wak-spike-synthetic-principal",
+            "account": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+          },
+          "authorizer": {
+            "type": "eip712",
+            "address": "0x19e7e376e7c213b7e7e7e46cc70a5dd086daff2a"
+          },
+          "delegate": {
+            "agentId": "wak-spike-synthetic-agent",
+            "executor": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          },
+          "issuedAt": 1789639200,
+          "notBefore": 1789639200,
+          "expiresAt": 1789639380,
+          "authorizationNonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+          "maxUses": "1",
+          "audience": "priorseal",
+          "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+          "signature": "0x004b659a04eba40f8bd4342f1a0df0bd24de89d5bec4429bc8c826140287efbe3ca3f25b4601c3e0db3817d447f7b8959a95d833ae1cca09515d6ab82ec3c5751b",
+          "authorizationId": "auth_a181c0293b11cf663b65aba351936dff"
+        },
+        "verificationResult": {
+          "valid": true,
+          "code": "OK"
+        },
+        "acceptance": {
+          "schema": "priorseal.authorization-receipt.v1",
+          "domain": "priorseal/authorization-receipt/v1",
+          "authorizationId": "auth_a181c0293b11cf663b65aba351936dff",
+          "authorizationHash": "0f5a7c79e53a29676b56f66c5128b3d94c270a569425b71fb0c80e2a1bbfb564",
+          "intentHash": "17e67ee710995f7acdf46c34088b36e3437359c42da9e7f2b5461400a58c8392",
+          "acceptedAt": 1789639201,
+          "sequence": 1,
+          "previousEntryHash": null,
+          "entryHash": "63f7dc4f41714f8ca38cf6f04c6f0d1602276ff31f03e641b82d7dcf90036e74",
+          "status": "ACCEPTED",
+          "issuer": "priorseal.web3-agent-kit-spike-synthetic",
+          "algorithm": "Ed25519",
+          "keyId": "priorseal-wak-spike-synthetic-1",
+          "signature": "Kb6D-WyZ1MvNHSG1AaZegHCjRoxtYk4bAUXBZjrEjHWMz381jO3W2oZCJxfXQ8fk5t8RmzHaQks4KQiH62duDQ"
+        }
+      }
+    }
+  }
+}
