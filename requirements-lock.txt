@@ -501,9 +501,9 @@ ckzg==2.1.8 \
     --hash=sha256:fef164b9a0c7ed57935bf78bd23e701ba82efcca180e9b29814a94928a2d5880 \
     --hash=sha256:ff48587f541b625dd0e471ecc866cf91462100a4429e3c21cf4f099e7dff9150
     # via eth-account
-click==8.4.2 \
-    --hash=sha256:9a6cea6e60b17ebe0a44c5cc636d94f09bd66142c1cd7d8b4cd731c4917a15f6 \
-    --hash=sha256:e6f9f66136c816745b9d65817da91d61d957fb16e02e4dcd0552553c5a197b76
+click==8.5.0 \
+    --hash=sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360 \
+    --hash=sha256:ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34
     # via uvicorn
 cytoolz==1.1.0 \
     --hash=sha256:02feeeda93e1fa3b33414eb57c2b0aefd1db8f558dd33fdfcce664a0f86056e4 \
