@@ -22,7 +22,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
-  <img src="assets/demo.gif" alt="Web3 Agent Kit Demo" width="700"/>
+  <img src="assets/readme-banner.svg" alt="Web3 Agent Kit v1.18.4: 9 chains, 37 API routes, 75% coverage, and 1,957 tests passing (12 skipped). Write-path readiness varies by module." width="700"/>
 </p>
 
 ---

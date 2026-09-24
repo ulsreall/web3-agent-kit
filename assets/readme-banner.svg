@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" role="img" aria-labelledby="title desc">
+  <title id="title">Web3 Agent Kit v1.18.4</title>
+  <desc id="desc">Project overview: nine chains, 37 API routes, 75 percent test coverage, and 1,957 tests passing with 12 skipped. Write-path readiness varies by module.</desc>
+  <defs>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#19c99a"/><stop offset="1" stop-color="#4fe0b2"/></linearGradient>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111a1e"/><stop offset="1" stop-color="#0c1217"/></linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#000" flood-opacity=".28"/></filter>
+  </defs>
+  <rect width="960" height="440" fill="#090d12"/>
+  <rect x="48" y="22" width="864" height="396" rx="18" fill="url(#bg)" stroke="#29383e" stroke-width="1.5" filter="url(#shadow)"/>
+  <path d="M66 22h828a18 18 0 0 1 18 18v2H48v-2a18 18 0 0 1 18-18Z" fill="url(#top)"/>
+  <text x="80" y="86" fill="#e5f0ed" font-family="Inter,Arial,sans-serif" font-size="24" font-weight="700">web3-agent-kit</text>
+  <text x="80" y="111" fill="#91a5a2" font-family="'IBM Plex Mono',Consolas,monospace" font-size="14">Autonomous Web3 AI infrastructure</text>
+  <text x="830" y="82" text-anchor="end" fill="#42dcae" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="700">v1.18.4</text>
+  <text x="830" y="106" text-anchor="end" fill="#9ab0ab" font-family="'IBM Plex Mono',Consolas,monospace" font-size="13">CI ✓  ·  docs ✓</text>
+  <text x="80" y="174" fill="#e4eeeb" font-family="'IBM Plex Mono',Consolas,monospace" font-size="30" font-weight="700">Build agents that can actually execute.</text>
+  <text x="80" y="211" fill="#38d5a6" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17" font-weight="600">Read</text>
+  <circle cx="145" cy="205" r="3" fill="#38d5a6"/>
+  <text x="166" y="211" fill="#38d5a6" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17" font-weight="600">Simulate</text>
+  <circle cx="274" cy="205" r="3" fill="#38d5a6"/>
+  <text x="295" y="211" fill="#38d5a6" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17" font-weight="600">Application-gated writes</text>
+  <text x="80" y="266" fill="#5dd9e8" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">9 chains</text>
+  <text x="328" y="266" fill="#c0a6ff" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">37 API routes</text>
+  <text x="611" y="266" fill="#f3c75b" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">75% coverage</text>
+  <text x="80" y="310" fill="#a0b2af" font-family="'IBM Plex Mono',Consolas,monospace" font-size="14">Write-path readiness varies by module; gated signing needs app authorization.</text>
+  <text x="80" y="363" fill="#d6e4e0" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17">→ pip install web3-agent-kit</text>
+  <text x="80" y="394" fill="#7f9691" font-family="'IBM Plex Mono',Consolas,monospace" font-size="13">1,957 tests passed  ·  12 skipped</text>
+</svg>
