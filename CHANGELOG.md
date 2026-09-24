@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.4...v1.19.0) (2026-09-24)
+
+
+### Features
+
+* **examples:** add bounded Insight PriorSeal conformance spike ([#90](https://github.com/ulsreall/web3-agent-kit/issues/90)) ([3ee1615](https://github.com/ulsreall/web3-agent-kit/commit/3ee16156b31c6a6201f98254079cf58415a7f9c9))
+
+
+### Bug Fixes
+
+* align pydantic core lock version ([#91](https://github.com/ulsreall/web3-agent-kit/issues/91)) ([e94156d](https://github.com/ulsreall/web3-agent-kit/commit/e94156d626a802932a73c987ebf9980d5ec623f5))
+
+
+### Documentation
+
+* refresh README project banner ([840a2df](https://github.com/ulsreall/web3-agent-kit/commit/840a2df9e700fd3ca972c2814c15f92c0ba9bf38))
+* sync safety and project status ([c2f416b](https://github.com/ulsreall/web3-agent-kit/commit/c2f416be775004ac05779e2a16df712986f87ae0))
+
 ## [1.18.4](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.3...v1.18.4) (2026-09-19)
 
 
