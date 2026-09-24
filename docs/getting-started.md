@@ -74,7 +74,7 @@ export GROQ_MODEL="llama-3.3-70b-versatile"
 
 ### 1. Basic Agent
 
-Create an agent that can swap tokens using natural language:
+Start with a read-only balance query using natural language. Write actions need extra application-level signing authorization; see the note below before enabling them:
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
@@ -97,10 +97,12 @@ agent = Agent(
     verbose=True,
 )
 
-# Run with a natural language goal
-result = agent.run("Swap 0.01 ETH to USDC on Base")
+# Run a read-only natural-language goal
+result = agent.run("Check my balances on Base")
 print(result)
 ```
+
+**Before enabling writes:** `SpendGovernor` limits and an interactive confirmation callback do not replace the pre-sign gate. A wallet write requires a bound `PreSignInterceptor` with an `ExecutionPolicy` and an application-supplied `AuthorizationProvider` that verifies a real, fresh, single-use authorization. Not all write-capable modules share this pipeline yet. The current authorization fingerprint also omits gas-limit and fee fields, so it is not a maximum-cost commitment.
 
 ### 2. Portfolio Tracking
 

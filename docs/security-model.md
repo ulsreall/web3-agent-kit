@@ -11,11 +11,17 @@ Web3 Agent Kit executes real financial transactions on behalf of its users. This
 
 **Core principle:** Fail closed, not open. When in doubt (API down, unknown value, unverified state), block the action and require explicit operator approval.
 
+## Pre-sign authorization status
+
+`Wallet.sign_transaction()` refuses write-capable transactions when no `PreSignInterceptor` is bound. A bound gate requires both an `ExecutionPolicy` and an `AuthorizationProvider`; a confirmation prompt is not a substitute. The authorization fingerprint currently commits to chain, sender, nonce, target, calldata, and native value, but **does not include gas limit or fee fields**, so it is not a maximum-cost commitment.
+
+Coverage is not uniform across the package. Some write-capable modules and the REST API do not yet share a complete, configured gate. In particular, the built-in API routes create unbound wallets, so write endpoints that reach wallet signing fail closed rather than execute. Read-only API routes remain separate. See the [safety pipeline](safety-and-transaction-pipeline.md).
+
 ---
 
 ## 1. SpendGovernor — Transaction Caps & Confirmation Gate
 
-The `SpendGovernor` (in `web3_agent_kit/utils/__init__.py`) enforces spending limits on every agent action that touches funds.
+The `SpendGovernor` (in `web3_agent_kit/utils/__init__.py`) applies spend limits in the agent action flow. This is not a uniform guarantee across every write-capable module; see the [current safety pipeline status](safety-and-transaction-pipeline.md).
 
 ### Limits enforced
 

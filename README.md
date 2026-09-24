@@ -38,19 +38,17 @@ Verify installation:
 ```bash
 wak info        # Show version, modules, chains
 wak doctor      # Check dependencies
-wak examples    # List 19 example scripts
+wak examples    # List 21 example scripts
 ```
 
-Run your first swap:
+Check your first read-only balance:
 
 ```python
 from web3_agent_kit import Agent, Wallet, Chain
 
 wallet = Wallet.from_key("0x...")
 agent = Agent(wallet=wallet, chains=[Chain.BASE])
-# or: agent = Agent(private_key="0x...", chains=[Chain.BASE])
-
-result = agent.run("check my balances")  # agent.execute(...) also works
+result = agent.run("check my balances")
 print(result)
 ```
 
@@ -68,7 +66,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **CLI** | Write Python for everything | `wak` — 7 commands, zero code |
 | **Multi-chain** | Write adapters per chain | Built-in for 9 EVM/Solana chains |
 | **LLM Integration** | Manual prompt engineering | Natural language goals, auto-parsed |
-| **Safety** | Build your own guardrails | Spend limits, kill switch, operator confirmation |
+| **Safety** | Build your own guardrails | Spend caps and fail-closed signing primitives; write-path coverage varies |
 | **DeFi** | Read docs, write ABIs | Drop-in Uniswap V2, Uniswap V3, Aave V3, Curve, bridges |
 | **Airdrops** | Manual quest hunting | Experimental tracking across 8 platforms |
 | **Token Security** | Manual pre-trade checks | Honeypot, tax, liquidity, holder, and contract-pattern analysis |
@@ -209,16 +207,14 @@ chain = ChainManager(chains=[Chain.BASE])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain)
 
 agent = Agent(wallet=wallet, chains=[Chain.BASE], tools=[Uniswap(chain_manager=chain)])
-result = agent.run("Swap 0.1 ETH to USDC on Base")
+result = agent.run("Check my balances on Base")
 ```
 
-That's it. Install the package, configure the provider and wallet, then run a policy-controlled agent.
+This quick start demonstrates a read-only agent flow. Before enabling a transaction, bind a `PreSignInterceptor` with an `ExecutionPolicy` and an application-specific `AuthorizationProvider` that verifies a real, fresh, single-use authorization. A `SpendGovernor` or human confirmation callback alone is not sufficient.
 
-> 🔐 **Governed by default:** every `Agent` ships with a conservative
-> `SpendGovernor` out of the box (max 0.05 ETH/tx, 0.5 ETH/day, 1.0 ETH/session)
-> — the swap above would be **blocked** unless you raise the limits or pass
-> your own governor:
+> `SpendGovernor` is one layer: it applies configured spend caps to agent actions. It does not replace the wallet's pre-sign gate or an authorization provider. Configure all required layers before enabling writes:
 > ```python
+> from web3_agent_kit import AgentConfig
 > from web3_agent_kit.utils import SpendGovernor, SpendLimits
 >
 > config = AgentConfig(
@@ -229,13 +225,14 @@ That's it. Install the package, configure the provider and wallet, then run a po
 > )
 > agent = Agent(config=config)
 > ```
-> To run with no spending caps (not recommended), set `config.governor = None`
-> after construction, only if you fully understand the risk.
+> This config only sets spend limits. A write still fails closed until you bind a pre-sign gate with an application-specific `AuthorizationProvider`. Do not remove spending caps as a workaround.
 
 ### Enforced pre-sign authorization
 
 `SpendGovernor` decides *whether* an agent is allowed to act. The pre-sign gate
 decides *what exactly* gets signed, and it is the only path to a signature.
+
+This is a wiring template, not a drop-in signer: `application_authorization_provider` must implement `AuthorizationProvider` and independently verify the principal's exact-call approval. The kit does not ship a generic provider; a confirmation prompt by itself is not authorization.
 
 ```python
 from web3_agent_kit import Wallet, Chain, ChainManager
@@ -258,11 +255,12 @@ wallet.bind_enforcement(
     PreSignInterceptor(
         policy=policy,
         signer=wallet._raw_signer,
+        authorization_provider=application_authorization_provider,
         confirmation_fn=lambda request, decision: operator_approves(request),
     )
 )
 
-# Any write-capable call now passes through the gate before signing.
+# Only works after the application provider has verified a fresh authorization.
 uniswap.swap_with_wallet(wallet, "ETH", "USDC", 0.1)
 ```
 
@@ -273,16 +271,14 @@ What this guarantees:
 - A wallet with no bound gate **refuses** to sign write-capable calls.
 - A policy that requires confirmation **fails closed** when no confirmation
   handler is configured — unattended execution cannot silently proceed.
-- Every evaluation, authorized or denied, is recorded in an append-only
-  audit log with the exact call fingerprint that was authorized.
+- The authorization fingerprint binds chain, executor, nonce, target, calldata, and native value. It does **not yet bind gas limit or fee fields**; an authorized transaction is not currently a complete commitment to maximum execution cost.
+- The pre-sign gate applies only where callers use `Wallet.sign_transaction()` with a bound gate. The full write surface is still being migrated; see [`docs/safety-and-transaction-pipeline.md`](docs/safety-and-transaction-pipeline.md).
 
-`tools/check_signing_surface.py` runs in CI and fails the build if any module
-introduces a new direct `sign_transaction` call, so this boundary cannot
-silently erode.
+`tools/check_signing_surface.py` detects signer call sites and keeps a baseline for existing calls. A passing baseline check does not mean every write path has been migrated.
 
 **CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --chain base`
 
-**More examples:** `wak examples` or browse [`examples/`](examples/) — 19 working scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more).
+**More examples:** `wak examples` or browse [`examples/`](examples/) — 21 scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more). Write-capable examples need an application-configured gate and authorization provider.
 
 > 💡 **Tip:** Start with `dry_run=True` on testnet to validate before going live.
 
@@ -294,7 +290,7 @@ silently erode.
 - 🔗 **Multi-chain support** — Ethereum, Base, Arbitrum, Optimism, Polygon, Avalanche, BSC, Robinhood Chain, Solana
 - 🧠 **LLM-powered reasoning** — Multi-provider cascade (OpenAI, Anthropic, Groq, DeepSeek, OpenRouter, Kimi)
 - 🎯 **Natural language goals** — Tell the agent what to do in plain English
-- 🔐 **Governed signing** — Safety caps, kill-switch, operator confirmation
+- 🔐 **Safety controls** — Spend caps and fail-closed signing primitives; write-path coverage varies by module
 
 ### 💰 DeFi
 - 💱 **Uniswap V2 swaps** — Actual token swaps with quotes, approvals, slippage protection
@@ -336,6 +332,9 @@ silently erode.
 - 🔌 **Plugin System** — Extend with custom platform executors
 
 ### 🌐 REST API
+
+The API key authenticates requests but is not transaction authorization. The built-in swap/bridge execution routes currently fail closed at wallet signing because their wallets are unbound; treat those routes as unavailable for on-chain writes until route-level authorization is wired and tested.
+
 - 📡 **37+ endpoints** — HTTP API for supported modules
 - 🔑 **API key auth** — Secure access control
 - 📖 **Swagger UI** — Interactive API documentation
@@ -426,7 +425,8 @@ curl -H "X-API-Key: ***" http://127.0.0.1:8000/wallet/info
 |----------|--------|-------------|
 | `/wallet/info` | GET | Wallet info + balance |
 | `/swap/quote` | GET | Get swap quote |
-| `/swap/execute` | POST | Execute token swap |
+| `/swap/execute` | POST | Swap execution route; currently fails closed at wallet signing until route-level authorization is wired |
+| `/bridge/execute` | POST | Bridge execution route; currently fails closed at wallet signing until route-level authorization is wired |
 | `/portfolio/` | GET | Portfolio dashboard |
 | `/gas/estimate` | GET | Gas estimates (EIP-1559) |
 | `/gas/recommendation` | GET | Gas timing recommendation |
@@ -480,6 +480,8 @@ Features: balance check, token swap, portfolio tracking, token sniper, cross-cha
 
 | Example | Description |
 |---------|-------------|
+| `examples/enforced_signing.py` | Offline pre-sign gate and authorization-provider demo |
+| `examples/insight_priorseal_swap.py` | PriorSeal authorization integration example |
 | `examples/llm_swap_agent.py` | LLM-powered natural language swapping |
 | `examples/direct_swap.py` | Programmatic Uniswap swap without LLM |
 | `examples/token_sniper.py` | Monitor new pairs, auto-buy safe tokens |

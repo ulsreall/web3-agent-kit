@@ -5,24 +5,27 @@ swap, portfolio, gas, watcher, approval, DCA, yield, and bridge tools over
 HTTP — useful for driving the toolkit from a dashboard, bot, or any
 non-Python client.
 
-!!! danger "This API can sign and broadcast real on-chain transactions"
-    Treat `WEB3_API_KEY` like a wallet-level secret. Anyone holding a valid
-    key can execute swaps, bridges, DCA orders, and approval revocations
-    against the configured wallet.
+!!! warning "Write execution requires an application authorization provider"
+    `WEB3_API_KEY` authenticates requests, but it does not authorize a transaction.
+    The built-in `/swap/execute` and `/bridge/execute` routes create an unbound
+    `Wallet`; when they reach `Wallet.sign_transaction()`, signing is refused
+    with `EnforcementDenied`. Treat these routes as unavailable for on-chain
+    writes until a route-level `ExecutionPolicy`, `AuthorizationProvider`, and
+    gate are wired and tested. Read-only endpoints are unaffected.
 
 ## Quick Start
 
 ```bash
-# Install the optional API dependencies when using the PyPI package
+# Install optional API dependencies when using the PyPI package
 pip install "web3-agent-kit[api]"
 
-# 1. Generate a strong API key
+# Generate a strong API key
 python -c "import secrets; print(secrets.token_hex(32))"
 
-# 2. Export it — the server refuses to start without this
+# Export it — the server refuses to start without this
 export WEB3_API_KEY="<your-generated-key>"
 
-# 3. Run the server (binds to 127.0.0.1:8000 by default)
+# Start server (default bind: 127.0.0.1:8000)
 python -m web3_agent_kit.api
 # or
 uvicorn web3_agent_kit.api:app --host 127.0.0.1 --port 8000

@@ -49,13 +49,28 @@ balance = wallet.get_balance(Chain.BASE)
 print(f"Balance: {balance} ETH")
 ```
 ### Sign and Send Transaction
+
+Wallet signing **fails closed** unless a `PreSignInterceptor` is bound. Before enabling writes, your application must configure an `ExecutionPolicy` and a real `AuthorizationProvider` that independently verifies a fresh, single-use principal authorization; operator confirmation alone does not satisfy this requirement.
+
 ```python
-# Sign only
-signed = wallet.sign_transaction(tx_dict, Chain.BASE)
-# Sign and send
-tx_hash = wallet.send_transaction(tx_dict, Chain.BASE)
-print(f"TX: {tx_hash}")
+from web3_agent_kit.execution import ActionType, PreSignInterceptor
+
+# `policy` and `application_authorization_provider` must be configured by your app.
+wallet.bind_enforcement(
+    PreSignInterceptor(
+        policy=policy,
+        signer=wallet._raw_signer,
+        authorization_provider=application_authorization_provider,
+    )
+)
+
+# The transaction must be fully built (including from, nonce, and chainId).
+signed = wallet.sign_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT_CALL)
+tx_hash = wallet.send_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT_CALL)
 ```
+
+The current authorization fingerprint does not include gas-limit or fee fields. Do not treat it as a commitment to maximum transaction cost; see the [safety pipeline](../safety-and-transaction-pipeline.md).
+
 ---
 ## Security Notes
 !!! warning "Private Key Security"

@@ -1,22 +1,24 @@
 # Safety and Transaction Pipeline
 
-The project has safety primitives, but the long-term goal is one consistent write path for every module that can move funds or change on-chain state.
+The repository contains transaction-safety primitives, including a fail-closed wallet pre-sign gate. They are not yet enforced through one configured write path across every module; the built-in REST API's write routes currently construct unbound wallets and therefore fail closed at signing.
 
-## Target pipeline
+## Intended write lifecycle
+
+Where a module and application have the required controls configured, a write should follow this lifecycle. Coverage is not uniform across all write-capable modules.
 
 1. **Validate input** — addresses, chain, token, amount, slippage, deadline, and destination.
 2. **Apply capability and allowlist policy** — reject unsupported chains, contracts, tokens, and actions.
 3. **Run risk checks** — approval exposure, token security signals, liquidity, oracle freshness, and MEV exposure where relevant.
 4. **Simulate** — use `eth_call`, Tenderly, or a local fork before signing.
-5. **Apply spend policy** — per-transaction, daily, session, and strategy limits.
-6. **Request explicit confirmation** — unless an application-specific policy explicitly permits unattended execution.
-7. **Sign locally** — keep private key material inside the caller's signer boundary.
+5. **Apply spend policy and authorization** — enforce transaction limits, then verify the application's fresh, single-use authorization through the configured pre-sign gate. The current authorization fingerprint omits gas-limit and fee fields.
+6. **Request explicit confirmation** — where required by the application's policy; confirmation is not a substitute for authorization.
+7. **Sign locally** — only through a bound pre-sign gate; keep private key material inside the caller's signer boundary.
 8. **Broadcast and track** — persist transaction state, receipt, revert reason, and provider response.
 9. **Verify outcome** — confirm expected balance, event, or position change; mark ambiguous transactions for review.
 
 ## Current state
 
-The repository already contains spend-governor, approval-analysis, simulation, security-analysis, and transaction-intent primitives. They are not yet enforced through one shared pipeline across every write-capable module. This is a Phase 5 stabilization item, not a reason to add more protocol integrations now.
+`SpendGovernor`, approval analysis, simulation, security analysis, and transaction-intent primitives exist. `Wallet.sign_transaction()` requires a bound pre-sign gate; that gate requires both policy and an application-supplied authorization provider. The gate's call fingerprint currently omits gas-limit and fee fields, so authorization does not commit to maximum execution cost. Some write-capable integrations and built-in API routes have not been wired to a configured shared gate; the API's unbound wallet paths therefore fail closed instead of executing writes.
 
 ## Implementation order
 

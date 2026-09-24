@@ -5,7 +5,7 @@
 
 # Build agents that can actually execute.
 
-Web3 Agent Kit gives autonomous agents a controlled path from intent to on-chain execution: wallets, chains, protocol tools, transaction simulation, and operator-defined policy in one Python framework.
+Web3 Agent Kit provides autonomous agents with wallets, chains, protocol tools, transaction-safety primitives, and integrations for on-chain workflows. Write execution depends on the module and application configuration; not every write path is yet unified.
 
 <div class="docs-actions" markdown>
 [Get started](getting-started.md){ .md-button .md-button--primary }
@@ -42,8 +42,8 @@ print(result)
 
 <div class="docs-metrics" markdown>
 <div><strong>25</strong><span>modules</span></div>
-<div><strong>1,895</strong><span>tests passing</span></div>
-<div><strong>8</strong><span>supported chains</span></div>
+<div><strong>1,957</strong><span>tests passing</span></div>
+<div><strong>9</strong><span>supported chains</span></div>
 <div><strong>75%</strong><span>coverage</span></div>
 <div><strong>MIT</strong><span>license</span></div>
 </div>
@@ -90,9 +90,9 @@ DeFi, bridges, wallets, gas, portfolio, NFT, trading, oracle, and account-abstra
 <span class="capability-number">04</span>
 ### Multi-chain by default
 
-Use one interface across Ethereum, Base, Arbitrum, Polygon, Optimism, BSC, Solana, and Avalanche. Add a new chain without rebuilding every tool around it.
+Use one interface across Ethereum, Base, Arbitrum, Polygon, Optimism, BSC, Avalanche, Robinhood Chain, and Solana. Chain connectivity does not imply every DeFi adapter is available on that chain.
 
-<div class="chain-list"><span>Ethereum</span><span>Base</span><span>Arbitrum</span><span>Polygon</span><span>Optimism</span><span>BSC</span><span>Solana</span><span>Avalanche</span></div>
+<div class="chain-list"><span>Ethereum</span><span>Base</span><span>Arbitrum</span><span>Polygon</span><span>Optimism</span><span>BSC</span><span>Avalanche</span><span>Robinhood Chain</span><span>Solana</span></div>
 </div>
 </div>
 
@@ -101,21 +101,22 @@ Use one interface across Ethereum, Base, Arbitrum, Polygon, Optimism, BSC, Solan
 <div class="docs-section-intro" markdown>
 <p class="docs-section-number">02 / EXECUTION MODEL</p>
 
-## One controlled path from goal to chain.
+## Intended write lifecycle
 
-Every write operation should be explainable before it becomes irreversible. The framework makes the execution boundary explicit.
+A write should follow this lifecycle where the module and application have the required controls configured. Not every write-capable module currently uses one shared pipeline.
 </div>
 
 <div class="execution-path" markdown>
-<div><span>01</span><strong>Intent</strong><small>Natural language or Python call</small></div>
-<div><span>02</span><strong>Plan</strong><small>Tool routing and parameters</small></div>
-<div><span>03</span><strong>Policy</strong><small>Limits, approval, simulation</small></div>
-<div><span>04</span><strong>Execute</strong><small>Signed transaction on-chain</small></div>
+<div><span>01</span><strong>Intent</strong><small>Natural language or typed request</small></div>
+<div><span>02</span><strong>Policy</strong><small>Spend limits and allowlists</small></div>
+<div><span>03</span><strong>Simulation</strong><small>Pre-flight when supported</small></div>
+<div><span>04</span><strong>Authorization</strong><small>Application-verified approval for gated writes</small></div>
+<div><span>05</span><strong>Execute</strong><small>Only through a configured signing path</small></div>
 </div>
 
 <div class="docs-callout" markdown>
 <span>i</span>
-<p><strong>Designed for controlled automation.</strong> The framework is beta software. Review the [maturity policy](project-maturity.md) and [risk disclosure](../RISKS.md) before using real funds.</p>
+<p><strong>Beta software.</strong> The wallet gate fails closed, but write-path coverage is not yet uniform. Gated signing requires an application-supplied authorization provider; the current authorization digest does not bind gas limit or fee fields. Review the [safety pipeline](safety-and-transaction-pipeline.md), [maturity policy](project-maturity.md), and [risk disclosure](../RISKS.md) before using real funds.</p>
 </div>
 
 <div class="docs-rule"></div>
