@@ -1,0 +1,8 @@
+{
+  "latestBroadcastAt": 1790699967,
+  "marginSeconds": 180,
+  "mode": "REHEARSAL",
+  "receiverFloorSeconds": 120,
+  "runSheetSha256": "1b93f3a6102dde352df80d51a3d75f1cb121f74d8170aeb831a802d6abec1da2",
+  "schema": "wak-p1.go-file.v1"
+}

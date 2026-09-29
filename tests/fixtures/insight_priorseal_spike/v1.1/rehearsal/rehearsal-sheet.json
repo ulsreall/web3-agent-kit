@@ -1,0 +1,335 @@
+{
+  "evaluatedAt": 1790699252,
+  "generatedAtEpoch": 1790699252,
+  "insight": {
+    "destinationAttestation": {
+      "attester": "0x6Dd5E5EA90a24cB14F0fAd1D8538407F83C96549",
+      "attesterLabel": "Insight Oracle Safety Attestation",
+      "data": {
+        "action": "swap",
+        "checkedAt": 1790699252,
+        "consensusPrice": 100000000,
+        "coverageStatus": "SUFFICIENT",
+        "crossProviderAgreementBps": 9998,
+        "destinationAssetId": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "evaluatedAssetIdsHash": "0xbd233b502a68bb0794e36c3068049cbafa35f6fe21d0695f83718ecb9b613c04",
+        "evaluationScope": "SOURCE_ASSET_ONLY",
+        "independenceStatus": "ASSESSED",
+        "manipulationRiskBps": 100,
+        "maxDataAgeSeconds": 6,
+        "maxDeviationBps": 5,
+        "maxStablecoinDepegBps": 1,
+        "participantCount": 4,
+        "providerObservationsHash": "0x525047aa6929a823fb0942974d8c332b53f0aa4cfd371ac7bc4e12c150267b61",
+        "reasonCodesHash": "0x569e75fc77c1a856f6daaf9e69d8a9566ca34aa47f9133711ce065a571af0cfd",
+        "recommendedMaxPositionUsd": 100000000000,
+        "requestHash": "0x7c5b604b83e0f2ed7401ec21c1414b6e7795064ea2d2391db4e7d876a07e3f97",
+        "requiredParticipantCount": 3,
+        "requiredSourceGroupCount": 2,
+        "schemaVersion": 3,
+        "sourceAssetId": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "sourceGroupCount": 3,
+        "subjectChainId": 8453,
+        "tradeAmountUsd": 2500000,
+        "validUntil": 1790700147,
+        "verdict": "PASS"
+      },
+      "evidence": {
+        "providerGroups": {
+          "chainlink": "chainlink",
+          "pyth": "pyth",
+          "redstone": "redstone",
+          "uniswap_twap": "derived"
+        },
+        "providerObservations": [
+          {
+            "dataAgeSeconds": 3,
+            "exclusionReason": "",
+            "feedId": "usdc-usd:chainlink:synthetic",
+            "included": true,
+            "provider": "chainlink",
+            "timestamp": 1789639077,
+            "value": "100000000"
+          },
+          {
+            "dataAgeSeconds": 4,
+            "exclusionReason": "",
+            "feedId": "usdc-usd:pyth:synthetic",
+            "included": true,
+            "provider": "pyth",
+            "timestamp": 1789639076,
+            "value": "99990000"
+          },
+          {
+            "dataAgeSeconds": 5,
+            "exclusionReason": "",
+            "feedId": "usdc-usd:redstone:synthetic",
+            "included": true,
+            "provider": "redstone",
+            "timestamp": 1789639075,
+            "value": "100010000"
+          },
+          {
+            "dataAgeSeconds": 6,
+            "exclusionReason": "",
+            "feedId": "usdc-usd:uniswap_twap:synthetic",
+            "included": true,
+            "provider": "uniswap_twap",
+            "timestamp": 1789639074,
+            "value": "100000000"
+          }
+        ]
+      },
+      "schemaVersion": 3,
+      "signature": "89b6f85692a2ad048511c1ba9816dedba768c8ca5962746f98609d2d4d6003ed39ddb3c47ae07b96026f52927e7900cbac5f4181aaf3de56073c9298ca90f5391b",
+      "signedAt": "2026-09-29T16:27:32Z",
+      "uid": "0x6c09069059f33724a462b6fdcd0dba25f123ededb3dc41cf939a31c812e4668a",
+      "validForSeconds": 600,
+      "validUntil": 1790700147,
+      "verifyUrl": "https://www.oracleinsight.xyz/api/v1/safety/attestation/verify"
+    },
+    "executionChainId": 84532,
+    "keyRegistry": {
+      "issuer": "https://www.oracleinsight.xyz",
+      "public_keys": [
+        {
+          "algorithm": "EIP-712/secp256k1",
+          "key_id": "insight-wak-rehearsal-eip712-1",
+          "public_key": "0x6Dd5E5EA90a24cB14F0fAd1D8538407F83C96549",
+          "revoked": false,
+          "role": "attester",
+          "validFrom": "2026-09-28T16:27:32Z",
+          "validUntil": null
+        }
+      ],
+      "registryRevision": "synthetic-wak-rehearsal-1",
+      "revoked_keys": []
+    },
+    "sourceAttestation": {
+      "attester": "0x6Dd5E5EA90a24cB14F0fAd1D8538407F83C96549",
+      "attesterLabel": "Insight Oracle Safety Attestation",
+      "data": {
+        "action": "swap",
+        "checkedAt": 1790699252,
+        "consensusPrice": 250000000000,
+        "coverageStatus": "SUFFICIENT",
+        "crossProviderAgreementBps": 9996,
+        "destinationAssetId": "eip155:8453/erc20:0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "evaluatedAssetIdsHash": "0x713f5b2c3e2cc8be3eed423fa12accb87120abe8f1b6636407c07b67f9bf767a",
+        "evaluationScope": "SOURCE_ASSET_ONLY",
+        "independenceStatus": "ASSESSED",
+        "manipulationRiskBps": 100,
+        "maxDataAgeSeconds": 6,
+        "maxDeviationBps": 5,
+        "maxStablecoinDepegBps": 0,
+        "participantCount": 4,
+        "providerObservationsHash": "0xbe00c3e40a538e23a60539d9f313f4b21a8a1f26014602f27a70be5152c2d47d",
+        "reasonCodesHash": "0x569e75fc77c1a856f6daaf9e69d8a9566ca34aa47f9133711ce065a571af0cfd",
+        "recommendedMaxPositionUsd": 100000000000,
+        "requestHash": "0x5e00ed352d53b75120ce88447fc61a5cdb3bb92e2e5a51b0161a8c7b3db2ba3d",
+        "requiredParticipantCount": 3,
+        "requiredSourceGroupCount": 2,
+        "schemaVersion": 3,
+        "sourceAssetId": "eip155:8453/erc20:0x4200000000000000000000000000000000000006",
+        "sourceGroupCount": 3,
+        "subjectChainId": 8453,
+        "tradeAmountUsd": 2500000,
+        "validUntil": 1790700147,
+        "verdict": "PASS"
+      },
+      "evidence": {
+        "providerGroups": {
+          "chainlink": "chainlink",
+          "pyth": "pyth",
+          "redstone": "redstone",
+          "uniswap_twap": "derived"
+        },
+        "providerObservations": [
+          {
+            "dataAgeSeconds": 3,
+            "exclusionReason": "",
+            "feedId": "weth-usd:chainlink:synthetic",
+            "included": true,
+            "provider": "chainlink",
+            "timestamp": 1789639077,
+            "value": "250000000000"
+          },
+          {
+            "dataAgeSeconds": 4,
+            "exclusionReason": "",
+            "feedId": "weth-usd:pyth:synthetic",
+            "included": true,
+            "provider": "pyth",
+            "timestamp": 1789639076,
+            "value": "249950000000"
+          },
+          {
+            "dataAgeSeconds": 5,
+            "exclusionReason": "",
+            "feedId": "weth-usd:redstone:synthetic",
+            "included": true,
+            "provider": "redstone",
+            "timestamp": 1789639075,
+            "value": "250050000000"
+          },
+          {
+            "dataAgeSeconds": 6,
+            "exclusionReason": "",
+            "feedId": "weth-usd:uniswap_twap:synthetic",
+            "included": true,
+            "provider": "uniswap_twap",
+            "timestamp": 1789639074,
+            "value": "250025000000"
+          }
+        ]
+      },
+      "schemaVersion": 3,
+      "signature": "924916bf280fc7d5d805b1f9f023a4bb427ff71b2ee60f4d88963118c25e4bbd56dbb77578227541fa2051cc6c661dd815b379edf0543861b0303320680eb81a1b",
+      "signedAt": "2026-09-29T16:27:32Z",
+      "uid": "0xf48d02e25f8e33ce49d2d47e951228910825c6299f0d66b02ba82c7ddbc78bd3",
+      "validForSeconds": 600,
+      "validUntil": 1790700147,
+      "verifyUrl": "https://www.oracleinsight.xyz/api/v1/safety/attestation/verify"
+    },
+    "subjectChainId": 8453
+  },
+  "mode": "REHEARSAL",
+  "offChainValidity": {
+    "broadcastMarginSeconds": 180,
+    "expiresAt": 1790700147,
+    "insightValidUntil": 1790700147,
+    "latestBroadcastAt": 1790699967
+  },
+  "pairCommitment": "0x3e103e7efe73ce58c668d30985f05d8a021d24e1ecaab202afd2020ad7e31f56",
+  "priorSeal": {
+    "response": {
+      "acceptance": {
+        "acceptedAt": 1790699248,
+        "algorithm": "Ed25519",
+        "authorizationHash": "bb1aa6fb8977c5f7807e97d3d1957ae9dc04c673cb83f21a6fc2b7cb78433c64",
+        "authorizationId": "auth_7a35e105525bc027e103d22fe46e4929",
+        "domain": "priorseal/authorization-receipt/v1",
+        "entryHash": "14ab08b5fb269b84efc314f160cce527b9f43cc9474eafaa2e8cf9c8889c350f",
+        "intentHash": "0b427938121c571009715dbb6e96c9c04fbcecf39efbad37ff73aa6cf56eabaf",
+        "issuer": "priorseal.wak-rehearsal-synthetic",
+        "keyId": "priorseal-wak-rehearsal-1",
+        "previousEntryHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "schema": "priorseal.authorization-receipt.v1",
+        "sequence": 1,
+        "signature": "llnb9BPdvdRGsrnmDTPwAHdbpYP2klKFCVGVvlHB68zaVP_7Ftw41deWNzGEFCjCKDOmcEIMVoykdAwq9q65Dw",
+        "status": "ACCEPTED"
+      },
+      "authorization_id": "auth_7a35e105525bc027e103d22fe46e4929",
+      "authorizer": "0x8d70563a154e525e8dec225fa8318049270946a7",
+      "envelope_digest": "0x2c55bcc193f0533b3eba2192a04cdc632f9bf0dae8984dd34b3bdeb9b1bbc460",
+      "executor": "0x104468ac134a7ccc0493b6b253c073b2203b27d1",
+      "nonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+      "policy_commitment_digest": "0x0e756b92e24145a3dc430dfb9a88f10e2ff2801413f4f301ee7e2220222fbfbd",
+      "schema": "priorseal.wak-authorization-response.v1",
+      "signedAuthorization": {
+        "audience": "priorseal",
+        "authorizationNonce": "0x0101010101010101010101010101010101010101010101010101010101010101",
+        "authorizer": {
+          "address": "0x8d70563a154e525e8dec225fa8318049270946a7",
+          "type": "eip712"
+        },
+        "delegate": {
+          "agentId": "wak-rehearsal-agent",
+          "executor": "0x104468ac134a7ccc0493b6b253c073b2203b27d1"
+        },
+        "domain": "priorseal/authorization/v2",
+        "expiresAt": 1790700147,
+        "intent": {
+          "action": "CONTRACT_CALL",
+          "amount": "1000000000000000",
+          "asset": "eip155:84532/native",
+          "callTarget": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+          "chainId": 84532,
+          "contextCommitments": [
+            {
+              "algorithm": "sha256",
+              "digest": "0x2c55bcc193f0533b3eba2192a04cdc632f9bf0dae8984dd34b3bdeb9b1bbc460",
+              "namespace": "agent-call-envelope.v1"
+            },
+            {
+              "algorithm": "keccak256",
+              "digest": "0x3e103e7efe73ce58c668d30985f05d8a021d24e1ecaab202afd2020ad7e31f56",
+              "namespace": "insight.pretrade-pair.v1"
+            },
+            {
+              "algorithm": "sha256",
+              "digest": "0x0e756b92e24145a3dc430dfb9a88f10e2ff2801413f4f301ee7e2220222fbfbd",
+              "namespace": "web3-agent-kit.policy-decision.v1"
+            }
+          ],
+          "executionProfile": "priorseal.execution-profile.exact-call.v1",
+          "intentHash": "0b427938121c571009715dbb6e96c9c04fbcecf39efbad37ff73aa6cf56eabaf",
+          "intentId": "wak-insight-priorseal-rehearsal-v1",
+          "nonce": "0",
+          "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "schema": "priorseal.intent.v2",
+          "sender": "0x104468ac134a7ccc0493b6b253c073b2203b27d1",
+          "transactionValue": "1000000000000000",
+          "validUntil": 1790700147
+        },
+        "issuedAt": 1790699247,
+        "maxUses": "1",
+        "notBefore": 1790699247,
+        "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "principal": {
+          "account": "0x8d70563a154e525e8dec225fa8318049270946a7",
+          "id": "wak-rehearsal-principal",
+          "type": "user"
+        },
+        "schema": "priorseal.authorization.v2",
+        "signature": "1efa21e22f2d9ba2e6c17f43a380f0f3fad6533e762ce5d2cfedceceb59f889c265fc41caa8df78e4bbefe499f21138b0eb12c532990e0cb676329193621fa601c"
+      },
+      "valid_from": 1790699247,
+      "valid_until": 1790700147,
+      "verificationResult": {
+        "code": "OK",
+        "valid": true
+      }
+    }
+  },
+  "schema": "wak-p1.run-sheet.rehearsal.v1",
+  "transaction": {
+    "chainId": 84532,
+    "data": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e0000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000025f4cc0000000000000000000000000000000000000000000000000000000000000000",
+    "from": "0x104468ac134a7ccc0493b6b253c073b2203b27d1",
+    "gas": 500000,
+    "gasPrice": 30000000,
+    "nonce": "0",
+    "to": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+    "value": "1000000000000000"
+  },
+  "wak": {
+    "callEnvelope": {
+      "digest": "0x2c55bcc193f0533b3eba2192a04cdc632f9bf0dae8984dd34b3bdeb9b1bbc460",
+      "payload": {
+        "calldataHash": "0xc89fb7e892f4ca6c2b6c19722d988c4dfc0afdbfedcfbf7dcff7e046237f7426",
+        "chainId": 84532,
+        "executionProfile": "call",
+        "executor": "0x104468ac134a7ccc0493b6b253c073b2203b27d1",
+        "nativeValue": "1000000000000000",
+        "nonce": "0",
+        "schema": "agent-call-envelope.v1",
+        "target": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4"
+      }
+    },
+    "policyDecisionCommitment": {
+      "digest": "0x0e756b92e24145a3dc430dfb9a88f10e2ff2801413f4f301ee7e2220222fbfbd",
+      "payload": {
+        "callIdentity": "0x2c55bcc193f0533b3eba2192a04cdc632f9bf0dae8984dd34b3bdeb9b1bbc460",
+        "evaluatedAt": 1790699252,
+        "policyId": "wak-insight-priorseal-spike-v1",
+        "policyVersion": "1",
+        "reasonCodes": [],
+        "schema": "web3-agent-kit.policy-decision.v1",
+        "verdict": "allow"
+      }
+    },
+    "sourceVersion": "1.18.5"
+  }
+}

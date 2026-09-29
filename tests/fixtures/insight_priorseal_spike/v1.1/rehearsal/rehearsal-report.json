@@ -1,0 +1,183 @@
+{
+  "broadcast": true,
+  "callEvents": {
+    "counts": {
+      "authorizationProvider": {
+        "attempted": 1,
+        "error": 0,
+        "success": 1
+      },
+      "broadcast": {
+        "attempted": 1,
+        "error": 0,
+        "success": 1
+      },
+      "receipt": {
+        "attempted": 1,
+        "error": 0,
+        "success": 1
+      },
+      "signer": {
+        "attempted": 1,
+        "error": 0,
+        "success": 1
+      }
+    },
+    "events": [
+      {
+        "boundary": "authorizationProvider",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 1,
+        "outcome": "attempted",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "authorizationProvider",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 2,
+        "outcome": "success",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "signer",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 3,
+        "outcome": "attempted",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "signer",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 4,
+        "outcome": "success",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "broadcast",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 5,
+        "outcome": "attempted",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "broadcast",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 6,
+        "outcome": "success",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "receipt",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 7,
+        "outcome": "attempted",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      },
+      {
+        "boundary": "receipt",
+        "detail": {},
+        "durationSeconds": 0,
+        "finishedAtEpoch": 1790699252,
+        "index": 8,
+        "outcome": "success",
+        "schema": "wak-p1.call-event.v1",
+        "startedAtEpoch": 1790699252
+      }
+    ],
+    "retained": true,
+    "schema": "wak-p1.call-event-log.v1"
+  },
+  "counts": {
+    "authorizationProvider": 1,
+    "broadcast": 1,
+    "receipt": 1,
+    "signer": 1
+  },
+  "cutoffCheckSeconds": 60,
+  "goArrival": {
+    "candidatesMatched": 1,
+    "deliveryTimestampEpoch": 1790699252,
+    "deliveryTimestampIso": "2026-09-29T16:27:32Z",
+    "messageId": 90001,
+    "messageRole": "user",
+    "receiverFloorSeconds": 120,
+    "schema": "wak-p1.go-arrival-metadata.v1",
+    "source": "Hermes session store (messages table)"
+  },
+  "goArrivalRunwaySeconds": 715,
+  "mode": "REHEARSAL",
+  "outcome": "REHEARSAL_LEG_COMPLETED",
+  "preflight": {
+    "inert": true,
+    "mode": "REHEARSAL",
+    "note": "no RPC contacted"
+  },
+  "receipt": {
+    "confirmations": 2,
+    "inert": true,
+    "label": "rehearsal",
+    "polled": 0,
+    "status": "CONFIRMED",
+    "txHash": "0x4e807726eb481797a22fd3f91f5c8f7c5187aa44b1a09fc94519e86a92b2d0ad"
+  },
+  "receiverFloorSeconds": 120,
+  "rehearsal": {
+    "boundaries": {
+      "broadcast": "InertBroadcast (no eth_sendRawTransaction)",
+      "receipt": "InertReceipt (no RPC)",
+      "signer": "EvmSigner (local sign, sheet executor)"
+    },
+    "evaluatedAt": 1790699252,
+    "mode": "inert-boundary",
+    "noOnChainEffect": true,
+    "note": "REHEARSAL ONLY: fresh synthetic signed inputs, inert boundaries, no transaction was authorized or broadcast on any chain.",
+    "sheetSchema": "wak-p1.run-sheet.rehearsal.v1"
+  },
+  "runSheetSha256": "1b93f3a6102dde352df80d51a3d75f1cb121f74d8170aeb831a802d6abec1da2",
+  "runtime": {
+    "commit": "2ba8e0b9e5b2fbde6fbf692fdf95c6a22c0c4c24",
+    "packageVersion": "1.18.5",
+    "schema": "wak-p1.runtime-provenance.v1",
+    "treeClean": false
+  },
+  "runwayAtCheckSeconds": 715,
+  "schema": "wak-p1.execution-evidence.v1",
+  "signed": true,
+  "signerAddress": "0x104468Ac134a7cCC0493b6B253C073b2203b27d1",
+  "transaction": {
+    "chainId": 84532,
+    "data": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e0000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000025f4cc0000000000000000000000000000000000000000000000000000000000000000",
+    "gas": 500000,
+    "gasPrice": 30000000,
+    "nonce": 0,
+    "to": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+    "value": 1000000000000000
+  },
+  "versionAlignment": {
+    "aligned": true,
+    "fixturePinnedWakVersion": "1.18.5",
+    "runtimePackageVersion": "1.18.5",
+    "schema": "wak-p1.version-alignment.v1"
+  }
+}

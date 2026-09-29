@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import json
 import tempfile
+import time
 from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
@@ -82,6 +83,23 @@ class BoundaryCounters:
         }
 
 
+@runtime_checkable
+class BoundaryCounterSink(Protocol):
+    """Anything the gate can count through: the dataclass above, or the live recorder.
+
+    ``examples.support.insight_priorseal_live.CallEventRecorder`` implements the same
+    four integer attributes, so one object can both count and retain the event log.
+    Passing a plain ``dict`` here is the bug that raised ``AttributeError``.
+    """
+
+    authorization_provider: int
+    signer: int
+    broadcast: int
+    receipt: int
+
+    def as_report(self) -> dict[str, int]: ...
+
+
 @dataclass(frozen=True)
 class ExecutionBoundaries:
     """Injected signing, broadcast, and receipt boundaries for one attempt."""
@@ -92,7 +110,7 @@ class ExecutionBoundaries:
 
 
 class _SyntheticSigner:
-    def __init__(self, counters: BoundaryCounters) -> None:
+    def __init__(self, counters: BoundaryCounterSink) -> None:
         self._counters = counters
 
     def sign_transaction(self, transaction: Mapping[str, Any]) -> bytes:
@@ -101,7 +119,7 @@ class _SyntheticSigner:
 
 
 class _SyntheticBroadcast:
-    def __init__(self, counters: BoundaryCounters) -> None:
+    def __init__(self, counters: BoundaryCounterSink) -> None:
         self._counters = counters
 
     def __call__(self, raw_transaction: bytes) -> Mapping[str, Any]:
@@ -110,7 +128,7 @@ class _SyntheticBroadcast:
 
 
 class _SyntheticReceipt:
-    def __init__(self, counters: BoundaryCounters) -> None:
+    def __init__(self, counters: BoundaryCounterSink) -> None:
         self._counters = counters
 
     def __call__(self, broadcast_result: Mapping[str, Any]) -> Mapping[str, Any]:
@@ -132,7 +150,7 @@ BoundaryFactory = Callable[[BoundaryCounters], ExecutionBoundaries]
 
 
 class _CountingProvider:
-    def __init__(self, provider: PriorSealAuthorizationProvider, counters: BoundaryCounters) -> None:
+    def __init__(self, provider: PriorSealAuthorizationProvider, counters: BoundaryCounterSink) -> None:
         self._provider = provider
         self._counters = counters
 
@@ -141,8 +159,30 @@ class _CountingProvider:
         return self._provider.policy_id
 
     def authorize(self, context):
-        self._counters.authorization_provider += 1
-        return self._provider.authorize(context)
+        # Counter sinks that also retain events (CallEventRecorder) get a timestamped
+        # attempted/error/success trail; plain BoundaryCounters keep the old
+        # increment-on-call behavior so offline vectors are unchanged.
+        started = int(time.time())
+        recorder = getattr(self._counters, "record", None)
+        if recorder is not None:
+            recorder("authorizationProvider", "attempted", started_at=started, finished_at=started)
+        else:
+            self._counters.authorization_provider += 1
+        try:
+            result = self._provider.authorize(context)
+        except Exception as exc:
+            if recorder is not None:
+                recorder(
+                    "authorizationProvider",
+                    "error",
+                    started_at=started,
+                    finished_at=int(time.time()),
+                    detail={"error": type(exc).__name__},
+                )
+            raise
+        if recorder is not None:
+            recorder("authorizationProvider", "success", started_at=started, finished_at=int(time.time()))
+        return result
 
 
 # The agreed fixture pins this exact policy identifier. A dynamic subclass keeps
@@ -194,12 +234,13 @@ def _run_gate_attempt(
     transaction: Mapping[str, Any],
     response: Mapping[str, Any],
     trust_roots: Mapping[str, Any],
-    counters: BoundaryCounters,
+    counters: BoundaryCounterSink,
     now: int,
     acceptance_store: SQLiteAcceptanceStore | None,
     boundaries: ExecutionBoundaries,
     gate: PreSignInterceptor | None = None,
     provider: _CountingProvider | None = None,
+    live: bool = False,
 ) -> tuple[
     PreSignInterceptor,
     _CountingProvider,
@@ -223,20 +264,27 @@ def _run_gate_attempt(
         raise BoundaryError("gate/provider reconstruction mismatch")
 
     request = AuthorizationRequest(Chain.BASE_SEPOLIA, ActionType.SWAP, transaction)
-    evaluated_at = 1789639170
     try:
-        # The fixture intentionally separates policy evaluation (17:59:30) from
-        # authorization issuance (18:00:00). Rebinding the interceptor's module
-        # clock preserves the pinned policy digest while the authorization clock
-        # evaluates freshness at the case timestamp.
-        with (
-            patch(
-                "web3_agent_kit.execution.interceptor.time",
-                SimpleNamespace(time=lambda: evaluated_at),
-            ),
-            patch("web3_agent_kit.execution.authorization.time.time", return_value=now),
-        ):
+        if live:
+            # Live/rehearsal leg: the interceptor and the authorization provider read the
+            # real wall clock. No historical clock is injected -- the frozen fixture
+            # timestamps exist only for the offline N1-N5b vectors, and using them here
+            # would let a stale sheet look fresh.
             signed = current_gate.sign(request)
+        else:
+            evaluated_at = 1789639170
+            # The fixture intentionally separates policy evaluation (17:59:30) from
+            # authorization issuance (18:00:00). Rebinding the interceptor's module
+            # clock preserves the pinned policy digest while the authorization clock
+            # evaluates freshness at the case timestamp.
+            with (
+                patch(
+                    "web3_agent_kit.execution.interceptor.time",
+                    SimpleNamespace(time=lambda: evaluated_at),
+                ),
+                patch("web3_agent_kit.execution.authorization.time.time", return_value=now),
+            ):
+                signed = current_gate.sign(request)
         broadcast_result = boundaries.broadcast(signed.raw_transaction)
         receipt = boundaries.receipt(broadcast_result)
         return current_gate, current_provider, receipt, None
@@ -519,7 +567,7 @@ def run_negative_suite(
     ]
     report = {
         "schema": "wak-insight-priorseal.acceptance-report.v1",
-        "fixtureVersion": "v1",
+        "fixtureVersion": bundle.version,
         "envelopeDigest": baseline["wak"]["callEnvelope"]["digest"],
         "policyCommitmentDigest": baseline["wak"]["policyDecisionCommitment"]["digest"],
         "instrumentation": {
@@ -551,16 +599,16 @@ def write_acceptance_report(fixture_root: str | Path, output: str | Path) -> Pat
 def build_p1_row(
     *,
     live_input_sha256: str,
-    wak_version: str = "1.18.4",
+    wak_version: str = "1.18.5",
     baseline_sha256: str | None = None,
     case_input_sha256: str | None = None,
 ) -> dict[str, Any]:
     """Build the conditional P1 report row for a live Base Sepolia run.
 
-    The verifier pins the P1 row to ``wakVersion == "1.18.4"`` and to the fixture's
-    expected P1 counts (1/1/1/1). ``liveInputSha256`` must be the raw run-sheet SHA-256
-    captured at execution time, never a placeholder. The fixture identity hashes come
-    from the pinned cases.json when not supplied.
+    The verifier pins the P1 row to ``wakVersion == "1.18.5"`` (fixture v1.1) and to the
+    fixture's expected P1 counts (1/1/1/1). ``liveInputSha256`` must be the raw run-sheet
+    SHA-256 captured at execution time, never a placeholder. The fixture identity hashes
+    come from the pinned cases.json when not supplied.
     """
     import re
 
@@ -675,7 +723,10 @@ def attach_p1_and_provenance(
     runtime_tree_clean: bool | None = None,
 ) -> dict[str, Any]:
     """Append the P1 row + ``p1`` block + runtime provenance to an N1-N5b report."""
-    from examples.support.insight_priorseal_live import runtime_provenance, version_alignment
+    try:
+        from examples.support.insight_priorseal_live import runtime_provenance, version_alignment
+    except ModuleNotFoundError:  # running as examples/insight_priorseal_swap.py
+        from support.insight_priorseal_live import runtime_provenance, version_alignment
 
     out = dict(report)
     out["cases"] = [*report["cases"], dict(p1_row)]
@@ -748,11 +799,512 @@ def write_live_acceptance_report(
     return destination
 
 
+def run_live_p1(
+    *,
+    fixture_root: str | Path,
+    report: str | Path,
+    go_file: str | Path,
+    run_sheet: str | Path,
+    session_db: str | Path,
+    go_message_id: int,
+    rpc_url: str | None = None,
+    signer_env: str | None = None,
+    signer_key: str | None = None,
+    chain_id: int = 84532,
+    allow_broadcast: bool = False,
+    rehearsal: bool = False,
+    rehearsal_output_dir: str | Path | None = None,
+    cutoff_check_seconds: int = 60,
+    confirmations: int = 2,
+    receipt_timeout: int = 180,
+    poll_seconds: float = 2.0,
+    wak_commit: str | None = None,
+    call_events: str | Path | None = None,
+) -> dict[str, Any]:
+    """Run the P1 leg through this module's explicit boundary protocol.
+
+    Live mode (``allow_broadcast``) signs once with the sheet's exact signed inputs,
+    broadcasts once, and waits for confirmations. Rehearsal mode (``rehearsal``) runs
+    the identical runner path with inert broadcast/receipt boundaries so the GO
+    binding, session-store arrival, live clock, cutoff rechecks, event retention, and
+    counters can be exercised without an on-chain effect. Dry-run (neither flag) only
+    checks the GO/cutoff and writes a plan.
+
+    The runner never reports success it did not observe:
+
+    - ``signed``/``broadcast`` are derived from the actual gate result, so a denied
+      gate yields ``False``/``False`` and an error outcome -- never
+      ``LIVE_LEG_COMPLETED``.
+    - ``counts`` come from the retained call events; 1/1/1/1 appears only on a
+      successful sign+broadcast+receipt leg.
+    """
+    import hashlib
+    import os
+    import time
+
+    try:
+        from examples.support.go_arrival import GoArrivalError, query_go_messages, resolve_go_arrival
+        from examples.support.insight_priorseal_live import (
+            CallEventRecorder,
+            CutoffError,
+            EvmSigner,
+            InertBroadcast,
+            InertReceipt,
+            LiveRunConfig,
+            RpcBroadcast,
+            RpcReceipt,
+            check_cutoff,
+            check_go_arrival,
+            live_execution_boundaries,
+            runtime_provenance,
+            version_alignment,
+        )
+        from examples.support.insight_priorseal_rehearsal import generate_rehearsal_materials
+    except ModuleNotFoundError:  # running as examples/insight_priorseal_swap.py
+        from support.go_arrival import GoArrivalError, query_go_messages, resolve_go_arrival
+        from support.insight_priorseal_live import (
+            CallEventRecorder,
+            CutoffError,
+            EvmSigner,
+            InertBroadcast,
+            InertReceipt,
+            LiveRunConfig,
+            RpcBroadcast,
+            RpcReceipt,
+            check_cutoff,
+            check_go_arrival,
+            live_execution_boundaries,
+            runtime_provenance,
+            version_alignment,
+        )
+        from support.insight_priorseal_rehearsal import generate_rehearsal_materials
+
+    executing = allow_broadcast or rehearsal
+    if executing and (run_sheet is None or session_db is None or go_message_id is None):
+        raise BoundaryError(
+            "broadcast/rehearsal requires --run-sheet, --session-db, and --go-message-id "
+            "(GO arrival is read from the session store, never from the GO file)"
+        )
+
+    run_sheet_hash: str | None = None
+    sheet: dict[str, Any] = {}
+    rehearsal_materials = None
+    if rehearsal:
+        # Rehearsal first: fresh synthetic sheet + GO + session store are generated with
+        # a live validity window, and the runner binds to THAT exact sheet and hash.
+        # Align generation with the next wall-clock second so the gate's live policy
+        # evaluation lands on the same evaluatedAt the sheet pins.
+        target = int(time.time()) + 1
+        while int(time.time()) < target:
+            time.sleep(0.01)
+        rehearsal_materials = generate_rehearsal_materials(
+            fixture_root=fixture_root,
+            output_dir=rehearsal_output_dir,
+            now=int(time.time()),
+            go_message_id=int(go_message_id),
+        )
+        go = dict(rehearsal_materials.go_file)
+        sheet = rehearsal_materials.sheet
+        run_sheet_hash = hashlib.sha256(rehearsal_materials.sheet_bytes).hexdigest()
+        session_db = rehearsal_materials.session_db
+        if go_file is not None:
+            Path(go_file).write_text(json.dumps(go, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        if run_sheet is not None:
+            Path(run_sheet).write_text(rehearsal_materials.sheet_text + "\n", encoding="utf-8")
+    else:
+        go = json.loads(Path(go_file).read_text(encoding="utf-8"))
+        if not isinstance(go, Mapping):
+            raise BoundaryError("GO file must be a JSON object")
+        for field in ("latestBroadcastAt", "runSheetSha256"):
+            if field not in go:
+                raise BoundaryError(f"GO file is missing '{field}'")
+        if executing and go.get("goArrivalEpoch") is not None:
+            raise BoundaryError(
+                "GO arrival must come from the session store timestamp; "
+                "goArrivalEpoch in the GO file is not acceptable for an executing run"
+            )
+        if executing:
+            raw_sheet = Path(run_sheet).read_bytes()
+            run_sheet_hash = hashlib.sha256(raw_sheet).hexdigest()
+            if run_sheet_hash != str(go["runSheetSha256"]):
+                raise BoundaryError(
+                    f"run sheet SHA-256 {run_sheet_hash} does not match the GO file pin "
+                    f"{go['runSheetSha256']}"
+                )
+            sheet = json.loads(raw_sheet.decode("utf-8"))
+            if not isinstance(sheet, Mapping):
+                raise BoundaryError("run sheet must be a JSON object")
+
+    if executing and (session_db is None or go_message_id is None):
+        raise BoundaryError("executing runs require --session-db and --go-message-id")
+    if session_db is not None and go_message_id is not None:
+        rows = query_go_messages(session_db, message_id=int(go_message_id), role="user")
+        arrival_metadata = dict(resolve_go_arrival(rows))
+        go_arrival_epoch = int(arrival_metadata["deliveryTimestampEpoch"])
+    elif go.get("goArrivalEpoch") is not None:
+        arrival_metadata = {
+            "schema": "wak-p1.go-arrival-metadata.v1",
+            "source": "GO file (planning only; executing runs require the session store)",
+            "goArrivalEpoch": int(go["goArrivalEpoch"]),
+            "deliveryTimestampEpoch": int(go["goArrivalEpoch"]),
+            "receiverFloorSeconds": int(go.get("receiverFloorSeconds", 120)),
+            "candidatesMatched": 0,
+        }
+        go_arrival_epoch = int(go["goArrivalEpoch"])
+    else:
+        raise BoundaryError(
+            "GO arrival is required: pass --session-db + --go-message-id, or a "
+            "goArrivalEpoch in the GO file for a planning-only dry run"
+        )
+
+    bundle = FixtureBundle.load(fixture_root)
+    p1_vector = bundle.case("P1")
+    fixture_wak_version = str(p1_vector.get("wakVersion", "1.18.5"))
+    baseline = bundle.baseline
+
+    if executing:
+        transaction = dict(sheet["transaction"])
+    else:
+        transaction = dict(baseline["transaction"])
+    transaction["chainId"] = int(transaction["chainId"])
+    transaction["nonce"] = int(transaction["nonce"])
+    transaction["value"] = int(transaction["value"])
+
+    if signer_key is not None:
+        import eth_account
+
+        account = eth_account.Account.from_key(signer_key)
+    elif signer_env is not None:
+        key = os.environ.get(signer_env)
+        if not key:
+            raise BoundaryError(f"signer key environment {signer_env} is not set")
+        import eth_account
+
+        account = eth_account.Account.from_key(key)
+    elif rehearsal and rehearsal_materials is not None:
+        # Rehearsal: sign with the generated rehearsal executor key (local sign only;
+        # the raw transaction is only ever handed to the inert broadcast boundary).
+        import eth_account
+
+        account = eth_account.Account.from_key(rehearsal_materials.executor_key)
+    else:
+        raise BoundaryError("a signer key source is required (--signer-env or --signer-key)")
+    signer = EvmSigner(account)
+    if executing and str(transaction.get("from", "")).lower() != signer.address().lower():
+        raise BoundaryError(
+            f"run sheet executor {transaction.get('from')} does not match the signer "
+            f"key address {signer.address()}"
+        )
+
+    config = LiveRunConfig(
+        rpc_url=rpc_url or "http://inert-rehearsal.local",
+        chain_id=chain_id,
+        latest_broadcast_at=int(go["latestBroadcastAt"]),
+        run_sheet_sha256=str(go["runSheetSha256"]),
+        go_arrival_epoch=go_arrival_epoch,
+        receiver_floor_seconds=int(go.get("receiverFloorSeconds", 120)),
+        margin_seconds=int(go.get("marginSeconds", 180)),
+        confirmations=confirmations,
+        receipt_timeout_seconds=receipt_timeout,
+        broadcast_poll_seconds=poll_seconds,
+    )
+    go_runway = check_go_arrival(config)
+    now_runway = check_cutoff(
+        now_epoch=int(time.time()),
+        latest_broadcast_at=config.latest_broadcast_at,
+        minimum_seconds=cutoff_check_seconds,
+    )
+
+    if executing and not rehearsal:
+        plan = _rpc_preflight(rpc_url, config, signer)
+    else:
+        plan = {"inert": True, "mode": "REHEARSAL" if rehearsal else "PLAN", "note": "no RPC contacted"}
+
+    attempts: list[dict[str, Any]] = []
+    final_recorder: CallEventRecorder | None = None
+    receipt: Mapping[str, Any] | None = None
+    outcome: str | None = None
+    enforcement_error: str | None = None
+    run_error: str | None = None
+    note: str | None = None
+
+    if executing:
+        max_attempts = 3 if rehearsal else 1
+        for attempt_index in range(max_attempts):
+            recorder = CallEventRecorder()
+            if rehearsal and attempt_index > 0:
+                rehearsal_materials = generate_rehearsal_materials(
+                    fixture_root=fixture_root,
+                    output_dir=rehearsal_output_dir,
+                    now=int(time.time()),
+                    go_message_id=int(go_message_id),
+                )
+                go = dict(rehearsal_materials.go_file)
+                sheet = rehearsal_materials.sheet
+                transaction = dict(sheet["transaction"])
+                transaction["chainId"] = int(transaction["chainId"])
+                transaction["nonce"] = int(transaction["nonce"])
+                transaction["value"] = int(transaction["value"])
+                run_sheet_hash = hashlib.sha256(rehearsal_materials.sheet_bytes).hexdigest()
+                config = LiveRunConfig(
+                    rpc_url=rpc_url or "http://inert-rehearsal.local",
+                    chain_id=chain_id,
+                    latest_broadcast_at=int(go["latestBroadcastAt"]),
+                    run_sheet_sha256=str(go["runSheetSha256"]),
+                    go_arrival_epoch=go_arrival_epoch,
+                    receiver_floor_seconds=int(go.get("receiverFloorSeconds", 120)),
+                    margin_seconds=int(go.get("marginSeconds", 180)),
+                    confirmations=confirmations,
+                    receipt_timeout_seconds=receipt_timeout,
+                    broadcast_poll_seconds=poll_seconds,
+                )
+
+            if rehearsal:
+                boundaries = live_execution_boundaries(
+                    recorder=recorder,
+                    signer=signer,
+                    broadcast=InertBroadcast(),
+                    receipt=InertReceipt(confirmations=config.confirmations),
+                    config=config,
+                    cutoff_check_seconds=cutoff_check_seconds,
+                )
+                trust_roots = rehearsal_materials.trust_roots  # type: ignore[union-attr]
+            else:
+                boundaries = live_execution_boundaries(
+                    recorder=recorder,
+                    signer=signer,
+                    broadcast=RpcBroadcast(config.rpc_url),
+                    receipt=RpcReceipt(
+                        config.rpc_url,
+                        confirmations=config.confirmations,
+                        timeout=config.receipt_timeout_seconds,
+                        poll_seconds=config.broadcast_poll_seconds,
+                    ),
+                    config=config,
+                    cutoff_check_seconds=cutoff_check_seconds,
+                )
+                trust_roots = bundle.trust_roots
+
+            response = sheet["priorSeal"]["response"]
+            with tempfile.TemporaryDirectory(prefix="wak-p1-acceptance-") as directory:
+                store = SQLiteAcceptanceStore(Path(directory) / "acceptances.sqlite3")
+                try:
+                    _, _, attempt_receipt, attempt_error = _run_gate_attempt(
+                        transaction=transaction,
+                        response=response,
+                        trust_roots=trust_roots,
+                        counters=recorder,
+                        now=int(time.time()),
+                        acceptance_store=store,
+                        boundaries=boundaries,
+                        live=True,
+                    )
+                except Exception as exc:  # noqa: BLE001 - classified below
+                    attempt_receipt, attempt_error = None, f"{type(exc).__name__}: {exc}"
+                if attempt_error is not None and "covers another policy decision" in str(attempt_error) and rehearsal and attempt_index < max_attempts - 1:
+                    attempts.append(
+                        {
+                            "attempt": attempt_index + 1,
+                            "outcome": "POLICY_COMMITMENT_SKEW_RETRY",
+                            "error": attempt_error,
+                            "callEvents": recorder.as_report(),
+                            "counts": recorder.boundary_counts(),
+                        }
+                    )
+                    continue
+                final_recorder = recorder
+                receipt = attempt_receipt
+                if receipt is not None:
+                    outcome = "REHEARSAL_LEG_COMPLETED" if rehearsal else "LIVE_LEG_COMPLETED"
+                elif attempt_error is not None and "AuthorizationDenied" in str(attempt_error) or (
+                    attempt_error is not None and "EnforcementDenied" in str(attempt_error)
+                ):
+                    outcome = "ENFORCEMENT_DENIED"
+                    enforcement_error = attempt_error
+                elif attempt_error is not None:
+                    outcome = "ERROR"
+                    run_error = attempt_error
+                else:
+                    outcome = "NO_RECEIPT"
+                    run_error = "gate returned no receipt and no error"
+                break
+        if final_recorder is None:
+            final_recorder = CallEventRecorder()
+            outcome = "ERROR"
+            run_error = "all rehearsal attempts failed before a terminal outcome"
+    else:
+        final_recorder = CallEventRecorder()
+        outcome = "DRY_RUN_NO_TRANSACTION"
+        note = "GO and cutoff checks passed; no transaction signed or broadcast."
+
+    signed = bool(receipt is not None)
+    broadcast = bool(receipt is not None)
+
+    from web3_agent_kit import __version__
+
+    evidence: dict[str, Any] = {
+        "schema": "wak-p1.execution-evidence.v1",
+        "mode": "REHEARSAL" if rehearsal else ("LIVE" if allow_broadcast else "DRY_RUN"),
+        "goArrival": arrival_metadata,
+        "goArrivalRunwaySeconds": go_runway,
+        "runwayAtCheckSeconds": now_runway,
+        "receiverFloorSeconds": config.receiver_floor_seconds,
+        "cutoffCheckSeconds": cutoff_check_seconds,
+        "preflight": plan,
+        "signerAddress": signer.address(),
+        "runSheetSha256": run_sheet_hash,
+        "transaction": {k: v for k, v in transaction.items() if k != "from"},
+        "runtime": runtime_provenance(
+            package_version=__version__,
+            commit=wak_commit or _git_head(),
+            tree_clean=_git_clean(),
+        ),
+        "versionAlignment": version_alignment(
+            fixture_wak_version=fixture_wak_version,
+            runtime_package_version=__version__,
+        ),
+        "callEvents": final_recorder.as_report(),
+        "counts": final_recorder.boundary_counts(),
+        "signed": signed,
+        "broadcast": broadcast,
+        "outcome": outcome,
+    }
+    if enforcement_error is not None:
+        evidence["enforcementError"] = enforcement_error
+    if run_error is not None:
+        evidence["error"] = run_error
+    if receipt is not None:
+        evidence["receipt"] = dict(receipt)
+    if rehearsal:
+        evidence["rehearsal"] = {
+            "mode": "inert-boundary",
+            "boundaries": {
+                "signer": "EvmSigner (local sign, sheet executor)",
+                "broadcast": "InertBroadcast (no eth_sendRawTransaction)",
+                "receipt": "InertReceipt (no RPC)",
+            },
+            "noOnChainEffect": True,
+            "sheetSchema": sheet.get("schema"),
+            "evaluatedAt": sheet.get("evaluatedAt"),
+            "note": "REHEARSAL ONLY: fresh synthetic signed inputs, inert boundaries, "
+            "no transaction was authorized or broadcast on any chain.",
+        }
+        if attempts:
+            evidence["rehearsalAttempts"] = attempts
+    if not executing:
+        evidence["note"] = note
+    destination = Path(report)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if call_events is not None:
+        events_path = Path(call_events)
+        events_path.parent.mkdir(parents=True, exist_ok=True)
+        events_path.write_text(json.dumps(final_recorder.as_report(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return evidence
+
+
+def _rpc_preflight(rpc_url: str | None, config: Any, signer: Any) -> dict[str, Any]:
+    import httpx
+
+    if not rpc_url:
+        raise BoundaryError("live broadcast requires --rpc-url")
+
+    def jsonrpc(method: str, params: list[Any], *, timeout: float = 20.0) -> Any:
+        resp = httpx.post(rpc_url, json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, timeout=timeout)
+        resp.raise_for_status()
+        body = resp.json()
+        if "error" in body:
+            raise RuntimeError(f"{method} RPC error: {body['error']}")
+        return body["result"]
+
+    chain_id = int(str(jsonrpc("eth_chainId", [])), 16)
+    if chain_id != config.chain_id:
+        raise RuntimeError(f"RPC chainId {chain_id} != configured {config.chain_id}")
+    block = int(str(jsonrpc("eth_blockNumber", [])), 16)
+    nonce = int(str(jsonrpc("eth_getTransactionCount", [signer.address(), "pending"], timeout=20)), 16)
+    balance = int(str(jsonrpc("eth_getBalance", [signer.address(), "latest"], timeout=20)), 16)
+    return {"chainId": chain_id, "headBlock": block, "pendingNonce": nonce, "balanceWei": balance, "inert": False}
+
+
+def _git_head() -> str | None:
+    import subprocess
+
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(Path(__file__).resolve().parent.parent), "rev-parse", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if proc.returncode == 0:
+            return proc.stdout.strip()
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
+def _git_clean() -> bool | None:
+    import subprocess
+
+    try:
+        proc = subprocess.run(
+            ["git", "-C", str(Path(__file__).resolve().parent.parent), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+        if proc.returncode == 0:
+            return proc.stdout.strip() == ""
+    except Exception:  # noqa: BLE001
+        pass
+    return None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fixture", type=Path)
     parser.add_argument("--report", required=True, type=Path)
+    parser.add_argument("--live-p1", action="store_true", help="run the P1 leg (live or rehearsal) instead of the offline N1-N5b suite")
+    parser.add_argument("--rehearsal", action="store_true", help="inert-boundary rehearsal: same runner path, no on-chain effect")
+    parser.add_argument("--go-file", type=Path, default=None)
+    parser.add_argument("--run-sheet", type=Path, default=None)
+    parser.add_argument("--session-db", type=Path, default=None)
+    parser.add_argument("--go-message-id", type=int, default=None)
+    parser.add_argument("--rpc-url", default=None)
+    parser.add_argument("--signer-env", default=None)
+    parser.add_argument("--chain-id", type=int, default=84532)
+    parser.add_argument("--allow-broadcast", action="store_true")
+    parser.add_argument("--cutoff-check-seconds", type=int, default=60)
+    parser.add_argument("--confirmations", type=int, default=2)
+    parser.add_argument("--receipt-timeout", type=int, default=180)
+    parser.add_argument("--poll-seconds", type=float, default=2.0)
+    parser.add_argument("--wak-commit", default=None)
+    parser.add_argument("--call-events", type=Path, default=None)
+    parser.add_argument("--rehearsal-output-dir", type=Path, default=None)
     args = parser.parse_args()
+    if args.live_p1:
+        evidence = run_live_p1(
+            fixture_root=args.fixture,
+            report=args.report,
+            go_file=args.go_file,
+            run_sheet=args.run_sheet,
+            session_db=args.session_db,
+            go_message_id=args.go_message_id,
+            rpc_url=args.rpc_url,
+            signer_env=args.signer_env,
+            chain_id=args.chain_id,
+            allow_broadcast=args.allow_broadcast,
+            rehearsal=args.rehearsal,
+            rehearsal_output_dir=args.rehearsal_output_dir,
+            cutoff_check_seconds=args.cutoff_check_seconds,
+            confirmations=args.confirmations,
+            receipt_timeout=args.receipt_timeout,
+            poll_seconds=args.poll_seconds,
+            wak_commit=args.wak_commit,
+            call_events=args.call_events,
+        )
+        print(json.dumps({"report": str(args.report), "outcome": evidence.get("outcome"), "counts": evidence.get("counts")}, indent=2))
+        return 0
     write_acceptance_report(args.fixture, args.report)
     print(args.report)
     return 0

@@ -1,0 +1,14 @@
+{
+  "schema": "wak-insight-priorseal.trust-roots.v1",
+  "synthetic": true,
+  "insight": {
+    "attester": "0x7564105E977516C53bE337314c7E53838967bDaC",
+    "historicalKeyId": "insight-wak-fixture-eip712-1"
+  },
+  "priorSeal": {
+    "issuer": "priorseal.web3-agent-kit-spike-synthetic",
+    "keyId": "priorseal-wak-spike-synthetic-1",
+    "publicKeyPem": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAskkdlQKuKGMKK6yy4MdFEP/N0yjDNP8+E5PnWy0x59w=\n-----END PUBLIC KEY-----\n",
+    "publicKeySpkiSha256": "a492f11e4af1df7b9877c529f146d8820fbb27aacc98e7b15786452edaaa5fc1"
+  }
+}

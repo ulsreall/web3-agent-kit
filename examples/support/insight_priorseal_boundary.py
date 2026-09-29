@@ -768,8 +768,13 @@ class FixtureBundle:
         manifest = _read_json(directory / "fixture" / "manifest.json")
         if manifest.get("schema") != "wak-insight-priorseal.fixture-manifest.v1":
             raise BoundaryError("unsupported fixture manifest schema")
-        if manifest.get("version") != "v1":
-            raise BoundaryError("unsupported fixture version")
+        version = str(manifest.get("version"))
+        if version not in {"v1", "v1.1"}:
+            raise BoundaryError(f"unsupported fixture version: {version}")
+        archive_name, pin_name = {
+            "v1": ("2026-09-21-wak-insight-priorseal-conformance-v1.zip", "UPSTREAM_BUNDLE.sha256"),
+            "v1.1": ("2026-09-21-wak-insight-priorseal-conformance-v1.1.zip", "UPSTREAM_BUNDLE-v1.1.sha256"),
+        }[version]
 
         declared = manifest.get("files")
         if not isinstance(declared, dict):
@@ -789,8 +794,8 @@ class FixtureBundle:
             if actual != expected_hash:
                 raise BoundaryError(f"fixture hash mismatch: {relative}")
 
-        archive = directory.parent / "2026-09-21-wak-insight-priorseal-conformance-v1.zip"
-        pin_path = directory.parent / "UPSTREAM_BUNDLE.sha256"
+        archive = directory.parent / archive_name
+        pin_path = directory.parent / pin_name
         if not archive.is_file() or not pin_path.is_file():
             raise BoundaryError("pinned archive and SHA-256 file are required")
         pinned_hash = pin_path.read_text(encoding="ascii").split()[0]

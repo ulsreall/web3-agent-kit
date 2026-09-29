@@ -13,6 +13,7 @@ from examples.insight_priorseal_swap import (
     attach_p1_and_provenance,
     build_p1_block,
     build_p1_row,
+    run_live_p1,
     run_negative_suite,
     validate_p1_evidence,
     write_live_acceptance_report,
@@ -232,6 +233,7 @@ def test_attach_p1_and_provenance_with_real_evidence():
         live_input_sha256="ddc9068d14e6b6a50ecbb31c830bc8ef47d856d2f7da2773d61320da6e7cad17",
         baseline_sha256="799fc12b3ee0bcd8780e3b03361c80c179415f2cabaacb22dc42c077c471a64f",
         case_input_sha256="a115dc57d55a9c7bb795e58a06b6a74fc0ed9d2553144b1c4e3e9ed2f7e0fe61",
+        wak_version="1.18.4",  # this test consumes the v1 fixture, which pins 1.18.4
     )
     p1_block = build_p1_block(
         receipt=evidence["receipt"],
@@ -252,6 +254,52 @@ def test_attach_p1_and_provenance_with_real_evidence():
     assert full["versionAlignment"]["aligned"] is False  # deliberate: fixture pins 1.18.4
     assert full["cases"][-1]["id"] == "P1"
     validate_p1_evidence(full)
+
+
+def test_rehearsal_full_runner_path(tmp_path):
+    """Exercise the real entry point's live runner with inert boundaries.
+
+    Regression guard for YuTao's flagged gaps: the runner must bind the GO to the exact
+    fresh sheet and hash, read arrival from the session store, use the sheet's signed
+    inputs and the live clock, retain timestamped boundary events including failures,
+    and report 1/1/1/1 only on a successful inert leg.
+    """
+    v11 = Path(__file__).parent / "fixtures" / "insight_priorseal_spike" / "v1.1"
+    out = tmp_path / "rehearsal"
+    out.mkdir()
+    evidence = run_live_p1(
+        fixture_root=v11,
+        report=out / "rehearsal-report.json",
+        go_file=out / "go.json",
+        run_sheet=out / "sheet.json",
+        session_db=out / "go.db",
+        go_message_id=90001,
+        rpc_url=None,
+        chain_id=84532,
+        allow_broadcast=False,
+        rehearsal=True,
+        rehearsal_output_dir=out,
+        cutoff_check_seconds=60,
+        call_events=out / "call-events.json",
+    )
+    assert evidence["outcome"] == "REHEARSAL_LEG_COMPLETED"
+    assert evidence["counts"] == {
+        "authorizationProvider": 1,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1,
+    }
+    assert evidence["signed"] is True and evidence["broadcast"] is True
+    # GO arrival is read from the session store, not from the GO file.
+    assert evidence["goArrival"]["source"].startswith("Hermes session store")
+    assert evidence["goArrival"]["messageId"] == 90001
+    # The run sheet hash is bound in the GO and the report.
+    assert evidence["runSheetSha256"] == json.loads((out / "go.json").read_text())["runSheetSha256"]
+    # Every boundary retains a timestamped attempted + success pair (no failures).
+    boundaries = {e["boundary"] for e in evidence["callEvents"]["events"]}
+    assert boundaries == {"authorizationProvider", "signer", "broadcast", "receipt"}
+    assert all(e["outcome"] != "error" for e in evidence["callEvents"]["events"])
+    assert (out / "call-events.json").exists()
 
 
 def test_write_live_acceptance_report(tmp_path):

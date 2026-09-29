@@ -1,0 +1,108 @@
+{
+  "counts": {
+    "authorizationProvider": {
+      "attempted": 1,
+      "error": 0,
+      "success": 1
+    },
+    "broadcast": {
+      "attempted": 1,
+      "error": 0,
+      "success": 1
+    },
+    "receipt": {
+      "attempted": 1,
+      "error": 0,
+      "success": 1
+    },
+    "signer": {
+      "attempted": 1,
+      "error": 0,
+      "success": 1
+    }
+  },
+  "events": [
+    {
+      "boundary": "authorizationProvider",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 1,
+      "outcome": "attempted",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "authorizationProvider",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 2,
+      "outcome": "success",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "signer",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 3,
+      "outcome": "attempted",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "signer",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 4,
+      "outcome": "success",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "broadcast",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 5,
+      "outcome": "attempted",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "broadcast",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 6,
+      "outcome": "success",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "receipt",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 7,
+      "outcome": "attempted",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    },
+    {
+      "boundary": "receipt",
+      "detail": {},
+      "durationSeconds": 0,
+      "finishedAtEpoch": 1790699252,
+      "index": 8,
+      "outcome": "success",
+      "schema": "wak-p1.call-event.v1",
+      "startedAtEpoch": 1790699252
+    }
+  ],
+  "retained": true,
+  "schema": "wak-p1.call-event-log.v1"
+}

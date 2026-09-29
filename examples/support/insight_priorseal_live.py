@@ -47,11 +47,27 @@ class CallEventRecorder:
     The recorder is intentionally minimal and thread-safe for a single attempt: it
     appends to a list under a lock and never mutates previously recorded events, so the
     exported call log is append-only evidence.
+
+    The recorder also doubles as the module's :class:`BoundaryCounters` object so the
+    gate helper can count authorization/sign/broadcast/receipt calls through the same
+    instance that retains the event log -- the runner never passes a bare dictionary
+    where the gate expects a counter object.
     """
+
+    _BOUNDARY_FIELDS = {
+        "authorizationProvider": "authorization_provider",
+        "signer": "signer",
+        "broadcast": "broadcast",
+        "receipt": "receipt",
+    }
 
     def __init__(self) -> None:
         self._events: list[dict[str, Any]] = []
         self._sequence = 0
+        self.authorization_provider = 0
+        self.signer = 0
+        self.broadcast = 0
+        self.receipt = 0
 
     def record(
         self,
@@ -88,6 +104,35 @@ class CallEventRecorder:
         for ev in self._events:
             per[ev["boundary"]][ev["outcome"]] += 1
         return per
+
+    def boundary_counts(self) -> dict[str, int]:
+        """The flat ``BoundaryCounters.as_report`` shape derived from retained events.
+
+        ``authorizationProvider`` counts authorize() calls (attempted events -- the
+        gate may legitimately deny during authorization, and the offline vectors count
+        that call). ``signer``/``broadcast``/``receipt`` count successful boundary
+        calls, so 1/1/1/1 appears only when a full sign+broadcast+receipt leg actually
+        succeeded -- a run denied before signing reports 1/0/0/0, never the reverse.
+        """
+        attempts = sum(
+            1
+            for ev in self._events
+            if ev["boundary"] == "authorizationProvider" and ev["outcome"] == "attempted"
+        )
+        successful = {
+            boundary: sum(
+                1
+                for ev in self._events
+                if ev["boundary"] == boundary and ev["outcome"] == "success"
+            )
+            for boundary in ("signer", "broadcast", "receipt")
+        }
+        return {
+            "authorizationProvider": attempts,
+            "signer": successful["signer"],
+            "broadcast": successful["broadcast"],
+            "receipt": successful["receipt"],
+        }
 
     def as_report(self) -> dict[str, Any]:
         return {
@@ -153,6 +198,12 @@ class EvmSigner:
                 tx[key] = int(tx[key])
         if "data" in tx and tx["data"] is None:
             tx["data"] = b""
+        if "to" in tx:
+            # eth_account validates `to` as a checksummed address and rejects
+            # all-lowercase hex; the run sheet may carry a lowercase target.
+            import eth_utils
+
+            tx["to"] = eth_utils.to_checksum_address(str(tx["to"]))
         signed = self._account.sign_transaction(tx)
         return bytes(signed.raw_transaction)
 
@@ -223,6 +274,51 @@ class RpcReceipt:
         raise TimeoutError(f"receipt not confirmed within {self._timeout:.0f}s (polled {polled}x)")
 
 
+class InertBroadcast:
+    """Broadcast boundary with no network effect (rehearsal only).
+
+    Implements the same :class:`BroadcastFn` contract as :class:`RpcBroadcast` but
+    derives a deterministic inert tx hash from the raw transaction and never touches an
+    RPC endpoint. Used exclusively for the inert-boundary rehearsal so the runner path
+    (GO binding, cutoff guards, event retention, counters) is exercised without an
+    on-chain side effect.
+    """
+
+    def __init__(self, *, label: str = "rehearsal") -> None:
+        self._label = label
+
+    def __call__(self, raw_transaction: bytes) -> Mapping[str, Any]:
+        import hashlib
+
+        payload = raw_transaction if isinstance(raw_transaction, bytes) else bytes.fromhex(str(raw_transaction))
+        tx_hash = "0x" + hashlib.sha256(payload).hexdigest()
+        return {
+            "txHash": tx_hash,
+            "rawLength": len(payload),
+            "method": "INERT",
+            "inert": True,
+            "label": self._label,
+        }
+
+
+class InertReceipt:
+    """Receipt boundary with no network effect (rehearsal only)."""
+
+    def __init__(self, *, label: str = "rehearsal", confirmations: int = 2) -> None:
+        self._label = label
+        self._confirmations = max(1, int(confirmations))
+
+    def __call__(self, broadcast_result: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {
+            "status": "CONFIRMED",
+            "txHash": broadcast_result["txHash"],
+            "confirmations": self._confirmations,
+            "polled": 0,
+            "inert": True,
+            "label": self._label,
+        }
+
+
 # -- cutoff guards and GO checks ----------------------------------------------
 
 
@@ -272,7 +368,9 @@ class _CutoffGuarded:
 
     ``sign`` guards the signer; ``broadcast`` guards the broadcaster. Both re-check the
     live clock against ``latest_broadcast_at`` so a late GO cannot slip past sign or
-    broadcast without a fresh error being raised (and recorded).
+    broadcast without a fresh error being raised (and recorded). A guard block is
+    retained as a failed attempt on that boundary (``attempted`` + ``error`` events) so
+    the call-event log includes failures, not only successes.
     """
 
     def __init__(
@@ -284,16 +382,41 @@ class _CutoffGuarded:
         *,
         minimum_seconds: int,
     ) -> None:
+        self._boundary = boundary
+        self._recorder = recorder
         self._inner = _RecordingBoundary(boundary, recorder, fn)
         self._config = config
         self._minimum = minimum_seconds
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        check_cutoff(
-            now_epoch=_now(),
-            latest_broadcast_at=self._config.latest_broadcast_at,
-            minimum_seconds=self._minimum,
-        )
+        started = _now()
+        try:
+            check_cutoff(
+                now_epoch=_now(),
+                latest_broadcast_at=self._config.latest_broadcast_at,
+                minimum_seconds=self._minimum,
+            )
+        except CutoffError as exc:
+            finished = _now()
+            self._recorder.record(
+                self._boundary,
+                "attempted",
+                started_at=started,
+                finished_at=started,
+            )
+            self._recorder.record(
+                self._boundary,
+                "error",
+                started_at=started,
+                finished_at=finished,
+                detail={
+                    "error": "CutoffError",
+                    "runwaySeconds": int(self._config.latest_broadcast_at) - finished,
+                    "minimumSeconds": self._minimum,
+                    "message": str(exc),
+                },
+            )
+            raise
         return self._inner(*args, **kwargs)
 
     def sign_transaction(self, transaction: Mapping[str, Any]) -> bytes:
