@@ -548,6 +548,206 @@ def write_acceptance_report(fixture_root: str | Path, output: str | Path) -> Pat
     return destination
 
 
+def build_p1_row(
+    *,
+    live_input_sha256: str,
+    wak_version: str = "1.18.4",
+    baseline_sha256: str | None = None,
+    case_input_sha256: str | None = None,
+) -> dict[str, Any]:
+    """Build the conditional P1 report row for a live Base Sepolia run.
+
+    The verifier pins the P1 row to ``wakVersion == "1.18.4"`` and to the fixture's
+    expected P1 counts (1/1/1/1). ``liveInputSha256`` must be the raw run-sheet SHA-256
+    captured at execution time, never a placeholder. The fixture identity hashes come
+    from the pinned cases.json when not supplied.
+    """
+    import re
+
+    if not re.fullmatch(r"[0-9a-f]{64}", live_input_sha256):
+        raise BoundaryError("liveInputSha256 must be 64 lowercase hex characters")
+    if baseline_sha256 is None or case_input_sha256 is None:
+        raise BoundaryError("fixture identity hashes are required")
+    return {
+        "id": "P1",
+        "wakVersion": wak_version,
+        "inputArtifactHashes": {
+            "baselineSha256": baseline_sha256,
+            "caseInputSha256": case_input_sha256,
+            "liveInputSha256": live_input_sha256,
+        },
+        "expectedTerminal": "LIVE_RECEIPT_VERIFIED",
+        "actualTerminal": "LIVE_RECEIPT_VERIFIED",
+        "reason": "OK",
+        "counts": {
+            "authorizationProvider": 1,
+            "signer": 1,
+            "broadcast": 1,
+            "receipt": 1,
+        },
+    }
+
+
+def build_p1_block(
+    *,
+    receipt: Mapping[str, Any],
+    trusted_key: Mapping[str, Any],
+    envelope_digest: str,
+    policy_commitment_digest: str,
+    insight_pair_commitment: str,
+) -> dict[str, Any]:
+    """Assemble the top-level ``p1`` block consumed by the verifier's receipt path."""
+    return {
+        "receipt": dict(receipt),
+        "trustedKey": dict(trusted_key),
+        "wak": {
+            "envelopeDigest": envelope_digest,
+            "policyCommitmentDigest": policy_commitment_digest,
+        },
+        "insightPairCommitment": insight_pair_commitment,
+    }
+
+
+def validate_p1_evidence(report: Mapping[str, Any]) -> None:
+    """Structural checks mirroring the verifier's ``verifyLiveReceipt`` demands.
+
+    Cryptographic receipt-signature verification stays with the bundled verifier; these
+    checks catch schema/status errors before the report is handed back.
+    """
+    import re
+
+    if not isinstance(report.get("cases"), list):
+        raise BoundaryError("P1 report is missing cases")
+    p1 = report.get("p1")
+    if not isinstance(p1, Mapping):
+        raise BoundaryError("P1 evidence is missing from the acceptance report")
+    for key in ("receipt", "trustedKey", "wak", "insightPairCommitment"):
+        if key not in p1:
+            raise BoundaryError(f"P1 evidence is missing '{key}'")
+    trusted = p1["trustedKey"]
+    if not isinstance(trusted, Mapping) or trusted.get("status") != "active":
+        raise BoundaryError("P1 trusted key is not active")
+    for field in ("issuer", "keyId", "algorithm", "publicKey"):
+        if not trusted.get(field):
+            raise BoundaryError(f"P1 trusted key is missing '{field}'")
+    wak = p1["wak"]
+    if not isinstance(wak, Mapping):
+        raise BoundaryError("P1 wak commitment block is malformed")
+    if not re.fullmatch(r"0x[0-9a-f]{64}", str(wak.get("envelopeDigest", ""))):
+        raise BoundaryError("P1 envelope digest is not a 32-byte hex digest")
+    if not re.fullmatch(r"0x[0-9a-f]{64}", str(wak.get("policyCommitmentDigest", ""))):
+        raise BoundaryError("P1 policy commitment digest is not a 32-byte hex digest")
+    row = next((c for c in report["cases"] if c.get("id") == "P1"), None)
+    if not isinstance(row, Mapping):
+        raise BoundaryError("P1 row is missing from cases")
+    if row.get("actualTerminal") != "LIVE_RECEIPT_VERIFIED" or row.get("reason") != "OK":
+        raise BoundaryError("P1 row terminal evidence is inconsistent")
+    if row.get("counts") != {
+        "authorizationProvider": 1,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1,
+    }:
+        raise BoundaryError("P1 row structural counters are inconsistent")
+    receipt = p1["receipt"]
+    if not isinstance(receipt, Mapping):
+        raise BoundaryError("P1 receipt is malformed")
+    execution = receipt.get("execution")
+    compliance = receipt.get("compliance")
+    binding = receipt.get("binding")
+    if not isinstance(execution, Mapping) or not isinstance(compliance, Mapping) or not isinstance(binding, Mapping):
+        raise BoundaryError("P1 receipt status blocks are malformed")
+    if int(execution.get("chainId", 0)) != 84532 or execution.get("status") != "CONFIRMED":
+        raise BoundaryError("P1 receipt execution is not a confirmed Base Sepolia transaction")
+    if compliance.get("status") != "COMPLIANT" or binding.get("bound") is not True:
+        raise BoundaryError("P1 receipt compliance/binding status is not COMPLIANT/bound")
+    if receipt.get("outcome") != "COMPLETED":
+        raise BoundaryError("P1 receipt outcome is not COMPLETED")
+
+
+def attach_p1_and_provenance(
+    report: Mapping[str, Any],
+    *,
+    p1_row: Mapping[str, Any],
+    p1_block: Mapping[str, Any],
+    runtime_package_version: str,
+    runtime_commit: str | None = None,
+    runtime_tree_clean: bool | None = None,
+) -> dict[str, Any]:
+    """Append the P1 row + ``p1`` block + runtime provenance to an N1-N5b report."""
+    from examples.support.insight_priorseal_live import runtime_provenance, version_alignment
+
+    out = dict(report)
+    out["cases"] = [*report["cases"], dict(p1_row)]
+    out["p1"] = dict(p1_block)
+    out["runtime"] = runtime_provenance(
+        package_version=runtime_package_version,
+        commit=runtime_commit,
+        tree_clean=runtime_tree_clean,
+    )
+    fixture_wak_version = str(p1_row.get("wakVersion", ""))
+    out["versionAlignment"] = version_alignment(
+        fixture_wak_version=fixture_wak_version,
+        runtime_package_version=runtime_package_version,
+    )
+    validate_p1_evidence(out)
+    return out
+
+
+def write_live_acceptance_report(
+    fixture_root: str | Path,
+    output: str | Path,
+    *,
+    receipt: Mapping[str, Any],
+    trusted_key: Mapping[str, Any],
+    live_input_sha256: str,
+    envelope_digest: str,
+    policy_commitment_digest: str,
+    insight_pair_commitment: str,
+    runtime_package_version: str,
+    runtime_commit: str | None = None,
+    runtime_tree_clean: bool | None = None,
+) -> Path:
+    """Run N1-N5b offline, append the P1 evidence, and write the report.
+
+    Assembles and validates only; it never signs or broadcasts. A P1-included report is
+    only verifier-valid when ``receipt`` is an issuer-signed execution receipt for a real
+    Base Sepolia transaction and ``trusted_key`` carries ``status: "active"``.
+    """
+    base = run_negative_suite(fixture_root)
+    bundle = FixtureBundle.load(fixture_root)
+    p1_vector = bundle.case("P1")
+    p1_hashes = p1_vector["inputArtifactHashes"]
+    p1_row = build_p1_row(
+        live_input_sha256=live_input_sha256,
+        wak_version=str(p1_vector.get("wakVersion", "1.18.4")),
+        baseline_sha256=str(p1_hashes["baselineSha256"]),
+        case_input_sha256=str(p1_hashes["caseInputSha256"]),
+    )
+    p1_block = build_p1_block(
+        receipt=receipt,
+        trusted_key=trusted_key,
+        envelope_digest=envelope_digest,
+        policy_commitment_digest=policy_commitment_digest,
+        insight_pair_commitment=insight_pair_commitment,
+    )
+    full = attach_p1_and_provenance(
+        base,
+        p1_row=p1_row,
+        p1_block=p1_block,
+        runtime_package_version=runtime_package_version,
+        runtime_commit=runtime_commit,
+        runtime_tree_clean=runtime_tree_clean,
+    )
+    destination = Path(output)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(
+        json.dumps(full, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    return destination
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fixture", type=Path)

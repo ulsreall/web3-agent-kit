@@ -1,0 +1,165 @@
+{
+  "insightPairCommitment": "0x698b34f7e4bf039509e9567c4aa52247f65925409d69dd017e38da88f1e7dfc8",
+  "receipt": {
+    "algorithm": "Ed25519",
+    "authorizationEvidence": {
+      "acceptance": {
+        "acceptedAt": 1790438594,
+        "algorithm": "Ed25519",
+        "authorizationHash": "c104c4e2ef5a6b1570599f373e7a50e324085976f90268efe4bffaf2c2dd0632",
+        "authorizationId": "auth_b355740cd519e9884bda77aba7f1246f",
+        "domain": "priorseal/authorization-receipt/v1",
+        "entryHash": "acc2dd4280c3bd6cf4a381018fbeb90c8c8dc336039d5fa01491195d50c82d07",
+        "intentHash": "b7f16883c384e84d416d0c53e7183df905e1dc442126abbd9faa20e9d277dfbe",
+        "issuer": "priorseal-local",
+        "keyId": "default",
+        "previousEntryHash": null,
+        "schema": "priorseal.authorization-receipt.v1",
+        "sequence": 1,
+        "signature": "Nqf0mQNsxJNmsI_RdKjaV5ebt00FlZ53xu5cT9VFJeL6eWFMG5WS2bOIqZk-Nrji8wnBwMubkOSB_2soM-zrDg",
+        "status": "ACCEPTED"
+      },
+      "authorization": {
+        "audience": "priorseal",
+        "authorizationId": "auth_b355740cd519e9884bda77aba7f1246f",
+        "authorizationNonce": "0x2cd576cc4428d4abb40f511f4757ef38037236e6afe749148b0f9a41a7a3c21b",
+        "authorizer": {
+          "address": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+          "type": "eip712"
+        },
+        "delegate": {
+          "agentId": "web3-agent-kit-p1",
+          "executor": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc"
+        },
+        "domain": "priorseal/authorization/v2",
+        "expiresAt": 1790440382,
+        "intent": {
+          "action": "CONTRACT_CALL",
+          "amount": "1000000000000",
+          "asset": "eip155:84532/native",
+          "callTarget": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "calldataHash": "0xd3e10b2edd757d7ef1af7361ac3eee944cb0eb2b6f552128b8529c88382cd0ea",
+          "chainId": 84532,
+          "constraints": {
+            "maxGasUsed": "165596",
+            "minConfirmations": 2
+          },
+          "contextCommitments": [
+            {
+              "algorithm": "sha256",
+              "digest": "0x8eb17eef456d28d7d20c76c3ec1947638bbbe4c9cee93b839fbc9a3d5aa5e0cc",
+              "namespace": "agent-call-envelope.v1"
+            },
+            {
+              "algorithm": "keccak256",
+              "digest": "0x698b34f7e4bf039509e9567c4aa52247f65925409d69dd017e38da88f1e7dfc8",
+              "namespace": "insight.pretrade-pair.v1"
+            },
+            {
+              "algorithm": "sha256",
+              "digest": "0xc06642e44e6215217d26e57cdc8cb5cb0325dcf2cdfb0aaf7badeb9c3fb9c719",
+              "namespace": "web3-agent-kit.policy-decision.v1"
+            }
+          ],
+          "executionProfile": "priorseal.execution-profile.exact-call.v1",
+          "intentHash": "b7f16883c384e84d416d0c53e7183df905e1dc442126abbd9faa20e9d277dfbe",
+          "intentId": "wak-p1-1790438594",
+          "nonce": "271",
+          "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+          "schema": "priorseal.intent.v2",
+          "sender": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+          "transactionValue": "1000000000000",
+          "validUntil": 1790440382
+        },
+        "intentHash": "b7f16883c384e84d416d0c53e7183df905e1dc442126abbd9faa20e9d277dfbe",
+        "issuedAt": 1790438594,
+        "maxUses": "1",
+        "notBefore": 1790438594,
+        "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "principal": {
+          "account": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+          "id": "public-hardhat-test-account-5",
+          "type": "user"
+        },
+        "schema": "priorseal.authorization.v2",
+        "signature": "0x1782881f9733c96616f62319eac2b8d410951ee644addc996dbd801ee2c63c767f7ca949aa665708ac0ee445aa333f06485a3dad4e63685ff5c1419e81bdc6311c"
+      },
+      "policy": {
+        "document": null,
+        "policyHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "result": {
+          "allowed": true,
+          "evaluatedAt": 1790438594,
+          "policyId": null,
+          "reasonCodes": []
+        },
+        "schema": "priorseal.policy-evidence.v1"
+      }
+    },
+    "authorizationHash": "c104c4e2ef5a6b1570599f373e7a50e324085976f90268efe4bffaf2c2dd0632",
+    "binding": {
+      "bound": true,
+      "reasonCodes": []
+    },
+    "compliance": {
+      "reasonCodes": [],
+      "schema": "priorseal.compliance-assessment.v1",
+      "status": "COMPLIANT"
+    },
+    "domain": "priorseal/execution-receipt/v3",
+    "execution": {
+      "action": "CONTRACT_CALL",
+      "amount": "1000000000000",
+      "asset": "eip155:84532/native",
+      "blockHash": "0xd33a127c845ea8fe715e6b364756a2de94a9b9a4ab1413ad933defec6698c6d8",
+      "blockNumber": 47335822,
+      "calldataHash": "0xd3e10b2edd757d7ef1af7361ac3eee944cb0eb2b6f552128b8529c88382cd0ea",
+      "chainId": 84532,
+      "confirmations": 2155,
+      "executedAt": 1790439932,
+      "executionDataAvailable": true,
+      "fee": "681906000000",
+      "finalityState": "CONFIRMED",
+      "gasUsed": "113651",
+      "nativeValue": "1000000000000",
+      "nonce": "271",
+      "observationSource": "base-sepolia-public-rpc",
+      "observedAt": 1790444240,
+      "recipient": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+      "schema": "priorseal.execution-observation.v1",
+      "sender": "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc",
+      "status": "CONFIRMED",
+      "target": "0x94cc0aac535ccdb3c01d6787d6413c739ae12bc4",
+      "tokenValue": null,
+      "transferMatchUnique": false,
+      "transfers": [],
+      "txHash": "0xb9cdf709c7f3b3628a9f0b7a709034cd6ed6dc9a24bb7edcbf491d00b73b912c"
+    },
+    "executionHash": "f38954827d9fd6e291e0c288c5d342bf21c438cbe9b1135e15a532b14dee82e4",
+    "executionStatus": "CONFIRMED",
+    "intentHash": "b7f16883c384e84d416d0c53e7183df905e1dc442126abbd9faa20e9d277dfbe",
+    "issuedAt": 1790444240,
+    "issuer": "priorseal-local",
+    "keyId": "default",
+    "outcome": "COMPLETED",
+    "reasonCodes": [],
+    "receiptId": "psr_ada9b949edd51c5429e1f289f0f2ddbf",
+    "schema": "priorseal.execution-receipt.v3",
+    "signature": "RGm_KTc2tdqA72fA0khdpBqvJvusxWRkV97Sks7bG7xCumrXzmKR0fLOXW1H1v3guntUSWNQC7Mg3TusKYaMCQ",
+    "validUntil": 1790440382,
+    "verifierVersion": "3.0.0"
+  },
+  "trustedKey": {
+    "algorithm": "Ed25519",
+    "issuer": "priorseal-local",
+    "keyId": "default",
+    "publicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEAaOqZ+cGZ4TP4ko/d5gHEKz0e9sN54DMx2xclAJxqVNQ=\n-----END PUBLIC KEY-----\n",
+    "status": "active",
+    "validFrom": 1790438593,
+    "validUntil": null
+  },
+  "wak": {
+    "envelopeDigest": "0x8eb17eef456d28d7d20c76c3ec1947638bbbe4c9cee93b839fbc9a3d5aa5e0cc",
+    "policyCommitmentDigest": "0xc06642e44e6215217d26e57cdc8cb5cb0325dcf2cdfb0aaf7badeb9c3fb9c719"
+  }
+}

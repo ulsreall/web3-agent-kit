@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.18.5](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.4...v1.18.5) (2026-09-29)
+
+### Features
+
+* **chains:** register Base Sepolia (84532) as a first-class `Chain` member — enum value
+  `base-sepolia`, default RPC `https://sepolia.base.org`, `CHAIN_IDS` entry `84532`, and the
+  BaseScan Sepolia explorer URL. Registered so the Insight/PriorSeal conformance spike can
+  evaluate a Base Sepolia call through the same chain-validated `CallEnvelopeV1.from_transaction`
+  gate as every other chain; previously the gate rejected `84532` outright because the enum had
+  no member for it.
+* **examples:** bounded WAK / Insight / PriorSeal conformance spike — WAK-owned JSON boundary,
+  offline N1–N5b acceptance harness, live-boundary and call-event retention support, and the
+  vendored v1 conformance bundle ([#90](https://github.com/ulsreall/web3-agent-kit/pull/90)).
+
+### Build
+
+* add `cryptography>=41.0.0` to runtime dependencies (Ed25519 receipt/attestation verification
+  used by the spike boundary).
+
+### Fixed
+
+* **examples:** the acceptance report now records runtime provenance (`runtime.packageVersion`,
+  commit, tree state) alongside the fixture-pinned `wakVersion` and states whether the two agree.
+  The verifier pins `wakVersion` to the agreed conformance identity (v1 fixture, `1.18.4`), so a
+  report produced by a tree carrying unreleased core changes was previously indistinguishable
+  from one produced by the released tag. The isolated core-change diff for review lives at
+  `docs/review/1.18.5-core-change-base-sepolia.patch`.
+
 ## [1.18.4](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.3...v1.18.4) (2026-09-19)
 
 
