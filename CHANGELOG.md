@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+* **examples (Insight/PriorSeal spike):** v1.1 conformance re-pin — every case row now
+  pins WAK 1.18.5 (the released 1.18.4 tag cannot identify a new Base Sepolia P1 run).
+  The v1.1 bundle (archive SHA-256
+  `fe62544ba3ddcb0f898dbd89116f64b758494dc9e48a11e5bd4f0037b98d55df`) is vendored under
+  `tests/fixtures/insight_priorseal_spike/v1.1` with a per-version pin
+  (`UPSTREAM_BUNDLE-v1.1.sha256`), and `FixtureBundle.load` derives archive/pin names from
+  the manifest so v1 and v1.1 bundles coexist.
+* **examples (live P1 runner):** the P1 leg now routes through
+  `examples/insight_priorseal_swap.py run_live_p1` with the live SignerProtocol,
+  BroadcastFn, and ReceiptFn implementations. The runner binds the GO to the exact fresh
+  sheet and hash, reads GO arrival from the Hermes session store (a `goArrivalEpoch` in
+  the GO file is rejected for executing runs), uses the sheet's signed inputs and the live
+  clock, and rechecks the broadcast cutoff immediately before signing and before
+  broadcasting. Boundary counters derive from retained call events — 1/1/1/1 appears only
+  on a successful run, and a denied run reports 1/0/0/0.
+* **examples (call-event retention):** `CallEventRecorder` retains timestamped
+  attempted/success/error events at every boundary (authorization, sign, broadcast,
+  receipt), including failures; guard-failure events are recorded instead of dropped.
+* **examples (rehearsal):** new `examples/support/insight_priorseal_rehearsal.py`
+  generates fresh synthetic signed inputs (rehearsal-only keys, never persisted) and the
+  runner executes the full path with inert broadcast/receipt boundaries
+  (`REHEARSAL_LEG_COMPLETED`, no on-chain effect). Inert rehearsal report and call-event
+  log are committed under `tests/fixtures/insight_priorseal_spike/v1.1/rehearsal/`.
+* `examples/insight_priorseal_live_p1.py` is now a thin CLI over the canonical entry
+  point; `--rehearsal` runs the inert-boundary leg from the same code path.
+
+### Fixed
+
+* **examples (signer):** `EvmSigner` normalizes the target to a checksummed address —
+  `eth_account` rejects all-lowercase `to` values with `Transaction had invalid fields`.
+* **tests:** new `test_rehearsal_full_runner_path` regression covers the full live-runner
+  path (GO binding, session-store arrival, inert boundaries, 1/1/1/1); the focused spike
+  + live suites pass 76 tests.
+
 ## [1.18.5](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.4...v1.18.5) (2026-09-29)
 
 ### Features

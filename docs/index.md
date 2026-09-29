@@ -1,7 +1,7 @@
 <div class="docs-hero" markdown>
 <div class="docs-hero-copy" markdown>
 
-<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.18.4</p>
+<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.18.5</p>
 
 # Build agents that can actually execute.
 

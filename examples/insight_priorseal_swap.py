@@ -771,7 +771,7 @@ def write_live_acceptance_report(
     p1_hashes = p1_vector["inputArtifactHashes"]
     p1_row = build_p1_row(
         live_input_sha256=live_input_sha256,
-        wak_version=str(p1_vector.get("wakVersion", "1.18.4")),
+        wak_version=str(p1_vector.get("wakVersion", "1.18.5")),
         baseline_sha256=str(p1_hashes["baselineSha256"]),
         case_input_sha256=str(p1_hashes["caseInputSha256"]),
     )

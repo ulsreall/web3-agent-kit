@@ -1,5 +1,6 @@
 web3>=6.0.0
 eth-account>=0.10.0
+cryptography>=41.0.0
 python-dotenv>=1.0.0
 requests>=2.31.0
 fastapi>=0.140.7

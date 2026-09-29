@@ -4,6 +4,28 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.18.5] - 2026-09-29
+
+### Features
+- **chains:** Base Sepolia (84532) registered as a first-class `Chain` member
+  (`base-sepolia`, default RPC `https://sepolia.base.org`, `CHAIN_IDS` entry, BaseScan
+  Sepolia explorer) so the Insight/PriorSeal conformance spike can evaluate a Base Sepolia
+  call through the same chain-validated `CallEnvelopeV1.from_transaction` gate as every
+  other chain.
+- **examples:** bounded WAK / Insight / PriorSeal conformance spike — WAK-owned JSON
+  boundary, offline N1–N5b acceptance harness, live-boundary and call-event retention
+  support, and the vendored v1 conformance bundle.
+
+### Build
+- `cryptography>=41.0.0` added to runtime dependencies (Ed25519 receipt/attestation
+  verification used by the spike boundary).
+
+### Fixed
+- The acceptance report records runtime provenance (`runtime.packageVersion`, commit,
+  tree state) alongside the fixture-pinned `wakVersion`; a report produced by a tree
+  carrying unreleased core changes is no longer indistinguishable from one produced by the
+  released tag. Isolated core-change diff at `docs/review/1.18.5-core-change-base-sepolia.patch`.
+
 ## [1.18.4] - 2026-09-19
 
 ### Fixed
