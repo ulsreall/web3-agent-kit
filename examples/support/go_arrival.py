@@ -11,6 +11,8 @@ sqlite database in read-only URI mode and never writes.
 
 from __future__ import annotations
 
+import json
+import re
 import sqlite3
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +20,23 @@ from typing import Any, Mapping, Sequence
 
 SCHEMA = "wak-p1.go-arrival-metadata.v1"
 GO_MESSAGES_TABLE = "messages"
+GO_SHEET_AUTHORIZATION_SCHEMA = "wak-p1.go-sheet-authorization.v1"
+
+# Labels that may prefix the 64-hex run-sheet hash inside a GO message.
+_SHEET_HASH_LABELS = (
+    "run[ _-]?sheet[ _-]?sha-?256",
+    "run[ _-]?sheet[ _-]?hash",
+    "sheet[ _-]?hash",
+    "runSheetsha256",
+    "runSheetSha256",
+    "run_sheet_sha256",
+    "run-sheet-sha256",
+    "runSheetHash",
+)
+_SHEET_HASH_LABEL_RE = re.compile(
+    r"(?i)(?:%s)\s*[=:]?\s*([0-9a-fA-F]{64})" % "|".join(_SHEET_HASH_LABELS)
+)
+_GO_HASH_DIRECTIVE_RE = re.compile(r"(?i)\bGO[:\s]+([0-9a-fA-F]{64})\b")
 
 
 class GoArrivalError(ValueError):
@@ -127,3 +146,103 @@ def floor_satisfied(payload: Mapping[str, Any], latest_broadcast_at: int) -> boo
     """True when real arrival leaves at least ``receiverFloorSeconds`` to cutoff."""
     runway = int(latest_broadcast_at) - int(payload["deliveryTimestampEpoch"])
     return runway >= int(payload["receiverFloorSeconds"])
+
+
+def _extract_sheet_hash(content: str) -> tuple[str | None, str | None]:
+    """Extract a 64-hex run-sheet hash the GO message names, plus its source form.
+
+    Tries, in order: an embedded JSON object carrying a sheet-hash field; a labelled
+    ``runSheetSha256 <hash>``-style token; a bare ``GO: <hash>`` / ``GO <hash>``
+    directive. Returns ``(hash|None, source|None)``.
+    """
+    if not content:
+        return None, None
+    try:
+        obj = json.loads(content)
+    except (ValueError, TypeError):
+        obj = None
+    if isinstance(obj, dict):
+        for key in (
+            "runSheetSha256",
+            "run_sheet_sha256",
+            "runSheetHash",
+            "sheetHash",
+            "sheetSha256",
+            "run-sheet-sha256",
+        ):
+            value = obj.get(key)
+            if isinstance(value, str) and re.fullmatch(r"[0-9a-fA-F]{64}", value):
+                return value.lower(), "json"
+    label = _SHEET_HASH_LABEL_RE.search(content)
+    if label:
+        return label.group(1).lower(), "label"
+    directive = _GO_HASH_DIRECTIVE_RE.search(content)
+    if directive:
+        return directive.group(1).lower(), "go-directive"
+    return None, None
+
+
+def authorize_go_message(
+    content: str,
+    required_run_sheet_sha256: str,
+) -> dict[str, Any]:
+    """Verify a GO message's own text authorizes the exact run-sheet hash.
+
+    The executing path must confirm the Hermes GO *message itself* (not merely the GO
+    file) names the exact sheet it is about to sign/broadcast. Raises
+    :class:`GoArrivalError` when the message carries no run-sheet hash or names a
+    different one.
+    """
+    required = str(required_run_sheet_sha256).lower()
+    hash_, source = _extract_sheet_hash(content)
+    if hash_ is None:
+        raise GoArrivalError(
+            "GO message does not explicitly authorize a run-sheet hash; "
+            "executing runs require the exact runSheetSha256 in the GO message"
+        )
+    if hash_ != required:
+        raise GoArrivalError(
+            f"GO message authorizes run-sheet hash {hash_}, "
+            f"but the executing path bound {required} -- aborting"
+        )
+    return {
+        "schema": GO_SHEET_AUTHORIZATION_SCHEMA,
+        "authorized": True,
+        "authorizedRunSheetSha256": hash_,
+        "authorizationSource": source,
+        "presentInMessage": True,
+    }
+
+
+def fetch_go_message(db_path: str | Path, message_id: int) -> Mapping[str, Any]:
+    """Return the full GO message row (id, role, content, timestamp) by id."""
+    with _readonly_connection(db_path) as con:
+        row = con.execute(
+            "SELECT id, role, content, timestamp "
+            f"FROM {GO_MESSAGES_TABLE} WHERE id = ?",
+            (int(message_id),),
+        ).fetchone()
+    if row is None:
+        raise GoArrivalError(f"no GO message with id {message_id} in the session store")
+    return dict(row)
+
+
+def authorize_go_sheet(
+    db_path: str | Path,
+    message_id: int,
+    required_run_sheet_sha256: str,
+) -> dict[str, Any]:
+    """Fetch the GO message and require it authorizes the exact sheet hash.
+
+    Returns the authorization payload joined with delivery provenance so the report
+    can show both that the message arrived on time and that it named the exact sheet
+    the runner is about to execute.
+    """
+    row = fetch_go_message(db_path, message_id)
+    auth = authorize_go_message(str(row.get("content") or ""), required_run_sheet_sha256)
+    return {
+        **auth,
+        "messageId": int(row["id"]),
+        "deliveryTimestampEpoch": int(row["timestamp"]),
+        "contentSource": "Hermes session store (messages table)",
+    }

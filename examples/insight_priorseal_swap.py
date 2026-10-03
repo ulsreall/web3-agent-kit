@@ -799,6 +799,43 @@ def write_live_acceptance_report(
     return destination
 
 
+def classify_run_outcome(
+    *,
+    receipt: Mapping[str, Any] | None,
+    attempt_error: str | None,
+    counts: Mapping[str, int] | None,
+    rehearsal: bool,
+) -> tuple[str, str | None]:
+    """Classify a terminal P1 outcome from what the attempt actually observed.
+
+    Pure decision used by :func:`run_live_p1` and unit-tested directly. Returns
+    ``(outcome, detail)`` where ``detail`` is the error/enforcement message to surface
+    (``None`` when the outcome needs none).
+
+    Rules (each is an observed fact, never a silent reset):
+    - a ``REVERTED`` receipt -> ``REVERTED`` (never ``LIVE_LEG_COMPLETED``);
+    - any other receipt -> ``REHEARSAL_LEG_COMPLETED`` / ``LIVE_LEG_COMPLETED``;
+    - authorization/enforcement denial -> ``ENFORCEMENT_DENIED``;
+    - a gate error after a sign+broadcast the events prove -> ``BROADCAST_NO_CONFIRMED_RECEIPT``;
+    - a gate error before any sign+broadcast -> ``ERROR``;
+    - no receipt and no error -> ``NO_RECEIPT``.
+    """
+    if receipt is not None and str(receipt.get("status", "")).upper() == "REVERTED":
+        return "REVERTED", None
+    if receipt is not None:
+        return ("REHEARSAL_LEG_COMPLETED" if rehearsal else "LIVE_LEG_COMPLETED"), None
+    if attempt_error is not None and (
+        "AuthorizationDenied" in str(attempt_error) or "EnforcementDenied" in str(attempt_error)
+    ):
+        return "ENFORCEMENT_DENIED", attempt_error
+    if attempt_error is not None:
+        counts = counts or {}
+        if counts.get("signer", 0) >= 1 and counts.get("broadcast", 0) >= 1:
+            return "BROADCAST_NO_CONFIRMED_RECEIPT", attempt_error
+        return "ERROR", attempt_error
+    return "NO_RECEIPT", "gate returned no receipt and no error"
+
+
 def run_live_p1(
     *,
     fixture_root: str | Path,
@@ -832,9 +869,16 @@ def run_live_p1(
 
     The runner never reports success it did not observe:
 
-    - ``signed``/``broadcast`` are derived from the actual gate result, so a denied
-      gate yields ``False``/``False`` and an error outcome -- never
+    - ``signed``/``broadcast`` are derived from the actual gate result (the retained
+      boundary events), so a denied gate yields ``False``/``False`` and an error
+      outcome -- never ``LIVE_LEG_COMPLETED``. A sign+broadcast whose receipt
+      collection failed reports ``signed``/``broadcast`` true (the events prove the
+      side effect) with outcome ``BROADCAST_NO_CONFIRMED_RECEIPT``.
+    - a ``REVERTED`` receipt is reported as outcome ``REVERTED``, never
       ``LIVE_LEG_COMPLETED``.
+    - the Hermes GO message itself (from the session store) must name the exact
+      run-sheet hash the runner is about to sign/broadcast; otherwise the run aborts
+      as ``GO_NOT_AUTHORIZED`` before signing anything.
     - ``counts`` come from the retained call events; 1/1/1/1 appears only on a
       successful sign+broadcast+receipt leg.
     """
@@ -843,7 +887,12 @@ def run_live_p1(
     import time
 
     try:
-        from examples.support.go_arrival import GoArrivalError, query_go_messages, resolve_go_arrival
+        from examples.support.go_arrival import (
+            GoArrivalError,
+            authorize_go_sheet,
+            query_go_messages,
+            resolve_go_arrival,
+        )
         from examples.support.insight_priorseal_live import (
             CallEventRecorder,
             CutoffError,
@@ -855,13 +904,19 @@ def run_live_p1(
             RpcReceipt,
             check_cutoff,
             check_go_arrival,
+            execution_flags,
             live_execution_boundaries,
             runtime_provenance,
             version_alignment,
         )
         from examples.support.insight_priorseal_rehearsal import generate_rehearsal_materials
     except ModuleNotFoundError:  # running as examples/insight_priorseal_swap.py
-        from support.go_arrival import GoArrivalError, query_go_messages, resolve_go_arrival
+        from support.go_arrival import (
+            GoArrivalError,
+            authorize_go_sheet,
+            query_go_messages,
+            resolve_go_arrival,
+        )
         from support.insight_priorseal_live import (
             CallEventRecorder,
             CutoffError,
@@ -873,6 +928,7 @@ def run_live_p1(
             RpcReceipt,
             check_cutoff,
             check_go_arrival,
+            execution_flags,
             live_execution_boundaries,
             runtime_provenance,
             version_alignment,
@@ -1027,6 +1083,7 @@ def run_live_p1(
     enforcement_error: str | None = None
     run_error: str | None = None
     note: str | None = None
+    go_authorization: dict[str, Any] | None = None
 
     if executing:
         max_attempts = 3 if rehearsal else 1
@@ -1085,6 +1142,24 @@ def run_live_p1(
                 )
                 trust_roots = bundle.trust_roots
 
+            # The Hermes GO message itself must authorize the exact sheet hash we are
+            # about to sign/broadcast. Verify against the CURRENT attempt's sheet hash
+            # (a rehearsal retry regenerates the sheet, and the synthetic GO message in
+            # the session store is rewritten to match it, so this stays in sync). A
+            # missing/mismatched authorization aborts the run as GO_NOT_AUTHORIZED.
+            try:
+                go_authorization = authorize_go_sheet(
+                    session_db,
+                    int(go_message_id),
+                    str(run_sheet_hash),
+                )
+            except Exception as exc:  # noqa: BLE001 - classified below
+                final_recorder = recorder
+                outcome = "GO_NOT_AUTHORIZED"
+                run_error = f"{type(exc).__name__}: {exc}"
+                go_authorization = None
+                break
+
             response = sheet["priorSeal"]["response"]
             with tempfile.TemporaryDirectory(prefix="wak-p1-acceptance-") as directory:
                 store = SQLiteAcceptanceStore(Path(directory) / "acceptances.sqlite3")
@@ -1114,19 +1189,16 @@ def run_live_p1(
                     continue
                 final_recorder = recorder
                 receipt = attempt_receipt
-                if receipt is not None:
-                    outcome = "REHEARSAL_LEG_COMPLETED" if rehearsal else "LIVE_LEG_COMPLETED"
-                elif attempt_error is not None and "AuthorizationDenied" in str(attempt_error) or (
-                    attempt_error is not None and "EnforcementDenied" in str(attempt_error)
-                ):
-                    outcome = "ENFORCEMENT_DENIED"
-                    enforcement_error = attempt_error
-                elif attempt_error is not None:
-                    outcome = "ERROR"
-                    run_error = attempt_error
-                else:
-                    outcome = "NO_RECEIPT"
-                    run_error = "gate returned no receipt and no error"
+                outcome, detail = classify_run_outcome(
+                    receipt=attempt_receipt,
+                    attempt_error=attempt_error,
+                    counts=recorder.boundary_counts(),
+                    rehearsal=rehearsal,
+                )
+                if outcome == "ENFORCEMENT_DENIED":
+                    enforcement_error = detail
+                elif outcome in ("ERROR", "BROADCAST_NO_CONFIRMED_RECEIPT", "NO_RECEIPT"):
+                    run_error = detail
                 break
         if final_recorder is None:
             final_recorder = CallEventRecorder()
@@ -1137,10 +1209,18 @@ def run_live_p1(
         outcome = "DRY_RUN_NO_TRANSACTION"
         note = "GO and cutoff checks passed; no transaction signed or broadcast."
 
-    signed = bool(receipt is not None)
-    broadcast = bool(receipt is not None)
+    # signed/broadcast come from the RETAINED boundary events, never from receipt
+    # presence. A run that signed and broadcast but could not collect a receipt still
+    # reports true/true (the events prove it); a leg denied before signing reports
+    # false/false even if the attempt loop otherwise errored.
+    flags = execution_flags(final_recorder)
+    signed = bool(flags["signed"])
+    broadcast = bool(flags["broadcast"])
 
     from web3_agent_kit import __version__
+
+    if go_authorization is not None:
+        arrival_metadata["goSheetAuthorization"] = go_authorization
 
     evidence: dict[str, Any] = {
         "schema": "wak-p1.execution-evidence.v1",

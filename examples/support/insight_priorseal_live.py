@@ -147,6 +147,55 @@ def _now() -> int:
     return int(time.time())
 
 
+def _record_receipt(boundary: str, recorder: CallEventRecorder, fn: Callable[..., Any]):
+    """Record a receipt boundary, capturing the returned receipt status in the event.
+
+    The receipt boundary's success event carries ``detail[\"status\"]`` (e.g.
+    ``CONFIRMED``/``REVERTED``) so the event log reflects what the receipt actually
+    reported, not just that a function returned. Useful for proving a REVERTED receipt
+    was not counted as a completed leg.
+    """
+
+    def wrapper(broadcast_result: Any) -> Any:
+        started = _now()
+        recorder.record(boundary, "attempted", started_at=started, finished_at=started)
+        try:
+            result = fn(broadcast_result)
+        except Exception as exc:
+            finished = _now()
+            recorder.record(
+                boundary,
+                "error",
+                started_at=started,
+                finished_at=finished,
+                detail={"error": type(exc).__name__},
+            )
+            raise
+        finished = _now()
+        detail = None
+        if isinstance(result, Mapping) and "status" in result:
+            detail = {"status": str(result.get("status"))}
+        recorder.record(boundary, "success", started_at=started, finished_at=finished, detail=detail)
+        return result
+
+    return wrapper
+
+
+def execution_flags(recorder: CallEventRecorder) -> dict[str, bool]:
+    """Derive ``signed``/``broadcast`` from *retained boundary events*, not receipt.
+
+    A transaction that was signed and broadcast but whose receipt collection failed
+    still reports ``signed``/``broadcast`` true (the events prove it); only a leg that
+    observed a receipt counts. This is the honest replacement for tying the flags to
+    ``receipt is not None``, which erased a real sign+broadcast on receipt timeout.
+    """
+    counts = recorder.boundary_counts()
+    return {
+        "signed": counts["signer"] >= 1,
+        "broadcast": counts["broadcast"] >= 1,
+    }
+
+
 class _RecordingBoundary:
     """Wrap any callable and record attempted/success/error around it."""
 
@@ -463,7 +512,7 @@ def live_execution_boundaries(
             config,
             minimum_seconds=cutoff_check_seconds,
         ),
-        receipt=_RecordingBoundary("receipt", recorder, receipt),
+        receipt=_record_receipt("receipt", recorder, receipt),
     )
 
 

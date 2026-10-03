@@ -26,81 +26,83 @@
       "boundary": "authorizationProvider",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 1,
       "outcome": "attempted",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "authorizationProvider",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 2,
       "outcome": "success",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "signer",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 3,
       "outcome": "attempted",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "signer",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 4,
       "outcome": "success",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "broadcast",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 5,
       "outcome": "attempted",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "broadcast",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 6,
       "outcome": "success",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "receipt",
       "detail": {},
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 7,
       "outcome": "attempted",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     },
     {
       "boundary": "receipt",
-      "detail": {},
+      "detail": {
+        "status": "CONFIRMED"
+      },
       "durationSeconds": 0,
-      "finishedAtEpoch": 1790699252,
+      "finishedAtEpoch": 1791024459,
       "index": 8,
       "outcome": "success",
       "schema": "wak-p1.call-event.v1",
-      "startedAtEpoch": 1790699252
+      "startedAtEpoch": 1791024459
     }
   ],
   "retained": true,

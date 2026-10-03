@@ -13,6 +13,7 @@ from examples.insight_priorseal_swap import (
     attach_p1_and_provenance,
     build_p1_block,
     build_p1_row,
+    classify_run_outcome,
     run_live_p1,
     run_negative_suite,
     validate_p1_evidence,
@@ -20,6 +21,8 @@ from examples.insight_priorseal_swap import (
 )
 from examples.support.go_arrival import (
     GoArrivalError,
+    authorize_go_message,
+    authorize_go_sheet,
     floor_satisfied,
     query_go_messages,
     resolve_go_arrival,
@@ -31,6 +34,7 @@ from examples.support.insight_priorseal_live import (
     LiveRunConfig,
     check_cutoff,
     check_go_arrival,
+    execution_flags,
     live_execution_boundaries,
     runtime_provenance,
     version_alignment,
@@ -293,6 +297,11 @@ def test_rehearsal_full_runner_path(tmp_path):
     # GO arrival is read from the session store, not from the GO file.
     assert evidence["goArrival"]["source"].startswith("Hermes session store")
     assert evidence["goArrival"]["messageId"] == 90001
+    # The Hermes GO MESSAGE itself authorizes the exact sheet hash (YuTao gap 1).
+    auth = evidence["goArrival"]["goSheetAuthorization"]
+    assert auth["authorized"] is True
+    assert auth["authorizedRunSheetSha256"] == evidence["runSheetSha256"]
+    assert auth["authorizationSource"] in ("label", "go-directive", "json")
     # The run sheet hash is bound in the GO and the report.
     assert evidence["runSheetSha256"] == json.loads((out / "go.json").read_text())["runSheetSha256"]
     # Every boundary retains a timestamped attempted + success pair (no failures).
@@ -352,3 +361,74 @@ def test_runtime_provenance_and_alignment():
     align = version_alignment("1.18.4", "1.18.5")
     assert align["aligned"] is False
     assert version_alignment("1.18.5", "1.18.5")["aligned"] is True
+
+
+def test_authorize_go_message_binds_exact_sheet_hash():
+    """YuTao gap 1: the Hermes GO message itself must name the exact run-sheet hash."""
+    sheet_hash = "ab" * 32
+    ok = authorize_go_message(f"GO — latestBroadcastAt 1790440202, runSheetSha256 {sheet_hash}", sheet_hash)
+    assert ok["authorized"] is True and ok["authorizationSource"] == "label"
+    ok_json = authorize_go_message(json.dumps({"runSheetSha256": sheet_hash}), sheet_hash)
+    assert ok_json["authorized"] is True and ok_json["authorizationSource"] == "json"
+    ok_directive = authorize_go_message(f"GO {sheet_hash}", sheet_hash)
+    assert ok_directive["authorizationSource"] == "go-directive"
+    with pytest.raises(GoArrivalError, match="does not explicitly authorize"):
+        authorize_go_message("GO — run is a go, no hash stated", sheet_hash)
+    with pytest.raises(GoArrivalError, match="but the executing path bound"):
+        authorize_go_message(f"GO — runSheetSha256 {'cd' * 32}", sheet_hash)
+
+
+def test_authorize_go_sheet_reads_full_message_from_store(tmp_path):
+    """YuTao gap 1 end-to-end: full GO message content fetched and verified."""
+    db = tmp_path / "go.db"
+    con = sqlite3.connect(db)
+    con.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)")
+    sheet = "ef" * 32
+    con.execute(
+        'INSERT INTO messages (id, role, content, timestamp) VALUES (?, ?, ?, ?)',
+        (511, "user", f"GO — latestBroadcastAt 1790442200, runSheetSha256 {sheet}", 1782399000),
+    )
+    con.commit()
+    con.close()
+    auth = authorize_go_sheet(db, 511, sheet)
+    assert auth["authorized"] is True
+    assert auth["messageId"] == 511
+    with pytest.raises(GoArrivalError):
+        authorize_go_sheet(db, 511, "ff" * 32)
+    with pytest.raises(GoArrivalError):
+        authorize_go_sheet(db, 999, sheet)
+
+
+def test_execution_flags_from_events_on_receipt_failure():
+    recorder = CallEventRecorder()
+    for b in ("authorizationProvider", "signer", "broadcast", "receipt"):
+        recorder.record(b, "attempted", started_at=1, finished_at=1)
+    recorder.record("signer", "success", started_at=1, finished_at=2)
+    recorder.record("broadcast", "success", started_at=2, finished_at=3)
+    recorder.record("receipt", "error", started_at=3, finished_at=4, detail={"error": "TimeoutError"})
+    flags = execution_flags(recorder)
+    assert flags["signed"] is True and flags["broadcast"] is True
+    assert recorder.boundary_counts()["signer"] == 1
+    assert recorder.boundary_counts()["broadcast"] == 1
+    assert recorder.boundary_counts()["receipt"] == 0
+    denied = CallEventRecorder()
+    denied.record("authorizationProvider", "attempted", started_at=1, finished_at=1)
+    denied.record("authorizationProvider", "error", started_at=1, finished_at=2)
+    assert execution_flags(denied) == {"signed": False, "broadcast": False}
+
+
+def test_classify_outcome_reverted_and_no_receipt():
+    ok = {"authorizationProvider": 1, "signer": 1, "broadcast": 1, "receipt": 1}
+    assert classify_run_outcome(receipt={"status": "REVERTED"}, attempt_error=None,
+                                counts=ok, rehearsal=False)[0] == "REVERTED"
+    assert classify_run_outcome(receipt={"status": "CONFIRMED"}, attempt_error=None,
+                                counts=ok, rehearsal=False)[0] == "LIVE_LEG_COMPLETED"
+    assert classify_run_outcome(receipt=None, attempt_error="TimeoutError", counts=ok,
+                                rehearsal=False)[0] == "BROADCAST_NO_CONFIRMED_RECEIPT"
+    no_sign = {"authorizationProvider": 1, "signer": 0, "broadcast": 0, "receipt": 0}
+    assert classify_run_outcome(receipt=None, attempt_error="EnforcementDenied", counts=no_sign,
+                                rehearsal=False)[0] == "ENFORCEMENT_DENIED"
+    assert classify_run_outcome(receipt=None, attempt_error="boom", counts=no_sign,
+                                rehearsal=False)[0] == "ERROR"
+    assert classify_run_outcome(receipt=None, attempt_error=None, counts=no_sign,
+                                rehearsal=False)[0] == "NO_RECEIPT"

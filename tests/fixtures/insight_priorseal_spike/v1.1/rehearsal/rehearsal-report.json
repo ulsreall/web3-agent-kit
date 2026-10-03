@@ -28,81 +28,83 @@
         "boundary": "authorizationProvider",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 1,
         "outcome": "attempted",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "authorizationProvider",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 2,
         "outcome": "success",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "signer",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 3,
         "outcome": "attempted",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "signer",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 4,
         "outcome": "success",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "broadcast",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 5,
         "outcome": "attempted",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "broadcast",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 6,
         "outcome": "success",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "receipt",
         "detail": {},
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 7,
         "outcome": "attempted",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       },
       {
         "boundary": "receipt",
-        "detail": {},
+        "detail": {
+          "status": "CONFIRMED"
+        },
         "durationSeconds": 0,
-        "finishedAtEpoch": 1790699252,
+        "finishedAtEpoch": 1791024459,
         "index": 8,
         "outcome": "success",
         "schema": "wak-p1.call-event.v1",
-        "startedAtEpoch": 1790699252
+        "startedAtEpoch": 1791024459
       }
     ],
     "retained": true,
@@ -117,8 +119,18 @@
   "cutoffCheckSeconds": 60,
   "goArrival": {
     "candidatesMatched": 1,
-    "deliveryTimestampEpoch": 1790699252,
-    "deliveryTimestampIso": "2026-09-29T16:27:32Z",
+    "deliveryTimestampEpoch": 1791024459,
+    "deliveryTimestampIso": "2026-10-03T10:47:39Z",
+    "goSheetAuthorization": {
+      "authorizationSource": "label",
+      "authorized": true,
+      "authorizedRunSheetSha256": "14a5aac6b54759ba155bf79c38fd6dc15500684378180a8d673642aeeebaad01",
+      "contentSource": "Hermes session store (messages table)",
+      "deliveryTimestampEpoch": 1791024459,
+      "messageId": 90001,
+      "presentInMessage": true,
+      "schema": "wak-p1.go-sheet-authorization.v1"
+    },
     "messageId": 90001,
     "messageRole": "user",
     "receiverFloorSeconds": 120,
@@ -139,7 +151,7 @@
     "label": "rehearsal",
     "polled": 0,
     "status": "CONFIRMED",
-    "txHash": "0x4e807726eb481797a22fd3f91f5c8f7c5187aa44b1a09fc94519e86a92b2d0ad"
+    "txHash": "0xda72dbfb07695b6c21359862963ae554aa3cc1fcff5d095225f9153774a2a60e"
   },
   "receiverFloorSeconds": 120,
   "rehearsal": {
@@ -148,15 +160,15 @@
       "receipt": "InertReceipt (no RPC)",
       "signer": "EvmSigner (local sign, sheet executor)"
     },
-    "evaluatedAt": 1790699252,
+    "evaluatedAt": 1791024459,
     "mode": "inert-boundary",
     "noOnChainEffect": true,
     "note": "REHEARSAL ONLY: fresh synthetic signed inputs, inert boundaries, no transaction was authorized or broadcast on any chain.",
     "sheetSchema": "wak-p1.run-sheet.rehearsal.v1"
   },
-  "runSheetSha256": "1b93f3a6102dde352df80d51a3d75f1cb121f74d8170aeb831a802d6abec1da2",
+  "runSheetSha256": "14a5aac6b54759ba155bf79c38fd6dc15500684378180a8d673642aeeebaad01",
   "runtime": {
-    "commit": "2ba8e0b9e5b2fbde6fbf692fdf95c6a22c0c4c24",
+    "commit": "d6bb5865fcd7f8e845b1399ffa8965d4e4f83039",
     "packageVersion": "1.18.5",
     "schema": "wak-p1.runtime-provenance.v1",
     "treeClean": false
@@ -164,7 +176,7 @@
   "runwayAtCheckSeconds": 715,
   "schema": "wak-p1.execution-evidence.v1",
   "signed": true,
-  "signerAddress": "0x104468Ac134a7cCC0493b6B253C073b2203b27d1",
+  "signerAddress": "0x65B119415Fe277Dc6177E4e84967340f8D329833",
   "transaction": {
     "chainId": 84532,
     "data": "0x04e45aaf0000000000000000000000004200000000000000000000000000000000000006000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e0000000000000000000000000000000000000000000000000000000000000bb8000000000000000000000000aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa00000000000000000000000000000000000000000000000000038d7ea4c68000000000000000000000000000000000000000000000000000000000000025f4cc0000000000000000000000000000000000000000000000000000000000000000",
