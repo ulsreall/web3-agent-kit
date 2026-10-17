@@ -1082,6 +1082,7 @@ def run_live_p1(
 
     attempts: list[dict[str, Any]] = []
     final_recorder: CallEventRecorder | None = None
+    priorseal_gate_checks: dict[str, Any] | None = None
     receipt: Mapping[str, Any] | None = None
     outcome: str | None = None
     enforcement_error: str | None = None
@@ -1168,7 +1169,7 @@ def run_live_p1(
             with tempfile.TemporaryDirectory(prefix="wak-p1-acceptance-") as directory:
                 store = SQLiteAcceptanceStore(Path(directory) / "acceptances.sqlite3")
                 try:
-                    _, _, attempt_receipt, attempt_error = _run_gate_attempt(
+                    _, attempt_provider, attempt_receipt, attempt_error = _run_gate_attempt(
                         transaction=transaction,
                         response=response,
                         trust_roots=trust_roots,
@@ -1182,6 +1183,9 @@ def run_live_p1(
                             "policyCommitmentDigest"
                         ),
                     )
+                    inner_provider = getattr(attempt_provider, "_provider", None)
+                    if inner_provider is not None:
+                        priorseal_gate_checks = getattr(inner_provider, "gate_checks", None)
                 except Exception as exc:  # noqa: BLE001 - classified below
                     attempt_receipt, attempt_error = None, f"{type(exc).__name__}: {exc}"
                 if attempt_error is not None and "covers another policy decision" in str(attempt_error) and rehearsal and attempt_index < max_attempts - 1:
@@ -1257,6 +1261,8 @@ def run_live_p1(
         "broadcast": broadcast,
         "outcome": outcome,
     }
+    if priorseal_gate_checks is not None:
+        evidence["priorsealGateChecks"] = priorseal_gate_checks
     if enforcement_error is not None:
         evidence["enforcementError"] = enforcement_error
     if run_error is not None:

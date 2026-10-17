@@ -873,6 +873,14 @@ class PriorSealAuthorizationProvider:
         # Every drift abort retains the live digest and the input payloads that
         # produced it, so the denial is observable from outside the gate.
         self.drift_records: list[dict[str, Any]] = []
+        # Explicit outcomes of both gate checks, for the dry-run report.
+        self.gate_checks: dict[str, Any] = {
+            "schema": "wak-p1.priorseal-gate-checks.v1",
+            "frozenSheetSupplied": frozen_policy_decision is not None,
+            "check1SheetSelfConsistency": None,
+            "check2AuthorizationBinding": None,
+            "driftCheck": None,
+        }
         self.calls = 0
 
     @property
@@ -1081,10 +1089,74 @@ class PriorSealAuthorizationProvider:
                 envelope_digest=context.envelope_digest,
                 policy_commitment_digest=context.policy_commitment.digest(),
             )
-        frozen_digest = self._verify_sheet_commitment()
-        self._check_live_drift(context.policy_commitment, frozen_digest)
-        return self.evidence_for(
-            envelope=context.envelope,
-            envelope_digest=context.envelope_digest,
-            policy_commitment_digest=frozen_digest,
-        )
+
+        # Check 1 -- the pinned sheet must agree with itself.
+        try:
+            frozen_digest = self._verify_sheet_commitment()
+        except AuthorizationDenied as exc:
+            self.gate_checks["check1SheetSelfConsistency"] = {
+                "passed": False,
+                "detail": str(exc),
+                "declaredDigest": self._frozen_policy_commitment_digest,
+            }
+            raise
+        self.gate_checks["check1SheetSelfConsistency"] = {
+            "passed": True,
+            "recomputedDigest": frozen_digest,
+            "declaredDigest": self._frozen_policy_commitment_digest,
+            "frozenEvaluatedAt": int(self._frozen_policy_decision["evaluatedAt"]),
+        }
+
+        # Drift -- live decision fields vs the frozen decision, clock excluded.
+        live_digest = context.policy_commitment.digest()
+        compared_fields = [
+            key for key in sorted(self._frozen_policy_decision) if key != "evaluatedAt"
+        ]
+        try:
+            self._check_live_drift(context.policy_commitment, frozen_digest)
+        except AuthorizationDenied as exc:
+            self.gate_checks["driftCheck"] = {
+                "passed": False,
+                "detail": str(exc),
+                "comparedFields": compared_fields,
+                "frozenDigest": frozen_digest,
+                "liveDigest": live_digest,
+                "record": self.drift_records[-1] if self.drift_records else None,
+            }
+            raise
+        self.gate_checks["driftCheck"] = {
+            "passed": True,
+            "comparedFields": compared_fields,
+            "excludedFields": ["evaluatedAt"],
+            "frozenDigest": frozen_digest,
+            "liveDigest": live_digest,
+            "frozenEvaluatedAt": int(self._frozen_policy_decision["evaluatedAt"]),
+            "liveEvaluatedAt": int(context.policy_commitment.to_payload()["evaluatedAt"]),
+            "note": (
+                "digests differ by the evaluation clock alone; field-by-field "
+                "comparison found no drift"
+            ),
+        }
+
+        # Check 2 -- bind the verified frozen digest to the authorization.
+        try:
+            evidence = self.evidence_for(
+                envelope=context.envelope,
+                envelope_digest=context.envelope_digest,
+                policy_commitment_digest=frozen_digest,
+            )
+        except AuthorizationDenied as exc:
+            self.gate_checks["check2AuthorizationBinding"] = {
+                "passed": False,
+                "detail": str(exc),
+                "expectedPolicyCommitmentDigest": frozen_digest,
+            }
+            raise
+        self.gate_checks["check2AuthorizationBinding"] = {
+            "passed": True,
+            "expectedPolicyCommitmentDigest": frozen_digest,
+            "authorizationPolicyCommitmentDigest": evidence.policy_commitment_digest,
+            "authorizationId": evidence.authorization_id,
+            "envelopeDigest": evidence.envelope_digest,
+        }
+        return evidence

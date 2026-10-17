@@ -529,3 +529,52 @@ def test_policy_drift_aborts_and_records_both_payloads():
     assert record["livePayload"]["evaluatedAt"] == 1300
     assert record["frozenRecomputedDigest"] == frozen_digest
     assert record["liveDigest"] != frozen_digest
+
+
+def _fake_context(policy_commitment):
+    """Minimal stand-in for the interceptor context authorize() reads."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        envelope=None,
+        envelope_digest="0x" + "00" * 32,
+        policy_commitment=policy_commitment,
+    )
+
+
+def test_gate_checks_record_check1_failure():
+    """The report must show check 1 failing, not just a bare denial."""
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, _ = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, "0x" + "de" * 32)
+    live = _live_commitment(payload, evaluated_at=1300)
+
+    with pytest.raises(AuthorizationDenied):
+        provider.authorize(_fake_context(live))
+
+    check1 = provider.gate_checks["check1SheetSelfConsistency"]
+    assert check1["passed"] is False
+    assert "self-inconsistent" in check1["detail"]
+    assert check1["declaredDigest"] == "0x" + "de" * 32
+    assert provider.gate_checks["frozenSheetSupplied"] is True
+
+
+def test_gate_checks_record_drift_with_both_digests():
+    """A drift abort must leave both digests and the compared field list behind."""
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, digest = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, digest)
+    live = _live_commitment(payload, evaluated_at=1300, verdict="deny")
+
+    with pytest.raises(AuthorizationDenied):
+        provider.authorize(_fake_context(live))
+
+    assert provider.gate_checks["check1SheetSelfConsistency"]["passed"] is True
+    drift = provider.gate_checks["driftCheck"]
+    assert drift["passed"] is False
+    assert drift["frozenDigest"] == digest
+    assert drift["liveDigest"] != digest
+    assert "evaluatedAt" not in drift["comparedFields"]
+    assert "verdict" in drift["record"]["fields"]
