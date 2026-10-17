@@ -241,6 +241,8 @@ def _run_gate_attempt(
     gate: PreSignInterceptor | None = None,
     provider: _CountingProvider | None = None,
     live: bool = False,
+    frozen_policy_decision: Mapping[str, Any] | None = None,
+    frozen_policy_commitment_digest: str | None = None,
 ) -> tuple[
     PreSignInterceptor,
     _CountingProvider,
@@ -252,6 +254,8 @@ def _run_gate_attempt(
             response,
             trust_roots=trust_roots,
             acceptance_store=acceptance_store,
+            frozen_policy_decision=frozen_policy_decision,
+            frozen_policy_commitment_digest=frozen_policy_commitment_digest,
         ),
         counters,
     )
@@ -1173,6 +1177,10 @@ def run_live_p1(
                         acceptance_store=store,
                         boundaries=boundaries,
                         live=True,
+                        frozen_policy_decision=(sheet.get("wak") or {}).get("policyDecision"),
+                        frozen_policy_commitment_digest=(sheet.get("wak") or {}).get(
+                            "policyCommitmentDigest"
+                        ),
                     )
                 except Exception as exc:  # noqa: BLE001 - classified below
                     attempt_receipt, attempt_error = None, f"{type(exc).__name__}: {exc}"

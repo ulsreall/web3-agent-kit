@@ -28,7 +28,11 @@ from eth_account.messages import encode_typed_data
 from eth_utils import keccak
 
 from web3_agent_kit.execution import AuthorizationDenied, AuthorizationEvidence
-from web3_agent_kit.execution.envelope import CallEnvelopeV1
+from web3_agent_kit.execution.envelope import (
+    POLICY_DECISION_SCHEMA,
+    CallEnvelopeV1,
+    PolicyDecisionCommitment,
+)
 
 
 class BoundaryError(ValueError):
@@ -847,10 +851,28 @@ class PriorSealAuthorizationProvider:
         *,
         trust_roots: Mapping[str, Any],
         acceptance_store: SQLiteAcceptanceStore | None = None,
+        frozen_policy_decision: Mapping[str, Any] | None = None,
+        frozen_policy_commitment_digest: str | None = None,
     ) -> None:
         self._response = response
         self._trust_roots = trust_roots
         self._acceptance_store = acceptance_store
+        # The pinned sheet is the authority on what was frozen. When it is supplied,
+        # the authorization is validated against the sheet's declared decision rather
+        # than against a commitment recomputed at enforcement time. The policy
+        # commitment binds a per-second `evaluatedAt`, so a live recomputation can
+        # never equal a frozen digest - comparing the two is a guaranteed denial.
+        self._frozen_policy_decision = (
+            dict(frozen_policy_decision) if frozen_policy_decision is not None else None
+        )
+        self._frozen_policy_commitment_digest = (
+            str(frozen_policy_commitment_digest)
+            if frozen_policy_commitment_digest is not None
+            else None
+        )
+        # Every drift abort retains the live digest and the input payloads that
+        # produced it, so the denial is observable from outside the gate.
+        self.drift_records: list[dict[str, Any]] = []
         self.calls = 0
 
     @property
@@ -966,9 +988,103 @@ class PriorSealAuthorizationProvider:
 
         return evidence
 
+    def _recompute_frozen_commitment_digest(self) -> str | None:
+        """Reconstruct the commitment from the sheet's own policy decision.
+
+        The frozen ``evaluatedAt`` is used deliberately: it is part of the hashed
+        payload, so reproducing the frozen digest is only possible by carrying the
+        frozen clock rather than reading a fresh one.
+        """
+        decision = self._frozen_policy_decision
+        if decision is None:
+            return None
+        schema = str(decision.get("schema", ""))
+        if schema != POLICY_DECISION_SCHEMA:
+            raise AuthorizationDenied(
+                "sheet policy decision carries an unexpected schema: " + schema
+            )
+        commitment = PolicyDecisionCommitment(
+            call_identity=str(decision["callIdentity"]),
+            policy_id=str(decision["policyId"]),
+            verdict=str(decision["verdict"]),
+            reason_codes=tuple(decision.get("reasonCodes") or ()),
+            evaluated_at=int(decision["evaluatedAt"]),
+            policy_version=str(decision.get("policyVersion", "1")),
+        )
+        return commitment.digest()
+
+    def _verify_sheet_commitment(self) -> str:
+        """Check 1 - the pinned sheet must agree with itself.
+
+        Catches a doctored sheet whose declared digest does not match its own
+        decision object, before any authorization is considered at all.
+        """
+        recomputed = self._recompute_frozen_commitment_digest()
+        declared = self._frozen_policy_commitment_digest
+        if declared is None:
+            raise AuthorizationDenied(
+                "sheet policy decision was supplied without its declared commitment digest"
+            )
+        if str(recomputed).lower() != declared.lower():
+            raise AuthorizationDenied(
+                "sheet policy commitment is self-inconsistent: declared "
+                f"{declared} does not match its own decision object ({recomputed})"
+            )
+        return str(recomputed)
+
+    def _check_live_drift(
+        self,
+        live_commitment: PolicyDecisionCommitment,
+        frozen_digest: str,
+    ) -> None:
+        """Live state vs the frozen decision - a check of its own.
+
+        ``evaluatedAt`` is excluded on purpose: it is the evaluation clock, not
+        part of the decision, and it advances every second. Comparing hashes here
+        would abort every run by construction; comparing decision fields catches
+        real drift.
+        """
+        frozen = self._frozen_policy_decision
+        if frozen is None:
+            return
+        live_payload = live_commitment.to_payload()
+        mismatched = [
+            key
+            for key in sorted(set(live_payload) | set(frozen))
+            if key != "evaluatedAt" and live_payload.get(key) != frozen.get(key)
+        ]
+        if not mismatched:
+            return
+        record = {
+            "schema": "wak-p1.policy-drift-abort.v1",
+            "fields": mismatched,
+            "frozenDeclaredDigest": self._frozen_policy_commitment_digest,
+            "frozenRecomputedDigest": frozen_digest,
+            "liveDigest": live_commitment.digest(),
+            "frozenPayload": dict(frozen),
+            "livePayload": dict(live_payload),
+        }
+        self.drift_records.append(record)
+        raise AuthorizationDenied(
+            "policy decision drifted since freeze on "
+            + ", ".join(mismatched)
+            + " | "
+            + json.dumps(record, sort_keys=True, separators=(",", ":"))
+        )
+
     def authorize(self, context) -> AuthorizationEvidence:
+        if self._frozen_policy_decision is None:
+            # Offline vectors and rehearsal pass no frozen sheet: keep the
+            # previous behaviour so their expectations are untouched.
+            return self.evidence_for(
+                envelope=context.envelope,
+                envelope_digest=context.envelope_digest,
+                policy_commitment_digest=context.policy_commitment.digest(),
+            )
+        frozen_digest = self._verify_sheet_commitment()
+        self._check_live_drift(context.policy_commitment, frozen_digest)
         return self.evidence_for(
             envelope=context.envelope,
             envelope_digest=context.envelope_digest,
-            policy_commitment_digest=context.policy_commitment.digest(),
+            policy_commitment_digest=frozen_digest,
         )
