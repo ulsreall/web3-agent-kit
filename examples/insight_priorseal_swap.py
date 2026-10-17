@@ -241,6 +241,8 @@ def _run_gate_attempt(
     gate: PreSignInterceptor | None = None,
     provider: _CountingProvider | None = None,
     live: bool = False,
+    frozen_policy_decision: Mapping[str, Any] | None = None,
+    frozen_policy_commitment_digest: str | None = None,
 ) -> tuple[
     PreSignInterceptor,
     _CountingProvider,
@@ -252,6 +254,8 @@ def _run_gate_attempt(
             response,
             trust_roots=trust_roots,
             acceptance_store=acceptance_store,
+            frozen_policy_decision=frozen_policy_decision,
+            frozen_policy_commitment_digest=frozen_policy_commitment_digest,
         ),
         counters,
     )
@@ -1078,6 +1082,7 @@ def run_live_p1(
 
     attempts: list[dict[str, Any]] = []
     final_recorder: CallEventRecorder | None = None
+    priorseal_gate_checks: dict[str, Any] | None = None
     receipt: Mapping[str, Any] | None = None
     outcome: str | None = None
     enforcement_error: str | None = None
@@ -1164,7 +1169,7 @@ def run_live_p1(
             with tempfile.TemporaryDirectory(prefix="wak-p1-acceptance-") as directory:
                 store = SQLiteAcceptanceStore(Path(directory) / "acceptances.sqlite3")
                 try:
-                    _, _, attempt_receipt, attempt_error = _run_gate_attempt(
+                    _, attempt_provider, attempt_receipt, attempt_error = _run_gate_attempt(
                         transaction=transaction,
                         response=response,
                         trust_roots=trust_roots,
@@ -1173,7 +1178,14 @@ def run_live_p1(
                         acceptance_store=store,
                         boundaries=boundaries,
                         live=True,
+                        frozen_policy_decision=(sheet.get("wak") or {}).get("policyDecision"),
+                        frozen_policy_commitment_digest=(sheet.get("wak") or {}).get(
+                            "policyCommitmentDigest"
+                        ),
                     )
+                    inner_provider = getattr(attempt_provider, "_provider", None)
+                    if inner_provider is not None:
+                        priorseal_gate_checks = getattr(inner_provider, "gate_checks", None)
                 except Exception as exc:  # noqa: BLE001 - classified below
                     attempt_receipt, attempt_error = None, f"{type(exc).__name__}: {exc}"
                 if attempt_error is not None and "covers another policy decision" in str(attempt_error) and rehearsal and attempt_index < max_attempts - 1:
@@ -1249,6 +1261,8 @@ def run_live_p1(
         "broadcast": broadcast,
         "outcome": outcome,
     }
+    if priorseal_gate_checks is not None:
+        evidence["priorsealGateChecks"] = priorseal_gate_checks
     if enforcement_error is not None:
         evidence["enforcementError"] = enforcement_error
     if run_error is not None:

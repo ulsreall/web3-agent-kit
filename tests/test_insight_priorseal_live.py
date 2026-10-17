@@ -432,3 +432,149 @@ def test_classify_outcome_reverted_and_no_receipt():
                                 rehearsal=False)[0] == "ERROR"
     assert classify_run_outcome(receipt=None, attempt_error=None, counts=no_sign,
                                 rehearsal=False)[0] == "NO_RECEIPT"
+
+
+# --- frozen-sheet policy commitment: the two-clock trap (2026-10-17) ---------
+
+
+def _decision_payload(evaluated_at, verdict="allow", reasons=()):
+    """Build a policy decision payload the way the gate does, plus its digest."""
+    from web3_agent_kit.execution.envelope import PolicyDecisionCommitment
+
+    commitment = PolicyDecisionCommitment(
+        call_identity="0x" + "ab" * 32,
+        policy_id="priorseal-bounded-spike-v1",
+        verdict=verdict,
+        reason_codes=tuple(reasons),
+        evaluated_at=evaluated_at,
+    )
+    return commitment.to_payload(), commitment.digest()
+
+
+def _frozen_provider(payload, digest):
+    from examples.support.insight_priorseal_boundary import PriorSealAuthorizationProvider
+
+    return PriorSealAuthorizationProvider(
+        {"schema": "priorseal.wak-authorization-response.v1"},
+        trust_roots={},
+        frozen_policy_decision=payload,
+        frozen_policy_commitment_digest=digest,
+    )
+
+
+def _live_commitment(payload, evaluated_at, verdict=None, reasons=None):
+    from web3_agent_kit.execution.envelope import PolicyDecisionCommitment
+
+    return PolicyDecisionCommitment(
+        call_identity=payload["callIdentity"],
+        policy_id=payload["policyId"],
+        verdict=verdict if verdict is not None else payload["verdict"],
+        reason_codes=tuple(reasons if reasons is not None else payload["reasonCodes"]),
+        evaluated_at=evaluated_at,
+    )
+
+
+def test_frozen_policy_commitment_survives_clock_skew():
+    """A frozen digest must still verify when enforcement runs much later.
+
+    Regression for the 2026-10-17 NO_RUN: the gate compared the authorization
+    against a commitment recomputed at enforcement time, and because
+    ``evaluatedAt`` is a per-second clock reading that comparison could never
+    succeed. The pinned sheet's own decision must be the reference.
+    """
+    payload, digest = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, digest)
+
+    # Check 1 works no matter how old the sheet is.
+    assert provider._verify_sheet_commitment() == digest
+
+    # Live enforcement 300s later: the clock moved, the decision did not.
+    live = _live_commitment(payload, evaluated_at=1300)
+    provider._check_live_drift(live, digest)
+    assert provider.drift_records == []
+
+
+def test_doctored_sheet_digest_rejected_before_authorization():
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, _ = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, "0x" + "de" * 32)
+
+    with pytest.raises(AuthorizationDenied) as excinfo:
+        provider._verify_sheet_commitment()
+    assert "self-inconsistent" in str(excinfo.value)
+
+
+def test_policy_drift_aborts_and_records_both_payloads():
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    frozen_payload, frozen_digest = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(frozen_payload, frozen_digest)
+
+    live = _live_commitment(
+        frozen_payload, evaluated_at=1300, verdict="deny", reasons=("AMOUNT_CAP",)
+    )
+    with pytest.raises(AuthorizationDenied) as excinfo:
+        provider._check_live_drift(live, frozen_digest)
+
+    message = str(excinfo.value)
+    assert "drifted" in message
+    assert "verdict" in message and "reasonCodes" in message
+    # Observability requirement: both digests travel with the denial.
+    assert frozen_digest in message
+
+    record = provider.drift_records[-1]
+    assert record["fields"] == ["reasonCodes", "verdict"]
+    assert record["frozenPayload"]["evaluatedAt"] == 1000
+    assert record["livePayload"]["evaluatedAt"] == 1300
+    assert record["frozenRecomputedDigest"] == frozen_digest
+    assert record["liveDigest"] != frozen_digest
+
+
+def _fake_context(policy_commitment):
+    """Minimal stand-in for the interceptor context authorize() reads."""
+    from types import SimpleNamespace
+
+    return SimpleNamespace(
+        envelope=None,
+        envelope_digest="0x" + "00" * 32,
+        policy_commitment=policy_commitment,
+    )
+
+
+def test_gate_checks_record_check1_failure():
+    """The report must show check 1 failing, not just a bare denial."""
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, _ = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, "0x" + "de" * 32)
+    live = _live_commitment(payload, evaluated_at=1300)
+
+    with pytest.raises(AuthorizationDenied):
+        provider.authorize(_fake_context(live))
+
+    check1 = provider.gate_checks["check1SheetSelfConsistency"]
+    assert check1["passed"] is False
+    assert "self-inconsistent" in check1["detail"]
+    assert check1["declaredDigest"] == "0x" + "de" * 32
+    assert provider.gate_checks["frozenSheetSupplied"] is True
+
+
+def test_gate_checks_record_drift_with_both_digests():
+    """A drift abort must leave both digests and the compared field list behind."""
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, digest = _decision_payload(evaluated_at=1000)
+    provider = _frozen_provider(payload, digest)
+    live = _live_commitment(payload, evaluated_at=1300, verdict="deny")
+
+    with pytest.raises(AuthorizationDenied):
+        provider.authorize(_fake_context(live))
+
+    assert provider.gate_checks["check1SheetSelfConsistency"]["passed"] is True
+    drift = provider.gate_checks["driftCheck"]
+    assert drift["passed"] is False
+    assert drift["frozenDigest"] == digest
+    assert drift["liveDigest"] != digest
+    assert "evaluatedAt" not in drift["comparedFields"]
+    assert "verdict" in drift["record"]["fields"]
