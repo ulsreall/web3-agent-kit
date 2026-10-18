@@ -1,0 +1,68 @@
+commit 3ee16156b31c6a6201f98254079cf58415a7f9c9
+Author: Maulana <67689016+ulsreall@users.noreply.github.com>
+Date:   Wed Sep 23 12:17:04 2026 +0700
+
+    feat(examples): add bounded Insight PriorSeal conformance spike (#90)
+    
+    * [verified] feat(examples): add bounded Insight PriorSeal spike
+    
+    Add Base Sepolia registration, vendor the pinned v1 conformance bundle, and implement the WAK-owned JSON boundary and offline N1-N5b acceptance harness.\n\nThe generated report is derived from observed gate/provider outcomes and passes the portable verifier with P1 pending.
+    
+    Signed-off-by: maulana <khasbimln@gmail.com>
+    
+    * fix(examples): close PriorSeal acceptance review gaps
+    
+    Signed-off-by: maulana <khasbimln@gmail.com>
+    
+    ---------
+    
+    Signed-off-by: maulana <khasbimln@gmail.com>
+
+diff --git a/pyproject.toml b/pyproject.toml
+index 3ab6778..125ea3e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -32,6 +32,7 @@ dependencies = [
+     "httpx>=0.25.0",
+     "click>=8.0",
+     "rich>=13.0",
++    "cryptography>=41.0.0",
+ ]
+ [project.scripts]
+ wak = "web3_agent_kit.cli:main"
+diff --git a/web3_agent_kit/chains/chain.py b/web3_agent_kit/chains/chain.py
+index 25e889b..e02f51a 100644
+--- a/web3_agent_kit/chains/chain.py
++++ b/web3_agent_kit/chains/chain.py
+@@ -12,6 +12,7 @@ class Chain(Enum):
+ 
+     ETHEREUM = "ethereum"
+     BASE = "base"
++    BASE_SEPOLIA = "base-sepolia"
+     ARBITRUM = "arbitrum"
+     OPTIMISM = "optimism"
+     POLYGON = "polygon"
+@@ -25,6 +26,7 @@ class Chain(Enum):
+ DEFAULT_RPCS = {
+     Chain.ETHEREUM: "https://eth.llamarpc.com",
+     Chain.BASE: "https://mainnet.base.org",
++    Chain.BASE_SEPOLIA: "https://sepolia.base.org",
+     Chain.ARBITRUM: "https://arb1.arbitrum.io/rpc",
+     Chain.OPTIMISM: "https://mainnet.optimism.io",
+     Chain.POLYGON: "https://polygon-rpc.com",
+@@ -38,6 +40,7 @@ DEFAULT_RPCS = {
+ CHAIN_IDS = {
+     Chain.ETHEREUM: 1,
+     Chain.BASE: 8453,
++    Chain.BASE_SEPOLIA: 84532,
+     Chain.ARBITRUM: 42161,
+     Chain.OPTIMISM: 10,
+     Chain.POLYGON: 137,
+@@ -73,6 +76,7 @@ class ChainConfig:
+         explorers = {
+             Chain.ETHEREUM: "https://etherscan.io",
+             Chain.BASE: "https://basescan.org",
++            Chain.BASE_SEPOLIA: "https://sepolia.basescan.org",
+             Chain.ARBITRUM: "https://arbiscan.io",
+             Chain.OPTIMISM: "https://optimistic.etherscan.io",
+             Chain.POLYGON: "https://polygonscan.com",
