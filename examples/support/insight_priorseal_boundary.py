@@ -1021,6 +1021,28 @@ class PriorSealAuthorizationProvider:
             raise AuthorizationDenied(
                 "sheet policy decision carries an unexpected schema: " + schema
             )
+        # The field set is part of the namespace definition (verdict-gate spec v1.0
+        # §3). Reconstructing from a fixed set of keys would silently drop an extra
+        # one, so a v1 decision that smuggles cautionOptIn would hash fine and pass.
+        # Enforce the exact key set instead of trusting the loader to ignore it.
+        expected_keys = {
+            "schema",
+            "callIdentity",
+            "policyId",
+            "policyVersion",
+            "verdict",
+            "reasonCodes",
+            "evaluatedAt",
+        }
+        actual_keys = set(decision.keys())
+        if actual_keys != expected_keys:
+            extra = sorted(actual_keys - expected_keys)
+            missing = sorted(expected_keys - actual_keys)
+            raise AuthorizationDenied(
+                "POLICY_FIELDSET_VIOLATION: policy decision under "
+                f"{POLICY_DECISION_SCHEMA} must carry exactly the seven namespace keys "
+                f"(extra={extra}, missing={missing})"
+            )
         commitment = PolicyDecisionCommitment(
             call_identity=str(decision["callIdentity"]),
             policy_id=str(decision["policyId"]),

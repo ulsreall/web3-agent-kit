@@ -753,3 +753,39 @@ def test_collect_attestation_verdict_refuses_when_pair_is_not_the_bound_one():
         )
     assert excinfo.value.reason == "VERDICT_PAIR_MISMATCH"
     assert "declared" in excinfo.value.detail
+
+
+def test_v1_policy_decision_carrying_optin_field_is_refused():
+    """v1's field set is part of the namespace, not a convention (spec v1.0 §3).
+
+    Reconstruction reads a fixed set of keys, so an extra key would be dropped and
+    the digest would still match. The gate must reject the payload instead.
+    """
+    import pytest
+
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, digest = _decision_payload(evaluated_at=1000)
+    doctored = dict(payload)
+    doctored["cautionOptIn"] = True
+    provider = _frozen_provider(doctored, digest)
+
+    with pytest.raises(AuthorizationDenied) as excinfo:
+        provider._verify_sheet_commitment()
+    assert "POLICY_FIELDSET_VIOLATION" in str(excinfo.value)
+    assert "cautionOptIn" in str(excinfo.value)
+
+
+def test_v1_policy_decision_missing_a_namespace_key_is_refused():
+    import pytest
+
+    from examples.support.insight_priorseal_boundary import AuthorizationDenied
+
+    payload, digest = _decision_payload(evaluated_at=1000)
+    trimmed = {k: v for k, v in payload.items() if k != "reasonCodes"}
+    provider = _frozen_provider(trimmed, digest)
+
+    with pytest.raises(AuthorizationDenied) as excinfo:
+        provider._verify_sheet_commitment()
+    assert "POLICY_FIELDSET_VIOLATION" in str(excinfo.value)
+    assert "reasonCodes" in str(excinfo.value)
