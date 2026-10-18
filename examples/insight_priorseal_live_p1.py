@@ -50,6 +50,16 @@ def main() -> int:
     parser.add_argument("--go-message-id", type=int, default=None)
     parser.add_argument("--allow-broadcast", action="store_true")
     parser.add_argument("--rehearsal", action="store_true")
+    parser.add_argument(
+        "--exercise-gate",
+        action="store_true",
+        help=(
+            "Run the gate against the real materials with a synthetic signer and "
+            "inert broadcast: the gate executes and its checks land in the report, "
+            "but no private key is used and nothing is broadcast."
+        ),
+    )
+    parser.add_argument("--materials", type=Path, default=None, help="issuer materials drop carrying priorSeal.trustRoot")
     parser.add_argument("--rehearsal-output-dir", type=Path, default=None)
     parser.add_argument("--chain-id", type=int, default=84532)
     parser.add_argument("--cutoff-check-seconds", type=int, default=60)
@@ -72,6 +82,8 @@ def main() -> int:
         chain_id=args.chain_id,
         allow_broadcast=args.allow_broadcast,
         rehearsal=args.rehearsal,
+        exercise_gate=args.exercise_gate,
+        materials_file=args.materials,
         rehearsal_output_dir=args.rehearsal_output_dir,
         cutoff_check_seconds=args.cutoff_check_seconds,
         confirmations=args.confirmations,

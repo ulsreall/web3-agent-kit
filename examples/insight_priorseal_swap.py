@@ -854,6 +854,8 @@ def run_live_p1(
     chain_id: int = 84532,
     allow_broadcast: bool = False,
     rehearsal: bool = False,
+    exercise_gate: bool = False,
+    materials_file: str | Path | None = None,
     rehearsal_output_dir: str | Path | None = None,
     cutoff_check_seconds: int = 60,
     confirmations: int = 2,
@@ -939,7 +941,7 @@ def run_live_p1(
         )
         from support.insight_priorseal_rehearsal import generate_rehearsal_materials
 
-    executing = allow_broadcast or rehearsal
+    executing = allow_broadcast or rehearsal or exercise_gate
     if executing and (run_sheet is None or session_db is None or go_message_id is None):
         raise BoundaryError(
             "broadcast/rehearsal requires --run-sheet, --session-db, and --go-message-id "
@@ -1075,14 +1077,19 @@ def run_live_p1(
         minimum_seconds=cutoff_check_seconds,
     )
 
-    if executing and not rehearsal:
+    if executing and not rehearsal and not exercise_gate:
         plan = _rpc_preflight(rpc_url, config, signer)
     else:
-        plan = {"inert": True, "mode": "REHEARSAL" if rehearsal else "PLAN", "note": "no RPC contacted"}
+        plan = {
+            "inert": True,
+            "mode": "REHEARSAL" if rehearsal else ("GATE_EXERCISE" if exercise_gate else "PLAN"),
+            "note": "no RPC contacted",
+        }
 
     attempts: list[dict[str, Any]] = []
     final_recorder: CallEventRecorder | None = None
     priorseal_gate_checks: dict[str, Any] | None = None
+    trust_root_source: dict[str, Any] = {"source": "fixture-pinned"}
     receipt: Mapping[str, Any] | None = None
     outcome: str | None = None
     enforcement_error: str | None = None
@@ -1131,6 +1138,21 @@ def run_live_p1(
                     cutoff_check_seconds=cutoff_check_seconds,
                 )
                 trust_roots = rehearsal_materials.trust_roots  # type: ignore[union-attr]
+            elif exercise_gate:
+                # Gate exercise: real materials, synthetic signer, inert broadcast,
+                # no RPC. The gate runs for real and its checks land in the report,
+                # but no private key is used and nothing can leave the process.
+                from support.insight_priorseal_live import InertBroadcast, InertReceipt
+
+                boundaries = live_execution_boundaries(
+                    recorder=recorder,
+                    signer=_SyntheticSigner(recorder),
+                    broadcast=InertBroadcast(),
+                    receipt=InertReceipt(confirmations=config.confirmations),
+                    config=config,
+                    cutoff_check_seconds=cutoff_check_seconds,
+                )
+                trust_roots = bundle.trust_roots
             else:
                 boundaries = live_execution_boundaries(
                     recorder=recorder,
@@ -1146,6 +1168,29 @@ def run_live_p1(
                     cutoff_check_seconds=cutoff_check_seconds,
                 )
                 trust_roots = bundle.trust_roots
+
+            # The live issuer publishes its trust root in the materials drop. The
+            # fixture's pinned root is synthetic, so verifying a live acceptance
+            # against it always fails closed. When the materials are supplied, the
+            # acceptance is verified against the issuer's live root and the source is
+            # recorded, so the trust anchor is never silently swapped.
+            if materials_file is not None and not rehearsal:
+                try:
+                    _materials = json.loads(Path(materials_file).read_text(encoding="utf-8"))
+                    _live_root = (_materials.get("priorSeal") or {}).get("trustRoot")
+                except (OSError, ValueError) as exc:
+                    raise BoundaryError(f"cannot read priorSeal materials: {exc}") from exc
+                if isinstance(_live_root, Mapping):
+                    trust_roots = {**trust_roots, "priorSeal": dict(_live_root)}
+                    trust_root_source = {
+                        "source": "live-materials",
+                        "issuer": _live_root.get("issuer"),
+                        "keyId": _live_root.get("keyId"),
+                    }
+                else:
+                    raise BoundaryError("priorSeal materials carry no trustRoot")
+            else:
+                trust_root_source = {"source": "fixture-pinned"}
 
             # The Hermes GO message itself must authorize the exact sheet hash we are
             # about to sign/broadcast. Verify against the CURRENT attempt's sheet hash
@@ -1207,6 +1252,12 @@ def run_live_p1(
                     counts=recorder.boundary_counts(),
                     rehearsal=rehearsal,
                 )
+                if exercise_gate and outcome in (
+                    "LIVE_LEG_COMPLETED",
+                    "REHEARSAL_LEG_COMPLETED",
+                ):
+                    # Nothing left the process: inert broadcast, synthetic signer.
+                    outcome, detail = "GATE_EXERCISED_ALLOW", None
                 if outcome == "ENFORCEMENT_DENIED":
                     enforcement_error = detail
                 elif outcome in ("ERROR", "BROADCAST_NO_CONFIRMED_RECEIPT", "NO_RECEIPT"):
@@ -1228,6 +1279,12 @@ def run_live_p1(
     flags = execution_flags(final_recorder)
     signed = bool(flags["signed"])
     broadcast = bool(flags["broadcast"])
+    if exercise_gate:
+        # The synthetic signer and inert broadcast still tick the boundary counters,
+        # so the raw flags would claim a signature and a broadcast that never
+        # happened. A gate exercise signs nothing and sends nothing.
+        signed = False
+        broadcast = False
 
     from web3_agent_kit import __version__
 
@@ -1236,7 +1293,15 @@ def run_live_p1(
 
     evidence: dict[str, Any] = {
         "schema": "wak-p1.execution-evidence.v1",
-        "mode": "REHEARSAL" if rehearsal else ("LIVE" if allow_broadcast else "DRY_RUN"),
+        "mode": (
+            "REHEARSAL"
+            if rehearsal
+            else (
+                "LIVE"
+                if allow_broadcast
+                else ("DRY_RUN_GATE" if exercise_gate else "DRY_RUN")
+            )
+        ),
         "goArrival": arrival_metadata,
         "goArrivalRunwaySeconds": go_runway,
         "runwayAtCheckSeconds": now_runway,
@@ -1263,6 +1328,19 @@ def run_live_p1(
     }
     if priorseal_gate_checks is not None:
         evidence["priorsealGateChecks"] = priorseal_gate_checks
+    evidence["priorSealTrustRoot"] = trust_root_source
+    if exercise_gate:
+        evidence["exerciseGate"] = {
+            "schema": "wak-p1.gate-exercise.v1",
+            "signer": "synthetic (no private key used)",
+            "broadcast": "inert (nothing leaves the process)",
+            "rpc": "none",
+            "countersAreSynthetic": True,
+            "note": (
+                "boundary counters are synthetic by construction: signer/broadcast "
+                "ticked inert stubs, so signed/broadcast are forced false"
+            ),
+        }
     if enforcement_error is not None:
         evidence["enforcementError"] = enforcement_error
     if run_error is not None:

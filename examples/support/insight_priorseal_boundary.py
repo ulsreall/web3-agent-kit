@@ -700,8 +700,18 @@ def _verify_priorseal_acceptance(
         raise AuthorizationDenied("PriorSeal acceptance entry hash is invalid")
 
     try:
+        # The issuer's materials name the PEM "publicKey"; the pinned fixture uses
+        # "publicKeyPem". Accept either, but only if the SPKI pin still matches —
+        # the pin, not the field name, is the trust anchor.
+        public_key_pem = root.get("publicKeyPem") or root.get("publicKey")
+        if not isinstance(public_key_pem, str) or not public_key_pem.lstrip().startswith(
+            "-----BEGIN"
+        ):
+            raise AuthorizationDenied(
+                "PriorSeal acceptance trust root carries no usable PEM public key"
+            )
         public_key = serialization.load_pem_public_key(
-            str(root["publicKeyPem"]).encode("ascii")
+            public_key_pem.encode("ascii")
         )
         if not isinstance(public_key, Ed25519PublicKey):
             raise TypeError("not an Ed25519 key")
