@@ -1234,6 +1234,26 @@ def run_live_p1(
             # the signed attestations (never the sheet's copies) and refuses unless
             # both sides signed PASS. Policy-decision v1 carries no opt-in field, so
             # CAUTION refuses unconditionally.
+            # A missing drop must refuse, never skip: "no materials" is the same
+            # class of hole as a plan-only dry run that reports green without
+            # executing the gate. Rehearsal is exempt because its materials are
+            # synthetic and carry no issuer attestations.
+            if insight_drop is None and not rehearsal:
+                final_recorder = recorder
+                outcome = "ENFORCEMENT_DENIED"
+                enforcement_error = (
+                    "insight verdict gate: no insight drop supplied — refusing rather "
+                    "than skipping (pass --insight-drop with the signed attestations "
+                    "and insight-oracle-keys.json)"
+                )
+                insight_verdict_record = {
+                    "schema": "wak-p1.insight-verdict-gate.v1",
+                    "decision": "DENY",
+                    "reason": "VERDICT_UNKNOWN",
+                    "detail": enforcement_error,
+                }
+                break
+
             if insight_drop is not None:
                 try:
                     _src, _dst, _insight_trust = load_live_insight_trust(insight_drop)
