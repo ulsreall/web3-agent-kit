@@ -45,6 +45,24 @@ except ModuleNotFoundError:  # direct: python examples/insight_priorseal_swap.py
         verify_insight_attestation,
     )
 
+try:
+    from examples.support.insight_verdict_gate import (
+        InsightGateError,
+        InsightVerdictDenied,
+        collect_attestation_verdict,
+        evaluate_insight_verdict_gate,
+        load_live_insight_trust,
+    )
+except ModuleNotFoundError:  # direct: python examples/insight_priorseal_swap.py
+    from support.insight_verdict_gate import (  # type: ignore[no-redef]
+        InsightGateError,
+        InsightVerdictDenied,
+        collect_attestation_verdict,
+        evaluate_insight_verdict_gate,
+        load_live_insight_trust,
+    )
+
+
 
 @runtime_checkable
 class SignerProtocol(Protocol):
@@ -856,6 +874,7 @@ def run_live_p1(
     rehearsal: bool = False,
     exercise_gate: bool = False,
     materials_file: str | Path | None = None,
+    insight_drop: str | Path | None = None,
     rehearsal_output_dir: str | Path | None = None,
     cutoff_check_seconds: int = 60,
     confirmations: int = 2,
@@ -1090,6 +1109,7 @@ def run_live_p1(
     final_recorder: CallEventRecorder | None = None
     priorseal_gate_checks: dict[str, Any] | None = None
     trust_root_source: dict[str, Any] = {"source": "fixture-pinned"}
+    insight_verdict_record: dict[str, Any] | None = None
     receipt: Mapping[str, Any] | None = None
     outcome: str | None = None
     enforcement_error: str | None = None
@@ -1210,6 +1230,51 @@ def run_live_p1(
                 go_authorization = None
                 break
 
+            # Insight verdict gate: runs before any signing, reads the verdicts from
+            # the signed attestations (never the sheet's copies) and refuses unless
+            # both sides signed PASS. Policy-decision v1 carries no opt-in field, so
+            # CAUTION refuses unconditionally.
+            if insight_drop is not None:
+                try:
+                    _src, _dst, _insight_trust = load_live_insight_trust(insight_drop)
+                    _verdicts = collect_attestation_verdict(
+                        _src, _dst, _insight_trust, now=int(time.time())
+                    )
+                    insight_verdict_record = evaluate_insight_verdict_gate(
+                        verdicts=_verdicts,
+                        sheet_insight=(sheet.get("insight") or {}),
+                        trust=_insight_trust,
+                        pair_commitment=(sheet.get("insight") or {}).get("pairCommitment"),
+                    )
+                except InsightVerdictDenied as exc:
+                    final_recorder = recorder
+                    insight_verdict_record = exc.record
+                    outcome = "ENFORCEMENT_DENIED"
+                    enforcement_error = str(exc)
+                    break
+                except InsightGateError as exc:
+                    final_recorder = recorder
+                    outcome = "ENFORCEMENT_DENIED"
+                    enforcement_error = str(exc)
+                    insight_verdict_record = {
+                        "schema": "wak-p1.insight-verdict-gate.v1",
+                        "decision": "DENY",
+                        "reason": exc.reason,
+                        "detail": str(exc),
+                    }
+                    break
+                except Exception as exc:  # noqa: BLE001 - fail closed, classified below
+                    final_recorder = recorder
+                    outcome = "ENFORCEMENT_DENIED"
+                    enforcement_error = f"insight verdict gate: {type(exc).__name__}: {exc}"
+                    insight_verdict_record = {
+                        "schema": "wak-p1.insight-verdict-gate.v1",
+                        "decision": "DENY",
+                        "reason": "VERDICT_UNKNOWN",
+                        "detail": enforcement_error,
+                    }
+                    break
+
             response = sheet["priorSeal"]["response"]
             with tempfile.TemporaryDirectory(prefix="wak-p1-acceptance-") as directory:
                 store = SQLiteAcceptanceStore(Path(directory) / "acceptances.sqlite3")
@@ -1329,6 +1394,8 @@ def run_live_p1(
     if priorseal_gate_checks is not None:
         evidence["priorsealGateChecks"] = priorseal_gate_checks
     evidence["priorSealTrustRoot"] = trust_root_source
+    if insight_verdict_record is not None:
+        evidence["insightVerdictGate"] = insight_verdict_record
     if exercise_gate:
         evidence["exerciseGate"] = {
             "schema": "wak-p1.gate-exercise.v1",

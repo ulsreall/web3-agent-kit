@@ -578,3 +578,124 @@ def test_gate_checks_record_drift_with_both_digests():
     assert drift["liveDigest"] != digest
     assert "evaluatedAt" not in drift["comparedFields"]
     assert "verdict" in drift["record"]["fields"]
+
+
+# --- Insight verdict gate: spec v0.1 §2/§4/§5 ---------------------------------
+
+
+def _verdicts(source, destination):
+    return {
+        "source": {"verdict": source},
+        "destination": {"verdict": destination},
+    }
+
+
+def _sheet_insight(source=None, destination=None, **extra):
+    payload = {"sourceVerdict": source, "destinationVerdict": destination}
+    payload.update(extra)
+    return payload
+
+
+def _gate(source, destination, sheet=None, extra_sheet=None):
+    from examples.support.insight_verdict_gate import evaluate_insight_verdict_gate
+
+    sheet_insight = sheet if sheet is not None else _sheet_insight(source, destination)
+    if extra_sheet:
+        sheet_insight = dict(sheet_insight)
+        sheet_insight.update(extra_sheet)
+    return evaluate_insight_verdict_gate(
+        verdicts=_verdicts(source, destination),
+        sheet_insight=sheet_insight,
+        trust={"provenance": {"source": "test"}},
+        pair_commitment="0x" + "11" * 32,
+    )
+
+
+def test_verdict_gate_allows_signed_pass():
+    record = _gate("PASS", "PASS")
+    assert record["decision"] == "ALLOW"
+    assert record["reason"] == "ALLOW"
+    assert record["signedVerdicts"] == {"source": "PASS", "destination": "PASS"}
+
+
+def test_verdict_gate_refuses_caution_without_optin():
+    from examples.support.insight_verdict_gate import InsightVerdictDenied
+
+    with pytest.raises(InsightVerdictDenied) as excinfo:
+        _gate("PASS", "CAUTION")
+    assert excinfo.value.reason == "VERDICT_CAUTION_NO_OPTIN"
+    assert excinfo.value.record["decision"] == "DENY"
+    assert excinfo.value.record["refusedOn"] == "destination"
+    assert excinfo.value.record["refusedValue"] == "CAUTION"
+
+
+def test_verdict_gate_has_no_optin_path_under_policy_v1():
+    """v1 carries no opt-in field, so a sheet-declared opt-in cannot unlock CAUTION."""
+    from examples.support.insight_verdict_gate import InsightVerdictDenied
+
+    with pytest.raises(InsightVerdictDenied) as excinfo:
+        _gate("CAUTION", "CAUTION", extra_sheet={"cautionOptIn": True})
+    assert excinfo.value.reason == "VERDICT_CAUTION_NO_OPTIN"
+    assert "v1" in str(excinfo.value.record["policy"]["cautionOptIn"])
+
+
+def test_verdict_gate_refuses_block():
+    from examples.support.insight_verdict_gate import InsightVerdictDenied
+
+    with pytest.raises(InsightVerdictDenied) as excinfo:
+        _gate("PASS", "BLOCK")
+    assert excinfo.value.reason == "VERDICT_BLOCK"
+
+
+def test_verdict_gate_fails_closed_on_unknown_or_missing():
+    from examples.support.insight_verdict_gate import InsightVerdictDenied
+
+    for value in ("WARN", "", None, "   ", "not-block"):
+        with pytest.raises(InsightVerdictDenied) as excinfo:
+            _gate("PASS", value)
+        assert excinfo.value.reason == "VERDICT_UNKNOWN", value
+
+
+def test_verdict_gate_refuses_when_sheet_copy_differs_from_signed_verdict():
+    from examples.support.insight_verdict_gate import InsightVerdictDenied
+
+    with pytest.raises(InsightVerdictDenied) as excinfo:
+        _gate("CAUTION", "CAUTION", sheet=_sheet_insight("PASS", "PASS"))
+    assert excinfo.value.reason == "VERDICT_COPY_MISMATCH"
+    assert excinfo.value.record["mismatched"] == ["source", "destination"]
+
+
+def test_verdict_gate_ignores_optin_when_verdicts_pass():
+    record = _gate("PASS", "PASS", extra_sheet={"cautionOptIn": True})
+    assert record["decision"] == "ALLOW"
+
+
+def test_collect_attestation_verdict_verifies_fixture_signatures():
+    """The drop loader verifies real signatures, not just reads a field."""
+    import json
+    from pathlib import Path
+
+    from examples.support.insight_verdict_gate import collect_attestation_verdict
+
+    root = Path(__file__).resolve().parent / "fixtures/insight_priorseal_spike/v1.1/fixture"
+    baseline = json.loads((root / "baseline.json").read_text())
+    insight = baseline["insight"]
+    registry = insight["keyRegistry"]
+    attester = str(insight["sourceAttestation"]["attester"])
+    entry = [e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()][0]
+    trust = {
+        "baseline": {"insight": {"keyRegistry": registry}},
+        "trust_roots": {"insight": {"attester": attester, "historicalKeyId": entry["key_id"]}},
+        "provenance": {"source": "fixture"},
+    }
+    now = int(insight["sourceAttestation"]["data"]["checkedAt"]) + 1
+    verdicts = collect_attestation_verdict(
+        insight["sourceAttestation"], insight["destinationAttestation"], trust, now=now
+    )
+    assert verdicts["source"]["verdict"] == "PASS"
+    assert verdicts["destination"]["verdict"] == "PASS"
+
+    blocked = collect_attestation_verdict(
+        insight["sourceAttestation"], insight["blockedDestinationAttestation"], trust, now=now
+    )
+    assert blocked["destination"]["verdict"] == "BLOCK"

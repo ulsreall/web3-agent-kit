@@ -59,6 +59,7 @@ def main() -> int:
             "but no private key is used and nothing is broadcast."
         ),
     )
+    parser.add_argument("--insight-drop", type=Path, default=None, help="directory with both signed attestations + insight-oracle-keys.json")
     parser.add_argument("--materials", type=Path, default=None, help="issuer materials drop carrying priorSeal.trustRoot")
     parser.add_argument("--rehearsal-output-dir", type=Path, default=None)
     parser.add_argument("--chain-id", type=int, default=84532)
@@ -84,6 +85,7 @@ def main() -> int:
         rehearsal=args.rehearsal,
         exercise_gate=args.exercise_gate,
         materials_file=args.materials,
+        insight_drop=args.insight_drop,
         rehearsal_output_dir=args.rehearsal_output_dir,
         cutoff_check_seconds=args.cutoff_check_seconds,
         confirmations=args.confirmations,
