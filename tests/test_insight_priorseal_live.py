@@ -689,13 +689,67 @@ def test_collect_attestation_verdict_verifies_fixture_signatures():
         "provenance": {"source": "fixture"},
     }
     now = int(insight["sourceAttestation"]["data"]["checkedAt"]) + 1
-    verdicts = collect_attestation_verdict(
-        insight["sourceAttestation"], insight["destinationAttestation"], trust, now=now
+    from examples.support.insight_priorseal_boundary import insight_pair_commitment
+
+    expected = insight_pair_commitment(
+        insight["sourceAttestation"], insight["destinationAttestation"]
     )
+    verdicts = collect_attestation_verdict(
+        insight["sourceAttestation"],
+        insight["destinationAttestation"],
+        trust,
+        now=now,
+        expected_pair_commitment=expected,
+    )
+    assert verdicts["pairCommitmentComputed"] == expected
     assert verdicts["source"]["verdict"] == "PASS"
     assert verdicts["destination"]["verdict"] == "PASS"
 
     blocked = collect_attestation_verdict(
-        insight["sourceAttestation"], insight["blockedDestinationAttestation"], trust, now=now
+        insight["sourceAttestation"],
+        insight["blockedDestinationAttestation"],
+        trust,
+        now=now,
+        expected_pair_commitment=insight_pair_commitment(
+            insight["sourceAttestation"], insight["blockedDestinationAttestation"]
+        ),
     )
     assert blocked["destination"]["verdict"] == "BLOCK"
+
+
+def test_collect_attestation_verdict_refuses_when_pair_is_not_the_bound_one():
+    """Two individually valid attestations that do not hash to the bound pair refuse."""
+    import json
+    from pathlib import Path
+
+    import pytest
+
+    from examples.support.insight_verdict_gate import InsightGateError, collect_attestation_verdict
+
+    root = Path(__file__).resolve().parent / "fixtures/insight_priorseal_spike/v1.1/fixture"
+    insight = json.loads((root / "baseline.json").read_text())["insight"]
+    registry = insight["keyRegistry"]
+    attester = str(insight["sourceAttestation"]["attester"])
+    entry = [e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()][0]
+    trust = {
+        "baseline": {"insight": {"keyRegistry": registry}},
+        "trust_roots": {"insight": {"attester": attester, "historicalKeyId": entry["key_id"]}},
+        "provenance": {"source": "fixture"},
+    }
+    now = int(insight["sourceAttestation"]["data"]["checkedAt"]) + 1
+    with pytest.raises(InsightGateError) as excinfo:
+        collect_attestation_verdict(
+            insight["sourceAttestation"],
+            insight["destinationAttestation"],
+            trust,
+            now=now,
+            expected_pair_commitment="0x" + "ab" * 32,
+        )
+    assert excinfo.value.reason == "VERDICT_PAIR_MISMATCH"
+
+    with pytest.raises(InsightGateError) as excinfo:
+        collect_attestation_verdict(
+            insight["sourceAttestation"], insight["destinationAttestation"], trust, now=now
+        )
+    assert excinfo.value.reason == "VERDICT_PAIR_MISMATCH"
+    assert "declared" in excinfo.value.detail

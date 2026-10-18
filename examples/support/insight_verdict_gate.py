@@ -28,11 +28,13 @@ from typing import Any, Mapping
 try:  # package import (tests) then direct script import (examples/)
     from examples.support.insight_priorseal_boundary import (
         BoundaryError,
+        insight_pair_commitment,
         verify_insight_attestation,
     )
 except ModuleNotFoundError:  # pragma: no cover - direct execution
     from support.insight_priorseal_boundary import (  # type: ignore[no-redef]
         BoundaryError,
+        insight_pair_commitment,
         verify_insight_attestation,
     )
 
@@ -45,6 +47,7 @@ REASON_UNKNOWN = "VERDICT_UNKNOWN"
 REASON_COPY_MISMATCH = "VERDICT_COPY_MISMATCH"
 REASON_STALE = "VERDICT_STALE"
 REASON_MATERIALS_MISSING = "MATERIALS_MISSING"
+REASON_PAIR_MISMATCH = "VERDICT_PAIR_MISMATCH"
 REASON_UNTRUSTED = "VERDICT_UNTRUSTED"
 
 SOURCE_FILE = "source-oracle-safety-check-v3.json"
@@ -134,6 +137,7 @@ def collect_attestation_verdict(
     destination: Mapping[str, Any],
     trust: Mapping[str, Any],
     now: int,
+    expected_pair_commitment: str | None = None,
 ) -> dict[str, Any]:
     """Verify both attestations and return their signed verdicts."""
     verdicts: dict[str, Any] = {}
@@ -155,6 +159,19 @@ def collect_attestation_verdict(
             "participantCount": int(data.get("participantCount", 0)),
             "requiredParticipantCount": int(data.get("requiredParticipantCount", 0)),
         }
+    computed = insight_pair_commitment(source, destination)
+    if expected_pair_commitment is None:
+        raise InsightGateError(
+            REASON_PAIR_MISMATCH,
+            "no pair commitment was declared, so the two attestations cannot be bound",
+        )
+    if str(computed).lower() != str(expected_pair_commitment).lower():
+        raise InsightGateError(
+            REASON_PAIR_MISMATCH,
+            f"attestations hash to {computed}, authorization declares {expected_pair_commitment}",
+        )
+    verdicts["pairCommitmentComputed"] = computed
+    verdicts["pairCommitmentDeclared"] = expected_pair_commitment
     return verdicts
 
 
@@ -180,7 +197,8 @@ def evaluate_insight_verdict_gate(
             "destination": verdicts["destination"].get("verdict"),
         },
         "signedVerdicts": {"source": source_verdict, "destination": destination_verdict},
-        "pairCommitment": pair_commitment,
+        "pairCommitment": verdicts.get("pairCommitmentComputed", pair_commitment),
+        "pairCommitmentDeclared": verdicts.get("pairCommitmentDeclared", pair_commitment),
         "trust": trust.get("provenance"),
         "policy": {
             "allowing": VERDICT_ALLOWING,

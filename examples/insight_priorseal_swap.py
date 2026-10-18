@@ -1258,7 +1258,13 @@ def run_live_p1(
                 try:
                     _src, _dst, _insight_trust = load_live_insight_trust(insight_drop)
                     _verdicts = collect_attestation_verdict(
-                        _src, _dst, _insight_trust, now=int(time.time())
+                        _src,
+                        _dst,
+                        _insight_trust,
+                        now=int(time.time()),
+                        expected_pair_commitment=(sheet.get("insight") or {}).get(
+                            "pairCommitment"
+                        ),
                     )
                     insight_verdict_record = evaluate_insight_verdict_gate(
                         verdicts=_verdicts,
