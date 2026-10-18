@@ -1249,7 +1249,7 @@ def run_live_p1(
                 insight_verdict_record = {
                     "schema": "wak-p1.insight-verdict-gate.v1",
                     "decision": "DENY",
-                    "reason": "VERDICT_UNKNOWN",
+                    "reason": "MATERIALS_MISSING",
                     "detail": enforcement_error,
                 }
                 break
