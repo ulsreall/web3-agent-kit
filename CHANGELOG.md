@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.5...v1.19.0) (2026-10-18)
+
+
+### Features
+
+* **p1:** gate-exercise mode, live trust root from materials, PEM field tolerance ([34c53d4](https://github.com/ulsreall/web3-agent-kit/commit/34c53d4a406afa3856361dec17d965a2f673183a))
+* **p1:** Insight verdict gate in the live path (spec v0.1, policy-decision v1 half) ([2b13c2f](https://github.com/ulsreall/web3-agent-kit/commit/2b13c2fa897caa6c81cd3702374f233c13a1d299))
+* **report:** record explicit outcomes of both PriorSeal gate checks ([0ca9227](https://github.com/ulsreall/web3-agent-kit/commit/0ca9227f4825705c122721b6bef9482df1da5bee))
+
+
+### Bug Fixes
+
+* **execution:** validate PriorSeal authorization against the pinned sheet, not a live recomputation ([df72216](https://github.com/ulsreall/web3-agent-kit/commit/df722163f5bcabeb85571a472e42ceb4665794bc))
+* **p1:** a missing insight drop refuses instead of skipping the verdict gate ([03e25df](https://github.com/ulsreall/web3-agent-kit/commit/03e25dfc4069550d7af120982949913cec40f48d))
+* **p1:** enforce the v1 policy-decision field set (verdict-gate spec v1.0 §3) ([fc7db75](https://github.com/ulsreall/web3-agent-kit/commit/fc7db7596ff7c1464b2ba13847f48b77876d121d))
+* **p1:** missing drop reports MATERIALS_MISSING, per verdict-gate spec v0.3 §4 ([6ed2304](https://github.com/ulsreall/web3-agent-kit/commit/6ed2304ff0a223911f27255627f743758c6d9c85))
+* **p1:** verdict gate refuses unless the attestations hash to the bound pair ([ae4ef04](https://github.com/ulsreall/web3-agent-kit/commit/ae4ef04a9b99c7fc046173a4440ad3386a14981e))
+
 ## [Unreleased]
 
 ### Changed
