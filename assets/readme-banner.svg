@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="440" viewBox="0 0 960 440" role="img" aria-labelledby="title desc">
   <title id="title">Web3 Agent Kit v1.18.5</title>
-  <desc id="desc">Project overview: nine chains, 37 API routes, 75 percent test coverage, and 1,971 tests passing with 12 skipped. Write-path readiness varies by module.</desc>
+  <desc id="desc">Project overview: nine chains, 37 API routes, 71 percent test coverage, and 1,833 tests passing with 170 skipped. Write-path readiness varies by module.</desc>
   <defs>
     <linearGradient id="top" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#19c99a"/><stop offset="1" stop-color="#4fe0b2"/></linearGradient>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#111a1e"/><stop offset="1" stop-color="#0c1217"/></linearGradient>
@@ -21,8 +21,8 @@
   <text x="295" y="211" fill="#38d5a6" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17" font-weight="600">Application-gated writes</text>
   <text x="80" y="266" fill="#5dd9e8" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">9 chains</text>
   <text x="328" y="266" fill="#c0a6ff" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">37 API routes</text>
-  <text x="611" y="266" fill="#f3c75b" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">75% coverage</text>
+  <text x="611" y="266" fill="#f3c75b" font-family="'IBM Plex Mono',Consolas,monospace" font-size="18" font-weight="600">71% coverage</text>
   <text x="80" y="310" fill="#a0b2af" font-family="'IBM Plex Mono',Consolas,monospace" font-size="14">Write-path readiness varies by module; gated signing needs app authorization.</text>
   <text x="80" y="363" fill="#d6e4e0" font-family="'IBM Plex Mono',Consolas,monospace" font-size="17">→ pip install web3-agent-kit</text>
-  <text x="80" y="394" fill="#7f9691" font-family="'IBM Plex Mono',Consolas,monospace" font-size="13">1,957 tests passed  ·  12 skipped</text>
+  <text x="80" y="394" fill="#7f9691" font-family="'IBM Plex Mono',Consolas,monospace" font-size="13">1,833 tests passed  ·  170 skipped</text>
 </svg>
