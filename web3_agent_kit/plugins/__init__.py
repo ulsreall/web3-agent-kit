@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import importlib
+import importlib.metadata
 import importlib.util
 import inspect
-import sys
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -278,12 +278,7 @@ class PluginRegistry:
         """
         loaded = []
 
-        if sys.version_info >= (3, 10):
-            eps = importlib.metadata.entry_points(group=group)
-        else:
-            import pkg_resources
-
-            eps = pkg_resources.iter_entry_points(group)
+        eps = importlib.metadata.entry_points(group=group)
 
         for ep in eps:
             try:
