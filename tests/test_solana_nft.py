@@ -174,29 +174,35 @@ class TestSolanaNFT:
     async def test_get_collections_by_owner(self, nft):
         """Test collection grouping logic."""
         # Mock get_all_nfts to return 2 collections
-        with patch.object(nft, "get_all_nfts", AsyncMock(return_value=[
-            {
-                "id": "asset_1",
-                "grouping": [
-                    {"group_key": "collection", "group_value": "Cool Cats"},
-                ],
-                "content": {"links": {"image": "https://cats.png"}},
-            },
-            {
-                "id": "asset_2",
-                "grouping": [
-                    {"group_key": "collection", "group_value": "Cool Cats"},
-                ],
-                "content": {"links": {"image": "https://cats.png"}},
-            },
-            {
-                "id": "asset_3",
-                "grouping": [
-                    {"group_key": "collection", "group_value": "Bored Dogs"},
-                ],
-                "content": {"links": {"image": "https://dogs.png"}},
-            },
-        ])):
+        with patch.object(
+            nft,
+            "get_all_nfts",
+            AsyncMock(
+                return_value=[
+                    {
+                        "id": "asset_1",
+                        "grouping": [
+                            {"group_key": "collection", "group_value": "Cool Cats"},
+                        ],
+                        "content": {"links": {"image": "https://cats.png"}},
+                    },
+                    {
+                        "id": "asset_2",
+                        "grouping": [
+                            {"group_key": "collection", "group_value": "Cool Cats"},
+                        ],
+                        "content": {"links": {"image": "https://cats.png"}},
+                    },
+                    {
+                        "id": "asset_3",
+                        "grouping": [
+                            {"group_key": "collection", "group_value": "Bored Dogs"},
+                        ],
+                        "content": {"links": {"image": "https://dogs.png"}},
+                    },
+                ]
+            ),
+        ):
             collections = await nft.get_collections_by_owner("owner")
             assert len(collections) == 2
             # Cool Cats should be first (count=2 > count=1)
@@ -213,20 +219,26 @@ class TestSolanaNFT:
 
     @pytest.mark.asyncio
     async def test_get_portfolio_summary(self, nft):
-        with patch.object(nft, "get_all_nfts", AsyncMock(return_value=[
-            {
-                "id": "asset_1",
-                "grouping": [{"group_key": "collection", "group_value": "Test Collection"}],
-                "content": {"links": {"image": "https://example.com/1.png"}},
-                "ownership": {"updateTime": "2026-01-15T10:00:00Z"},
-            },
-            {
-                "id": "asset_2",
-                "grouping": [{"group_key": "collection", "group_value": "Test Collection"}],
-                "content": {"links": {"image": "https://example.com/2.png"}},
-                "ownership": {"updateTime": "2026-01-20T12:00:00Z"},
-            },
-        ])):
+        with patch.object(
+            nft,
+            "get_all_nfts",
+            AsyncMock(
+                return_value=[
+                    {
+                        "id": "asset_1",
+                        "grouping": [{"group_key": "collection", "group_value": "Test Collection"}],
+                        "content": {"links": {"image": "https://example.com/1.png"}},
+                        "ownership": {"updateTime": "2026-01-15T10:00:00Z"},
+                    },
+                    {
+                        "id": "asset_2",
+                        "grouping": [{"group_key": "collection", "group_value": "Test Collection"}],
+                        "content": {"links": {"image": "https://example.com/2.png"}},
+                        "ownership": {"updateTime": "2026-01-20T12:00:00Z"},
+                    },
+                ]
+            ),
+        ):
             summary = await nft.get_portfolio_summary("owner")
             assert summary["total_nfts"] == 2
             assert summary["total_collections"] == 1

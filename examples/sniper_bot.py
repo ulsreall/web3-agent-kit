@@ -22,9 +22,9 @@ def main():
         "buy_amount": 0.01,  # ETH
         "max_slippage": 10,  # percent
         "take_profit": 2.0,  # 2x
-        "stop_loss": 0.5,    # 50% loss
+        "stop_loss": 0.5,  # 50% loss
         "auto_sell": True,
-        "blacklist": [       # Token addresses to avoid
+        "blacklist": [  # Token addresses to avoid
             "0xdead",
             "0x0000",
         ],
@@ -52,7 +52,7 @@ def main():
        - Watch for new liquidity adds on Uniswap V2/V3
        - Filter for tokens with > $1000 initial liquidity
        - Check contract verified on explorer
-       - Avoid blacklisted addresses: {config['blacklist']}
+       - Avoid blacklisted addresses: {config["blacklist"]}
 
     2. ANALYZE:
        - Check if contract is renounced
@@ -61,10 +61,10 @@ def main():
        - Verify liquidity locked
 
     3. EXECUTE:
-       - Buy {config['buy_amount']} ETH worth
-       - Max slippage: {config['max_slippage']}%
-       - Set take profit at {config['take_profit']}x
-       - Set stop loss at {config['stop_loss'] * 100}%
+       - Buy {config["buy_amount"]} ETH worth
+       - Max slippage: {config["max_slippage"]}%
+       - Set take profit at {config["take_profit"]}x
+       - Set stop loss at {config["stop_loss"] * 100}%
 
     4. MANAGE:
        - Monitor position P&L

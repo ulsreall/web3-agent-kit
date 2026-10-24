@@ -9,6 +9,7 @@ from typing import Optional
 
 class NFTStandard(Enum):
     """NFT token standard."""
+
     ERC721 = "ERC721"
     ERC1155 = "ERC1155"
 
@@ -16,6 +17,7 @@ class NFTStandard(Enum):
 @dataclass
 class NFTConfig:
     """Configuration for NFT operations."""
+
     chain: str = "ethereum"
     # API keys
     opensea_api_key: str = ""
@@ -30,6 +32,7 @@ class NFTConfig:
 @dataclass
 class NFTCollection:
     """NFT collection information."""
+
     address: str
     name: str = ""
     symbol: str = ""
@@ -62,6 +65,7 @@ class NFTCollection:
 @dataclass
 class NFTItem:
     """Individual NFT item."""
+
     contract: str
     token_id: str
     name: str = ""
@@ -95,6 +99,7 @@ class NFTItem:
 @dataclass
 class NFTListing:
     """NFT listing on marketplace."""
+
     contract: str
     token_id: str
     marketplace: str = "opensea"
@@ -119,6 +124,7 @@ class NFTListing:
 @dataclass
 class MintResult:
     """Result of NFT minting."""
+
     contract: str
     token_id: str = ""
     tx_hash: str = ""

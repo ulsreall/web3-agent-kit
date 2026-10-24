@@ -34,6 +34,7 @@ analyzes contract safety, and executes buys if tokens are deemed safe.
 ```python
 from web3_agent_kit import TokenSniper, SniperConfig, Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
+
 chain_manager = ChainManager(chains=[Chain.BASE])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 uniswap = Uniswap(chain_manager=chain_manager)

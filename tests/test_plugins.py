@@ -9,6 +9,7 @@ from web3_agent_kit.plugins import Plugin, PluginManager, PluginMeta, PluginRegi
 
 # === Test Plugins ===
 
+
 class SimplePlugin(Plugin):
     """A simple test plugin."""
 
@@ -83,6 +84,7 @@ class BrokenPlugin(Plugin):
 
 # === Test PluginMeta ===
 
+
 class TestPluginMeta:
     def test_creation(self):
         meta = PluginMeta(
@@ -110,6 +112,7 @@ class TestPluginMeta:
 
 
 # === Test PluginRegistry ===
+
 
 class TestPluginRegistry:
     def test_register(self):
@@ -204,7 +207,7 @@ class TestPluginRegistry:
 
         # Create a temporary plugin file
         with tempfile.TemporaryDirectory() as tmpdir:
-            plugin_code = '''
+            plugin_code = """
 from web3_agent_kit.plugins import Plugin, PluginMeta
 
 class DirPlugin(Plugin):
@@ -225,7 +228,7 @@ class DirPlugin(Plugin):
 
 def register_plugin():
     return DirPlugin()
-'''
+"""
             plugin_path = os.path.join(tmpdir, "my_plugin.py")
             with open(plugin_path, "w") as f:
                 f.write(plugin_code)
@@ -247,6 +250,7 @@ def register_plugin():
 
 
 # === Test PluginManager ===
+
 
 class TestPluginManager:
     def test_execute(self):
@@ -281,7 +285,7 @@ class TestPluginManager:
     def test_load_dir(self):
         manager = PluginManager()
         with tempfile.TemporaryDirectory() as tmpdir:
-            plugin_code = '''
+            plugin_code = """
 from web3_agent_kit.plugins import Plugin, PluginMeta
 
 class TestDirPlugin(Plugin):
@@ -298,7 +302,7 @@ class TestDirPlugin(Plugin):
 
 def register_plugin():
     return TestDirPlugin()
-'''
+"""
             with open(os.path.join(tmpdir, "test.py"), "w") as f:
                 f.write(plugin_code)
 
@@ -307,6 +311,7 @@ def register_plugin():
 
 
 # === Test Base Plugin ===
+
 
 class TestBasePlugin:
     def test_execute_not_implemented(self):

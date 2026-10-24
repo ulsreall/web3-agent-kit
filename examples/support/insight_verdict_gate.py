@@ -83,7 +83,9 @@ def _load(path: Path) -> Any:
         raise BoundaryError(f"insight drop file {path.name} is not valid JSON: {exc}") from exc
 
 
-def load_live_insight_trust(drop_dir: str | Path) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
+def load_live_insight_trust(
+    drop_dir: str | Path,
+) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Build the registry/trust-root pair for verifying the drop's attestations.
 
     Returns ``(source, destination, trust)`` where ``trust`` carries the baseline and
@@ -102,14 +104,21 @@ def load_live_insight_trust(drop_dir: str | Path) -> tuple[dict[str, Any], dict[
     if not isinstance(public_keys, list) or not public_keys:
         raise InsightGateError(REASON_UNTRUSTED, "insight registry carries no public_keys")
 
-    attesters = {str(source.get("attester", "")).lower(), str(destination.get("attester", "")).lower()}
+    attesters = {
+        str(source.get("attester", "")).lower(),
+        str(destination.get("attester", "")).lower(),
+    }
     if len(attesters) != 1:
-        raise InsightGateError(REASON_UNTRUSTED, "attestations were not signed by the same attester")
+        raise InsightGateError(
+            REASON_UNTRUSTED, "attestations were not signed by the same attester"
+        )
     attester = attesters.pop()
     if not attester:
         raise InsightGateError(REASON_UNTRUSTED, "attestation carries no attester")
 
-    matches = [entry for entry in public_keys if str(entry.get("public_key", "")).lower() == attester]
+    matches = [
+        entry for entry in public_keys if str(entry.get("public_key", "")).lower() == attester
+    ]
     if len(matches) != 1:
         raise InsightGateError(
             REASON_UNTRUSTED,
@@ -129,7 +138,11 @@ def load_live_insight_trust(drop_dir: str | Path) -> tuple[dict[str, Any], dict[
         "registryRelease": registry.get("registryRelease"),
         "publicKeys": len(public_keys),
     }
-    return source, destination, {"baseline": baseline, "trust_roots": trust_roots, "provenance": provenance}
+    return (
+        source,
+        destination,
+        {"baseline": baseline, "trust_roots": trust_roots, "provenance": provenance},
+    )
 
 
 def collect_attestation_verdict(
@@ -223,7 +236,9 @@ def evaluate_insight_verdict_gate(
     ]
     if mismatched:
         record.update(decision="DENY", reason=REASON_COPY_MISMATCH, mismatched=mismatched)
-        raise InsightVerdictDenied(REASON_COPY_MISMATCH, f"sheet copy differs on {mismatched}", record)
+        raise InsightVerdictDenied(
+            REASON_COPY_MISMATCH, f"sheet copy differs on {mismatched}", record
+        )
 
     # 2. Only an explicit PASS on both sides proceeds.
     for label in ("source", "destination"):
@@ -236,7 +251,9 @@ def evaluate_insight_verdict_gate(
             "CAUTION": REASON_CAUTION,
         }.get(value, REASON_UNKNOWN)
         record.update(decision="DENY", reason=reason, refusedOn=label, refusedValue=value or None)
-        raise InsightVerdictDenied(reason, f"{label} attestation signed {value or '<missing>'}", record)
+        raise InsightVerdictDenied(
+            reason, f"{label} attestation signed {value or '<missing>'}", record
+        )
 
     record.update(decision="ALLOW", reason=REASON_ALLOW)
     return record

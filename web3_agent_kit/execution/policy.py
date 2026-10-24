@@ -90,9 +90,7 @@ class PolicyDecision:
         return reason in self.reasons
 
 
-def _copy_typed_set(
-    values: Iterable[object], expected_type: type, field_name: str
-) -> frozenset:
+def _copy_typed_set(values: Iterable[object], expected_type: type, field_name: str) -> frozenset:
     if isinstance(values, (str, bytes)) or not isinstance(values, Iterable):
         raise InvalidPolicyAllowlistError(f"{field_name} must be an iterable")
     copied = frozenset(values)
@@ -125,9 +123,7 @@ def _validate_limit(value: object, field_name: str) -> int:
     return value
 
 
-def _copy_limit_mapping(
-    values: Mapping[object, object], field_name: str
-) -> Mapping[str, int]:
+def _copy_limit_mapping(values: Mapping[object, object], field_name: str) -> Mapping[str, int]:
     if not isinstance(values, Mapping):
         raise InvalidPolicyLimitError(f"{field_name} must be a mapping")
     copied: dict[str, int] = {}
@@ -167,9 +163,7 @@ class ExecutionPolicy:
         tokens = _copy_address_set(self.allowed_tokens, "allowed_tokens")
         native_limit = _validate_limit(self.max_native_value_wei, "max_native_value_wei")
         token_limits = _copy_limit_mapping(self.max_token_amounts, "max_token_amounts")
-        approval_limits = _copy_limit_mapping(
-            self.max_approval_amounts, "max_approval_amounts"
-        )
+        approval_limits = _copy_limit_mapping(self.max_approval_amounts, "max_approval_amounts")
         if not isinstance(self.deny_unlimited_approval, bool):
             raise InvalidPolicyError("deny_unlimited_approval must be a boolean")
         if not isinstance(self.require_confirmation, bool):
@@ -222,10 +216,7 @@ class ExecutionPolicy:
                 reasons.append(PolicyReason.APPROVAL_LIMIT_NOT_CONFIGURED)
             elif intent.amount_base_units > approval_limit:
                 reasons.append(PolicyReason.APPROVAL_AMOUNT_EXCEEDED)
-            if (
-                self.deny_unlimited_approval
-                and intent.amount_base_units == UINT256_MAX
-            ):
+            if self.deny_unlimited_approval and intent.amount_base_units == UINT256_MAX:
                 reasons.append(PolicyReason.UNLIMITED_APPROVAL_DENIED)
 
         return PolicyDecision(

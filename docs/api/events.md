@@ -12,11 +12,7 @@ Subscribe to smart contract events.
 from web3_agent_kit.events import EventListener
 
 listener = EventListener(chain_manager=cm)
-listener.subscribe(
-    contract="0x...",
-    event="Transfer",
-    callback=lambda event: print(event)
-)
+listener.subscribe(contract="0x...", event="Transfer", callback=lambda event: print(event))
 listener.start()
 ```
 

@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EventConfig:
     """Configuration for an event listener."""
+
     address: str
     abi: list[dict]
     event_name: str
@@ -45,6 +46,7 @@ class EventConfig:
 @dataclass
 class Subscription:
     """A single event subscription."""
+
     id: str
     config: EventConfig
     last_block: int = 0
@@ -170,6 +172,7 @@ class EventListener:
     def _poll_loop(self):
         """Main polling loop."""
         from web3 import Web3
+
         w3 = Web3(Web3.HTTPProvider(self.rpc_url))
         current_block = w3.eth.block_number
 
@@ -201,7 +204,9 @@ class EventListener:
             abi=config.abi,
         )
 
-        from_block = max(sub.last_block or config.from_block, current_block - config.max_blocks_per_poll)
+        from_block = max(
+            sub.last_block or config.from_block, current_block - config.max_blocks_per_poll
+        )
         to_block = min(current_block, from_block + config.max_blocks_per_poll)
 
         if from_block >= to_block:
@@ -238,6 +243,7 @@ class EventListener:
         """Send event data to webhook URL."""
 
         import requests
+
         try:
             requests.post(
                 config.webhook_url,

@@ -47,6 +47,7 @@ from web3_agent_kit.wallet.wallet import Wallet
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mock_w3():
     """Return a fully-mocked Web3 instance."""
     w3 = MagicMock()
@@ -80,7 +81,9 @@ def _setup_token_contract(w3, decimals=18):
     token_contract = MagicMock()
     token_contract.functions.decimals.return_value.call.return_value = decimals
     token_contract.functions.allowance.return_value.call.return_value = 2**256 - 1
-    token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+    token_contract.functions.approve.return_value.build_transaction.return_value = {
+        "dummy": "approve"
+    }
     return token_contract
 
 
@@ -90,8 +93,8 @@ def _setup_quoter_mock(amount_out_raw=1500 * 10**6, gas_estimate=150_000):
     quoter.functions.quoteExactInputSingle.return_value.call.return_value = (
         amount_out_raw,
         79228162514264337593543950336,  # sqrtPriceX96After
-        3,                              # initializedTicksCrossed
-        gas_estimate,                   # gasEstimate
+        3,  # initializedTicksCrossed
+        gas_estimate,  # gasEstimate
     )
     return quoter
 
@@ -100,7 +103,9 @@ def _setup_factory_mock(pool_addr="0xPoolAddress1234567890abcdef1234567890abcdef
     """Return a mock Factory contract."""
     factory = MagicMock()
     factory.functions.getPool.return_value.call.return_value = pool_addr
-    factory.functions.createPool.return_value.build_transaction.return_value = {"dummy": "create_pool"}
+    factory.functions.createPool.return_value.build_transaction.return_value = {
+        "dummy": "create_pool"
+    }
     return factory
 
 
@@ -108,11 +113,7 @@ def _setup_pool_mock(liquidity=1_000_000, sqrt_price_x96=79228162514264337593543
     """Return a mock Pool contract."""
     pool = MagicMock()
     pool.functions.liquidity.return_value.call.return_value = liquidity
-    pool.functions.slot0.return_value.call.return_value = (
-        sqrt_price_x96,
-        tick,
-        0, 0, 0, 0, True
-    )
+    pool.functions.slot0.return_value.call.return_value = (sqrt_price_x96, tick, 0, 0, 0, 0, True)
     return pool
 
 
@@ -120,21 +121,26 @@ def _setup_nfp_mock():
     """Return a mock NonfungiblePositionManager contract."""
     nfp = MagicMock()
     nfp.functions.positions.return_value.call.return_value = (
-        0,                                    # nonce
-        "0xOperator",                         # operator
-        "0xToken0Addr",                       # token0
-        "0xToken1Addr",                       # token1
-        3000,                                 # fee
-        -600,                                 # tickLower
-        600,                                  # tickUpper
-        500_000,                              # liquidity
-        0, 0,                                 # feeGrowth
-        100 * 10**6,                          # tokensOwed0
-        50 * 10**18,                          # tokensOwed1
+        0,  # nonce
+        "0xOperator",  # operator
+        "0xToken0Addr",  # token0
+        "0xToken1Addr",  # token1
+        3000,  # fee
+        -600,  # tickLower
+        600,  # tickUpper
+        500_000,  # liquidity
+        0,
+        0,  # feeGrowth
+        100 * 10**6,  # tokensOwed0
+        50 * 10**18,  # tokensOwed1
     )
     nfp.functions.mint.return_value.build_transaction.return_value = {"dummy": "mint"}
-    nfp.functions.increaseLiquidity.return_value.build_transaction.return_value = {"dummy": "increase"}
-    nfp.functions.decreaseLiquidity.return_value.build_transaction.return_value = {"dummy": "decrease"}
+    nfp.functions.increaseLiquidity.return_value.build_transaction.return_value = {
+        "dummy": "increase"
+    }
+    nfp.functions.decreaseLiquidity.return_value.build_transaction.return_value = {
+        "dummy": "decrease"
+    }
     nfp.functions.collect.return_value.build_transaction.return_value = {"dummy": "collect"}
     return nfp
 
@@ -228,7 +234,9 @@ class TestAaveSupply:
         wallet = _mock_wallet()
 
         pool_contract = MagicMock()
-        pool_contract.functions.supply.return_value.build_transaction.return_value = {"dummy": "supply"}
+        pool_contract.functions.supply.return_value.build_transaction.return_value = {
+            "dummy": "supply"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=6)
 
@@ -272,7 +280,9 @@ class TestAaveWithdraw:
         wallet = _mock_wallet()
 
         pool_contract = MagicMock()
-        pool_contract.functions.withdraw.return_value.build_transaction.return_value = {"dummy": "withdraw"}
+        pool_contract.functions.withdraw.return_value.build_transaction.return_value = {
+            "dummy": "withdraw"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=18)
 
@@ -292,7 +302,7 @@ class TestAaveWithdraw:
 
     def test_withdraw_max(self):
         aave, wallet, w3, pool = self._prepare_aave()
-        result = aave.withdraw(wallet, "0xWETH", float('inf'), chain=Chain.ETHEREUM)
+        result = aave.withdraw(wallet, "0xWETH", float("inf"), chain=Chain.ETHEREUM)
         assert result["tx_hash"] == "0xabc123"
         # Should use max uint256
         call_args = pool.functions.withdraw.call_args
@@ -314,7 +324,9 @@ class TestAaveBorrow:
         wallet = _mock_wallet()
 
         pool_contract = MagicMock()
-        pool_contract.functions.borrow.return_value.build_transaction.return_value = {"dummy": "borrow"}
+        pool_contract.functions.borrow.return_value.build_transaction.return_value = {
+            "dummy": "borrow"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=6)
 
@@ -350,7 +362,9 @@ class TestAaveRepay:
         wallet = _mock_wallet()
 
         pool_contract = MagicMock()
-        pool_contract.functions.repay.return_value.build_transaction.return_value = {"dummy": "repay"}
+        pool_contract.functions.repay.return_value.build_transaction.return_value = {
+            "dummy": "repay"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=6)
 
@@ -390,12 +404,12 @@ class TestAaveGetUserData:
 
         pool_contract = MagicMock()
         pool_contract.functions.getUserAccountData.return_value.call.return_value = (
-            10_000_000_000,    # 100 USD collateral (8 decimals)
-            5_000_000_000,     # 50 USD debt
-            3_000_000_000,     # 30 USD available
-            8500,              # 85% liquidation threshold
-            8000,              # 80% LTV
-            2 * 10**18,        # health factor = 2.0
+            10_000_000_000,  # 100 USD collateral (8 decimals)
+            5_000_000_000,  # 50 USD debt
+            3_000_000_000,  # 30 USD available
+            8500,  # 85% liquidation threshold
+            8000,  # 80% LTV
+            2 * 10**18,  # health factor = 2.0
         )
 
         def contract_factory(address, abi):
@@ -419,34 +433,43 @@ class TestAaveGetUserData:
         cm = _mock_chain_manager(w3)
 
         pool_contract = MagicMock()
-        pool_contract.functions.getUserAccountData.return_value.call.return_value = (0, 0, 0, 0, 0, 0)
+        pool_contract.functions.getUserAccountData.return_value.call.return_value = (
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+        )
 
         w3.eth.contract.return_value = pool_contract
         aave = Aave(chain_manager=cm)
 
         data = aave.get_user_data("0xUser", chain=Chain.ETHEREUM)
-        assert data.health_factor == float('inf')
+        assert data.health_factor == float("inf")
 
     def test_get_user_data_rpc_failure_returns_defaults(self):
         w3 = _mock_w3()
         cm = _mock_chain_manager(w3)
 
         pool_contract = MagicMock()
-        pool_contract.functions.getUserAccountData.return_value.call.side_effect = ConnectionError("RPC down")
+        pool_contract.functions.getUserAccountData.return_value.call.side_effect = ConnectionError(
+            "RPC down"
+        )
 
         w3.eth.contract.return_value = pool_contract
         aave = Aave(chain_manager=cm)
 
         data = aave.get_user_data("0xUser", chain=Chain.ETHEREUM)
         assert data.total_collateral_eth == 0.0
-        assert data.health_factor == float('inf')
+        assert data.health_factor == float("inf")
 
     def test_get_user_data_no_chain_manager(self):
         aave = Aave()
         data = aave.get_user_data("0xUser", chain=Chain.ETHEREUM)
         assert isinstance(data, AaveUserData)
         assert data.total_collateral_eth == 0.0
-        assert data.health_factor == float('inf')
+        assert data.health_factor == float("inf")
 
 
 class TestAaveGetReserveData:
@@ -460,7 +483,7 @@ class TestAaveGetReserveData:
 
         config_data = 8500 | (8500 << 16)  # LTV=8500 in bits 0-15, LT=8500 in bits 16-31
 
-        ray = 10 ** 27
+        ray = 10**27
         supply_rate_ray = int(ray * 0.034)
         variable_rate_ray = int(ray * 0.05)
         stable_rate_ray = int(ray * 0.06)
@@ -506,7 +529,9 @@ class TestAaveGetReserveData:
         cm = _mock_chain_manager(w3)
 
         pool_contract = MagicMock()
-        pool_contract.functions.getReserveData.return_value.call.side_effect = ConnectionError("RPC down")
+        pool_contract.functions.getReserveData.return_value.call.side_effect = ConnectionError(
+            "RPC down"
+        )
 
         w3.eth.contract.return_value = pool_contract
         aave = Aave(chain_manager=cm)
@@ -527,17 +552,19 @@ class TestAaveGetYieldOpportunities:
 
     def test_returns_opportunities(self):
         aave = Aave(chain_manager=_mock_chain_manager())
-        aave.get_reserve_data = MagicMock(return_value=AaveReserveData(
-            asset="0xToken",
-            supply_apy=4.5,
-            variable_borrow_apy=6.0,
-            stable_borrow_apy=7.0,
-            ltv=0.80,
-            liquidation_threshold=0.85,
-            total_supply=0.0,
-            total_variable_debt=0.0,
-            total_stable_debt=0.0,
-        ))
+        aave.get_reserve_data = MagicMock(
+            return_value=AaveReserveData(
+                asset="0xToken",
+                supply_apy=4.5,
+                variable_borrow_apy=6.0,
+                stable_borrow_apy=7.0,
+                ltv=0.80,
+                liquidation_threshold=0.85,
+                total_supply=0.0,
+                total_variable_debt=0.0,
+                total_stable_debt=0.0,
+            )
+        )
 
         opps = aave.get_yield_opportunities(Chain.ETHEREUM)
         assert len(opps) > 0
@@ -627,13 +654,18 @@ class TestCurveExecute:
 
     def test_execute_calls_swap(self):
         curve = Curve(chain_manager=_mock_chain_manager())
-        curve.swap = MagicMock(return_value=SwapResult(
-            tx_hash="0x1", token_in="0xA", token_out="0xB",
-            amount_in=1.0, amount_out=1.0, gas_used=100000, chain=Chain.ETHEREUM
-        ))
-        result = curve.execute(
-            _mock_wallet(), "0xPool", "0xA", "0xB", 1.0, chain=Chain.ETHEREUM
+        curve.swap = MagicMock(
+            return_value=SwapResult(
+                tx_hash="0x1",
+                token_in="0xA",
+                token_out="0xB",
+                amount_in=1.0,
+                amount_out=1.0,
+                gas_used=100000,
+                chain=Chain.ETHEREUM,
+            )
         )
+        result = curve.execute(_mock_wallet(), "0xPool", "0xA", "0xB", 1.0, chain=Chain.ETHEREUM)
         curve.swap.assert_called_once()
         assert isinstance(result, SwapResult)
 
@@ -658,13 +690,17 @@ class TestCurveSwap:
 
         pool_contract = MagicMock()
         _coin_map = {0: "0xTokenA", 1: "0xTokenB"}
+
         def _make_coin_mock(i):
             m = MagicMock()
             m.call.return_value = _coin_map.get(i, "0x0000000000000000000000000000000000000000")
             return m
+
         pool_contract.functions.coins.side_effect = _make_coin_mock
         pool_contract.functions.get_dy.return_value.call.return_value = 990000  # ~0.99 with 6 dec
-        pool_contract.functions.exchange.return_value.build_transaction.return_value = {"dummy": "swap"}
+        pool_contract.functions.exchange.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
         pool_contract.functions.fee.return_value.call.return_value = 4000000  # 0.04%
 
         token_contract = _setup_token_contract(w3, decimals=6)
@@ -690,8 +726,7 @@ class TestCurveSwap:
     def test_swap_with_min_amount(self):
         curve, wallet, w3, pool = self._prepare_curve()
         result = curve.swap(
-            wallet, "0xPool", "0xTokenA", "0xTokenB", 1.0,
-            min_amount=0.98, chain=Chain.ETHEREUM
+            wallet, "0xPool", "0xTokenA", "0xTokenB", 1.0, min_amount=0.98, chain=Chain.ETHEREUM
         )
         assert isinstance(result, SwapResult)
 
@@ -701,10 +736,12 @@ class TestCurveSwap:
         wallet = _mock_wallet()
 
         pool_contract = MagicMock()
+
         def _bad_coin_mock(i):
             m = MagicMock()
             m.call.side_effect = Exception("out of range")
             return m
+
         pool_contract.functions.coins.side_effect = _bad_coin_mock
         pool_contract.functions.get_coins.return_value.call.return_value = [
             "0x0000000000000000000000000000000000000000"
@@ -739,10 +776,12 @@ class TestCurveGetSwapEstimate:
 
         pool_contract = MagicMock()
         _coin_map = {0: "0xTokenA", 1: "0xTokenB"}
+
         def _make_coin_mock(i):
             m = MagicMock()
             m.call.return_value = _coin_map.get(i, "0x0000000000000000000000000000000000000000")
             return m
+
         pool_contract.functions.coins.side_effect = _make_coin_mock
         pool_contract.functions.get_dy.return_value.call.return_value = 999000
         pool_contract.functions.fee.return_value.call.return_value = 4000000
@@ -757,7 +796,9 @@ class TestCurveGetSwapEstimate:
         w3.eth.contract.side_effect = contract_factory
         curve = Curve(chain_manager=cm)
 
-        result = curve.get_swap_estimate("0xPool", "0xTokenA", "0xTokenB", 1.0, chain=Chain.ETHEREUM)
+        result = curve.get_swap_estimate(
+            "0xPool", "0xTokenA", "0xTokenB", 1.0, chain=Chain.ETHEREUM
+        )
 
         assert "amount_out" in result
         assert result["amount_in"] == 1.0
@@ -788,10 +829,12 @@ class TestCurveGetSwapEstimate:
 
         pool_contract = MagicMock()
         _coin_map = {0: "0xTokenA", 1: "0xTokenB"}
+
         def _make_coin_mock(i):
             m = MagicMock()
             m.call.return_value = _coin_map.get(i, "0x0000000000000000000000000000000000000000")
             return m
+
         pool_contract.functions.coins.side_effect = _make_coin_mock
         pool_contract.functions.get_dy.return_value.call.return_value = 1000000  # exactly 1.0
         pool_contract.functions.fee.return_value.call.return_value = 4000000
@@ -806,7 +849,9 @@ class TestCurveGetSwapEstimate:
         w3.eth.contract.side_effect = contract_factory
         curve = Curve(chain_manager=cm)
 
-        result = curve.get_swap_estimate("0xPool", "0xTokenA", "0xTokenB", 1.0, chain=Chain.ETHEREUM)
+        result = curve.get_swap_estimate(
+            "0xPool", "0xTokenA", "0xTokenB", 1.0, chain=Chain.ETHEREUM
+        )
         assert result["price"] == pytest.approx(1.0)
 
 
@@ -819,10 +864,19 @@ class TestCurveGetPoolInfo:
 
         pool_contract = MagicMock()
         pool_contract.functions.get_coins.return_value.call.return_value = [
-            "0xTokenA", "0xTokenB", "0x0000000000000000000000000000000000000000",
+            "0xTokenA",
+            "0xTokenB",
+            "0x0000000000000000000000000000000000000000",
         ] + ["0x0000000000000000000000000000000000000000"] * 5
         pool_contract.functions.get_balances.return_value.call.return_value = [
-            1_000_000 * 10**6, 1_000_000 * 10**6, 0, 0, 0, 0, 0, 0
+            1_000_000 * 10**6,
+            1_000_000 * 10**6,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
         ]
         pool_contract.functions.fee.return_value.call.return_value = 4000000
         pool_contract.functions.A.return_value.call.return_value = 1000
@@ -849,16 +903,24 @@ class TestCurveGetPoolInfo:
         cm = _mock_chain_manager(w3)
 
         pool_contract = MagicMock()
-        pool_contract.functions.get_coins.return_value.call.side_effect = ConnectionError("RPC down")
-        pool_contract.functions.get_balances.return_value.call.side_effect = ConnectionError("RPC down")
+        pool_contract.functions.get_coins.return_value.call.side_effect = ConnectionError(
+            "RPC down"
+        )
+        pool_contract.functions.get_balances.return_value.call.side_effect = ConnectionError(
+            "RPC down"
+        )
+
         def _fail_coin(i):
             m = MagicMock()
             m.call.side_effect = ConnectionError("RPC down")
             return m
+
         pool_contract.functions.coins.side_effect = _fail_coin
         pool_contract.functions.fee.return_value.call.side_effect = ConnectionError("RPC down")
         pool_contract.functions.A.return_value.call.side_effect = ConnectionError("RPC down")
-        pool_contract.functions.totalSupply.return_value.call.side_effect = ConnectionError("RPC down")
+        pool_contract.functions.totalSupply.return_value.call.side_effect = ConnectionError(
+            "RPC down"
+        )
 
         w3.eth.contract.return_value = pool_contract
         curve = Curve(chain_manager=cm)
@@ -879,10 +941,10 @@ class TestCurveAddLiquidity:
 
         pool_contract = MagicMock()
         # add_liquidity checks len(amounts) == len(raw_coins) so return exactly 2
-        pool_contract.functions.get_coins.return_value.call.return_value = [
-            "0xTokenA", "0xTokenB"
-        ]
-        pool_contract.functions.add_liquidity.return_value.build_transaction.return_value = {"dummy": "add_liq"}
+        pool_contract.functions.get_coins.return_value.call.return_value = ["0xTokenA", "0xTokenB"]
+        pool_contract.functions.add_liquidity.return_value.build_transaction.return_value = {
+            "dummy": "add_liq"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=6)
 
@@ -922,9 +984,12 @@ class TestCurveRemoveLiquidity:
 
         pool_contract = MagicMock()
         pool_contract.functions.get_coins.return_value.call.return_value = [
-            "0xTokenA", "0xTokenB"
+            "0xTokenA",
+            "0xTokenB",
         ] + ["0x0000000000000000000000000000000000000000"] * 6
-        pool_contract.functions.remove_liquidity.return_value.build_transaction.return_value = {"dummy": "rm_liq"}
+        pool_contract.functions.remove_liquidity.return_value.build_transaction.return_value = {
+            "dummy": "rm_liq"
+        }
 
         token_contract = _setup_token_contract(w3, decimals=6)
 
@@ -1027,24 +1092,39 @@ class TestV3DataClasses:
 
     def test_v3_swap_result(self):
         sr = V3SwapResult(
-            tx_hash="0x123", token_in="0xA", token_out="0xB",
-            amount_in=1.0, amount_out=1500.0, gas_used=200_000, fee_tier=3000,
+            tx_hash="0x123",
+            token_in="0xA",
+            token_out="0xB",
+            amount_in=1.0,
+            amount_out=1500.0,
+            gas_used=200_000,
+            fee_tier=3000,
         )
         assert sr.tx_hash == "0x123"
         assert sr.fee_tier == 3000
 
     def test_pool_info(self):
         pi = PoolInfo(
-            pool_address="0xPool", token0="0xA", token1="0xB", fee=3000,
-            liquidity=1_000_000, sqrt_price_x96=79228162514264337593543950336, tick=0,
+            pool_address="0xPool",
+            token0="0xA",
+            token1="0xB",
+            fee=3000,
+            liquidity=1_000_000,
+            sqrt_price_x96=79228162514264337593543950336,
+            tick=0,
         )
         assert pi.pool_address == "0xPool"
         assert pi.liquidity == 1_000_000
 
     def test_position_info(self):
         pi = PositionInfo(
-            token_id=1, token0="0xA", token1="0xB", fee=3000,
-            tick_lower=-600, tick_upper=600, liquidity=500_000,
+            token_id=1,
+            token0="0xA",
+            token1="0xB",
+            fee=3000,
+            tick_lower=-600,
+            tick_upper=600,
+            liquidity=500_000,
         )
         assert pi.token_id == 1
         assert pi.tick_lower == -600
@@ -1290,9 +1370,11 @@ class TestV3GetPoolInfo:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        info = v3.get_pool_info("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                 "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                 fee_tier=3000)
+        info = v3.get_pool_info(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            fee_tier=3000,
+        )
 
         assert isinstance(info, PoolInfo)
         assert info.pool_address == "0xPool123"
@@ -1305,7 +1387,9 @@ class TestV3GetPoolInfo:
         cm = _mock_chain_manager(w3)
 
         factory = MagicMock()
-        factory.functions.getPool.return_value.call.return_value = "0x0000000000000000000000000000000000000000"
+        factory.functions.getPool.return_value.call.return_value = (
+            "0x0000000000000000000000000000000000000000"
+        )
         token = _setup_token_contract(w3)
 
         def contract_factory(address, abi):
@@ -1317,9 +1401,11 @@ class TestV3GetPoolInfo:
 
         v3 = UniswapV3(chain_manager=cm)
         with pytest.raises(ValueError, match="Pool does not exist"):
-            v3.get_pool_info("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                              "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                              fee_tier=3000)
+            v3.get_pool_info(
+                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                fee_tier=3000,
+            )
 
     def test_pool_info_no_chain_manager(self):
         v3 = UniswapV3()
@@ -1338,7 +1424,9 @@ class TestV3Swap:
         token = _setup_token_contract(w3, decimals=18)
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -1390,7 +1478,9 @@ class TestV3SwapWithWallet:
         token = _setup_token_contract(w3, decimals=18)
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -1419,7 +1509,9 @@ class TestV3SwapWithWallet:
         token.functions.allowance.return_value.call.return_value = 0  # needs approval
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -1465,11 +1557,14 @@ class TestV3SwapExactOutput:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        result = v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                       100.0, fee_tier=3000,
-                                       amount_in_max=200.0,
-                                       recipient="0x1234567890123456789012345678901234567890")
+        result = v3.swap_exact_output(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            100.0,
+            fee_tier=3000,
+            amount_in_max=200.0,
+            recipient="0x1234567890123456789012345678901234567890",
+        )
 
         assert result["function"] == "exactOutputSingle"
         assert result["params"]["fee"] == 3000
@@ -1478,11 +1573,14 @@ class TestV3SwapExactOutput:
     def test_invalid_fee_tier(self):
         v3 = UniswapV3(chain_manager=_mock_chain_manager())
         with pytest.raises(ValueError, match="Invalid fee tier"):
-            v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                  100.0, fee_tier=999,
-                                  amount_in_max=200.0,
-                                  recipient="0x1234567890123456789012345678901234567890")
+            v3.swap_exact_output(
+                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                100.0,
+                fee_tier=999,
+                amount_in_max=200.0,
+                recipient="0x1234567890123456789012345678901234567890",
+            )
 
 
 class TestV3MintPosition:
@@ -1503,9 +1601,15 @@ class TestV3MintPosition:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm, slippage=0.5)
-        result = v3.mint_position("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                   3000, -600, 600, 1.0, 1500.0)
+        result = v3.mint_position(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            3000,
+            -600,
+            600,
+            1.0,
+            1500.0,
+        )
 
         assert result["function"] == "mint"
         assert result["params"]["fee"] == 3000
@@ -1532,9 +1636,15 @@ class TestV3MintPosition:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm, slippage=1.0)
-        result = v3.mint_position("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                   3000, -600, 600, 1.0, 1500.0)
+        result = v3.mint_position(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            3000,
+            -600,
+            600,
+            1.0,
+            1500.0,
+        )
 
         # amount0Min should be 99% of amount0Desired (1% slippage)
         assert result["params"]["amount0Min"] == int(result["params"]["amount0Desired"] * 0.99)
@@ -1606,7 +1716,9 @@ class TestV3DecreaseLiquidity:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        result = v3.decrease_liquidity(token_id=1, liquidity=50_000, amount0_min=100, amount1_min=200)
+        result = v3.decrease_liquidity(
+            token_id=1, liquidity=50_000, amount0_min=100, amount1_min=200
+        )
 
         assert result["params"]["amount0Min"] == 100
         assert result["params"]["amount1Min"] == 200
@@ -1647,9 +1759,17 @@ class TestV3CollectFees:
 
         nfp = _setup_nfp_mock()
         nfp.functions.positions.return_value.call.return_value = (
-            0, "0xOp", "0xT0", "0xT1", 3000, -600, 600, 500000,
-            0, 0,
-            999 * 10**6,   # tokensOwed0
+            0,
+            "0xOp",
+            "0xT0",
+            "0xT1",
+            3000,
+            -600,
+            600,
+            500000,
+            0,
+            0,
+            999 * 10**6,  # tokensOwed0
             888 * 10**18,  # tokensOwed1
         )
 

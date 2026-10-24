@@ -87,7 +87,13 @@ class Notifier:
         )
 
         # Check minimum level
-        level_order = [AlertLevel.INFO, AlertLevel.SUCCESS, AlertLevel.WARNING, AlertLevel.ERROR, AlertLevel.CRITICAL]
+        level_order = [
+            AlertLevel.INFO,
+            AlertLevel.SUCCESS,
+            AlertLevel.WARNING,
+            AlertLevel.ERROR,
+            AlertLevel.CRITICAL,
+        ]
         if level_order.index(alert_level) < level_order.index(self.config.min_level):
             return False
 
@@ -143,10 +149,7 @@ class Notifier:
         Returns:
             True if sent.
         """
-        message = (
-            f"**{action.upper()}** {amount} {token}\n"
-            f"Price: ${price:,.2f}\n"
-        )
+        message = f"**{action.upper()}** {amount} {token}\nPrice: ${price:,.2f}\n"
         if tx_hash:
             message += f"TX: `{tx_hash[:10]}...`"
 
@@ -181,11 +184,7 @@ class Notifier:
         Returns:
             True if sent.
         """
-        message = (
-            f"Wallet: `{wallet[:10]}...`\n"
-            f"Action: {action}\n"
-            f"{details}"
-        )
+        message = f"Wallet: `{wallet[:10]}...`\nAction: {action}\n{details}"
         return self.send(message, title="Wallet Alert", level="warning")
 
     def send_price_alert(self, token: str, price: float, change_percent: float) -> bool:
@@ -200,10 +199,7 @@ class Notifier:
             True if sent.
         """
         emoji = "📈" if change_percent > 0 else "📉"
-        message = (
-            f"{emoji} **{token}** ${price:,.4f}\n"
-            f"Change: {change_percent:+.1f}%"
-        )
+        message = f"{emoji} **{token}** ${price:,.4f}\nChange: {change_percent:+.1f}%"
         level = "warning" if abs(change_percent) > 10 else "info"
         return self.send(message, title="Price Alert", level=level)
 
@@ -218,11 +214,7 @@ class Notifier:
         Returns:
             True if sent.
         """
-        message = (
-            f"Platform: {platform}\n"
-            f"Campaign: {campaign}\n"
-            f"URL: {url}"
-        )
+        message = f"Platform: {platform}\nCampaign: {campaign}\nURL: {url}"
         return self.send(message, title="🪂 New Airdrop", level="info")
 
     def get_history(self, limit: int = 50) -> list[Notification]:

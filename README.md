@@ -237,7 +237,9 @@ This is a wiring template, not a drop-in signer: `application_authorization_prov
 ```python
 from web3_agent_kit import Wallet, Chain, ChainManager
 from web3_agent_kit.execution import (
-    ActionType, ExecutionPolicy, PreSignInterceptor,
+    ActionType,
+    ExecutionPolicy,
+    PreSignInterceptor,
 )
 
 chain = ChainManager(chains=[Chain.BASE])
@@ -512,10 +514,12 @@ Multi-provider cascade with automatic fallback:
 from web3_agent_kit.agent import LLM, LLMConfig
 
 # Use any LLM provider with automatic fallback
-llm = LLM(LLMConfig(
-    providers=["anthropic", "openai", "groq", "deepseek"],
-    model="claude-3-5-sonnet-20241022",
-))
+llm = LLM(
+    LLMConfig(
+        providers=["anthropic", "openai", "groq", "deepseek"],
+        model="claude-3-5-sonnet-20241022",
+    )
+)
 
 # Natural language → structured action
 action = llm.parse("Swap 0.1 ETH to USDC on Base")

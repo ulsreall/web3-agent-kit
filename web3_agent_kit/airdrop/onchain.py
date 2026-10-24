@@ -42,6 +42,7 @@ logger = logging.getLogger(__name__)
 
 class Chain(Enum):
     """Supported chains."""
+
     ETHEREUM = "ethereum"
     BASE = "base"
     ARBITRUM = "arbitrum"
@@ -58,6 +59,7 @@ class Chain(Enum):
 
 class DeFiProtocol(Enum):
     """Supported DeFi protocols."""
+
     # DEX
     UNISWAP_V3 = "uniswap_v3"
     AERODROME = "aerodrome"
@@ -98,6 +100,7 @@ class DeFiProtocol(Enum):
 @dataclass
 class OnChainConfig:
     """Configuration for on-chain airdrop farming."""
+
     private_key: str = ""
     chain: str = "base"
     rpc_url: str = ""
@@ -123,6 +126,7 @@ class OnChainConfig:
 @dataclass
 class TransactionResult:
     """Result of an on-chain transaction."""
+
     protocol: str
     action: str
     chain: str
@@ -153,6 +157,7 @@ class TransactionResult:
 @dataclass
 class FarmingPlan:
     """A farming plan with specific actions."""
+
     name: str
     description: str
     chain: Chain = Chain.BASE
@@ -294,10 +299,40 @@ class OnChainAirdropFarmer:
 
     # Minimal ABIs for common operations
     ERC20_ABI = [
-        {"constant": True, "inputs": [{"name": "_owner", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "balance", "type": "uint256"}], "type": "function"},
-        {"constant": True, "inputs": [{"name": "_owner", "type": "address"}, {"name": "_spender", "type": "address"}], "name": "allowance", "outputs": [{"name": "", "type": "uint256"}], "type": "function"},
-        {"constant": False, "inputs": [{"name": "_spender", "type": "address"}, {"name": "_value", "type": "uint256"}], "name": "approve", "outputs": [{"name": "", "type": "bool"}], "type": "function"},
-        {"constant": True, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function"},
+        {
+            "constant": True,
+            "inputs": [{"name": "_owner", "type": "address"}],
+            "name": "balanceOf",
+            "outputs": [{"name": "balance", "type": "uint256"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [
+                {"name": "_owner", "type": "address"},
+                {"name": "_spender", "type": "address"},
+            ],
+            "name": "allowance",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "type": "function",
+        },
+        {
+            "constant": False,
+            "inputs": [
+                {"name": "_spender", "type": "address"},
+                {"name": "_value", "type": "uint256"},
+            ],
+            "name": "approve",
+            "outputs": [{"name": "", "type": "bool"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [{"name": "", "type": "uint8"}],
+            "type": "function",
+        },
     ]
 
     # Known DEX router addresses
@@ -406,8 +441,7 @@ class OnChainAirdropFarmer:
             self._init_web3()
 
         logger.info(
-            f"OnChainAirdropFarmer initialized: chain={config.chain}, "
-            f"dry_run={config.dry_run}"
+            f"OnChainAirdropFarmer initialized: chain={config.chain}, dry_run={config.dry_run}"
         )
 
     def _init_web3(self) -> None:
@@ -416,9 +450,7 @@ class OnChainAirdropFarmer:
             from eth_account import Account
             from web3 import Web3
 
-            rpc_url = self.config.rpc_url or self.DEFAULT_RPCS.get(
-                self.config.chain, ""
-            )
+            rpc_url = self.config.rpc_url or self.DEFAULT_RPCS.get(self.config.chain, "")
             if not rpc_url:
                 raise ValueError(f"No RPC URL for chain {self.config.chain}")
 
@@ -540,8 +572,7 @@ class OnChainAirdropFarmer:
 
         if self.config.dry_run:
             logger.info(
-                f"[DRY RUN] Swap {amount_in} {token_in} -> {token_out} "
-                f"on {protocol} ({chain})"
+                f"[DRY RUN] Swap {amount_in} {token_in} -> {token_out} on {protocol} ({chain})"
             )
             result.success = True
             result.tx_hash = "0xDRY_RUN"
@@ -581,8 +612,7 @@ class OnChainAirdropFarmer:
 
         if self.config.dry_run:
             logger.info(
-                f"[DRY RUN] Bridge {amount_eth} ETH from {from_chain} "
-                f"to {to_chain} via {protocol}"
+                f"[DRY RUN] Bridge {amount_eth} ETH from {from_chain} to {to_chain} via {protocol}"
             )
             result.success = True
             result.tx_hash = "0xDRY_RUN"
@@ -622,9 +652,7 @@ class OnChainAirdropFarmer:
         )
 
         if self.config.dry_run:
-            logger.info(
-                f"[DRY RUN] {action} {amount} {asset} on {protocol} ({chain})"
-            )
+            logger.info(f"[DRY RUN] {action} {amount} {asset} on {protocol} ({chain})")
             result.success = True
             result.tx_hash = "0xDRY_RUN"
             self._results.append(result)
@@ -659,9 +687,7 @@ class OnChainAirdropFarmer:
         )
 
         if self.config.dry_run:
-            logger.info(
-                f"[DRY RUN] Stake {amount_eth} ETH on {protocol} ({chain})"
-            )
+            logger.info(f"[DRY RUN] Stake {amount_eth} ETH on {protocol} ({chain})")
             result.success = True
             result.tx_hash = "0xDRY_RUN"
             self._results.append(result)
@@ -838,17 +864,19 @@ class OnChainAirdropFarmer:
             return None
 
         try:
-            signed = self._gate().sign(
-                AuthorizationRequest(
-                    chain=self._resolve_chain(),
-                    action=ActionType.CONTRACT_CALL,
-                    transaction=tx,
+            signed = (
+                self._gate()
+                .sign(
+                    AuthorizationRequest(
+                        chain=self._resolve_chain(),
+                        action=ActionType.CONTRACT_CALL,
+                        transaction=tx,
+                    )
                 )
-            ).raw_transaction
-            tx_hash = self._web3.eth.send_raw_transaction(signed)
-            receipt = self._web3.eth.wait_for_transaction_receipt(
-                tx_hash, timeout=120
+                .raw_transaction
             )
+            tx_hash = self._web3.eth.send_raw_transaction(signed)
+            receipt = self._web3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
             return receipt.transactionHash.hex()
         except Exception as e:
             logger.error(f"Transaction failed: {e}")

@@ -11,7 +11,9 @@ def wallet():
 
 @wallet.command()
 @click.option("--address", "-a", required=True, help="Wallet address (0x...)")
-@click.option("--chain", "-c", default="ethereum", help="Blockchain network (ethereum, base, arbitrum, etc.)")
+@click.option(
+    "--chain", "-c", default="ethereum", help="Blockchain network (ethereum, base, arbitrum, etc.)"
+)
 def balance(address, chain):
     """Check native token balance for a wallet address.
 
@@ -37,7 +39,7 @@ def balance(address, chain):
     click.echo("  Supported chains: ethereum, base, arbitrum, optimism, polygon, avalanche, bsc")
     click.echo()
     click.echo(click.style("  💡 Tip:", fg="blue") + " You can also use the Python API directly:")
-    click.echo('    from web3_agent_kit import Wallet, WalletConfig')
+    click.echo("    from web3_agent_kit import Wallet, WalletConfig")
     click.echo('    w = Wallet(WalletConfig(rpc_url="https://eth.llamarpc.com"))')
     click.echo(f'    print(w.get_balance("{address}"))')
     click.echo()

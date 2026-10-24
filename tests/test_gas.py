@@ -16,6 +16,7 @@ from web3_agent_kit.wallet.wallet import Wallet
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mock_w3():
     w3 = MagicMock()
     block = MagicMock()
@@ -48,6 +49,7 @@ def _make_optimizer(w3=None, eth_price=3500.0):
 # Enums & data classes
 # ===========================================================================
 
+
 class TestGasPriority:
     def test_enum_values(self):
         assert GasPriority.LOW.value == "low"
@@ -59,9 +61,13 @@ class TestGasPriority:
 class TestGasEstimate:
     def test_fields(self):
         est = GasEstimate(
-            gas_limit=21000, base_fee=20.0, priority_fee=1.5,
-            max_fee=41.5, total_cost_eth=0.00087,
-            total_cost_usd=3.05, priority=GasPriority.MEDIUM,
+            gas_limit=21000,
+            base_fee=20.0,
+            priority_fee=1.5,
+            max_fee=41.5,
+            total_cost_eth=0.00087,
+            total_cost_usd=3.05,
+            priority=GasPriority.MEDIUM,
             chain=Chain.ETHEREUM,
         )
         assert est.gas_limit == 21000
@@ -71,9 +77,12 @@ class TestGasEstimate:
 class TestGasRecommendation:
     def test_fields(self):
         rec = GasRecommendation(
-            current_gwei=50.0, recommended_action="wait",
-            estimated_savings_pct=60.0, optimal_gwei=20.0,
-            estimated_wait_hours=2.0, reason="Gas is high",
+            current_gwei=50.0,
+            recommended_action="wait",
+            estimated_savings_pct=60.0,
+            optimal_gwei=20.0,
+            estimated_wait_hours=2.0,
+            reason="Gas is high",
         )
         assert rec.recommended_action == "wait"
         assert rec.estimated_savings_pct == 60.0
@@ -89,6 +98,7 @@ class TestBatchResult:
 # ===========================================================================
 # GasOptimizer
 # ===========================================================================
+
 
 class TestGasOptimizerInit:
     def test_defaults(self):

@@ -71,7 +71,9 @@ class SolanaClient:
             except SolanaRPCError:
                 raise
 
-        raise SolanaRPCError(f"RPC call '{method}' failed after {self.config.max_retries} retries: {last_error}")
+        raise SolanaRPCError(
+            f"RPC call '{method}' failed after {self.config.max_retries} retries: {last_error}"
+        )
 
     # ── Balance ──────────────────────────────────────
 
@@ -134,7 +136,8 @@ class SolanaClient:
     async def get_transaction(self, signature: str) -> dict:
         """Get transaction details."""
         result = await self._rpc_call(
-            "getTransaction", [signature, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}]
+            "getTransaction",
+            [signature, {"encoding": "jsonParsed", "maxSupportedTransactionVersion": 0}],
         )
         return result
 
@@ -149,9 +152,7 @@ class SolanaClient:
 
     async def get_account_info(self, pubkey: str) -> dict:
         """Get account info."""
-        result = await self._rpc_call(
-            "getAccountInfo", [pubkey, {"encoding": "jsonParsed"}]
-        )
+        result = await self._rpc_call("getAccountInfo", [pubkey, {"encoding": "jsonParsed"}])
         return result.get("value", {})
 
     # ── Token Supply ─────────────────────────────────
@@ -171,4 +172,5 @@ class SolanaClient:
 
 class SolanaRPCError(Exception):
     """Raised when a Solana RPC call fails."""
+
     pass

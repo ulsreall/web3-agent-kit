@@ -66,6 +66,7 @@ class TestChain:
 
     def test_chain_ids(self):
         from web3_agent_kit.defi.aggregator import CHAIN_IDS
+
         assert CHAIN_IDS[Chain.ETHEREUM] == 1
         assert CHAIN_IDS[Chain.BSC] == 56
         assert CHAIN_IDS[Chain.POLYGON] == 137
@@ -182,7 +183,9 @@ class TestDEXAggregator:
             assert quote["buyAmount"] == "480000000"
 
     @pytest.mark.asyncio
-    async def test_get_best_quote_evm(self, aggregator, mock_1inch_response, mock_paraswap_response, mock_0x_response):
+    async def test_get_best_quote_evm(
+        self, aggregator, mock_1inch_response, mock_paraswap_response, mock_0x_response
+    ):
         """Test best quote aggregation across all EVM providers."""
         with patch("httpx.AsyncClient.get") as mock_get:
             mock_get.side_effect = [mock_1inch_response, mock_paraswap_response, mock_0x_response]
@@ -300,7 +303,10 @@ class TestDEXAggregator:
     @pytest.mark.asyncio
     async def test_extract_output_amount(self, aggregator):
         assert aggregator._extract_output_amount("1inch", {"toAmount": "1000"}) == 1000
-        assert aggregator._extract_output_amount("paraswap", {"priceRoute": {"destAmount": "2000"}}) == 2000
+        assert (
+            aggregator._extract_output_amount("paraswap", {"priceRoute": {"destAmount": "2000"}})
+            == 2000
+        )
         assert aggregator._extract_output_amount("0x", {"buyAmount": "3000"}) == 3000
         assert aggregator._extract_output_amount("jupiter", {"outAmount": "4000"}) == 4000
         assert aggregator._extract_output_amount("unknown", {}) == 0
@@ -355,7 +361,10 @@ class TestDEXAggregator:
         """Test Solana swap via Jupiter."""
         with patch("web3_agent_kit.solana.dex.JupiterDEX") as mock_jup_cls:
             mock_jup = AsyncMock()
-            mock_jup.swap.return_value = {"swapTransaction": "base64_tx", "lastValidBlockHeight": 200000}
+            mock_jup.swap.return_value = {
+                "swapTransaction": "base64_tx",
+                "lastValidBlockHeight": 200000,
+            }
             mock_jup_cls.return_value = mock_jup
 
             result = await aggregator.get_swap(
@@ -415,6 +424,7 @@ class TestDEXAggregator:
 
         async def slow_method():
             import asyncio
+
             await asyncio.sleep(100)  # will timeout
 
         with patch.object(aggregator, "_health") as mock_health:
@@ -429,9 +439,7 @@ class TestDEXAggregator:
     async def test_paraswap_swap(self, aggregator):
         """Test Paraswap swap flow."""
         mock_price = MagicMock()
-        mock_price.json.return_value = {
-            "priceRoute": {"destAmount": "500000000", "bestRoute": []}
-        }
+        mock_price.json.return_value = {"priceRoute": {"destAmount": "500000000", "bestRoute": []}}
         mock_price.raise_for_status = MagicMock()
 
         mock_tx = MagicMock()
@@ -472,7 +480,9 @@ class TestDEXAggregator:
             raise AggregatorError("Test error")
 
     @pytest.mark.asyncio
-    async def test_get_best_quote_returns_provider_status(self, aggregator, mock_1inch_response, mock_paraswap_response, mock_0x_response):
+    async def test_get_best_quote_returns_provider_status(
+        self, aggregator, mock_1inch_response, mock_paraswap_response, mock_0x_response
+    ):
         with patch("httpx.AsyncClient.get") as mock_get:
             mock_get.side_effect = [mock_1inch_response, mock_paraswap_response, mock_0x_response]
             result = await aggregator.get_best_quote(

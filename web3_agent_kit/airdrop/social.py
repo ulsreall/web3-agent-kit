@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 class SocialPlatform(Enum):
     """Supported social platforms."""
+
     TWITTER = "twitter"
     DISCORD = "discord"
     TELEGRAM = "telegram"
@@ -25,6 +26,7 @@ class SocialPlatform(Enum):
 @dataclass
 class SocialAccount:
     """A social media account for task completion."""
+
     platform: SocialPlatform
     username: str
     auth_token: Optional[str] = None
@@ -36,6 +38,7 @@ class SocialAccount:
 @dataclass
 class SocialTaskResult:
     """Result of attempting a social task."""
+
     task_type: TaskType
     platform: SocialPlatform
     target: str
@@ -393,7 +396,9 @@ class SocialTaskManager:
             TaskType.SOCIAL_TWITTER_FOLLOW: lambda: self.twitter.follow(target),
             TaskType.SOCIAL_TWITTER_RETWEET: lambda: self.twitter.retweet(target),
             TaskType.SOCIAL_TWITTER_LIKE: lambda: self.twitter.like(target),
-            TaskType.SOCIAL_TWITTER_COMMENT: lambda: self.twitter.comment(target, kwargs.get("text", "")),
+            TaskType.SOCIAL_TWITTER_COMMENT: lambda: self.twitter.comment(
+                target, kwargs.get("text", "")
+            ),
             TaskType.SOCIAL_DISCORD_JOIN: lambda: self.discord.join_server(target),
             TaskType.SOCIAL_DISCORD_VERIFY: lambda: self.discord.verify(target),
             TaskType.SOCIAL_TELEGRAM_JOIN: lambda: self.telegram.join_channel(target),

@@ -129,6 +129,7 @@ __all__ = [
 
 # ─── Sleep helpers ─────────────────────────────────────────────
 
+
 async def async_sleep(seconds: float) -> None:
     """Async sleep wrapper — non-blocking sleep."""
     await asyncio.sleep(seconds)
@@ -144,9 +145,7 @@ def sleep(seconds: float) -> None:
     try:
         loop = asyncio.get_running_loop()
         if loop.is_running():
-            raise RuntimeError(
-                "Use await async_sleep() instead of sleep() in async context"
-            )
+            raise RuntimeError("Use await async_sleep() instead of sleep() in async context")
     except RuntimeError:
         pass
     _time.sleep(seconds)

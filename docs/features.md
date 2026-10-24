@@ -43,11 +43,11 @@ from web3_agent_kit import AgentConfig
 config = AgentConfig(
     wallet=wallet,
     chains=[Chain.BASE, Chain.ETHEREUM],
-    llm="auto",           # Auto-detect best available LLM
-    max_steps=20,         # Maximum reasoning steps
+    llm="auto",  # Auto-detect best available LLM
+    max_steps=20,  # Maximum reasoning steps
     tools=[uniswap, aave],
-    governor=governor,    # Safety governor
-    verbose=True,         # Log reasoning steps
+    governor=governor,  # Safety governor
+    verbose=True,  # Log reasoning steps
 )
 
 agent = Agent(config=config)
@@ -356,15 +356,15 @@ Each new pair is analyzed for safety:
 from web3_agent_kit import SniperConfig
 
 config = SniperConfig(
-    max_buy=0.005,          # Max 0.005 ETH per snipe
-    auto_buy=True,          # Auto-buy safe tokens
-    honeypot_check=True,    # Enable honeypot detection
-    min_liquidity=0.5,      # Min 0.5 ETH liquidity
-    max_buy_tax=10.0,       # Max 10% buy tax
-    max_sell_tax=10.0,      # Max 10% sell tax
+    max_buy=0.005,  # Max 0.005 ETH per snipe
+    auto_buy=True,  # Auto-buy safe tokens
+    honeypot_check=True,  # Enable honeypot detection
+    min_liquidity=0.5,  # Min 0.5 ETH liquidity
+    max_buy_tax=10.0,  # Max 10% buy tax
+    max_sell_tax=10.0,  # Max 10% sell tax
     blacklisted_tokens=[],  # Tokens to ignore
     whitelisted_tokens=[],  # Tokens to always consider
-    callback=my_callback,   # Function to call on new pair
+    callback=my_callback,  # Function to call on new pair
 )
 ```
 
@@ -398,10 +398,10 @@ from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
 governor = SpendGovernor(
     limits=SpendLimits(
-        max_per_tx=0.1,      # Max 0.1 ETH per transaction
-        daily_limit=1.0,     # Max 1 ETH per day
+        max_per_tx=0.1,  # Max 0.1 ETH per transaction
+        daily_limit=1.0,  # Max 1 ETH per day
     ),
-    require_confirm=True,    # Operator must confirm
+    require_confirm=True,  # Operator must confirm
 )
 
 # Use with agent
@@ -439,7 +439,6 @@ from web3_agent_kit import (
     ChainManager,
     LLM,
     LLMConfig,
-
     # Features
     PortfolioTracker,
     PortfolioSummary,

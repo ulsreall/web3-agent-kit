@@ -6,11 +6,11 @@ from web3_agent_kit.defi import RiskLevel, YieldConfig, YieldOptimizer
 # Initialize
 wallet = Wallet(private_key="0xYOUR_KEY", chain=Chain.ETHEREUM)
 config = YieldConfig(
-    min_apy=2.0,               # Only consider >2% APY
-    max_risk=RiskLevel.MEDIUM, # No high-risk strategies
-    min_tvl=5_000_000,         # Min $5M TVL
-    auto_compound_threshold=25, # Compound when rewards > $25
-    compound_interval=43200,    # Every 12 hours
+    min_apy=2.0,  # Only consider >2% APY
+    max_risk=RiskLevel.MEDIUM,  # No high-risk strategies
+    min_tvl=5_000_000,  # Min $5M TVL
+    auto_compound_threshold=25,  # Compound when rewards > $25
+    compound_interval=43200,  # Every 12 hours
 )
 optimizer = YieldOptimizer(wallet, Chain.ETHEREUM, config)
 
@@ -25,7 +25,7 @@ best = optimizer.find_best("USDC", amount=10000)
 if best:
     print(f"\nBest: {best.protocol.value} — {best.apy_display}")
 
-# 3. Deposit
+    # 3. Deposit
     result = optimizer.deposit(best, amount=10000)
     print(f"Deposited: {result['status']}")
 

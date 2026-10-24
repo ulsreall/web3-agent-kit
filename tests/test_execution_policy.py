@@ -81,9 +81,7 @@ class TestAllowedDecisions:
         assert decision.allowed
 
     def test_approval_at_limit_is_allowed(self):
-        decision = policy().evaluate(
-            token_intent(ActionType.APPROVE_TOKEN, amount_base_units=500)
-        )
+        decision = policy().evaluate(token_intent(ActionType.APPROVE_TOKEN, amount_base_units=500))
         assert decision.allowed
 
     def test_contract_call_with_allowlisted_contract_is_allowed(self):
@@ -148,15 +146,11 @@ class TestDeniedDecisions:
         assert decision.reasons == (PolicyReason.TOKEN_AMOUNT_EXCEEDED,)
 
     def test_missing_approval_limit_fails_closed(self):
-        decision = policy(max_approval_amounts={}).evaluate(
-            token_intent(ActionType.APPROVE_TOKEN)
-        )
+        decision = policy(max_approval_amounts={}).evaluate(token_intent(ActionType.APPROVE_TOKEN))
         assert decision.reasons == (PolicyReason.APPROVAL_LIMIT_NOT_CONFIGURED,)
 
     def test_approval_amount_above_limit(self):
-        decision = policy().evaluate(
-            token_intent(ActionType.APPROVE_TOKEN, amount_base_units=501)
-        )
+        decision = policy().evaluate(token_intent(ActionType.APPROVE_TOKEN, amount_base_units=501))
         assert decision.reasons == (PolicyReason.APPROVAL_AMOUNT_EXCEEDED,)
 
     def test_unlimited_approval_is_denied_by_default(self):
@@ -169,9 +163,7 @@ class TestDeniedDecisions:
         decision = policy(
             max_approval_amounts={TOKEN: UINT256_MAX},
             deny_unlimited_approval=False,
-        ).evaluate(
-            token_intent(ActionType.APPROVE_TOKEN, amount_base_units=UINT256_MAX)
-        )
+        ).evaluate(token_intent(ActionType.APPROVE_TOKEN, amount_base_units=UINT256_MAX))
         assert decision.allowed
 
     def test_collects_all_reasons_in_stable_order(self):
@@ -267,9 +259,7 @@ class TestPolicyConfiguration:
         with pytest.raises(InvalidPolicyLimitError, match="duplicate normalized"):
             policy(max_token_amounts={mixed: 1, mixed.lower(): 2})
 
-    @pytest.mark.parametrize(
-        "field", ["deny_unlimited_approval", "require_confirmation"]
-    )
+    @pytest.mark.parametrize("field", ["deny_unlimited_approval", "require_confirmation"])
     def test_boolean_configuration_is_strict(self, field):
         with pytest.raises(InvalidPolicyError):
             policy(**{field: 1})

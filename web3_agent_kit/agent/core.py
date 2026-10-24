@@ -109,8 +109,7 @@ class Agent:
                 kwargs["wallet"] = wallet
             if "wallet" not in kwargs:
                 raise TypeError(
-                    "Agent requires wallet=... or private_key=... "
-                    "(or pass a full AgentConfig)"
+                    "Agent requires wallet=... or private_key=... (or pass a full AgentConfig)"
                 )
             self.config = AgentConfig(**kwargs)
 
@@ -130,6 +129,7 @@ class Agent:
         """Lazy-load LLM client."""
         if self._llm is None:
             from .llm import LLM
+
             self._llm = LLM()
         return self._llm
 
@@ -159,11 +159,13 @@ class Agent:
 
             if action.get("tool") == "done":
                 result = action.get("answer", "Task completed")
-                self.history.append({
-                    "step": step + 1,
-                    "action": action,
-                    "result": result,
-                })
+                self.history.append(
+                    {
+                        "step": step + 1,
+                        "action": action,
+                        "result": result,
+                    }
+                )
                 return result
 
             # Execute action
@@ -171,11 +173,13 @@ class Agent:
             observation = result
 
             # Log action
-            self.history.append({
-                "step": step + 1,
-                "action": action,
-                "result": result,
-            })
+            self.history.append(
+                {
+                    "step": step + 1,
+                    "action": action,
+                    "result": result,
+                }
+            )
 
             if self.config.verbose:
                 logger.info(f"Result: {result}")
@@ -214,9 +218,7 @@ class Agent:
         if not tool_descriptions:
             tool_descriptions = ["- No tools available"]
 
-        system_prompt = AGENT_SYSTEM_PROMPT.format(
-            tools="\n".join(tool_descriptions)
-        )
+        system_prompt = AGENT_SYSTEM_PROMPT.format(tools="\n".join(tool_descriptions))
 
         # Build conversation context
         context_parts = [f"OBSERVATION: {observation}"]
@@ -269,9 +271,7 @@ class Agent:
                     "set the value explicitly or provide a confirm_fn to approve "
                     "actions with unspecified amounts."
                 )
-            decision = self.config.governor.authorize(
-                tx_value=tx_value, action=tool_name
-            )
+            decision = self.config.governor.authorize(tx_value=tx_value, action=tool_name)
             if not decision.allowed:
                 return f"Blocked by governor: {decision.reason}"
 

@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class AirdropReward:
     """A reward earned from an airdrop."""
+
     platform: str
     campaign_id: str
     campaign_name: str
@@ -33,6 +34,7 @@ class AirdropReward:
 @dataclass
 class AirdropSummary:
     """Summary of all airdrop activity."""
+
     total_campaigns: int = 0
     active_campaigns: int = 0
     completed_tasks: int = 0
@@ -99,7 +101,9 @@ class AirdropTracker:
                     campaign.earned_points += task.points
 
                     if task.task_id not in self._completed_tasks.get(campaign.campaign_id, []):
-                        self._completed_tasks.setdefault(campaign.campaign_id, []).append(task.task_id)
+                        self._completed_tasks.setdefault(campaign.campaign_id, []).append(
+                            task.task_id
+                        )
 
                     self._save()
                     logger.info(f"Tracker: completed task '{task.title}' in '{campaign.name}'")
@@ -115,7 +119,9 @@ class AirdropTracker:
         """
         self.rewards.append(reward)
         self._save()
-        logger.info(f"Tracker: recorded reward ({reward.points} pts, {reward.tokens} {reward.token_symbol})")
+        logger.info(
+            f"Tracker: recorded reward ({reward.points} pts, {reward.tokens} {reward.token_symbol})"
+        )
 
     def get_campaign(self, campaign_id: str) -> Optional[AirdropCampaign]:
         """Get a tracked campaign by ID."""
@@ -153,7 +159,8 @@ class AirdropTracker:
         """
         cutoff = time.time() + (within_hours * 3600)
         upcoming = [
-            c for c in self.campaigns.values()
+            c
+            for c in self.campaigns.values()
             if c.deadline and c.deadline <= cutoff and c.deadline > time.time()
         ]
         return sorted(upcoming, key=lambda c: c.deadline or 0)
@@ -220,14 +227,16 @@ class AirdropTracker:
             }
 
         for r in self.rewards:
-            data["rewards"].append({
-                "platform": r.platform,
-                "campaign": r.campaign_name,
-                "points": r.points,
-                "tokens": r.tokens,
-                "token_symbol": r.token_symbol,
-                "claimed": r.claimed,
-            })
+            data["rewards"].append(
+                {
+                    "platform": r.platform,
+                    "campaign": r.campaign_name,
+                    "points": r.points,
+                    "tokens": r.tokens,
+                    "token_symbol": r.token_symbol,
+                    "claimed": r.claimed,
+                }
+            )
 
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(path, "w") as f:
@@ -243,25 +252,35 @@ class AirdropTracker:
         """
         output = io.StringIO()
         writer = csv.writer(output)
-        writer.writerow([
-            "campaign_id", "platform", "name", "url",
-            "total_points", "earned_points", "progress",
-            "is_active", "tasks_completed",
-        ])
+        writer.writerow(
+            [
+                "campaign_id",
+                "platform",
+                "name",
+                "url",
+                "total_points",
+                "earned_points",
+                "progress",
+                "is_active",
+                "tasks_completed",
+            ]
+        )
 
         for cid, campaign in self.campaigns.items():
             completed = len(self._completed_tasks.get(cid, []))
-            writer.writerow([
-                cid,
-                campaign.platform,
-                campaign.name,
-                campaign.url,
-                campaign.total_points,
-                campaign.earned_points,
-                f"{campaign.progress:.2%}",
-                campaign.is_active,
-                completed,
-            ])
+            writer.writerow(
+                [
+                    cid,
+                    campaign.platform,
+                    campaign.name,
+                    campaign.url,
+                    campaign.total_points,
+                    campaign.earned_points,
+                    f"{campaign.progress:.2%}",
+                    campaign.is_active,
+                    completed,
+                ]
+            )
 
         os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
         with open(path, "w", newline="") as f:
@@ -291,15 +310,17 @@ class AirdropTracker:
                     "deadline": c.deadline,
                 }
             for r in self.rewards:
-                data["rewards"].append({
-                    "platform": r.platform,
-                    "campaign_id": r.campaign_id,
-                    "campaign_name": r.campaign_name,
-                    "points": r.points,
-                    "tokens": r.tokens,
-                    "token_symbol": r.token_symbol,
-                    "claimed": r.claimed,
-                })
+                data["rewards"].append(
+                    {
+                        "platform": r.platform,
+                        "campaign_id": r.campaign_id,
+                        "campaign_name": r.campaign_name,
+                        "points": r.points,
+                        "tokens": r.tokens,
+                        "token_symbol": r.token_symbol,
+                        "claimed": r.claimed,
+                    }
+                )
             with open(self.storage_path, "w") as f:
                 json.dump(data, f, indent=2)
         except Exception as e:
@@ -325,15 +346,17 @@ class AirdropTracker:
                     deadline=cd.get("deadline"),
                 )
             for rd in data.get("rewards", []):
-                self.rewards.append(AirdropReward(
-                    platform=rd.get("platform", ""),
-                    campaign_id=rd.get("campaign_id", ""),
-                    campaign_name=rd.get("campaign_name", ""),
-                    points=rd.get("points", 0),
-                    tokens=rd.get("tokens", 0),
-                    token_symbol=rd.get("token_symbol", ""),
-                    claimed=rd.get("claimed", False),
-                ))
+                self.rewards.append(
+                    AirdropReward(
+                        platform=rd.get("platform", ""),
+                        campaign_id=rd.get("campaign_id", ""),
+                        campaign_name=rd.get("campaign_name", ""),
+                        points=rd.get("points", 0),
+                        tokens=rd.get("tokens", 0),
+                        token_symbol=rd.get("token_symbol", ""),
+                        claimed=rd.get("claimed", False),
+                    )
+                )
             self._completed_tasks = data.get("completed_tasks", {})
         except Exception as e:
             logger.error(f"Tracker: failed to load: {e}")

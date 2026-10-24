@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PlatformPoints:
     """Points balance on a single platform."""
+
     platform: str
     points: int = 0
     rank: int = 0
@@ -69,6 +70,7 @@ class PlatformPoints:
 @dataclass
 class PointsSnapshot:
     """A point-in-time snapshot of all platform points."""
+
     timestamp: datetime
     platforms: dict[str, PlatformPoints] = field(default_factory=dict)
 
@@ -94,12 +96,13 @@ class PointsSnapshot:
 @dataclass
 class DashboardConfig:
     """Configuration for the points dashboard."""
+
     # Wallet address
     wallet_address: str = ""
     # Platforms to track
-    platforms: list[str] = field(default_factory=lambda: [
-        "galxe", "zealy", "layer3", "questn", "taskon", "intract", "port3"
-    ])
+    platforms: list[str] = field(
+        default_factory=lambda: ["galxe", "zealy", "layer3", "questn", "taskon", "intract", "port3"]
+    )
     # API keys (optional, for authenticated endpoints)
     galxe_api_key: str = ""
     # History file
@@ -129,13 +132,15 @@ class PointsDashboard:
         """
         self.config = config or DashboardConfig()
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                ),
+            }
+        )
         if self.config.proxy:
             self.session.proxies = {
                 "http": self.config.proxy,
@@ -242,13 +247,9 @@ class PointsDashboard:
         }
 
         if old.total_points > 0:
-            growth["total_delta_pct"] = round(
-                (growth["total_delta"] / old.total_points) * 100, 1
-            )
+            growth["total_delta_pct"] = round((growth["total_delta"] / old.total_points) * 100, 1)
 
-        for platform in set(
-            list(now.platforms.keys()) + list(old.platforms.keys())
-        ):
+        for platform in set(list(now.platforms.keys()) + list(old.platforms.keys())):
             new_pts = now.platforms.get(platform, PlatformPoints(platform)).points
             old_pts = old.platforms.get(platform, PlatformPoints(platform)).points
             delta = new_pts - old_pts
@@ -271,12 +272,14 @@ class PointsDashboard:
 
         positions = []
         for platform, points in self._current.platforms.items():
-            positions.append({
-                "platform": platform,
-                "points": points.points,
-                "rank": points.rank,
-                "tier": points.tier,
-            })
+            positions.append(
+                {
+                    "platform": platform,
+                    "points": points.points,
+                    "rank": points.rank,
+                    "tier": points.tier,
+                }
+            )
 
         positions.sort(key=lambda x: x["points"], reverse=True)
         return positions
@@ -306,17 +309,17 @@ class PointsDashboard:
         ):
             bar_len = min(30, points.points // 100)
             bar = "█" * bar_len + "░" * (30 - bar_len)
-            lines.append(
-                f"║  {platform:12} │ {points.points:>8,} pts │ {bar} ║"
-            )
+            lines.append(f"║  {platform:12} │ {points.points:>8,} pts │ {bar} ║")
 
-        lines.extend([
-            "╠══════════════════════════════════════════════════════════╣",
-            f"║  TOTAL: {self._current.total_points:>10,} points"
-            f"  │  {self._current.total_campaigns} campaigns completed"
-            f"  ║",
-            "╚══════════════════════════════════════════════════════════╝",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════════════════╣",
+                f"║  TOTAL: {self._current.total_points:>10,} points"
+                f"  │  {self._current.total_campaigns} campaigns completed"
+                f"  ║",
+                "╚══════════════════════════════════════════════════════════╝",
+            ]
+        )
 
         summary = "\n".join(lines)
         print(summary)
@@ -391,17 +394,18 @@ class PointsDashboard:
         # Growth section
         growth = self.get_growth(7)
         if growth["total_delta"] != 0:
-            lines.extend([
-                "",
-                "## 7-Day Growth",
-                "",
-                f"- **Total Delta:** +{growth['total_delta']:,} points",
-            ])
+            lines.extend(
+                [
+                    "",
+                    "## 7-Day Growth",
+                    "",
+                    f"- **Total Delta:** +{growth['total_delta']:,} points",
+                ]
+            )
             for platform, data in growth["platforms"].items():
                 if data["delta"] != 0:
                     lines.append(
-                        f"- **{platform}:** +{data['delta']:,} "
-                        f"({data['current']:,} total)"
+                        f"- **{platform}:** +{data['delta']:,} ({data['current']:,} total)"
                     )
 
         md = "\n".join(lines)
@@ -509,10 +513,12 @@ class PointsDashboard:
                         rank=v.get("rank", 0),
                         campaigns_completed=v.get("campaigns_completed", 0),
                     )
-                self._history.append(PointsSnapshot(
-                    timestamp=datetime.fromisoformat(snap_data["timestamp"]),
-                    platforms=platforms,
-                ))
+                self._history.append(
+                    PointsSnapshot(
+                        timestamp=datetime.fromisoformat(snap_data["timestamp"]),
+                        platforms=platforms,
+                    )
+                )
             logger.info(f"Loaded {len(self._history)} historical snapshots")
         except Exception as e:
             logger.warning(f"Failed to load history: {e}")

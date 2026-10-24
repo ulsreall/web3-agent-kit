@@ -31,6 +31,7 @@ from web3_agent_kit.airdrop.executor.taskon import TaskOnExecutor, TaskOnResult,
 
 # ─── Helpers ──────────────────────────────────────────────────
 
+
 def _mock_response(json_data=None, status_code=200):
     """Create a mock requests.Response."""
     resp = MagicMock()
@@ -60,6 +61,7 @@ def _make_concrete_subclass():
 
 
 # ─── ExecutorConfig Tests ─────────────────────────────────────
+
 
 class TestExecutorConfig:
     def test_defaults(self):
@@ -101,6 +103,7 @@ class TestExecutorConfig:
 
 # ─── PlatformTask Tests ──────────────────────────────────────
 
+
 class TestPlatformTask:
     def test_creation(self):
         task = PlatformTask(task_id="1", title="Test Task")
@@ -132,10 +135,12 @@ class TestPlatformTask:
         task = PlatformTask(task_id="t1", title="Done", is_completed=True)
         airdrop = task.to_airdrop_task("platform")
         from web3_agent_kit.airdrop.base import TaskStatus
+
         assert airdrop.status == TaskStatus.COMPLETED
 
 
 # ─── ExecutorResult Tests ─────────────────────────────────────
+
 
 class TestExecutorResult:
     def test_creation(self):
@@ -169,6 +174,7 @@ class TestExecutorResult:
 
 # ─── TaskDifficulty Tests ────────────────────────────────────
 
+
 class TestTaskDifficulty:
     def test_values(self):
         assert TaskDifficulty.EASY.value == "easy"
@@ -177,6 +183,7 @@ class TestTaskDifficulty:
 
 
 # ─── BasePlatformExecutor Tests ──────────────────────────────
+
 
 class TestBasePlatformExecutor:
     def test_cannot_instantiate_abstract(self):
@@ -261,6 +268,7 @@ class TestBasePlatformExecutor:
 
 # ─── QuestN Executor Tests ────────────────────────────────────
 
+
 class TestQuestNExecutor:
     def test_init(self):
         executor = QuestNExecutor()
@@ -307,12 +315,14 @@ class TestQuestNExecutor:
 
     @patch.object(QuestNExecutor, "_get")
     def test_get_tasks(self, mock_get):
-        mock_get.return_value = _mock_response({
-            "tasks": [
-                {"id": "1", "title": "Follow Twitter", "type": "twitter_follow", "points": 10},
-                {"id": "2", "title": "Join Discord", "type": "discord_join", "points": 5},
-            ]
-        })
+        mock_get.return_value = _mock_response(
+            {
+                "tasks": [
+                    {"id": "1", "title": "Follow Twitter", "type": "twitter_follow", "points": 10},
+                    {"id": "2", "title": "Join Discord", "type": "discord_join", "points": 5},
+                ]
+            }
+        )
         executor = QuestNExecutor()
         executor._campaign_id = "test123"
         tasks = executor.get_tasks()
@@ -340,6 +350,7 @@ class TestQuestNExecutor:
 
 
 # ─── TaskOn Executor Tests ────────────────────────────────────
+
 
 class TestTaskOnExecutor:
     def test_init(self):
@@ -379,11 +390,13 @@ class TestTaskOnExecutor:
 
     @patch.object(TaskOnExecutor, "_get")
     def test_get_tasks(self, mock_get):
-        mock_get.return_value = _mock_response({
-            "tasks": [
-                {"id": "1", "title": "Follow", "type": "twitter_follow", "points": 10},
-            ]
-        })
+        mock_get.return_value = _mock_response(
+            {
+                "tasks": [
+                    {"id": "1", "title": "Follow", "type": "twitter_follow", "points": 10},
+                ]
+            }
+        )
         executor = TaskOnExecutor()
         executor._campaign_id = "test123"
         tasks = executor.get_tasks()
@@ -405,6 +418,7 @@ class TestTaskOnExecutor:
 
 
 # ─── Intract Executor Tests ───────────────────────────────────
+
 
 class TestIntractExecutor:
     def test_init(self):
@@ -442,11 +456,13 @@ class TestIntractExecutor:
 
     @patch.object(IntractExecutor, "_get")
     def test_get_tasks(self, mock_get):
-        mock_get.return_value = _mock_response({
-            "tasks": [
-                {"id": "1", "title": "Like Tweet", "type": "twitter_like", "points": 5},
-            ]
-        })
+        mock_get.return_value = _mock_response(
+            {
+                "tasks": [
+                    {"id": "1", "title": "Like Tweet", "type": "twitter_like", "points": 5},
+                ]
+            }
+        )
         executor = IntractExecutor()
         executor._campaign_id = "camp1"
         tasks = executor.get_tasks()
@@ -470,6 +486,7 @@ class TestIntractExecutor:
 
 
 # ─── Port3 Executor Tests ─────────────────────────────────────
+
 
 class TestPort3Executor:
     def test_init(self):
@@ -505,11 +522,13 @@ class TestPort3Executor:
 
     @patch.object(Port3Executor, "_get")
     def test_get_tasks(self, mock_get):
-        mock_get.return_value = _mock_response({
-            "tasks": [
-                {"id": "1", "title": "Social Task", "type": "twitter_follow", "points": 10},
-            ]
-        })
+        mock_get.return_value = _mock_response(
+            {
+                "tasks": [
+                    {"id": "1", "title": "Social Task", "type": "twitter_follow", "points": 10},
+                ]
+            }
+        )
         executor = Port3Executor()
         executor._campaign_id = "camp1"
         tasks = executor.get_tasks()
@@ -537,6 +556,7 @@ class TestPort3Executor:
 
 
 # ─── Galxe Executor Tests ─────────────────────────────────────
+
 
 class TestGalxeExecutor:
     def test_init(self):
@@ -574,15 +594,17 @@ class TestGalxeExecutor:
 
     @patch.object(GalxeExecutor, "_post")
     def test_visit_success(self, mock_post):
-        mock_post.return_value = _mock_response({
-            "data": {
-                "campaign": {
-                    "id": "123",
-                    "name": "Test Campaign",
-                    "tasks": [],
+        mock_post.return_value = _mock_response(
+            {
+                "data": {
+                    "campaign": {
+                        "id": "123",
+                        "name": "Test Campaign",
+                        "tasks": [],
+                    }
                 }
             }
-        })
+        )
         executor = GalxeExecutor()
         result = executor.visit("https://app.galxe.com/quest/abc123def456789012345678")
         assert result is True
@@ -621,6 +643,7 @@ class TestGalxeExecutor:
 
 
 # ─── Layer3 Executor Tests ────────────────────────────────────
+
 
 class TestLayer3Executor:
     def test_init(self):
@@ -667,9 +690,7 @@ class TestLayer3Executor:
 
     @patch.object(Layer3Executor, "_get")
     def test_get_quests(self, mock_get):
-        mock_get.return_value = _mock_response({
-            "quests": [{"id": "q1", "title": "Quest 1"}]
-        })
+        mock_get.return_value = _mock_response({"quests": [{"id": "q1", "title": "Quest 1"}]})
         executor = Layer3Executor()
         quests = executor.get_quests()
         assert len(quests) == 1
@@ -695,6 +716,7 @@ class TestLayer3Executor:
 
 
 # ─── Platform-Specific Task Dataclass Tests ──────────────────
+
 
 class TestQuestNTask:
     def test_creation(self):
@@ -754,6 +776,7 @@ class TestLayer3Task:
 
 # ─── Platform-Specific Result Dataclass Tests ────────────────
 
+
 class TestQuestNResult:
     def test_creation(self):
         result = QuestNResult(platform="questn", url="")
@@ -804,6 +827,7 @@ class TestLayer3Result:
 
 
 # ─── CaptchaSolver Tests ──────────────────────────────────────
+
 
 class TestCaptchaConfig:
     def test_defaults(self):
@@ -906,6 +930,7 @@ class TestCaptchaSolvingError:
 
 # ─── PlatformPluginRegistry Tests ─────────────────────────────
 
+
 class TestPlatformPluginRegistry:
     def setup_method(self):
         PlatformPluginRegistry.clear()
@@ -974,9 +999,15 @@ class TestPlatformPluginRegistry:
         @PlatformPluginRegistry.from_class
         class MyExecutor(BasePlatformExecutor):
             platform_name = "my_custom"
-            def visit(self, url): return True
-            def get_tasks(self): return []
-            def complete_task(self, task): return True
+
+            def visit(self, url):
+                return True
+
+            def get_tasks(self):
+                return []
+
+            def complete_task(self, task):
+                return True
 
         assert PlatformPluginRegistry.get("my_custom") is MyExecutor
 
@@ -993,6 +1024,7 @@ class TestPlatformPluginRegistry:
 
 
 # ─── close() Tests ────────────────────────────────────────────
+
 
 class TestExecutorClose:
     @patch.object(QuestNExecutor, "close")

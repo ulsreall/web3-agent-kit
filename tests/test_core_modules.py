@@ -121,6 +121,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         assert optimizer is not None
 
@@ -128,6 +129,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         estimate = optimizer.estimate(
             to="0xRecipient",
@@ -142,6 +144,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         estimate = optimizer.estimate(to="0xABC", value=0, chain=Chain.BASE)
         assert isinstance(estimate.gas_limit, int)
@@ -151,6 +154,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         rec = optimizer.recommend_timing(chain=Chain.ETHEREUM)
         assert rec is not None
@@ -161,6 +165,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         rec = optimizer.recommend_timing(chain=Chain.ETHEREUM)
         assert rec.recommended_action in ("execute_now", "wait", "batch")
@@ -170,6 +175,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         result = optimizer.batch_estimate(
             transactions=[{"to": "0xA", "value": 0.01}, {"to": "0xB", "value": 0.02}],
@@ -183,6 +189,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         price = optimizer.get_gas_price(chain=Chain.ETHEREUM)
         assert isinstance(price, dict)
@@ -192,6 +199,7 @@ class TestGasOptimizer:
         mock_wallet = MagicMock()
         mock_cm = MagicMock()
         from web3_agent_kit.gas.optimizer import GasOptimizer
+
         optimizer = GasOptimizer(wallet=mock_wallet, chain_manager=mock_cm)
         limit = optimizer.suggest_gas_limit("eth_transfer")
         assert limit >= 21000

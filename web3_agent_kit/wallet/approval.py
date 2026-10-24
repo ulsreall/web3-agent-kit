@@ -13,30 +13,33 @@ from .wallet import Wallet
 
 class ApprovalRisk(Enum):
     """Risk level of an approval."""
-    SAFE = "safe"                     # Limited amount
-    MODERATE = "moderate"             # Large but not unlimited
-    HIGH = "high"                     # Unlimited approval to known protocol
-    CRITICAL = "critical"             # Unlimited approval to unknown contract
+
+    SAFE = "safe"  # Limited amount
+    MODERATE = "moderate"  # Large but not unlimited
+    HIGH = "high"  # Unlimited approval to known protocol
+    CRITICAL = "critical"  # Unlimited approval to unknown contract
 
 
 @dataclass
 class TokenApproval:
     """A token approval record."""
+
     token_address: str
     token_symbol: str
-    spender: str                      # Contract address that has approval
-    spender_label: str                # Human-readable label
-    amount: float                     # Approved amount (float("inf") = unlimited)
-    amount_raw: int                   # Raw amount on-chain
+    spender: str  # Contract address that has approval
+    spender_label: str  # Human-readable label
+    amount: float  # Approved amount (float("inf") = unlimited)
+    amount_raw: int  # Raw amount on-chain
     chain: Chain
     risk: ApprovalRisk
-    timestamp: float = 0              # When approval was set
-    tx_hash: Optional[str] = None     # Approval transaction hash
+    timestamp: float = 0  # When approval was set
+    tx_hash: Optional[str] = None  # Approval transaction hash
 
 
 @dataclass
 class RevokeResult:
     """Result of a revoke operation."""
+
     token_address: str
     spender: str
     tx_hash: Optional[str] = None
@@ -120,9 +123,7 @@ class ApprovalManager:
         approvals = []
 
         for token_addr, symbol in tokens:
-            token_approvals = self._check_token_approvals(
-                token_addr, symbol, chain
-            )
+            token_approvals = self._check_token_approvals(token_addr, symbol, chain)
             approvals.extend(token_approvals)
 
         self.approvals = approvals
@@ -147,17 +148,11 @@ class ApprovalManager:
             ApprovalRisk.CRITICAL: 3,
         }
         threshold = risk_order[min_risk]
-        return [
-            a for a in self.approvals
-            if risk_order[a.risk] >= threshold
-        ]
+        return [a for a in self.approvals if risk_order[a.risk] >= threshold]
 
     def get_unlimited(self) -> list[TokenApproval]:
         """Get all unlimited approvals."""
-        return [
-            a for a in self.approvals
-            if a.amount == float("inf")
-        ]
+        return [a for a in self.approvals if a.amount == float("inf")]
 
     def get_summary(self) -> dict:
         """Get approval summary."""
@@ -250,8 +245,7 @@ class ApprovalManager:
             List of RevokeResult.
         """
         unknown = [
-            a for a in self.approvals
-            if a.spender_label == "Unknown" and a.amount == float("inf")
+            a for a in self.approvals if a.spender_label == "Unknown" and a.amount == float("inf")
         ]
         results = []
 
@@ -296,15 +290,17 @@ class ApprovalManager:
             approve_topic = "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
 
             # Get approval events for this wallet
-            logs = w3.eth.get_logs({
-                "fromBlock": "latest",
-                "toBlock": "latest",
-                "address": token_address,
-                "topics": [
-                    approve_topic,
-                    "0x" + "0" * 24 + self.wallet.address[2:].lower(),  # owner
-                ],
-            })
+            logs = w3.eth.get_logs(
+                {
+                    "fromBlock": "latest",
+                    "toBlock": "latest",
+                    "address": token_address,
+                    "topics": [
+                        approve_topic,
+                        "0x" + "0" * 24 + self.wallet.address[2:].lower(),  # owner
+                    ],
+                }
+            )
 
             approvals = []
             for log in logs:
@@ -315,17 +311,19 @@ class ApprovalManager:
                 is_known, label = self.is_known_spender(spender)
                 risk = self._assess_risk(amount, is_known)
 
-                approvals.append(TokenApproval(
-                    token_address=token_address,
-                    token_symbol=symbol,
-                    spender=spender,
-                    spender_label=label,
-                    amount=amount,
-                    amount_raw=amount_raw,
-                    chain=chain,
-                    risk=risk,
-                    timestamp=time.time(),
-                ))
+                approvals.append(
+                    TokenApproval(
+                        token_address=token_address,
+                        token_symbol=symbol,
+                        spender=spender,
+                        spender_label=label,
+                        amount=amount,
+                        amount_raw=amount_raw,
+                        chain=chain,
+                        risk=risk,
+                        timestamp=time.time(),
+                    )
+                )
 
             return approvals
         except Exception:

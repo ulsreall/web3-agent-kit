@@ -1,6 +1,5 @@
 """Tests for DCA Bot."""
 
-
 import pytest
 
 from web3_agent_kit.chains.chain import Chain, ChainManager
@@ -16,6 +15,7 @@ from web3_agent_kit.wallet.wallet import Wallet, WalletConfig
 def wallet():
     """Create a test wallet."""
     from eth_account import Account
+
     acct = Account.create()
     return Wallet(
         config=WalletConfig(private_key=acct.key.hex()),
@@ -100,9 +100,7 @@ class TestDCAExecution:
         assert "not found" in result.error
 
     def test_max_buys_limit(self, bot):
-        order = bot.create_order(
-            "USDC", "ETH", 100, Chain.BASE, Interval.DAILY, max_buys=2
-        )
+        order = bot.create_order("USDC", "ETH", 100, Chain.BASE, Interval.DAILY, max_buys=2)
 
         bot.execute_order(order.id)
         bot.execute_order(order.id)
@@ -115,9 +113,7 @@ class TestDCAExecution:
         assert updated.status == DCAStatus.COMPLETED
 
     def test_max_total_limit(self, bot):
-        order = bot.create_order(
-            "USDC", "ETH", 100, Chain.BASE, Interval.DAILY, max_total=250
-        )
+        order = bot.create_order("USDC", "ETH", 100, Chain.BASE, Interval.DAILY, max_total=250)
 
         bot.execute_order(order.id)  # 100
         bot.execute_order(order.id)  # 200

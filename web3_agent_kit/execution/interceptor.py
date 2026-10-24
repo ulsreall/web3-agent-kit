@@ -121,9 +121,7 @@ class AuthorizationRequest:
         if not isinstance(self.transaction, Mapping):
             raise InvalidIntentError("transaction must be a mapping")
 
-        missing = [
-            name for name in _REQUIRED_TX_FIELDS if self.transaction.get(name) is None
-        ]
+        missing = [name for name in _REQUIRED_TX_FIELDS if self.transaction.get(name) is None]
         if missing:
             raise InvalidIntentError(
                 "transaction must be fully constructed before signing; missing: "
@@ -141,9 +139,7 @@ class AuthorizationRequest:
                 when the chain the policy names and the chain the transaction
                 targets disagree.
         """
-        return CallEnvelopeV1.from_transaction(
-            transaction=self.transaction, chain=self.chain
-        )
+        return CallEnvelopeV1.from_transaction(transaction=self.transaction, chain=self.chain)
 
     @property
     def call_fingerprint(self) -> str:
@@ -242,12 +238,8 @@ class PreSignInterceptor:
             raise ExecutionError("signer must be callable")
         if policy is not None and not isinstance(policy, ExecutionPolicy):
             raise ExecutionError("policy must be an ExecutionPolicy or None")
-        if authorization_provider is not None and not hasattr(
-            authorization_provider, "authorize"
-        ):
-            raise ExecutionError(
-                "authorization_provider must implement authorize(context)"
-            )
+        if authorization_provider is not None and not hasattr(authorization_provider, "authorize"):
+            raise ExecutionError("authorization_provider must implement authorize(context)")
         self._policy = policy
         self._signer = signer
         self._authorization_provider = authorization_provider
@@ -359,9 +351,7 @@ class PreSignInterceptor:
                 authorization_id=None,
                 policy_commitment_digest=None,
             )
-            raise EnforcementDenied(
-                "no ExecutionPolicy configured; refusing to sign (fail-closed)"
-            )
+            raise EnforcementDenied("no ExecutionPolicy configured; refusing to sign (fail-closed)")
 
         try:
             intent = TransactionIntent.from_evm_transaction(
@@ -403,8 +393,7 @@ class PreSignInterceptor:
                 policy_commitment_digest=commitment.digest(),
             )
             raise EnforcementDenied(
-                "policy denied transaction "
-                f"{intent.intent_id}: {', '.join(reasons)}"
+                f"policy denied transaction {intent.intent_id}: {', '.join(reasons)}"
             )
 
         # Stage 3 -- optional human confirmation. Never a substitute for
@@ -500,9 +489,7 @@ class PreSignInterceptor:
                 authorization_id=None,
                 policy_commitment_digest=commitment.digest(),
             )
-            raise EnforcementDenied(
-                f"principal authorization denied: {exc}"
-            ) from exc
+            raise EnforcementDenied(f"principal authorization denied: {exc}") from exc
 
         if not isinstance(evidence, AuthorizationEvidence):
             raise EnforcementDenied(

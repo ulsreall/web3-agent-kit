@@ -130,9 +130,7 @@ def _canonical_int(value: Any, field_name: str) -> int:
 
 def _canonical_address(value: Any, field_name: str) -> str:
     if not isinstance(value, str) or not _ADDRESS_PATTERN.fullmatch(value):
-        raise CallEnvelopeError(
-            f"{field_name} must be a 20-byte 0x-prefixed EVM address"
-        )
+        raise CallEnvelopeError(f"{field_name} must be a 20-byte 0x-prefixed EVM address")
     return value.lower()
 
 
@@ -159,8 +157,7 @@ def _canonical_calldata(value: Any) -> bytes:
         except ValueError as exc:
             raise CallEnvelopeError("calldata is not valid hexadecimal") from exc
     raise CallEnvelopeError(
-        f"calldata must be bytes or a 0x-prefixed hex string, "
-        f"got {type(value).__name__}"
+        f"calldata must be bytes or a 0x-prefixed hex string, got {type(value).__name__}"
     )
 
 
@@ -185,8 +182,7 @@ class CallEnvelopeV1:
             raise CallEnvelopeError("chain_id must be a positive EIP-155 chain ID")
         if self.target is None and self.calldata == b"":
             raise CallEnvelopeError(
-                "contract creation requires init code; calldata cannot be empty "
-                "when target is None"
+                "contract creation requires init code; calldata cannot be empty when target is None"
             )
 
     @property
@@ -265,9 +261,7 @@ class CallEnvelopeV1:
 
         raw_sender = transaction.get("from")
         if raw_sender is None:
-            raise CallEnvelopeError(
-                "transaction is missing from; the executor cannot be inferred"
-            )
+            raise CallEnvelopeError("transaction is missing from; the executor cannot be inferred")
         executor = _canonical_address(raw_sender, "from")
 
         nonce = _canonical_int(transaction.get("nonce", 0), "nonce")
@@ -351,8 +345,7 @@ def _chain_id_of(chain: Chain) -> int:
     numeric = CHAIN_IDS.get(chain)
     if numeric is None:
         raise CallEnvelopeError(
-            f"{chain.value} has no EIP-155 chain ID and cannot be described by "
-            "an EVM call envelope"
+            f"{chain.value} has no EIP-155 chain ID and cannot be described by an EVM call envelope"
         )
     return int(numeric)
 

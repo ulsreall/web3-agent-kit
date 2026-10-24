@@ -43,13 +43,15 @@ class EmailNotifier:
         Returns:
             True if sent successfully.
         """
-        if not all([
-            self.config.email_smtp_host,
-            self.config.email_username,
-            self.config.email_password,
-            self.config.email_from,
-            self.config.email_to,
-        ]):
+        if not all(
+            [
+                self.config.email_smtp_host,
+                self.config.email_username,
+                self.config.email_password,
+                self.config.email_from,
+                self.config.email_to,
+            ]
+        ):
             return False
 
         try:

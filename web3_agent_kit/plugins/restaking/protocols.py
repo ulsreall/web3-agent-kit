@@ -13,6 +13,7 @@ try:
     from ...execution import ActionType
 except ImportError:
     from chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
+
     from web3_agent_kit.execution import ActionType  # type: ignore[no-redef]
 
 logger = logging.getLogger(__name__)
@@ -22,8 +23,10 @@ logger = logging.getLogger(__name__)
 # Protocol identifiers
 # ---------------------------------------------------------------------------
 
+
 class ProtocolName(Enum):
     """Supported restaking protocols."""
+
     EIGENLAYER = "eigenlayer"
     BABYLON = "babylon"
     SOLAYER = "solayer"
@@ -145,18 +148,20 @@ SYMBIOTIC_VAULT_ADDRESS = "0xB9d5F78b95dA4b7A0E2B8C6D5E4F3A2B1C0D9E8F"
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 @dataclass
 class ProtocolPosition:
     """A restaking position in a specific protocol."""
+
     protocol: ProtocolName
     chain: Chain
-    staked_amount: float          # In native token
+    staked_amount: float  # In native token
     staked_value_usd: float
     shares: int = 0
     operator: str = ""
     lock_end_time: float = 0.0
     rewards_earned: float = 0.0
-    slashing_risk: float = 20.0   # 0-100
+    slashing_risk: float = 20.0  # 0-100
     is_active: bool = True
     position_id: str = ""
 
@@ -164,6 +169,7 @@ class ProtocolPosition:
 @dataclass
 class ProtocolReward:
     """Reward info from a restaking protocol."""
+
     protocol: ProtocolName
     chain: Chain
     reward_token: str
@@ -176,6 +182,7 @@ class ProtocolReward:
 # ---------------------------------------------------------------------------
 # Abstract base class
 # ---------------------------------------------------------------------------
+
 
 class RestakingProtocol(ABC):
     """Abstract base class for restaking protocols."""
@@ -208,6 +215,7 @@ class RestakingProtocol(ABC):
 # Babylon BTC Restaking
 # ---------------------------------------------------------------------------
 
+
 class BabylonBtcRestaking(RestakingProtocol):
     """Babylon BTC staking integration.
 
@@ -239,7 +247,7 @@ class BabylonBtcRestaking(RestakingProtocol):
     def stake(
         self,
         amount: float,
-        lock_blocks: int = 64_000,       # ~10 days at 13.5s/block
+        lock_blocks: int = 64_000,  # ~10 days at 13.5s/block
         finality_provider: str = "",
         **kwargs,
     ) -> dict:
@@ -272,13 +280,15 @@ class BabylonBtcRestaking(RestakingProtocol):
             amount_wei,
             lock_blocks,
             fp_bytes,
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": 300_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self._chain, 1),
-        })
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": 300_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self._chain, 1),
+            }
+        )
 
         signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
@@ -315,13 +325,15 @@ class BabylonBtcRestaking(RestakingProtocol):
         )
 
         nonce = w3.eth.get_transaction_count(self.wallet.address)
-        tx = vault.functions.undelegate(int(stake_id)).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": 200_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self._chain, 1),
-        })
+        tx = vault.functions.undelegate(int(stake_id)).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": 200_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self._chain, 1),
+            }
+        )
 
         signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
@@ -343,9 +355,7 @@ class BabylonBtcRestaking(RestakingProtocol):
         )
 
         try:
-            stakes = vault.functions.getStakes(
-                w3.to_checksum_address(self.wallet.address)
-            ).call()
+            stakes = vault.functions.getStakes(w3.to_checksum_address(self.wallet.address)).call()
         except Exception as e:
             logger.warning("Failed to fetch Babylon positions: %s", e)
             return []
@@ -353,15 +363,17 @@ class BabylonBtcRestaking(RestakingProtocol):
         positions = []
         for i, stake in enumerate(stakes):
             amount_btc = stake[0] / 1e8
-            positions.append(ProtocolPosition(
-                protocol=ProtocolName.BABYLON,
-                chain=self._chain,
-                staked_amount=amount_btc,
-                staked_value_usd=amount_btc * 65_000,  # approximate BTC price
-                lock_end_time=float(stake[1]),
-                is_active=stake[4],
-                position_id=str(i),
-            ))
+            positions.append(
+                ProtocolPosition(
+                    protocol=ProtocolName.BABYLON,
+                    chain=self._chain,
+                    staked_amount=amount_btc,
+                    staked_value_usd=amount_btc * 65_000,  # approximate BTC price
+                    lock_end_time=float(stake[1]),
+                    is_active=stake[4],
+                    position_id=str(i),
+                )
+            )
         return positions
 
     def get_rewards(self) -> list[ProtocolReward]:
@@ -373,6 +385,7 @@ class BabylonBtcRestaking(RestakingProtocol):
 # ---------------------------------------------------------------------------
 # Solana Restaking (Solayer / Jito / Picasso)
 # ---------------------------------------------------------------------------
+
 
 class SolanaRestaking(RestakingProtocol):
     """Solana restaking protocol integration (via EVM bridge wrappers).
@@ -436,20 +449,24 @@ class SolanaRestaking(RestakingProtocol):
         amount_wei = int(amount * 1e9)  # SOL uses 9 decimals
 
         nonce = w3.eth.get_transaction_count(self.wallet.address)
-        avs_addr = w3.to_checksum_address(avs) if avs else w3.to_checksum_address(
-            "0x0000000000000000000000000000000000000000"
+        avs_addr = (
+            w3.to_checksum_address(avs)
+            if avs
+            else w3.to_checksum_address("0x0000000000000000000000000000000000000000")
         )
 
         tx = vault.functions.restake(
             amount_wei,
             avs_addr,
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": 300_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self._chain, 1),
-        })
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": 300_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self._chain, 1),
+            }
+        )
 
         signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
@@ -487,13 +504,15 @@ class SolanaRestaking(RestakingProtocol):
         amount_wei = int(amount * 1e9)
 
         nonce = w3.eth.get_transaction_count(self.wallet.address)
-        tx = vault.functions.unstake(amount_wei).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": 200_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self._chain, 1),
-        })
+        tx = vault.functions.unstake(amount_wei).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": 200_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self._chain, 1),
+            }
+        )
 
         signed = self.wallet.sign_transaction(tx, self._chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
@@ -515,18 +534,18 @@ class SolanaRestaking(RestakingProtocol):
         )
 
         try:
-            balance = vault.functions.getBalance(
-                w3.to_checksum_address(self.wallet.address)
-            ).call()
+            balance = vault.functions.getBalance(w3.to_checksum_address(self.wallet.address)).call()
             amount = balance / 1e9
             if amount > 0:
-                return [ProtocolPosition(
-                    protocol=ProtocolName(self._protocol),
-                    chain=Chain.SOLANA,
-                    staked_amount=amount,
-                    staked_value_usd=amount * 150,  # approximate SOL price
-                    is_active=True,
-                )]
+                return [
+                    ProtocolPosition(
+                        protocol=ProtocolName(self._protocol),
+                        chain=Chain.SOLANA,
+                        staked_amount=amount,
+                        staked_value_usd=amount * 150,  # approximate SOL price
+                        is_active=True,
+                    )
+                ]
         except Exception as e:
             logger.warning("Failed to fetch %s positions: %s", self._protocol, e)
 
@@ -546,14 +565,16 @@ class SolanaRestaking(RestakingProtocol):
             ).call()
             rewards = rewards_wei / 1e9
             if rewards > 0:
-                return [ProtocolReward(
-                    protocol=ProtocolName(self._protocol),
-                    chain=Chain.SOLANA,
-                    reward_token="SOL",
-                    reward_amount=rewards,
-                    reward_value_usd=rewards * 150,
-                    claimable=True,
-                )]
+                return [
+                    ProtocolReward(
+                        protocol=ProtocolName(self._protocol),
+                        chain=Chain.SOLANA,
+                        reward_token="SOL",
+                        reward_amount=rewards,
+                        reward_value_usd=rewards * 150,
+                        claimable=True,
+                    )
+                ]
         except Exception as e:
             logger.warning("Failed to fetch rewards: %s", e)
 

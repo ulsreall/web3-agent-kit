@@ -77,9 +77,7 @@ def _freeze_metadata(value: Any) -> Any:
         return frozenset(_freeze_metadata(item) for item in value)
     if value is None or isinstance(value, (str, int, float, bool, bytes)):
         return value
-    raise InvalidMetadataError(
-        f"unsupported metadata value type: {type(value).__name__}"
-    )
+    raise InvalidMetadataError(f"unsupported metadata value type: {type(value).__name__}")
 
 
 @dataclass(frozen=True)
@@ -105,9 +103,7 @@ class TransactionIntent:
         if not isinstance(self.chain, Chain):
             raise UnsupportedChainError("chain must be a Chain enum member")
         if self.chain == Chain.SOLANA:
-            raise UnsupportedChainError(
-                "TransactionIntent currently supports EVM chains only"
-            )
+            raise UnsupportedChainError("TransactionIntent currently supports EVM chains only")
         if not isinstance(self.action, ActionType):
             raise UnsupportedActionError("action must be an ActionType enum member")
 
@@ -128,14 +124,18 @@ class TransactionIntent:
                 raise InvalidAddressError("recipient must identify the approval spender")
             if token is None:
                 raise InvalidAddressError("token is required for an approval")
-        if self.action in {
-            ActionType.CONTRACT_CALL,
-            ActionType.SWAP,
-            ActionType.BRIDGE,
-            ActionType.STAKE,
-            ActionType.UNSTAKE,
-            ActionType.GOVERNANCE,
-        } and contract is None:
+        if (
+            self.action
+            in {
+                ActionType.CONTRACT_CALL,
+                ActionType.SWAP,
+                ActionType.BRIDGE,
+                ActionType.STAKE,
+                ActionType.UNSTAKE,
+                ActionType.GOVERNANCE,
+            }
+            and contract is None
+        ):
             raise InvalidAddressError(f"contract is required for {self.action.value}")
 
         amount = _validate_amount(self.amount_base_units, "amount_base_units")

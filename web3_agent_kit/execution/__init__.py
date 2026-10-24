@@ -36,13 +36,13 @@ from .interceptor import (
     UnapprovedSignerError,
 )
 from .policy import (
+    UINT256_MAX,
     ExecutionPolicy,
     InvalidPolicyAllowlistError,
     InvalidPolicyError,
     InvalidPolicyLimitError,
     PolicyDecision,
     PolicyReason,
-    UINT256_MAX,
 )
 
 __all__ = [
@@ -102,4 +102,3 @@ def run_all_probes():
     from .p0_probe import run_all_probes as _run
 
     return _run()
-

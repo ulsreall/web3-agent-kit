@@ -93,8 +93,16 @@ class TestSolanaLPManager:
         mock_quote_resp = MagicMock()
         mock_quote_resp.json.return_value = {
             "routePlan": [
-                {"swapInfo": {"label": "Raydium", "ammKey": "pool_raydium_1"}, "inAmount": "1000", "outAmount": "500"},
-                {"swapInfo": {"label": "Orca", "ammKey": "pool_orca_1"}, "inAmount": "1000", "outAmount": "480"},
+                {
+                    "swapInfo": {"label": "Raydium", "ammKey": "pool_raydium_1"},
+                    "inAmount": "1000",
+                    "outAmount": "500",
+                },
+                {
+                    "swapInfo": {"label": "Orca", "ammKey": "pool_orca_1"},
+                    "inAmount": "1000",
+                    "outAmount": "480",
+                },
             ]
         }
         mock_quote_resp.raise_for_status = MagicMock()
@@ -163,9 +171,7 @@ class TestSolanaLPManager:
     @pytest.mark.asyncio
     async def test_get_remove_liquidity_quote_api_error(self, lp_manager):
         with patch("httpx.AsyncClient.post", AsyncMock(side_effect=Exception("API error"))):
-            result = await lp_manager.get_remove_liquidity_quote(
-                "orca", "pool1", 1000, "lp_mint"
-            )
+            result = await lp_manager.get_remove_liquidity_quote("orca", "pool1", 1000, "lp_mint")
             assert "error" in result
 
     @pytest.mark.asyncio
@@ -202,9 +208,7 @@ class TestSolanaLPManager:
         mock_resp.raise_for_status = MagicMock()
 
         with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):
-            tx = await lp_manager.get_remove_liquidity_tx(
-                "orca", "pool_orca_1", 1000000, "lp_mint"
-            )
+            tx = await lp_manager.get_remove_liquidity_tx("orca", "pool_orca_1", 1000000, "lp_mint")
             assert tx["swapTransaction"] == "base64_tx_remove"
 
     @pytest.mark.asyncio

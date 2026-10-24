@@ -37,6 +37,7 @@ logger = logging.getLogger(__name__)
 
 class RiskLevel(Enum):
     """Risk level classification."""
+
     SAFE = "safe"
     LOW = "low"
     MEDIUM = "medium"
@@ -46,6 +47,7 @@ class RiskLevel(Enum):
 
 class ContractPattern(Enum):
     """Known contract patterns."""
+
     # Dangerous patterns
     HIDDEN_MINT = "hidden_mint"
     BLACKLIST = "blacklist"
@@ -72,6 +74,7 @@ class ContractPattern(Enum):
 @dataclass
 class TokenInfo:
     """Basic token information."""
+
     address: str
     name: str = ""
     symbol: str = ""
@@ -88,13 +91,14 @@ class TokenInfo:
 @dataclass
 class TaxInfo:
     """Token tax information."""
+
     buy_tax: float = 0.0
     sell_tax: float = 0.0
     is_honeypot: Optional[bool] = None  # None = unverified (unknown state)
-    can_sell: Optional[bool] = None     # None = unverified (unknown state)
+    can_sell: Optional[bool] = None  # None = unverified (unknown state)
     buy_gas: int = 0
     sell_gas: int = 0
-    error: Optional[str] = None         # Error message if API call failed
+    error: Optional[str] = None  # Error message if API call failed
 
     @property
     def is_high_tax(self) -> bool:
@@ -110,6 +114,7 @@ class TaxInfo:
 @dataclass
 class LiquidityInfo:
     """Liquidity information."""
+
     total_liquidity_usd: float = 0.0
     locked_percent: float = 0.0
     lock_duration_days: int = 0
@@ -132,6 +137,7 @@ class LiquidityInfo:
 @dataclass
 class HolderInfo:
     """Token holder analysis."""
+
     total_holders: int = 0
     top10_percent: float = 0.0
     top20_percent: float = 0.0
@@ -148,6 +154,7 @@ class HolderInfo:
 @dataclass
 class ContractAudit:
     """Smart contract audit results."""
+
     is_verified: bool = False
     is_proxy: bool = False
     has_hidden_mint: bool = False
@@ -194,6 +201,7 @@ class ContractAudit:
 @dataclass
 class SecurityReport:
     """Complete security analysis report."""
+
     token: TokenInfo
     tax: TaxInfo
     liquidity: LiquidityInfo
@@ -297,61 +305,75 @@ class SecurityReport:
             RiskLevel.HIGH: "🔴",
             RiskLevel.CRITICAL: "⛔",
         }
-        lines.append(f"║  Risk Level: {risk_emoji.get(self.risk_level, '⚪')} {self.risk_level.value.upper()}")
+        lines.append(
+            f"║  Risk Level: {risk_emoji.get(self.risk_level, '⚪')} {self.risk_level.value.upper()}"
+        )
 
         # Tax
-        lines.extend([
-            "╠══════════════════════════════════════════════════════════╣",
-            "║  TAX INFO",
-            f"║    Buy Tax: {self.tax.buy_tax}%",
-            f"║    Sell Tax: {self.tax.sell_tax}%",
-            f"║    Can Sell: {'✓' if self.tax.can_sell else '✗ HONEYPOT!'}",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════════════════╣",
+                "║  TAX INFO",
+                f"║    Buy Tax: {self.tax.buy_tax}%",
+                f"║    Sell Tax: {self.tax.sell_tax}%",
+                f"║    Can Sell: {'✓' if self.tax.can_sell else '✗ HONEYPOT!'}",
+            ]
+        )
 
         # Liquidity
-        lines.extend([
-            "╠══════════════════════════════════════════════════════════╣",
-            "║  LIQUIDITY",
-            f"║    Total: ${self.liquidity.total_liquidity_usd:,.0f}",
-            f"║    Locked: {self.liquidity.locked_percent}%",
-            f"║    Lock Duration: {self.liquidity.lock_duration_days} days",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════════════════╣",
+                "║  LIQUIDITY",
+                f"║    Total: ${self.liquidity.total_liquidity_usd:,.0f}",
+                f"║    Locked: {self.liquidity.locked_percent}%",
+                f"║    Lock Duration: {self.liquidity.lock_duration_days} days",
+            ]
+        )
 
         # Holders
-        lines.extend([
-            "╠══════════════════════════════════════════════════════════╣",
-            "║  HOLDERS",
-            f"║    Total: {self.holders.total_holders:,}",
-            f"║    Top 10 Hold: {self.holders.top10_percent}%",
-            f"║    Concentrated: {'⚠️ YES' if self.holders.is_concentrated else '✓ No'}",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════════════════╣",
+                "║  HOLDERS",
+                f"║    Total: {self.holders.total_holders:,}",
+                f"║    Top 10 Hold: {self.holders.top10_percent}%",
+                f"║    Concentrated: {'⚠️ YES' if self.holders.is_concentrated else '✓ No'}",
+            ]
+        )
 
         # Contract
-        lines.extend([
-            "╠══════════════════════════════════════════════════════════╣",
-            "║  CONTRACT",
-            f"║    Verified: {'✓' if self.contract.is_verified else '✗'}",
-            f"║    Proxy: {'⚠️ YES' if self.contract.is_proxy else '✓ No'}",
-            f"║    Hidden Mint: {'⚠️ YES' if self.contract.has_hidden_mint else '✓ No'}",
-            f"║    Blacklist: {'⚠️ YES' if self.contract.has_blacklist else '✓ No'}",
-            f"║    Pause: {'⚠️ YES' if self.contract.has_pause else '✓ No'}",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════════════════╣",
+                "║  CONTRACT",
+                f"║    Verified: {'✓' if self.contract.is_verified else '✗'}",
+                f"║    Proxy: {'⚠️ YES' if self.contract.is_proxy else '✓ No'}",
+                f"║    Hidden Mint: {'⚠️ YES' if self.contract.has_hidden_mint else '✓ No'}",
+                f"║    Blacklist: {'⚠️ YES' if self.contract.has_blacklist else '✓ No'}",
+                f"║    Pause: {'⚠️ YES' if self.contract.has_pause else '✓ No'}",
+            ]
+        )
 
         # Warnings
         if self.warnings:
-            lines.extend([
-                "╠══════════════════════════════════════════════════════════╣",
-                "║  ⚠️ WARNINGS",
-            ])
+            lines.extend(
+                [
+                    "╠══════════════════════════════════════════════════════════╣",
+                    "║  ⚠️ WARNINGS",
+                ]
+            )
             for w in self.warnings[:5]:
                 lines.append(f"║    • {w}")
 
         # Recommendations
         if self.recommendations:
-            lines.extend([
-                "╠══════════════════════════════════════════════════════════╣",
-                "║  💡 RECOMMENDATIONS",
-            ])
+            lines.extend(
+                [
+                    "╠══════════════════════════════════════════════════════════╣",
+                    "║  💡 RECOMMENDATIONS",
+                ]
+            )
             for r in self.recommendations[:3]:
                 lines.append(f"║    • {r}")
 
@@ -364,6 +386,7 @@ class SecurityReport:
 @dataclass
 class SecurityConfig:
     """Configuration for security analysis."""
+
     rpc_url: str = ""
     chain: str = "ethereum"
     # API keys
@@ -425,11 +448,41 @@ class TokenAnalyzer:
 
     # ERC20 ABI (minimal)
     ERC20_ABI = [
-        {"constant": True, "inputs": [], "name": "name", "outputs": [{"name": "", "type": "string"}], "type": "function"},
-        {"constant": True, "inputs": [], "name": "symbol", "outputs": [{"name": "", "type": "string"}], "type": "function"},
-        {"constant": True, "inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "type": "function"},
-        {"constant": True, "inputs": [], "name": "totalSupply", "outputs": [{"name": "", "type": "uint256"}], "type": "function"},
-        {"constant": True, "inputs": [], "name": "owner", "outputs": [{"name": "", "type": "address"}], "type": "function"},
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "name",
+            "outputs": [{"name": "", "type": "string"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "symbol",
+            "outputs": [{"name": "", "type": "string"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "decimals",
+            "outputs": [{"name": "", "type": "uint8"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "totalSupply",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "type": "function",
+        },
+        {
+            "constant": True,
+            "inputs": [],
+            "name": "owner",
+            "outputs": [{"name": "", "type": "address"}],
+            "type": "function",
+        },
     ]
 
     def __init__(self, config: Optional[SecurityConfig] = None):
@@ -440,9 +493,11 @@ class TokenAnalyzer:
         """
         self.config = config or SecurityConfig()
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "web3-agent-kit/1.1.0",
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "web3-agent-kit/1.1.0",
+            }
+        )
         if self.config.proxy:
             self.session.proxies = {
                 "http": self.config.proxy,
@@ -457,6 +512,7 @@ class TokenAnalyzer:
         """Initialize Web3 connection."""
         try:
             from web3 import Web3
+
             self._web3 = Web3(Web3.HTTPProvider(self.config.rpc_url))
             if self._web3.is_connected():
                 logger.info(f"Connected to {self.config.rpc_url}")
@@ -629,6 +685,7 @@ class TokenAnalyzer:
 
         try:
             from web3 import Web3
+
             contract = self._web3.eth.contract(
                 address=Web3.to_checksum_address(address),
                 abi=self.ERC20_ABI,
@@ -637,7 +694,7 @@ class TokenAnalyzer:
             info.name = contract.functions.name().call()
             info.symbol = contract.functions.symbol().call()
             info.decimals = contract.functions.decimals().call()
-            info.total_supply = contract.functions.totalSupply().call() / (10 ** info.decimals)
+            info.total_supply = contract.functions.totalSupply().call() / (10**info.decimals)
 
             try:
                 info.owner = contract.functions.owner().call()
@@ -904,6 +961,7 @@ class TokenAnalyzer:
             "avalanche": "43114",
         }
         return chain_ids.get(self.config.chain, "1")
+
 
 __all__ = [
     "RiskLevel",

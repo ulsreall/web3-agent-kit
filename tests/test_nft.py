@@ -20,10 +20,15 @@ from web3_agent_kit.nft import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _sample_collection(**overrides):
     defaults = dict(
-        address="0xABC", name="TestNFT", symbol="TNFT",
-        total_supply=10000, floor_price_eth=0.5, chain="ethereum",
+        address="0xABC",
+        name="TestNFT",
+        symbol="TNFT",
+        total_supply=10000,
+        floor_price_eth=0.5,
+        chain="ethereum",
     )
     defaults.update(overrides)
     return NFTCollection(**defaults)
@@ -31,7 +36,9 @@ def _sample_collection(**overrides):
 
 def _sample_item(**overrides):
     defaults = dict(
-        contract="0xABC", token_id="1", name="TestNFT #1",
+        contract="0xABC",
+        token_id="1",
+        name="TestNFT #1",
         image_url="https://example.com/1.png",
         attributes=[{"trait_type": "Background", "value": "Blue"}],
     )
@@ -41,8 +48,12 @@ def _sample_item(**overrides):
 
 def _sample_listing(**overrides):
     defaults = dict(
-        contract="0xABC", token_id="1", marketplace="opensea",
-        price=0.5, currency="ETH", seller="0xSeller",
+        contract="0xABC",
+        token_id="1",
+        marketplace="opensea",
+        price=0.5,
+        currency="ETH",
+        seller="0xSeller",
     )
     defaults.update(overrides)
     return NFTListing(**defaults)
@@ -51,6 +62,7 @@ def _sample_listing(**overrides):
 # ===========================================================================
 # Enums & constants
 # ===========================================================================
+
 
 class TestNFTStandard:
     def test_erc721(self):
@@ -77,6 +89,7 @@ class TestNFTConfig:
 # ===========================================================================
 # Data classes
 # ===========================================================================
+
 
 class TestNFTCollection:
     def test_fields(self):
@@ -145,6 +158,7 @@ class TestMintResult:
 # calculate_rarity
 # ===========================================================================
 
+
 class TestCalculateRarity:
     def test_empty_list(self):
         assert calculate_rarity([]) == []
@@ -157,18 +171,27 @@ class TestCalculateRarity:
 
     def test_rarity_scores_assigned(self):
         items = [
-            _sample_item(token_id="1", attributes=[
-                {"trait_type": "Bg", "value": "Red"},    # unique
-                {"trait_type": "Hat", "value": "Crown"}, # rare
-            ]),
-            _sample_item(token_id="2", attributes=[
-                {"trait_type": "Bg", "value": "Blue"},   # common
-                {"trait_type": "Hat", "value": "Cap"},   # common
-            ]),
-            _sample_item(token_id="3", attributes=[
-                {"trait_type": "Bg", "value": "Blue"},   # common
-                {"trait_type": "Hat", "value": "Crown"}, # rare
-            ]),
+            _sample_item(
+                token_id="1",
+                attributes=[
+                    {"trait_type": "Bg", "value": "Red"},  # unique
+                    {"trait_type": "Hat", "value": "Crown"},  # rare
+                ],
+            ),
+            _sample_item(
+                token_id="2",
+                attributes=[
+                    {"trait_type": "Bg", "value": "Blue"},  # common
+                    {"trait_type": "Hat", "value": "Cap"},  # common
+                ],
+            ),
+            _sample_item(
+                token_id="3",
+                attributes=[
+                    {"trait_type": "Bg", "value": "Blue"},  # common
+                    {"trait_type": "Hat", "value": "Crown"},  # rare
+                ],
+            ),
         ]
         result = calculate_rarity(items)
         # Item 1 has the most unique traits -> highest score
@@ -177,14 +200,17 @@ class TestCalculateRarity:
 
     def test_sorted_by_score_desc(self):
         items = [
-            _sample_item(token_id=str(i), attributes=[
-                {"trait_type": "Bg", "value": "Red" if i < 2 else "Blue"},
-            ])
+            _sample_item(
+                token_id=str(i),
+                attributes=[
+                    {"trait_type": "Bg", "value": "Red" if i < 2 else "Blue"},
+                ],
+            )
             for i in range(5)
         ]
         result = calculate_rarity(items)
         for i in range(len(result) - 1):
-            assert result[i].rarity_score >= result[i+1].rarity_score
+            assert result[i].rarity_score >= result[i + 1].rarity_score
 
     def test_ranks_sequential(self):
         items = [_sample_item(token_id=str(i)) for i in range(3)]
@@ -196,6 +222,7 @@ class TestCalculateRarity:
 # ===========================================================================
 # WhitelistManager
 # ===========================================================================
+
 
 class TestWhitelistManager:
     def test_add_and_check(self):
@@ -275,6 +302,7 @@ class TestWhitelistManager:
 # NFTMinter
 # ===========================================================================
 
+
 class TestNFTMinter:
     def test_mint_placeholder(self):
         minter = NFTMinter(NFTConfig())
@@ -294,6 +322,7 @@ class TestNFTMinter:
 # NFTMarketplace
 # ===========================================================================
 
+
 class TestNFTMarketplace:
     def test_init(self):
         mp = NFTMarketplace(NFTConfig(chain="ethereum"))
@@ -308,7 +337,8 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "name": "TestCol", "symbol": "TC",
+            "name": "TestCol",
+            "symbol": "TC",
             "total_supply": 5000,
             "floor_price": {"value": 1e18},
             "description": "A test collection",
@@ -346,16 +376,18 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "ownedNfts": [{
-                "contract": {"address": "0xNFT"},
-                "tokenId": "42",
-                "metadata": {
-                    "name": "Cool NFT",
-                    "description": "desc",
-                    "image": "https://img.png",
-                    "attributes": [{"trait_type": "Bg", "value": "Red"}],
-                },
-            }]
+            "ownedNfts": [
+                {
+                    "contract": {"address": "0xNFT"},
+                    "tokenId": "42",
+                    "metadata": {
+                        "name": "Cool NFT",
+                        "description": "desc",
+                        "image": "https://img.png",
+                        "attributes": [{"trait_type": "Bg", "value": "Red"}],
+                    },
+                }
+            ]
         }
         mock_get.return_value = mock_resp
 
@@ -376,7 +408,9 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "name": "Col", "symbol": "C", "total_supply": 100,
+            "name": "Col",
+            "symbol": "C",
+            "total_supply": 100,
             "floor_price": {"value": 2e18},
             "safelist_request_status": "verified",
         }
@@ -401,12 +435,14 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "listings": [{
-                "token_id": "1",
-                "price": {"value": 5e17, "currency": "ETH"},
-                "seller": "0xSeller",
-                "url": "https://opensea.io/1",
-            }]
+            "listings": [
+                {
+                    "token_id": "1",
+                    "price": {"value": 5e17, "currency": "ETH"},
+                    "seller": "0xSeller",
+                    "url": "https://opensea.io/1",
+                }
+            ]
         }
         mock_get.return_value = mock_resp
 
@@ -420,12 +456,14 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "collections": [{
-                "address": "0xCOL",
-                "name": "Trending NFT",
-                "floor_price": {"value": 1e18},
-                "volume": 500,
-            }]
+            "collections": [
+                {
+                    "address": "0xCOL",
+                    "name": "Trending NFT",
+                    "floor_price": {"value": 1e18},
+                    "volume": 500,
+                }
+            ]
         }
         mock_get.return_value = mock_resp
 
@@ -439,11 +477,13 @@ class TestNFTMarketplace:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "results": [{
-                "address": "0xCOL",
-                "name": "Found NFT",
-                "floor_price": {"value": 3e17},
-            }]
+            "results": [
+                {
+                    "address": "0xCOL",
+                    "name": "Found NFT",
+                    "floor_price": {"value": 3e17},
+                }
+            ]
         }
         mock_get.return_value = mock_resp
 
@@ -456,6 +496,7 @@ class TestNFTMarketplace:
 # ===========================================================================
 # NFTManager
 # ===========================================================================
+
 
 class TestNFTManager:
     def test_init(self):
@@ -474,7 +515,9 @@ class TestNFTManager:
         mock_resp = MagicMock()
         mock_resp.status_code = 200
         mock_resp.json.return_value = {
-            "name": "Delegated", "symbol": "DEL", "total_supply": 100,
+            "name": "Delegated",
+            "symbol": "DEL",
+            "total_supply": 100,
             "floor_price": {"value": 1e18},
         }
         mock_get.return_value = mock_resp

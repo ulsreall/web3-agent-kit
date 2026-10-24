@@ -106,18 +106,18 @@ class TestFarmGleam:
             BrowserConfig=MagicMock(),
             BrowserManager=MagicMock(return_value=mock_browser_ctx),
         )
-        fake_gleam_mod = SimpleNamespace(
-            GleamExecutor=MagicMock(return_value=mock_executor)
-        )
+        fake_gleam_mod = SimpleNamespace(GleamExecutor=MagicMock(return_value=mock_executor))
 
-        with patch.object(cli_mod, "_ensure_playwright"), patch.object(
-            cli_mod, "AirdropTracker", MagicMock()
-        ), patch.dict(
-            "sys.modules",
-            {
-                "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
-                "web3_agent_kit.airdrop.executor.gleam_exec": fake_gleam_mod,
-            },
+        with (
+            patch.object(cli_mod, "_ensure_playwright"),
+            patch.object(cli_mod, "AirdropTracker", MagicMock()),
+            patch.dict(
+                "sys.modules",
+                {
+                    "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
+                    "web3_agent_kit.airdrop.executor.gleam_exec": fake_gleam_mod,
+                },
+            ),
         ):
             result = runner.invoke(main, ["farm", "gleam", "https://gleam.io/abc"])
 
@@ -135,14 +135,16 @@ class TestFarmGleam:
         )
         fake_gleam_mod = SimpleNamespace(GleamExecutor=MagicMock())
 
-        with patch.object(cli_mod, "_ensure_playwright"), patch.object(
-            cli_mod, "AirdropTracker", MagicMock()
-        ), patch.dict(
-            "sys.modules",
-            {
-                "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
-                "web3_agent_kit.airdrop.executor.gleam_exec": fake_gleam_mod,
-            },
+        with (
+            patch.object(cli_mod, "_ensure_playwright"),
+            patch.object(cli_mod, "AirdropTracker", MagicMock()),
+            patch.dict(
+                "sys.modules",
+                {
+                    "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
+                    "web3_agent_kit.airdrop.executor.gleam_exec": fake_gleam_mod,
+                },
+            ),
         ):
             result = runner.invoke(
                 main, ["farm", "gleam", "https://gleam.io/abc", "--proxy", "http://p"]
@@ -179,18 +181,18 @@ class TestFarmZealy:
             BrowserConfig=MagicMock(),
             BrowserManager=MagicMock(return_value=mock_browser_ctx),
         )
-        fake_zealy_mod = SimpleNamespace(
-            ZealyExecutor=MagicMock(return_value=mock_executor)
-        )
+        fake_zealy_mod = SimpleNamespace(ZealyExecutor=MagicMock(return_value=mock_executor))
 
-        with patch.object(cli_mod, "_ensure_playwright"), patch.object(
-            cli_mod, "AirdropTracker", MagicMock()
-        ), patch.dict(
-            "sys.modules",
-            {
-                "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
-                "web3_agent_kit.airdrop.executor.zealy_exec": fake_zealy_mod,
-            },
+        with (
+            patch.object(cli_mod, "_ensure_playwright"),
+            patch.object(cli_mod, "AirdropTracker", MagicMock()),
+            patch.dict(
+                "sys.modules",
+                {
+                    "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
+                    "web3_agent_kit.airdrop.executor.zealy_exec": fake_zealy_mod,
+                },
+            ),
         ):
             result = runner.invoke(main, ["farm", "zealy", "https://zealy.io/c/x"])
 
@@ -208,14 +210,16 @@ class TestFarmZealy:
         )
         fake_zealy_mod = SimpleNamespace(ZealyExecutor=MagicMock())
 
-        with patch.object(cli_mod, "_ensure_playwright"), patch.object(
-            cli_mod, "AirdropTracker", MagicMock()
-        ), patch.dict(
-            "sys.modules",
-            {
-                "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
-                "web3_agent_kit.airdrop.executor.zealy_exec": fake_zealy_mod,
-            },
+        with (
+            patch.object(cli_mod, "_ensure_playwright"),
+            patch.object(cli_mod, "AirdropTracker", MagicMock()),
+            patch.dict(
+                "sys.modules",
+                {
+                    "web3_agent_kit.airdrop.executor.browser": fake_browser_mod,
+                    "web3_agent_kit.airdrop.executor.zealy_exec": fake_zealy_mod,
+                },
+            ),
         ):
             result = runner.invoke(main, ["farm", "zealy", "https://zealy.io/c/x"])
 
@@ -269,9 +273,7 @@ class TestFarmStatus:
             tokens=1.5,
             token_symbol="ABC",
         )
-        tracker.get_summary.return_value = _make_summary(
-            campaigns=1, active=1, rewards=[reward]
-        )
+        tracker.get_summary.return_value = _make_summary(campaigns=1, active=1, rewards=[reward])
         with patch.object(cli_mod, "AirdropTracker", return_value=tracker):
             result = runner.invoke(main, ["farm", "status", "--all"])
         assert result.exit_code == 0
@@ -283,9 +285,7 @@ class TestFarmStatus:
         tracker.list_campaigns.return_value = [_make_campaign(url="")]
         tracker.get_summary.return_value = _make_summary(campaigns=1, active=1)
         with patch.object(cli_mod, "AirdropTracker", return_value=tracker):
-            result = runner.invoke(
-                main, ["farm", "status", "--platform", "gleam"]
-            )
+            result = runner.invoke(main, ["farm", "status", "--platform", "gleam"])
         assert result.exit_code == 0
         tracker.list_campaigns.assert_called_once()
 
@@ -297,9 +297,7 @@ class TestFarmExport:
     def test_export_json(self):
         tracker = MagicMock()
         with patch.object(cli_mod, "AirdropTracker", return_value=tracker):
-            result = runner.invoke(
-                main, ["farm", "export", "--format", "json", "-o", "out.json"]
-            )
+            result = runner.invoke(main, ["farm", "export", "--format", "json", "-o", "out.json"])
         assert result.exit_code == 0
         assert "Exported to out.json" in result.output
         tracker.export_json.assert_called_once_with("out.json")
@@ -322,11 +320,13 @@ class TestBrowserLogin:
         mock_executor = MagicMock()
         mock_executor.interactive_login.return_value = success
         fake_social = SimpleNamespace(**{exec_attr: MagicMock(return_value=mock_executor)})
-        with patch.object(cli_mod, "_ensure_playwright"), patch.object(
-            cli_mod, "_get_browser", return_value=mock_browser
-        ), patch.dict(
-            "sys.modules",
-            {"web3_agent_kit.airdrop.executor.social_exec": fake_social},
+        with (
+            patch.object(cli_mod, "_ensure_playwright"),
+            patch.object(cli_mod, "_get_browser", return_value=mock_browser),
+            patch.dict(
+                "sys.modules",
+                {"web3_agent_kit.airdrop.executor.social_exec": fake_social},
+            ),
         ):
             result = runner.invoke(main, ["browser", "login", platform])
         mock_browser.close.assert_called_once()

@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WalletFarmProgress:
     """Per-wallet airdrop farming progress."""
+
     wallet_label: str
     wallet_address: str
     campaigns_completed: list[str] = field(default_factory=list)
@@ -38,6 +39,7 @@ class SybilAvoidanceConfig:
         use_different_ips: Flag suggesting IP rotation (managed externally).
         min_wallet_age_days: Minimum wallet age in days (placeholder).
     """
+
     min_delay_between_wallets: float = 30.0
     max_delay_between_wallets: float = 300.0
     max_tasks_per_wallet_per_day: int = 10
@@ -49,6 +51,7 @@ class SybilAvoidanceConfig:
 @dataclass
 class FarmResult:
     """Result of a farming operation."""
+
     wallet_label: str
     campaign_id: str
     tasks_completed: int = 0
@@ -109,7 +112,8 @@ class AirdropFarmer:
 
         wallets = self.wallet_manager.list_wallets(group=self.group)
         eligible = [
-            w.label for w in wallets
+            w.label
+            for w in wallets
             if not self._progress.get(w.label, WalletFarmProgress(w.label, w.address)).is_frozen
         ]
 
@@ -279,7 +283,9 @@ class AirdropFarmer:
                 progress.tasks_completed += 1
                 progress.total_points += task.points
                 progress.last_active = time.time()
-                self._daily_task_counts[wallet_label] = self._daily_task_counts.get(wallet_label, 0) + 1
+                self._daily_task_counts[wallet_label] = (
+                    self._daily_task_counts.get(wallet_label, 0) + 1
+                )
                 result.tasks_completed += 1
                 result.points_earned += task.points
 

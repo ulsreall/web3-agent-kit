@@ -15,10 +15,11 @@ from typing import Any, Optional
 @dataclass
 class PluginMeta:
     """Plugin metadata."""
-    name: str                     # Unique plugin name (e.g. "uniswap-trader")
-    version: str                  # Semver (e.g. "1.0.0")
-    description: str              # What the plugin does
-    author: str                   # Plugin author
+
+    name: str  # Unique plugin name (e.g. "uniswap-trader")
+    version: str  # Semver (e.g. "1.0.0")
+    description: str  # What the plugin does
+    author: str  # Plugin author
     requires: list[str] = field(default_factory=list)  # Dependencies
     chain_specific: list[str] = field(default_factory=list)  # Chains supported (empty = all)
     hooks: list[str] = field(default_factory=list)  # Hooks this plugin registers
@@ -77,9 +78,7 @@ class Plugin(ABC):
 
         Override this to handle custom actions. Default raises NotImplementedError.
         """
-        raise NotImplementedError(
-            f"Plugin '{self.meta.name}' does not implement execute()"
-        )
+        raise NotImplementedError(f"Plugin '{self.meta.name}' does not implement execute()")
 
     def teardown(self) -> None:
         """Cleanup when plugin is unloaded. Override if needed."""
@@ -283,6 +282,7 @@ class PluginRegistry:
             eps = importlib.metadata.entry_points(group=group)
         else:
             import pkg_resources
+
             eps = pkg_resources.iter_entry_points(group)
 
         for ep in eps:
@@ -328,11 +328,7 @@ class PluginRegistry:
 
         # Look for Plugin subclasses
         for name, obj in inspect.getmembers(module, inspect.isclass):
-            if (
-                issubclass(obj, Plugin)
-                and obj is not Plugin
-                and not inspect.isabstract(obj)
-            ):
+            if issubclass(obj, Plugin) and obj is not Plugin and not inspect.isabstract(obj):
                 return obj()
 
         return None
@@ -426,6 +422,7 @@ class PluginManager:
             }
             for m in self.registry.list_plugins()
         ]
+
 
 __all__ = [
     "PluginMeta",

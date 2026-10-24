@@ -128,10 +128,7 @@ class ProviderHealth:
 
     @property
     def status(self) -> dict[str, str]:
-        return {
-            p: "disabled" if p in self._disabled else "active"
-            for p in self._failures
-        }
+        return {p: "disabled" if p in self._disabled else "active" for p in self._failures}
 
 
 class DEXAggregator:
@@ -404,9 +401,7 @@ class DEXAggregator:
         if chain == Chain.SOLANA:
             return await self._get_best_quote_solana(token_in, token_out, amount, amount_str)
 
-        return await self._get_best_quote_evm(
-            chain, token_in, token_out, amount_str, from_address
-        )
+        return await self._get_best_quote_evm(chain, token_in, token_out, amount_str, from_address)
 
     async def _get_best_quote_solana(
         self,
@@ -416,7 +411,9 @@ class DEXAggregator:
         amount_str: str,
     ) -> dict:
         """Get best quote for Solana via Jupiter."""
-        result = await self._safe_api_call("jupiter", self.jupiter_quote, token_in, token_out, amount)
+        result = await self._safe_api_call(
+            "jupiter", self.jupiter_quote, token_in, token_out, amount
+        )
         if "error" in result:
             return {
                 "best_provider": None,
@@ -451,9 +448,7 @@ class DEXAggregator:
         """Get best quote for EVM chains with fallback routing."""
         # Determine which providers to call based on health
         available_providers = [
-            (name, method)
-            for name, method in EVM_PROVIDERS
-            if self._health.is_available(name)
+            (name, method) for name, method in EVM_PROVIDERS if self._health.is_available(name)
         ]
 
         if not available_providers:
@@ -641,9 +636,13 @@ class DEXAggregator:
         """Execute a swap through a specific provider."""
         try:
             if provider == "1inch":
-                return await self.oneinch_swap(chain, token_in, token_out, amount_str, from_address, slippage)
+                return await self.oneinch_swap(
+                    chain, token_in, token_out, amount_str, from_address, slippage
+                )
             elif provider == "paraswap":
-                return await self.paraswap_swap(chain, token_in, token_out, amount_str, from_address, slippage)
+                return await self.paraswap_swap(
+                    chain, token_in, token_out, amount_str, from_address, slippage
+                )
             elif provider == "0x":
                 return await self.zeroex_quote(chain, token_in, token_out, amount_str, from_address)
             else:
@@ -689,4 +688,5 @@ class DEXAggregator:
 
 class AggregatorError(Exception):
     """Raised when DEX aggregator API fails."""
+
     pass

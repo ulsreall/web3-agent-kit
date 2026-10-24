@@ -248,13 +248,15 @@ class AutoCompound:
         intervals = [60, 120, 240, 360, 720, 1440, 2880, 4320, 5760, 10080]
 
         for interval in intervals:
-            effective_apy = self._calculate_compound_apy(
-                position.current_apy, interval
-            )
+            effective_apy = self._calculate_compound_apy(position.current_apy, interval)
             annual_return = position.deposited_value_usd * (effective_apy / 100)
             compounds_per_year = (365 * 24 * 60) / interval
             annual_gas_cost = compounds_per_year * gas_cost_usd
-            net_return = annual_return - position.deposited_value_usd * (position.current_apy / 100) - annual_gas_cost
+            net_return = (
+                annual_return
+                - position.deposited_value_usd * (position.current_apy / 100)
+                - annual_gas_cost
+            )
 
             if net_return > best_net_return:
                 best_net_return = net_return

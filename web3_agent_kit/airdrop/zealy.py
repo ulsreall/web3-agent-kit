@@ -24,6 +24,7 @@ ZEALY_API_BASE = "https://api.zealy.io/communities"
 @dataclass
 class ZealyQuest:
     """A Zealy quest entry."""
+
     quest_id: str
     title: str
     description: str = ""
@@ -36,6 +37,7 @@ class ZealyQuest:
 @dataclass
 class ZealyLeaderboardEntry:
     """A Zealy leaderboard entry."""
+
     rank: int
     username: str
     xp: int
@@ -200,12 +202,14 @@ class ZealyPlatform(BaseAirdropPlatform):
             data = resp.json()
 
             for i, entry in enumerate(data.get("leaderboard", [])):
-                entries.append(ZealyLeaderboardEntry(
-                    rank=entry.get("rank", i + 1),
-                    username=entry.get("username", "unknown"),
-                    xp=entry.get("xp", 0),
-                    address=entry.get("address", ""),
-                ))
+                entries.append(
+                    ZealyLeaderboardEntry(
+                        rank=entry.get("rank", i + 1),
+                        username=entry.get("username", "unknown"),
+                        xp=entry.get("xp", 0),
+                        address=entry.get("address", ""),
+                    )
+                )
         except Exception as e:
             logger.error(f"Zealy: failed to get leaderboard: {e}")
 

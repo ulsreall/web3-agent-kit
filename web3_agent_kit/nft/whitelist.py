@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WhitelistEntry:
     """A single whitelist entry."""
+
     address: str
     max_mint: int = 1
     added_at: float = field(default_factory=time.time)
@@ -22,6 +23,7 @@ class WhitelistEntry:
 @dataclass
 class WhitelistResult:
     """Result of a whitelist check."""
+
     address: str
     is_whitelisted: bool
     max_mint: int = 0

@@ -41,6 +41,7 @@ def my_confirm(payload: dict) -> bool:
     print(f"Approve {payload['action']} for {payload['value']} ETH?")
     return input("y/n: ").lower() == "y"
 
+
 governor = SpendGovernor(
     SpendLimits(max_per_tx=0.1),
     require_confirm=True,
@@ -68,7 +69,7 @@ config = AgentConfig(
 Emergency stop that blocks all transactions regardless of limits:
 
 ```python
-agent.config.governor.kill()    # Stop all transactions
+agent.config.governor.kill()  # Stop all transactions
 agent.config.governor.unkill()  # Re-enable
 ```
 

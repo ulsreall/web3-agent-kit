@@ -88,6 +88,7 @@ class TestChain:
     def test_chain_config(self):
         """Test chain configuration."""
         from web3_agent_kit.chains.chain import ChainConfig
+
         config = ChainConfig(chain=Chain.BASE)
         assert config.is_evm is True
         assert config.chain_id == 8453
@@ -96,6 +97,7 @@ class TestChain:
     def test_solana_not_evm(self):
         """Test Solana is not EVM."""
         from web3_agent_kit.chains.chain import ChainConfig
+
         config = ChainConfig(chain=Chain.SOLANA)
         assert config.is_evm is False
 
@@ -116,6 +118,7 @@ class TestGovernor:
     def test_within_limits(self):
         """Test transaction within limits."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         governor = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0, daily_limit=10.0),
             require_confirm=False,
@@ -126,6 +129,7 @@ class TestGovernor:
     def test_exceeds_per_tx(self):
         """Test transaction exceeds per-tx limit."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         governor = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0),
             require_confirm=False,
@@ -137,6 +141,7 @@ class TestGovernor:
     def test_kill_switch(self):
         """Test kill switch blocks transactions."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         governor = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0),
             require_confirm=False,
@@ -149,6 +154,7 @@ class TestGovernor:
     def test_daily_limit(self):
         """Test daily spending limit."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         governor = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0, daily_limit=2.0),
             require_confirm=False,
@@ -285,6 +291,7 @@ class TestSpendGovernorIntegration:
             governor=None,  # no auto governor—we'll create our own
         )
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         config.governor = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0),
             require_confirm=True,
@@ -305,6 +312,7 @@ class TestSpendGovernorIntegration:
             return True
 
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         gov = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0, daily_limit=10.0, session_limit=50.0),
             require_confirm=True,
@@ -335,6 +343,7 @@ class TestSpendGovernorIntegration:
             return False
 
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         gov = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0),
             require_confirm=True,
@@ -369,6 +378,7 @@ class TestSpendGovernorIntegration:
         wallet = Wallet.from_key(key)
 
         from web3_agent_kit.utils import SpendGovernor, SpendLimits
+
         gov = SpendGovernor(
             limits=SpendLimits(max_per_tx=1.0),
             require_confirm=False,

@@ -31,18 +31,18 @@ from eth_utils import keccak
 
 try:
     from examples.support.insight_priorseal_boundary import (
-        FixtureBundle,
         _INSIGHT_FIELDS,
         _PRIORSEAL_AUTHORIZATION_TYPES,
+        FixtureBundle,
         _canonical_json,
         _hash_json,
         insight_pair_commitment,
     )
 except ModuleNotFoundError:  # running from examples/
     from support.insight_priorseal_boundary import (
-        FixtureBundle,
         _INSIGHT_FIELDS,
         _PRIORSEAL_AUTHORIZATION_TYPES,
+        FixtureBundle,
         _canonical_json,
         _hash_json,
         insight_pair_commitment,
@@ -98,7 +98,9 @@ def _insight_signable(data: Mapping[str, Any]) -> Any:
     )
 
 
-def _sign_insight_attestation(template: Mapping[str, Any], *, key: str, attester: str, checked_at: int, valid_until: int) -> dict[str, Any]:
+def _sign_insight_attestation(
+    template: Mapping[str, Any], *, key: str, attester: str, checked_at: int, valid_until: int
+) -> dict[str, Any]:
     data = dict(template["data"])
     data["checkedAt"] = checked_at
     data["validUntil"] = valid_until
@@ -116,12 +118,29 @@ def _sign_insight_attestation(template: Mapping[str, Any], *, key: str, attester
         "verifyUrl": template.get("verifyUrl", "https://www.oracleinsight.xyz"),
         "evidence": template.get("evidence"),
         "uid": digest,
-        "signature": signature.signature.hex() if hasattr(signature.signature, "hex") else str(signature.signature),
+        "signature": signature.signature.hex()
+        if hasattr(signature.signature, "hex")
+        else str(signature.signature),
         "data": data,
     }
 
 
-def _authorization_signable(intent: Mapping[str, Any], *, authorizer_address: str, issued_at: int, not_before: int, expires_at: int, nonce_hex: str, max_uses: str, audience: str, policy_hash: str, principal_type: str, principal_id: str, agent_id: str, executor: str) -> Any:
+def _authorization_signable(
+    intent: Mapping[str, Any],
+    *,
+    authorizer_address: str,
+    issued_at: int,
+    not_before: int,
+    expires_at: int,
+    nonce_hex: str,
+    max_uses: str,
+    audience: str,
+    policy_hash: str,
+    principal_type: str,
+    principal_id: str,
+    agent_id: str,
+    executor: str,
+) -> Any:
     return encode_typed_data(
         full_message={
             "types": {
@@ -176,7 +195,11 @@ def _build_priorseal_response(
         "schema": "priorseal.authorization.v2",
         "domain": "priorseal/authorization/v2",
         "intent": intent,
-        "principal": {"type": "user", "id": REHEARSAL_PRINCIPAL_ID, "account": principal_address.lower()},
+        "principal": {
+            "type": "user",
+            "id": REHEARSAL_PRINCIPAL_ID,
+            "account": principal_address.lower(),
+        },
         "authorizer": {"type": "eip712", "address": principal_address.lower()},
         "delegate": {"agentId": REHEARSAL_AGENT_ID, "executor": executor.lower()},
         "issuedAt": issued_at,
@@ -203,7 +226,12 @@ def _build_priorseal_response(
         executor=executor.lower(),
     )
     signature = Account.sign_message(signable, private_key=principal_key)
-    signed = {**draft, "signature": signature.signature.hex() if hasattr(signature.signature, "hex") else str(signature.signature)}
+    signed = {
+        **draft,
+        "signature": signature.signature.hex()
+        if hasattr(signature.signature, "hex")
+        else str(signature.signature),
+    }
 
     intent_hash = str(intent["intentHash"])
     # The WAK verifier normalizes the signed authorization, includes the recomputed
@@ -263,7 +291,9 @@ def _build_priorseal_response(
 def _write_go_message(db_path: Path, message_id: int, content: str, timestamp_epoch: int) -> None:
     con = sqlite3.connect(db_path)
     try:
-        con.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)")
+        con.execute(
+            "CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)"
+        )
         con.execute(
             "INSERT OR REPLACE INTO messages (id, role, content, timestamp) VALUES (?, ?, ?, ?)",
             (message_id, "user", content, timestamp_epoch),
@@ -334,7 +364,9 @@ def generate_rehearsal_materials(
     pem = priorseal_public.public_bytes(
         serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo
     ).decode("ascii")
-    spki = priorseal_public.public_bytes(serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo)
+    spki = priorseal_public.public_bytes(
+        serialization.Encoding.DER, serialization.PublicFormat.SubjectPublicKeyInfo
+    )
     spki_sha256 = hashlib.sha256(spki).hexdigest()
 
     # Transaction: fixture call shape, rehearsal executor + fresh nonce.
@@ -383,10 +415,18 @@ def generate_rehearsal_materials(
     insight_template_destination = baseline["insight"]["destinationAttestation"]
     attester = insight_account.address
     source = _sign_insight_attestation(
-        insight_template_source, key=insight_key, attester=attester, checked_at=checked_at, valid_until=valid_until
+        insight_template_source,
+        key=insight_key,
+        attester=attester,
+        checked_at=checked_at,
+        valid_until=valid_until,
     )
     destination = _sign_insight_attestation(
-        insight_template_destination, key=insight_key, attester=attester, checked_at=checked_at, valid_until=valid_until
+        insight_template_destination,
+        key=insight_key,
+        attester=attester,
+        checked_at=checked_at,
+        valid_until=valid_until,
     )
     pair_commitment = insight_pair_commitment(source, destination)
 
@@ -406,9 +446,21 @@ def generate_rehearsal_materials(
         "calldataHash": calldata_hash,
         "transactionValue": value,
         "contextCommitments": [
-            {"namespace": "agent-call-envelope.v1", "algorithm": "sha256", "digest": envelope_digest},
-            {"namespace": "insight.pretrade-pair.v1", "algorithm": "keccak256", "digest": pair_commitment},
-            {"namespace": "web3-agent-kit.policy-decision.v1", "algorithm": "sha256", "digest": policy_digest},
+            {
+                "namespace": "agent-call-envelope.v1",
+                "algorithm": "sha256",
+                "digest": envelope_digest,
+            },
+            {
+                "namespace": "insight.pretrade-pair.v1",
+                "algorithm": "keccak256",
+                "digest": pair_commitment,
+            },
+            {
+                "namespace": "web3-agent-kit.policy-decision.v1",
+                "algorithm": "sha256",
+                "digest": policy_digest,
+            },
         ],
     }
     intent_hash = _hash_json({key: value for key, value in intent.items() if key != "intentHash"})
@@ -472,7 +524,10 @@ def generate_rehearsal_materials(
         "wak": {
             "sourceVersion": "1.18.5",
             "callEnvelope": {"payload": envelope.to_payload(), "digest": envelope_digest},
-            "policyDecisionCommitment": {"payload": commitment.to_payload(), "digest": policy_digest},
+            "policyDecisionCommitment": {
+                "payload": commitment.to_payload(),
+                "digest": policy_digest,
+            },
         },
         "pairCommitment": pair_commitment,
     }
@@ -492,7 +547,9 @@ def generate_rehearsal_materials(
     if scratch is not None:
         scratch.mkdir(parents=True, exist_ok=True)
         (scratch / "rehearsal-run-sheet.json").write_bytes(sheet_bytes)
-        (scratch / "rehearsal-go.json").write_text(json.dumps(go_file, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (scratch / "rehearsal-go.json").write_text(
+            json.dumps(go_file, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
         (scratch / "rehearsal-trust-roots.json").write_text(
             json.dumps(
                 {
@@ -514,7 +571,11 @@ def generate_rehearsal_materials(
             encoding="utf-8",
         )
 
-    session_db = scratch / "rehearsal-go.db" if scratch is not None else Path("/tmp") / f"wak-rehearsal-go-{now_epoch}.db"
+    session_db = (
+        scratch / "rehearsal-go.db"
+        if scratch is not None
+        else Path("/tmp") / f"wak-rehearsal-go-{now_epoch}.db"
+    )
     go_content = (
         "REHEARSAL GO (inert) — run-specific rehearsal sheet bound, "
         f"latestBroadcastAt {latest_broadcast_at}, runSheetSha256 {run_sheet_sha256}"

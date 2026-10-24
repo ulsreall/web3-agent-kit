@@ -14,7 +14,6 @@ from __future__ import annotations
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
     CALL_ENVELOPE_SCHEMA,
-    POLICY_DECISION_SCHEMA,
     ActionType,
     AuthorizationDenied,
     AuthorizationEvidence,
@@ -22,7 +21,6 @@ from web3_agent_kit.execution import (
     CallEnvelopeError,
     EnforcementDenied,
     ExecutionPolicy,
-    PolicyDecisionCommitment,
     PreSignInterceptor,
 )
 

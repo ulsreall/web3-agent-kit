@@ -22,9 +22,11 @@ watcher.add_wallet(
     tags=["exchange", "whale"],
 )
 
+
 # 2. Register alert callback
 def on_alert(alert):
     print(f"🔔 [{alert.severity.value}] {alert.wallet_label}: {alert.message}")
+
 
 watcher.on_alert(on_alert)
 
@@ -35,7 +37,7 @@ print(f"Found {len(alerts)} new alerts")
 # 4. Get summary
 summary = watcher.get_summary()
 print(f"\nWatching {summary['watched_wallets']} wallets")
-for w in summary['wallets']:
+for w in summary["wallets"]:
     print(f"  {w['label']}: {w['address']} ({w['chain']})")
 
 # 5. Snapshot

@@ -24,6 +24,7 @@ from .wallet import SolanaWallet
 
 class DEXProtocol(Enum):
     """Supported Solana DEX protocols for LP operations."""
+
     RAYDIUM = "raydium"
     ORCA = "orca"
     METEORA = "meteora"
@@ -35,6 +36,7 @@ class DEXProtocol(Enum):
 @dataclass
 class LPConfig:
     """Configuration for LP management."""
+
     jupiter_api_url: str = "https://quote-api.jup.ag/v6"
     jupiter_price_api: str = "https://api.jup.ag/price/v2"
     slippage_bps: int = 50  # 0.5%
@@ -45,6 +47,7 @@ class LPConfig:
 @dataclass
 class PoolInfo:
     """Information about a liquidity pool."""
+
     protocol: DEXProtocol
     pool_id: str
     token_a: str
@@ -80,12 +83,16 @@ class SolanaLPManager:
         self.wallet = wallet
         self.config = config or LPConfig()
         self._client: Optional[httpx.AsyncClient] = None
-        self._solana_client = SolanaClient(
-            SolanaClientConfig(
-                timeout=self.config.timeout,
-                max_retries=self.config.max_retries,
+        self._solana_client = (
+            SolanaClient(
+                SolanaClientConfig(
+                    timeout=self.config.timeout,
+                    max_retries=self.config.max_retries,
+                )
             )
-        ) if wallet is None else wallet._client
+            if wallet is None
+            else wallet._client
+        )
 
     async def _get_client(self) -> httpx.AsyncClient:
         if self._client is None:
@@ -187,13 +194,15 @@ class SolanaLPManager:
                 pool_id = swap_info.get("ammKey", "") or swap_info.get("label", "")
                 if pool_id and pool_id not in seen:
                     seen.add(pool_id)
-                    pools.append({
-                        "pool_id": pool_id,
-                        "label": swap_info.get("label", ""),
-                        "in_amount": step.get("inAmount", "0"),
-                        "out_amount": step.get("outAmount", "0"),
-                        "protocol": swap_info.get("label", "unknown"),
-                    })
+                    pools.append(
+                        {
+                            "pool_id": pool_id,
+                            "label": swap_info.get("label", ""),
+                            "in_amount": step.get("inAmount", "0"),
+                            "out_amount": step.get("outAmount", "0"),
+                            "protocol": swap_info.get("label", "unknown"),
+                        }
+                    )
             return pools
         finally:
             await jup.close()
@@ -418,13 +427,15 @@ class SolanaLPManager:
             mint = info.get("mint", "")
             amount = info.get("tokenAmount", {}).get("uiAmount", 0)
             if amount and amount > 0:
-                positions.append({
-                    "mint": mint,
-                    "amount": amount,
-                    "raw_amount": info.get("tokenAmount", {}).get("amount", "0"),
-                    "decimals": info.get("tokenAmount", {}).get("decimals", 0),
-                    "token_account": acc.get("pubkey", ""),
-                })
+                positions.append(
+                    {
+                        "mint": mint,
+                        "amount": amount,
+                        "raw_amount": info.get("tokenAmount", {}).get("amount", "0"),
+                        "decimals": info.get("tokenAmount", {}).get("decimals", 0),
+                        "token_account": acc.get("pubkey", ""),
+                    }
+                )
 
         return positions
 
@@ -483,4 +494,5 @@ class SolanaLPManager:
 
 class LPError(Exception):
     """Raised when LP operation fails."""
+
     pass

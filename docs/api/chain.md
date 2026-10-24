@@ -28,6 +28,7 @@ blockchain networks.
 ### Initialize Chain Manager
 ```python
 from web3_agent_kit import ChainManager, Chain
+
 # Use default public RPCs
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM])
 # Use custom RPCs

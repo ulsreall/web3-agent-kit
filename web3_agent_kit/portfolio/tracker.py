@@ -160,7 +160,9 @@ class PortfolioSummary:
             lines.append(f"     Native: {cp.native_balance:.4f} ETH (${cp.native_value_usd:,.2f})")
             for token in cp.tokens:
                 if token.balance > 0:
-                    lines.append(f"     {token.symbol}: {token.balance:.4f} (${token.value_usd:,.2f})")
+                    lines.append(
+                        f"     {token.symbol}: {token.balance:.4f} (${token.value_usd:,.2f})"
+                    )
         return "\n".join(lines)
 
 
@@ -280,7 +282,7 @@ class PortfolioTracker:
             decimals = token.functions.decimals().call()
             symbol = token.functions.symbol().call()
 
-            balance = balance_raw / (10 ** decimals)
+            balance = balance_raw / (10**decimals)
 
             return TokenBalance(
                 symbol=symbol,

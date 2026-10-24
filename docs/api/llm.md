@@ -19,6 +19,7 @@ with automatic fallback on failures.
 ### Auto-Detect Providers
 ```python
 from web3_agent_kit.agent import LLM
+
 # Automatically detects providers from environment variables
 llm = LLM()
 # Cascade order: Anthropic → Kimi → OpenRouter → DeepSeek → Groq → OpenAI
@@ -38,6 +39,7 @@ print(data)
 ### Custom Configuration
 ```python
 from web3_agent_kit.agent import LLM, LLMConfig
+
 config = LLMConfig(
     providers=[
         {

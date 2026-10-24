@@ -21,7 +21,11 @@ class TestSimResult:
 
     def test_create_failure(self):
         """Test creating a failure result."""
-        result = SimResult(success=False, error="execution reverted", revert_reason="execution reverted: out of gas")
+        result = SimResult(
+            success=False,
+            error="execution reverted",
+            revert_reason="execution reverted: out of gas",
+        )
         assert result.success is False
         assert result.error == "execution reverted"
         assert result.revert_reason == "execution reverted: out of gas"
@@ -211,7 +215,10 @@ class TestTxSimulator:
         """Test warning when recipient has zero balance."""
         mock_w3.eth.call.return_value = b"\x00" * 32
         mock_w3.eth.estimate_gas.return_value = 50000
-        mock_w3.eth.get_balance.side_effect = [1000000000000000000, 0]  # sender has ETH, recipient none
+        mock_w3.eth.get_balance.side_effect = [
+            1000000000000000000,
+            0,
+        ]  # sender has ETH, recipient none
 
         result = simulator.simulate(
             from_address="0x1234567890123456789012345678901234567890",

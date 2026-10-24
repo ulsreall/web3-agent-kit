@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Port3Task(PlatformTask):
     """A Port3-specific task entry."""
+
     campaign_id: str = ""
     aggregation_type: str = ""
     chain_id: Optional[int] = None
@@ -34,6 +35,7 @@ class Port3Task(PlatformTask):
 @dataclass
 class Port3Result(ExecutorResult):
     """Result of farming a Port3 quest."""
+
     xp_earned: int = 0
     reputation_score: int = 0
 
@@ -62,19 +64,28 @@ class Port3Executor(BasePlatformExecutor):
     platform_name = "port3"
     platform_url = "https://port3.io"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like",
-        "discord_join", "telegram_join", "quiz", "visit_url",
-        "on_chain_tx", "social_aggregation", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "on_chain_tx",
+        "social_aggregation",
+        "custom",
     ]
 
     API_BASE = "https://api.port3.io"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
         self._auth_token: Optional[str] = None
 

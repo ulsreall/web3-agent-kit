@@ -253,4 +253,5 @@ class JupiterDEX:
 
 class JupiterAPIError(Exception):
     """Raised when Jupiter API call fails."""
+
     pass

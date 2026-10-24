@@ -61,7 +61,13 @@ class NFTMarketplace:
                     chain=self.config.chain,
                     verified=data.get("safelist_request_status") == "verified",
                 )
-        except (requests.RequestException, ConnectionError, TimeoutError, KeyError, ValueError) as exc:
+        except (
+            requests.RequestException,
+            ConnectionError,
+            TimeoutError,
+            KeyError,
+            ValueError,
+        ) as exc:
             logger.error("Failed to get collection: %s", exc)
 
         return None
@@ -88,16 +94,24 @@ class NFTMarketplace:
                     data = resp.json()
                     for item in data.get("ownedNfts", []):
                         metadata = item.get("metadata", {})
-                        nfts.append(NFTItem(
-                            contract=item.get("contract", {}).get("address", ""),
-                            token_id=item.get("tokenId", ""),
-                            name=metadata.get("name", ""),
-                            description=metadata.get("description", ""),
-                            image_url=metadata.get("image", ""),
-                            attributes=metadata.get("attributes", []),
-                            owner=wallet,
-                        ))
-        except (requests.RequestException, ConnectionError, TimeoutError, KeyError, ValueError) as exc:
+                        nfts.append(
+                            NFTItem(
+                                contract=item.get("contract", {}).get("address", ""),
+                                token_id=item.get("tokenId", ""),
+                                name=metadata.get("name", ""),
+                                description=metadata.get("description", ""),
+                                image_url=metadata.get("image", ""),
+                                attributes=metadata.get("attributes", []),
+                                owner=wallet,
+                            )
+                        )
+        except (
+            requests.RequestException,
+            ConnectionError,
+            TimeoutError,
+            KeyError,
+            ValueError,
+        ) as exc:
             logger.error("Failed to get wallet NFTs: %s", exc)
 
         return nfts
@@ -134,16 +148,24 @@ class NFTMarketplace:
             if resp.status_code == 200:
                 data = resp.json()
                 for item in data.get("listings", []):
-                    listings.append(NFTListing(
-                        contract=address,
-                        token_id=item.get("token_id", ""),
-                        marketplace="opensea",
-                        price=float(item.get("price", {}).get("value", 0)) / 1e18,
-                        currency=item.get("price", {}).get("currency", "ETH"),
-                        seller=item.get("seller", ""),
-                        url=item.get("url", ""),
-                    ))
-        except (requests.RequestException, ConnectionError, TimeoutError, KeyError, ValueError) as exc:
+                    listings.append(
+                        NFTListing(
+                            contract=address,
+                            token_id=item.get("token_id", ""),
+                            marketplace="opensea",
+                            price=float(item.get("price", {}).get("value", 0)) / 1e18,
+                            currency=item.get("price", {}).get("currency", "ETH"),
+                            seller=item.get("seller", ""),
+                            url=item.get("url", ""),
+                        )
+                    )
+        except (
+            requests.RequestException,
+            ConnectionError,
+            TimeoutError,
+            KeyError,
+            ValueError,
+        ) as exc:
             logger.error("Failed to get listings: %s", exc)
 
         return listings
@@ -167,14 +189,22 @@ class NFTMarketplace:
             if resp.status_code == 200:
                 data = resp.json()
                 for item in data.get("collections", []):
-                    collections.append(NFTCollection(
-                        address=item.get("address", ""),
-                        name=item.get("name", ""),
-                        floor_price_eth=item.get("floor_price", {}).get("value", 0) / 1e18,
-                        volume_24h=item.get("volume", 0),
-                        chain=self.config.chain,
-                    ))
-        except (requests.RequestException, ConnectionError, TimeoutError, KeyError, ValueError) as exc:
+                    collections.append(
+                        NFTCollection(
+                            address=item.get("address", ""),
+                            name=item.get("name", ""),
+                            floor_price_eth=item.get("floor_price", {}).get("value", 0) / 1e18,
+                            volume_24h=item.get("volume", 0),
+                            chain=self.config.chain,
+                        )
+                    )
+        except (
+            requests.RequestException,
+            ConnectionError,
+            TimeoutError,
+            KeyError,
+            ValueError,
+        ) as exc:
             logger.error("Failed to get trending: %s", exc)
 
         return collections
@@ -199,13 +229,21 @@ class NFTMarketplace:
             if resp.status_code == 200:
                 data = resp.json()
                 for item in data.get("results", []):
-                    collections.append(NFTCollection(
-                        address=item.get("address", ""),
-                        name=item.get("name", ""),
-                        floor_price_eth=item.get("floor_price", {}).get("value", 0) / 1e18,
-                        chain=self.config.chain,
-                    ))
-        except (requests.RequestException, ConnectionError, TimeoutError, KeyError, ValueError) as exc:
+                    collections.append(
+                        NFTCollection(
+                            address=item.get("address", ""),
+                            name=item.get("name", ""),
+                            floor_price_eth=item.get("floor_price", {}).get("value", 0) / 1e18,
+                            chain=self.config.chain,
+                        )
+                    )
+        except (
+            requests.RequestException,
+            ConnectionError,
+            TimeoutError,
+            KeyError,
+            ValueError,
+        ) as exc:
             logger.error("Failed to search: %s", exc)
 
         return collections

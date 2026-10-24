@@ -349,6 +349,7 @@ POST https://api.zealy.io/quests/{id}/submit
 # Example swap interaction
 from web3 import Web3
 
+
 # Swap ETH for USDC on Uniswap
 def swap_eth_to_usdc(amount_eth):
     router = web3.eth.contract(address=UNISWAP_ROUTER, abi=ROUTER_ABI)

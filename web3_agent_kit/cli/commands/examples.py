@@ -15,7 +15,9 @@ def examples():
     click.echo(click.style("  📚 Available Examples", fg="cyan", bold=True))
     click.echo()
 
-    examples_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "..", "..", "examples"))
+    examples_dir = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), "..", "..", "..", "examples")
+    )
     if not os.path.isdir(examples_dir):
         click.echo(click.style("  ❌ Examples directory not found.", fg="red"))
         return

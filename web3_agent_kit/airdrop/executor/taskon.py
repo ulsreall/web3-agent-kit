@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class TaskOnTask(PlatformTask):
     """A TaskOn-specific task entry."""
+
     campaign_id: str = ""
     task_type_raw: str = ""
     action_data: dict = field(default_factory=dict)
@@ -33,6 +34,7 @@ class TaskOnTask(PlatformTask):
 @dataclass
 class TaskOnResult(ExecutorResult):
     """Result of farming a TaskOn campaign."""
+
     campaign_name: str = ""
     rewards_claimed: int = 0
 
@@ -62,19 +64,28 @@ class TaskOnExecutor(BasePlatformExecutor):
     platform_name = "taskon"
     platform_url = "https://taskon.xyz"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like",
-        "discord_join", "telegram_join", "quiz", "visit_url",
-        "on_chain_tx", "wallet_connect", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "on_chain_tx",
+        "wallet_connect",
+        "custom",
     ]
 
     API_BASE = "https://api.taskon.xyz"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
         self._campaign_data: Optional[dict] = None
 
@@ -118,9 +129,7 @@ class TaskOnExecutor(BasePlatformExecutor):
         tasks: list[TaskOnTask] = []
 
         try:
-            response = self._get(
-                f"{self.API_BASE}/campaign/{self._campaign_id}/tasks"
-            )
+            response = self._get(f"{self.API_BASE}/campaign/{self._campaign_id}/tasks")
             data = response.json()
 
             task_list = data.get("tasks") or data.get("data", {}).get("tasks", [])

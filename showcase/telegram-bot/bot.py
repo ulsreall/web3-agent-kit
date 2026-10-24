@@ -66,6 +66,7 @@ def init_wallet():
 
 # === Command Handlers ===
 
+
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Welcome message."""
     keyboard = [
@@ -163,9 +164,7 @@ async def dca_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     reply_markup = InlineKeyboardMarkup(keyboard)
 
     await update.message.reply_text(
-        "📈 *DCA Bot*\n\n"
-        "Dollar-Cost Average into any token automatically.\n\n"
-        "Choose an action:",
+        "📈 *DCA Bot*\n\nDollar-Cost Average into any token automatically.\n\nChoose an action:",
         parse_mode="Markdown",
         reply_markup=reply_markup,
     )
@@ -222,6 +221,7 @@ async def gas(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         from web3 import Web3
+
         w3 = Web3(Web3.HTTPProvider(chain_manager.get_rpc(Chain.ETHEREUM)))
         gas_price = w3.eth.gas_price
         gas_gwei = w3.from_wei(gas_price, "gwei")
@@ -279,6 +279,7 @@ async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 # === Main ===
+
 
 def main():
     """Start the bot."""

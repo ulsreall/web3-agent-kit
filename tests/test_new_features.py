@@ -19,6 +19,7 @@ from web3_agent_kit.wallet.watcher import AlertSeverity, AlertType, WalletAlert,
 @pytest.fixture
 def wallet():
     from eth_account import Account
+
     acct = Account.create()
     return Wallet(
         config=WalletConfig(private_key=acct.key.hex()),
@@ -34,11 +35,12 @@ def chain_manager():
 @pytest.fixture
 def mock_gas_price():
     """Mock gas price to avoid real network calls."""
-    with patch.object(GasOptimizer, '_get_base_fee', return_value=20.0):
+    with patch.object(GasOptimizer, "_get_base_fee", return_value=20.0):
         yield
 
 
 # === Gas Optimizer ===
+
 
 class TestGasOptimizer:
     def test_init(self, wallet, chain_manager):
@@ -116,9 +118,11 @@ class TestGasOptimizer:
 
 # === Wallet Watcher ===
 
+
 @pytest.fixture
 def watcher(chain_manager, tmp_path):
     return WalletWatcher(chain_manager, storage_path=str(tmp_path / "watcher.json"))
+
 
 class TestWalletWatcher:
     def test_add_wallet(self, watcher):
@@ -160,26 +164,40 @@ class TestWalletWatcher:
         assert len(watcher.get_alerts()) == 0
 
     def test_acknowledge_alert(self, watcher):
-        watcher.alerts.append(WalletAlert(
-            wallet_address="0x123",
-            wallet_label="test",
-            chain=Chain.ETHEREUM,
-            alert_type=AlertType.LARGE_TRANSFER,
-            severity=AlertSeverity.HIGH,
-            message="test alert",
-        ))
+        watcher.alerts.append(
+            WalletAlert(
+                wallet_address="0x123",
+                wallet_label="test",
+                chain=Chain.ETHEREUM,
+                alert_type=AlertType.LARGE_TRANSFER,
+                severity=AlertSeverity.HIGH,
+                message="test alert",
+            )
+        )
         assert watcher.acknowledge_alert(0) is True
         assert watcher.alerts[0].acknowledged is True
 
     def test_acknowledge_all(self, watcher):
-        watcher.alerts.append(WalletAlert(
-            wallet_address="0x123", wallet_label="test", chain=Chain.ETHEREUM,
-            alert_type=AlertType.BALANCE_CHANGE, severity=AlertSeverity.LOW, message="a1",
-        ))
-        watcher.alerts.append(WalletAlert(
-            wallet_address="0x456", wallet_label="test2", chain=Chain.ETHEREUM,
-            alert_type=AlertType.BALANCE_CHANGE, severity=AlertSeverity.LOW, message="a2",
-        ))
+        watcher.alerts.append(
+            WalletAlert(
+                wallet_address="0x123",
+                wallet_label="test",
+                chain=Chain.ETHEREUM,
+                alert_type=AlertType.BALANCE_CHANGE,
+                severity=AlertSeverity.LOW,
+                message="a1",
+            )
+        )
+        watcher.alerts.append(
+            WalletAlert(
+                wallet_address="0x456",
+                wallet_label="test2",
+                chain=Chain.ETHEREUM,
+                alert_type=AlertType.BALANCE_CHANGE,
+                severity=AlertSeverity.LOW,
+                message="a2",
+            )
+        )
         count = watcher.acknowledge_all()
         assert count == 2
 
@@ -191,12 +209,14 @@ class TestWalletWatcher:
 
     def test_wallet_persistence(self, watcher, tmp_path):
         watcher.add_wallet("0x123", "test", Chain.ETHEREUM)
-        w2 = WalletWatcher(ChainManager(chains=[Chain.ETHEREUM, Chain.BASE]),
-                          storage_path=watcher.STORAGE_PATH)
+        w2 = WalletWatcher(
+            ChainManager(chains=[Chain.ETHEREUM, Chain.BASE]), storage_path=watcher.STORAGE_PATH
+        )
         assert len(w2.wallets) == 1
 
 
 # === Approval Manager ===
+
 
 class TestApprovalManager:
     def test_known_spender(self, wallet, chain_manager):
@@ -230,10 +250,19 @@ class TestApprovalManager:
     def test_get_risky(self, wallet, chain_manager):
         mgr = ApprovalManager(wallet, chain_manager)
         mgr.approvals = [
-            TokenApproval("0xA", "USDC", "0xB", "Uniswap", float("inf"), 2**256-1,
-                         Chain.ETHEREUM, ApprovalRisk.HIGH),
-            TokenApproval("0xC", "DAI", "0xD", "Unknown", 100, 100e18,
-                         Chain.ETHEREUM, ApprovalRisk.SAFE),
+            TokenApproval(
+                "0xA",
+                "USDC",
+                "0xB",
+                "Uniswap",
+                float("inf"),
+                2**256 - 1,
+                Chain.ETHEREUM,
+                ApprovalRisk.HIGH,
+            ),
+            TokenApproval(
+                "0xC", "DAI", "0xD", "Unknown", 100, 100e18, Chain.ETHEREUM, ApprovalRisk.SAFE
+            ),
         ]
         risky = mgr.get_risky(ApprovalRisk.HIGH)
         assert len(risky) == 1
@@ -241,10 +270,19 @@ class TestApprovalManager:
     def test_get_unlimited(self, wallet, chain_manager):
         mgr = ApprovalManager(wallet, chain_manager)
         mgr.approvals = [
-            TokenApproval("0xA", "USDC", "0xB", "Uniswap", float("inf"), 2**256-1,
-                         Chain.ETHEREUM, ApprovalRisk.HIGH),
-            TokenApproval("0xC", "DAI", "0xD", "Aave", 1000, 1000e18,
-                         Chain.ETHEREUM, ApprovalRisk.MODERATE),
+            TokenApproval(
+                "0xA",
+                "USDC",
+                "0xB",
+                "Uniswap",
+                float("inf"),
+                2**256 - 1,
+                Chain.ETHEREUM,
+                ApprovalRisk.HIGH,
+            ),
+            TokenApproval(
+                "0xC", "DAI", "0xD", "Aave", 1000, 1000e18, Chain.ETHEREUM, ApprovalRisk.MODERATE
+            ),
         ]
         unlimited = mgr.get_unlimited()
         assert len(unlimited) == 1
@@ -252,8 +290,16 @@ class TestApprovalManager:
     def test_summary(self, wallet, chain_manager):
         mgr = ApprovalManager(wallet, chain_manager)
         mgr.approvals = [
-            TokenApproval("0xA", "USDC", "0xB", "Uniswap", float("inf"), 2**256-1,
-                         Chain.ETHEREUM, ApprovalRisk.HIGH),
+            TokenApproval(
+                "0xA",
+                "USDC",
+                "0xB",
+                "Uniswap",
+                float("inf"),
+                2**256 - 1,
+                Chain.ETHEREUM,
+                ApprovalRisk.HIGH,
+            ),
         ]
         summary = mgr.get_summary()
         assert summary["total_approvals"] == 1

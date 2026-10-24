@@ -61,9 +61,7 @@ def test_signing_surface_check_is_packaged_too() -> None:
         config = tomllib.load(handle)
 
     scripts = config["project"]["scripts"]
-    assert scripts["wak-signing-surface"] == (
-        "web3_agent_kit.execution.check_signing_surface:main"
-    )
+    assert scripts["wak-signing-surface"] == ("web3_agent_kit.execution.check_signing_surface:main")
 
 
 def test_signing_surface_check_runs_from_the_package() -> None:
@@ -277,9 +275,7 @@ def test_checker_detects_an_unapproved_call_under_any_ancestor_name(
 
 
 @pytest.mark.parametrize("nested", [".venv", "venv", "__pycache__", "node_modules"])
-def test_checker_still_excludes_nested_environment_directories(
-    tmp_path: Path, nested: str
-) -> None:
+def test_checker_still_excludes_nested_environment_directories(tmp_path: Path, nested: str) -> None:
     """Exclusions *inside* the scan root must keep working.
 
     The fix scopes exclusion to the path relative to the root. A nested

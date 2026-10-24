@@ -140,7 +140,7 @@ class TestValidation:
                 sender=SENDER,
             )
 
-    @pytest.mark.parametrize("value", [-1, -10**30, 1.5, "1", True, False, None])
+    @pytest.mark.parametrize("value", [-1, -(10**30), 1.5, "1", True, False, None])
     @pytest.mark.parametrize("field", ["amount_base_units", "native_value_wei"])
     def test_amounts_must_be_non_negative_base_unit_integers(self, field, value):
         with pytest.raises(InvalidAmountError):
@@ -201,9 +201,10 @@ class TestIntentId:
         int(first.intent_id, 16)
 
     def test_metadata_does_not_change_id(self):
-        assert native_intent(metadata={"label": "a"}).intent_id == native_intent(
-            metadata={"label": "b"}
-        ).intent_id
+        assert (
+            native_intent(metadata={"label": "a"}).intent_id
+            == native_intent(metadata={"label": "b"}).intent_id
+        )
 
     @pytest.mark.parametrize(
         "override",
@@ -251,9 +252,7 @@ class TestEvmConversion:
                 transaction={"from": SENDER, "to": CONTRACT, "data": data},
             )
 
-    @pytest.mark.parametrize(
-        "action", [ActionType.TRANSFER_TOKEN, ActionType.APPROVE_TOKEN]
-    )
+    @pytest.mark.parametrize("action", [ActionType.TRANSFER_TOKEN, ActionType.APPROVE_TOKEN])
     def test_encoded_token_actions_require_semantic_decoding(self, action):
         with pytest.raises(InvalidIntentError, match="decoded semantic fields"):
             TransactionIntent.from_evm_transaction(

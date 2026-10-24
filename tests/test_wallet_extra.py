@@ -135,9 +135,7 @@ class TestWalletFromKeystore:
         key, addr = test_key
         password = "hunter2"
         keystore = Account.encrypt(key, password)
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(keystore, f)
             path = f.name
         try:
@@ -150,9 +148,7 @@ class TestWalletFromKeystore:
     def test_from_keystore_wrong_password(self, test_key):
         key, _ = test_key
         keystore = Account.encrypt(key, "correct")
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(keystore, f)
             path = f.name
         try:
@@ -219,9 +215,7 @@ class TestWalletTransactions:
             signed.raw_transaction = b"\x01\x02"
             mock_sign.return_value = signed
             wallet.bind_enforcement(_authorizing_gate(wallet._raw_signer))
-            raw = wallet.sign_transaction(
-                _signed_tx(wallet.address), Chain.ETHEREUM
-            )
+            raw = wallet.sign_transaction(_signed_tx(wallet.address), Chain.ETHEREUM)
             assert raw == b"\x01\x02"
 
     def test_sign_transaction_unbound_refuses_contract_creation(self, test_key):

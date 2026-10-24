@@ -11,9 +11,7 @@ try:
 except ImportError:
     MODELS_AVAILABLE = False
 
-pytestmark = pytest.mark.skipif(
-    not MODELS_AVAILABLE, reason="pydantic/models not installed"
-)
+pytestmark = pytest.mark.skipif(not MODELS_AVAILABLE, reason="pydantic/models not installed")
 
 
 class TestWalletModels:
@@ -122,9 +120,7 @@ class TestApprovalModels:
 
 class TestDCAModels:
     def test_dca_order_request(self):
-        req = m.DCAOrderRequest(
-            token_in="USDC", token_out="ETH", amount_per_buy="100"
-        )
+        req = m.DCAOrderRequest(token_in="USDC", token_out="ETH", amount_per_buy="100")
         assert req.frequency == "daily"
         assert req.total_buys is None
 

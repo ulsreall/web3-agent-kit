@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class WLProfile:
     """Profile for WL applications."""
+
     # Wallet
     wallet: str = ""
     wallet_sol: str = ""
@@ -71,6 +72,7 @@ class WLProfile:
 @dataclass
 class WLResult:
     """Result of a WL application."""
+
     url: str
     platform: str = ""
     project_name: str = ""
@@ -97,6 +99,7 @@ class WLResult:
 @dataclass
 class WLJob:
     """A batch WL application job."""
+
     urls: list[str]
     results: list[WLResult] = field(default_factory=list)
     total: int = 0
@@ -209,9 +212,7 @@ class WLGrinder:
             # Skip if already applied
             if skip_existing and url in self._applied_urls:
                 job.skipped += 1
-                job.results.append(WLResult(
-                    url=url, success=False, error="Already applied"
-                ))
+                job.results.append(WLResult(url=url, success=False, error="Already applied"))
                 continue
 
             logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
@@ -227,9 +228,7 @@ class WLGrinder:
             if i < len(urls) - 1:
                 await asyncio.sleep(delay)
 
-        logger.info(
-            f"Bulk apply complete: {job.success}/{job.total} success"
-        )
+        logger.info(f"Bulk apply complete: {job.success}/{job.total} success")
         return job
 
     async def async_apply_bulk(
@@ -253,9 +252,7 @@ class WLGrinder:
         for i, url in enumerate(urls):
             if skip_existing and url in self._applied_urls:
                 job.skipped += 1
-                job.results.append(WLResult(
-                    url=url, success=False, error="Already applied"
-                ))
+                job.results.append(WLResult(url=url, success=False, error="Already applied"))
                 continue
 
             logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
@@ -270,9 +267,7 @@ class WLGrinder:
             if i < len(urls) - 1:
                 await asyncio.sleep(delay)
 
-        logger.info(
-            f"Bulk apply complete: {job.success}/{job.total} success"
-        )
+        logger.info(f"Bulk apply complete: {job.success}/{job.total} success")
         return job
 
     def get_applied(self) -> list[str]:

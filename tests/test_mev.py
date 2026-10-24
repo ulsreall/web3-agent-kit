@@ -16,6 +16,7 @@ from web3_agent_kit.mev import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_config(**overrides):
     defaults = dict(chain="ethereum", strategy=MEVStrategy.FLASHBOTS)
     defaults.update(overrides)
@@ -43,6 +44,7 @@ def _swap_tx():
 # MEVStrategy enum
 # ===========================================================================
 
+
 class TestMEVStrategy:
     def test_flashbots_value(self):
         assert MEVStrategy.FLASHBOTS.value == "flashbots"
@@ -60,6 +62,7 @@ class TestMEVStrategy:
 # ===========================================================================
 # MEVConfig
 # ===========================================================================
+
 
 class TestMEVConfig:
     def test_defaults(self):
@@ -84,6 +87,7 @@ class TestMEVConfig:
 # ProtectedTx
 # ===========================================================================
 
+
 class TestProtectedTx:
     def test_fields(self):
         tx = ProtectedTx(
@@ -97,9 +101,11 @@ class TestProtectedTx:
 
     def test_to_dict(self):
         tx = ProtectedTx(
-            original_tx={}, protected_tx={},
+            original_tx={},
+            protected_tx={},
             strategy=MEVStrategy.BUNDLE,
-            target_block=100, bundle_hash="0xabc",
+            target_block=100,
+            bundle_hash="0xabc",
             status="bundled",
         )
         d = tx.to_dict()
@@ -111,6 +117,7 @@ class TestProtectedTx:
 # ===========================================================================
 # BundleResult
 # ===========================================================================
+
 
 class TestBundleResult:
     def test_fields(self):
@@ -129,6 +136,7 @@ class TestBundleResult:
 # ===========================================================================
 # check_sandwich_risk
 # ===========================================================================
+
 
 class TestCheckSandwichRisk:
     def test_no_risk_simple_tx(self):
@@ -174,6 +182,7 @@ class TestCheckSandwichRisk:
 # detect_frontrun
 # ===========================================================================
 
+
 class TestDetectFrontrun:
     def test_no_pending(self):
         result = detect_frontrun(_simple_tx())
@@ -204,14 +213,14 @@ class TestDetectFrontrun:
     def test_high_risk_recommendation(self):
         # Generate many competing txs to push risk_score > 50
         tx = {"to": "0xRouter", "gasPrice": 10}
-        pending = [
-            {"to": "0xRouter", "gasPrice": 500, "hash": f"0xp{i}"}
-            for i in range(5)
-        ]
+        pending = [{"to": "0xRouter", "gasPrice": 500, "hash": f"0xp{i}"} for i in range(5)]
         result = detect_frontrun(tx, pending)
         assert result["at_risk"] is True
         assert result["risk_score"] > 0
-        assert "increasing gas" in result["recommendation"].lower() or "Flashbots" in result["recommendation"]
+        assert (
+            "increasing gas" in result["recommendation"].lower()
+            or "Flashbots" in result["recommendation"]
+        )
 
     def test_hex_gas_prices(self):
         tx = {"to": "0xRouter", "gasPrice": hex(50)}
@@ -223,6 +232,7 @@ class TestDetectFrontrun:
 # ===========================================================================
 # MEVProtector
 # ===========================================================================
+
 
 class TestMEVProtectorInit:
     def test_default_config(self):
@@ -270,7 +280,8 @@ class TestMEVProtectorSendProtected:
         protector.session.post = MagicMock(return_value=mock_resp)
 
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.FLASHBOTS,
         )
         result = protector.send_protected(pt)
@@ -284,7 +295,8 @@ class TestMEVProtectorSendProtected:
         protector.session.post = MagicMock(return_value=mock_resp)
 
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.FLASHBOTS,
         )
         result = protector.send_protected(pt)
@@ -294,7 +306,8 @@ class TestMEVProtectorSendProtected:
     def test_send_raw_returns_none(self):
         protector = _make_protector(strategy=MEVStrategy.NONE)
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.NONE,
         )
         result = protector.send_protected(pt)
@@ -305,7 +318,8 @@ class TestMEVProtectorSendProtected:
         protector.session.post = MagicMock(side_effect=ConnectionError("no network"))
 
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.FLASHBOTS,
         )
         result = protector.send_protected(pt)
@@ -391,7 +405,8 @@ class TestMEVProtectorSendPrivateRPC:
         protector.session.post = MagicMock(return_value=mock_resp)
 
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.PRIVATE_RPC,
         )
         result = protector.send_protected(pt)
@@ -402,7 +417,8 @@ class TestMEVProtectorSendPrivateRPC:
         protector.session.post = MagicMock(side_effect=ConnectionError("fail"))
 
         pt = ProtectedTx(
-            original_tx=_simple_tx(), protected_tx=_simple_tx(),
+            original_tx=_simple_tx(),
+            protected_tx=_simple_tx(),
             strategy=MEVStrategy.PRIVATE_RPC,
         )
         result = protector.send_protected(pt)

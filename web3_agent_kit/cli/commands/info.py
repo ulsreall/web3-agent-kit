@@ -67,7 +67,10 @@ def info():
     chain_count = _count_chains(src_dir)
 
     # Stats
-    click.echo(click.style("  📦 web3-agent-kit", fg="white", bold=True) + click.style(f"  v{version}", fg="green"))
+    click.echo(
+        click.style("  📦 web3-agent-kit", fg="white", bold=True)
+        + click.style(f"  v{version}", fg="green")
+    )
     click.echo()
     click.echo(click.style("  Modules:  ", fg="yellow") + f"{module_count} packages")
     click.echo(click.style("  Chains:   ", fg="yellow") + f"{chain_count} networks (EVM + Solana)")

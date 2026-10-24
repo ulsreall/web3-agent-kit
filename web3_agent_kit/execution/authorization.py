@@ -107,22 +107,15 @@ class AuthorizationEvidence:
         if not self.authorization_id:
             raise AuthorizationContextError("authorization_id must be non-empty")
         if not self.envelope_digest.startswith("0x"):
-            raise AuthorizationContextError(
-                "envelope_digest must be a 0x-prefixed digest"
-            )
+            raise AuthorizationContextError("envelope_digest must be a 0x-prefixed digest")
         if not self.nonce:
             raise AuthorizationContextError("nonce must be non-empty")
         if self.valid_until <= self.valid_from:
-            raise AuthorizationContextError(
-                "valid_until must be later than valid_from"
-            )
+            raise AuthorizationContextError("valid_until must be later than valid_from")
 
     def covers(self, *, envelope_digest: str, executor: str) -> bool:
         """Return whether this authorization covers the given call exactly."""
-        return (
-            self.envelope_digest == envelope_digest
-            and self.executor.lower() == executor.lower()
-        )
+        return self.envelope_digest == envelope_digest and self.executor.lower() == executor.lower()
 
     def is_fresh(self, *, now: int | None = None) -> bool:
         """Return whether the validity window contains ``now``."""
@@ -175,9 +168,7 @@ class CallableAuthorizationProvider:
     for tests and for wrapping a client that cannot be changed.
     """
 
-    def __init__(
-        self, verifier: Callable[[AuthorizationContext], AuthorizationEvidence]
-    ) -> None:
+    def __init__(self, verifier: Callable[[AuthorizationContext], AuthorizationEvidence]) -> None:
         if not callable(verifier):
             raise AuthorizationContextError("verifier must be callable")
         self._verifier = verifier

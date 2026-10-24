@@ -205,9 +205,7 @@ def example_referral():
     print("🔗 REFERRAL MANAGER")
     print("=" * 60)
 
-    manager = ReferralManager(
-        wallets=["0xYOUR_WALLET_ADDRESS"]
-    )
+    manager = ReferralManager(wallets=["0xYOUR_WALLET_ADDRESS"])
 
     # Add platforms
     manager.add_known_platform("galxe")

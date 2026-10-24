@@ -25,7 +25,6 @@ from web3_agent_kit.execution import (
     ExecutionPolicy,
     InvalidIntentError,
     PolicyReason,
-    NullAuthorizationProvider,
     PreSignInterceptor,
 )
 
@@ -34,8 +33,7 @@ SENDER = "0x9965507d1a55bcc2695c58ba16fb37d819b0a4dc"
 CALLDATA = bytes.fromhex(
     "7ff36ab5"
     "0000000000000000000000000000000000000000000000000000000000000f60"
-    "0000000000000000000000000000000000000000000000000000000000000080"
-    + "0" * 64
+    "0000000000000000000000000000000000000000000000000000000000000080" + "0" * 64
 )
 
 
@@ -220,7 +218,7 @@ def test_confirmation_handler_refusal_blocks_signing():
 
 def test_incomplete_transaction_rejected_before_signer():
     signer = _RecordingSigner()
-    gate = PreSignInterceptor(policy=_permissive_policy(), signer=signer)
+    PreSignInterceptor(policy=_permissive_policy(), signer=signer)
 
     with pytest.raises(InvalidIntentError):
         AuthorizationRequest(
@@ -275,9 +273,8 @@ def test_call_fingerprint_binds_every_envelope_field():
 
 def test_audit_log_accumulates_in_order():
     signer = _RecordingSigner()
-    policy = _permissive_policy(
-        allowed_contracts=frozenset({ROUTER, "0x" + "33" * 20})
-    )
+    policy = _permissive_policy(allowed_contracts=frozenset({ROUTER, "0x" + "33" * 20}))
+
     class _PerCallProvider(_AllowingProvider):
         """Authorizes whatever it is handed, with a fresh authorization each time."""
 

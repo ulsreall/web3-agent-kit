@@ -44,11 +44,13 @@ def main():
 
     # Configure sniper
     config = SniperConfig(
-        max_buy=0.005,          # max 0.005 ETH per snipe
-        auto_buy=False,         # manual mode for demo
+        max_buy=0.005,  # max 0.005 ETH per snipe
+        auto_buy=False,  # manual mode for demo
         honeypot_check=True,
-        min_liquidity=0.5,      # min 0.5 ETH liquidity
-        callback=lambda pair: print(f"\n🔔 NEW PAIR: {pair.token_symbol} ({pair.risk_level.value})"),
+        min_liquidity=0.5,  # min 0.5 ETH liquidity
+        callback=lambda pair: print(
+            f"\n🔔 NEW PAIR: {pair.token_symbol} ({pair.risk_level.value})"
+        ),
     )
 
     sniper = TokenSniper(
@@ -72,8 +74,10 @@ def main():
             RiskLevel.HIGH: "🟠",
             RiskLevel.SCAM: "🔴",
         }
-        print(f"  {risk_emoji[pair.risk_level]} {pair.token_symbol} — "
-              f"LIQ: {pair.liquidity_eth:.2f} ETH | Score: {pair.score:.1f}")
+        print(
+            f"  {risk_emoji[pair.risk_level]} {pair.token_symbol} — "
+            f"LIQ: {pair.liquidity_eth:.2f} ETH | Score: {pair.score:.1f}"
+        )
 
     # Start live monitoring (optional)
     # print("\n🚀 Starting live monitor (Ctrl+C to stop)...")

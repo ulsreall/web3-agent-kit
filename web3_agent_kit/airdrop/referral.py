@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class ReferralLink:
     """A referral link for a platform."""
+
     platform: str
     url: str
     code: str
@@ -67,6 +68,7 @@ class ReferralLink:
 @dataclass
 class ReferralPlatform:
     """Platform referral configuration."""
+
     name: str
     base_url: str
     referral_param: str = "ref"
@@ -93,6 +95,7 @@ class ReferralPlatform:
 @dataclass
 class ReferralStats:
     """Aggregated referral statistics."""
+
     total_links: int = 0
     active_links: int = 0
     total_clicks: int = 0
@@ -281,11 +284,7 @@ class ReferralManager:
         for name, plat in platforms.items():
             for i in range(count):
                 code = self._generate_code()
-                w = wallet or (
-                    self._wallets[i % len(self._wallets)]
-                    if self._wallets
-                    else ""
-                )
+                w = wallet or (self._wallets[i % len(self._wallets)] if self._wallets else "")
                 url = self._build_url(plat, code, w)
                 link = ReferralLink(
                     platform=name,
@@ -461,8 +460,7 @@ class ReferralManager:
             reverse=True,
         ):
             lines.append(
-                f"║  {platform:12} │ {data['conversions']:>4} conv │ "
-                f"{data['points']:>6,} pts"
+                f"║  {platform:12} │ {data['conversions']:>4} conv │ {data['points']:>6,} pts"
             )
 
         lines.append("╚══════════════════════════════════════════╝")
@@ -501,9 +499,7 @@ class ReferralManager:
         chars = string.ascii_letters + string.digits
         return "".join(random.choices(chars, k=length))
 
-    def _build_url(
-        self, platform: ReferralPlatform, code: str, wallet: str
-    ) -> str:
+    def _build_url(self, platform: ReferralPlatform, code: str, wallet: str) -> str:
         """Build a referral URL."""
         separator = "&" if "?" in platform.base_url else "?"
         url = f"{platform.base_url}{separator}{platform.referral_param}={code}"

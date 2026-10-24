@@ -45,9 +45,10 @@ pytestmark = pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not insta
 
 class TestWalletRoutes:
     def test_info_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
-            "web3_agent_kit.chains.chain.ChainManager"
-        ) as MockManager:
+        with (
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+        ):
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 2.0
@@ -113,9 +114,7 @@ class TestWalletRoutes:
             assert data["chain"] == "ethereum"
 
     def test_balance_unsupported_chain(self):
-        resp = client.get(
-            "/wallet/balance/0xdead?chain=bogus", headers=AUTH_HEADERS
-        )
+        resp = client.get("/wallet/balance/0xdead?chain=bogus", headers=AUTH_HEADERS)
         assert resp.status_code == 400
         assert "Unsupported chain" in resp.json()["detail"]
 
@@ -128,9 +127,7 @@ class TestWalletRoutes:
             sol.get_balance.return_value = resp_obj
             mgr.get_solana.return_value = sol
             MockManager.return_value = mgr
-            resp = client.get(
-                "/wallet/balance/SoLaddr?chain=solana", headers=AUTH_HEADERS
-            )
+            resp = client.get("/wallet/balance/SoLaddr?chain=solana", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             assert resp.json()["balance"] == "5.0"
 
@@ -166,9 +163,10 @@ class TestSwapRoutes:
             assert "bad token" in resp.json()["detail"]
 
     def test_execute_happy(self):
-        with patch("web3_agent_kit.defi.Uniswap") as MockUni, patch(
-            "web3_agent_kit.wallet.wallet.Wallet"
-        ) as MockWallet:
+        with (
+            patch("web3_agent_kit.defi.Uniswap") as MockUni,
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+        ):
             inst = MagicMock()
             inst.execute.return_value = {"tx_hash": "0x1", "status": "success"}
             MockUni.return_value = inst
@@ -212,9 +210,10 @@ class TestSwapRoutes:
 
 class TestPortfolioRoutes:
     def test_portfolio_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
-            "web3_agent_kit.chains.chain.ChainManager"
-        ) as MockManager:
+        with (
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+        ):
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 1.0
@@ -241,9 +240,10 @@ class TestPortfolioRoutes:
         assert "bogus" in resp.json()["detail"]
 
     def test_portfolio_value_happy(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet, patch(
-            "web3_agent_kit.chains.chain.ChainManager"
-        ) as MockManager:
+        with (
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+        ):
             inst = MagicMock()
             inst.address = "0xabc"
             inst.get_balance.return_value = 4.2
@@ -337,9 +337,7 @@ class TestWatcherRoutes:
             inst = MagicMock()
             inst.add_wallet.return_value = {"status": "added"}
             MockW.return_value = inst
-            resp = client.post(
-                "/watcher/add?address=0x1&label=whale", headers=AUTH_HEADERS
-            )
+            resp = client.post("/watcher/add?address=0x1&label=whale", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             assert resp.json()["status"] == "added"
 
@@ -531,9 +529,7 @@ class TestDCARoutes:
             inst = MagicMock()
             inst.create_order.return_value = {"order_id": "d3"}
             MockBot.return_value = inst
-            resp = client.post(
-                "/dca/orders?amount_per_buy=100&total_buys=5", headers=AUTH_HEADERS
-            )
+            resp = client.post("/dca/orders?amount_per_buy=100&total_buys=5", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             _, kwargs = inst.create_order.call_args
             assert kwargs["total_buys"] == 5
@@ -724,9 +720,10 @@ class TestBridgeRoutes:
             assert resp.status_code == 400
 
     def test_execute_happy(self):
-        with patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockA, patch(
-            "web3_agent_kit.wallet.wallet.Wallet"
-        ) as MockWallet:
+        with (
+            patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockA,
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+        ):
             inst = MagicMock()
             inst.transfer.return_value = {"tx_hash": "0xbridge"}
             MockA.return_value = inst
@@ -743,10 +740,9 @@ class TestBridgeRoutes:
             assert resp.status_code == 400
 
     def test_chains_happy(self):
-        with patch(
-            "web3_agent_kit.bridge.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}
-        ), patch(
-            "web3_agent_kit.bridge.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}
+        with (
+            patch("web3_agent_kit.bridge.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}),
+            patch("web3_agent_kit.bridge.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}),
         ):
             resp = client.get("/bridge/chains", headers=AUTH_HEADERS)
             assert resp.status_code == 200

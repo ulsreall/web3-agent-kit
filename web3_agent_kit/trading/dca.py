@@ -15,6 +15,7 @@ from ..wallet.wallet import Wallet
 
 class Interval(Enum):
     """DCA execution intervals."""
+
     HOURLY = 3600
     DAILY = 86400
     WEEKLY = 604800
@@ -24,6 +25,7 @@ class Interval(Enum):
 
 class DCAStatus(Enum):
     """DCA order status."""
+
     ACTIVE = "active"
     PAUSED = "paused"
     COMPLETED = "completed"
@@ -33,15 +35,16 @@ class DCAStatus(Enum):
 @dataclass
 class DCAOrder:
     """A single DCA order configuration."""
-    id: str                           # Unique order ID
-    from_token: str                   # Token to spend (e.g. "USDC", "ETH")
-    to_token: str                     # Token to buy (e.g. "ETH", "WBTC")
-    amount_per_buy: float             # Amount of from_token per execution
-    chain: Chain                      # Which chain
-    interval: Interval                # How often
-    max_buys: Optional[int] = None    # None = unlimited
-    max_total: Optional[float] = None # Max total to spend (None = unlimited)
-    slippage: float = 0.5             # Slippage tolerance %
+
+    id: str  # Unique order ID
+    from_token: str  # Token to spend (e.g. "USDC", "ETH")
+    to_token: str  # Token to buy (e.g. "ETH", "WBTC")
+    amount_per_buy: float  # Amount of from_token per execution
+    chain: Chain  # Which chain
+    interval: Interval  # How often
+    max_buys: Optional[int] = None  # None = unlimited
+    max_total: Optional[float] = None  # Max total to spend (None = unlimited)
+    slippage: float = 0.5  # Slippage tolerance %
     status: DCAStatus = DCAStatus.ACTIVE
     created_at: float = field(default_factory=time.time)
     last_executed: float = 0
@@ -55,11 +58,12 @@ class DCAOrder:
 @dataclass
 class DCAResult:
     """Result of a DCA execution."""
+
     order_id: str
     success: bool
     amount_spent: float
     amount_received: float
-    price: float                      # Effective price
+    price: float  # Effective price
     tx_hash: Optional[str] = None
     error: Optional[str] = None
     timestamp: float = field(default_factory=time.time)
@@ -224,13 +228,15 @@ class DCABot:
             order.total_spent += result.amount_spent
             order.total_bought += result.amount_received
             order.execution_count += 1
-            order.buy_history.append({
-                "timestamp": result.timestamp,
-                "spent": result.amount_spent,
-                "received": result.amount_received,
-                "price": result.price,
-                "tx_hash": result.tx_hash,
-            })
+            order.buy_history.append(
+                {
+                    "timestamp": result.timestamp,
+                    "spent": result.amount_spent,
+                    "received": result.amount_received,
+                    "price": result.price,
+                    "tx_hash": result.tx_hash,
+                }
+            )
 
         self.results.append(result)
         self._save_orders()
@@ -293,7 +299,8 @@ class DCABot:
         """Get orders that are due for execution."""
         now = time.time()
         return [
-            o for o in self.orders.values()
+            o
+            for o in self.orders.values()
             if o.status == DCAStatus.ACTIVE and o.next_execution <= now
         ]
 
@@ -375,11 +382,15 @@ class DCABot:
         while True:
             pending = self.get_pending_orders()
             for order in pending:
-                print(f"⏰ Executing: {order.from_token} → {order.to_token} ({order.amount_per_buy})")
+                print(
+                    f"⏰ Executing: {order.from_token} → {order.to_token} ({order.amount_per_buy})"
+                )
                 result = self.execute_order(order.id)
 
                 if result.success:
-                    print(f"   ✅ Bought {result.amount_received:.6f} {order.to_token} @ ${result.price:.2f}")
+                    print(
+                        f"   ✅ Bought {result.amount_received:.6f} {order.to_token} @ ${result.price:.2f}"
+                    )
                 else:
                     print(f"   ❌ Failed: {result.error}")
 

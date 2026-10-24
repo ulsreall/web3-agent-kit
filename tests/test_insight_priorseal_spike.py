@@ -137,12 +137,8 @@ def test_context_namespace_distinguishes_missing_from_explicit_null() -> None:
     normalized_missing = _normalize_priorseal_intent(missing)
     normalized_null = _normalize_priorseal_intent(explicit_null)
 
-    missing_namespaces = {
-        item["namespace"] for item in normalized_missing["contextCommitments"]
-    }
-    null_namespaces = {
-        item["namespace"] for item in normalized_null["contextCommitments"]
-    }
+    missing_namespaces = {item["namespace"] for item in normalized_missing["contextCommitments"]}
+    null_namespaces = {item["namespace"] for item in normalized_null["contextCommitments"]}
     assert "undefined" in missing_namespaces
     assert "null" in null_namespaces
     assert normalized_missing["intentHash"] != normalized_null["intentHash"]
@@ -242,9 +238,7 @@ def test_priorseal_authorization_signature_is_verified_fail_closed() -> None:
         provider.evidence_for(
             envelope=request.envelope(),
             envelope_digest=request.envelope().digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
 
 
@@ -262,9 +256,7 @@ def test_priorseal_does_not_trust_claimed_verification_result() -> None:
     evidence = provider.evidence_for(
         envelope=request.envelope(),
         envelope_digest=request.envelope().digest(),
-        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"][
-            "digest"
-        ],
+        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
     )
 
     assert evidence.authorization_id == response["authorization_id"]
@@ -292,9 +284,7 @@ def test_priorseal_hashes_the_normalized_allowlisted_authorization() -> None:
     evidence = provider.evidence_for(
         envelope=request.envelope(),
         envelope_digest=request.envelope().digest(),
-        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"][
-            "digest"
-        ],
+        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
     )
 
     assert evidence.authorization_id == response["authorization_id"]
@@ -328,9 +318,7 @@ def test_priorseal_v2_normalizes_defaultable_fields_before_verification() -> Non
     evidence = provider.evidence_for(
         envelope=request.envelope(),
         envelope_digest=request.envelope().digest(),
-        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"][
-            "digest"
-        ],
+        policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
     )
 
     assert evidence.authorization_id == response["authorization_id"]
@@ -389,9 +377,7 @@ def test_priorseal_v2_semantic_mutations_fail_closed_without_burn(
         denied.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
 
     valid = PriorSealAuthorizationProvider(
@@ -403,9 +389,7 @@ def test_priorseal_v2_semantic_mutations_fail_closed_without_burn(
         evidence = valid.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
     assert evidence.authorization_id == valid_response["authorization_id"]
 
@@ -434,9 +418,7 @@ def test_priorseal_acceptance_rejects_noncanonical_base64url_without_burn(
         denied.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
 
     valid = PriorSealAuthorizationProvider(
@@ -448,9 +430,7 @@ def test_priorseal_acceptance_rejects_noncanonical_base64url_without_burn(
         evidence = valid.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
     assert evidence.authorization_id == valid_response["authorization_id"]
 
@@ -483,9 +463,7 @@ def test_priorseal_acceptance_timing_is_ordered_without_burn(
         denied.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
 
     valid = PriorSealAuthorizationProvider(
@@ -497,9 +475,7 @@ def test_priorseal_acceptance_timing_is_ordered_without_burn(
         evidence = valid.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
     assert evidence.authorization_id == valid_response["authorization_id"]
 
@@ -588,9 +564,7 @@ def test_wrong_current_policy_does_not_burn_durable_acceptance(tmp_path: Path) -
         evidence = valid.evidence_for(
             envelope=envelope,
             envelope_digest=envelope.digest(),
-            policy_commitment_digest=bundle.baseline["wak"][
-                "policyDecisionCommitment"
-            ]["digest"],
+            policy_commitment_digest=bundle.baseline["wak"]["policyDecisionCommitment"]["digest"],
         )
 
     assert evidence.authorization_id == response["authorization_id"]
@@ -844,9 +818,7 @@ def test_negative_acceptance_report_passes_portable_verifier(tmp_path: Path) -> 
         ("observed", "deniedBeforeReceipt"),
     ],
 )
-def test_local_n5b_evidence_validator_rejects_falsified_fields(
-    section: str, field: str
-) -> None:
+def test_local_n5b_evidence_validator_rejects_falsified_fields(section: str, field: str) -> None:
     report = run_negative_suite(FIXTURE)
     n5b = next(case for case in report["cases"] if case["id"] == "N5b")
     n5b[section][field] = False

@@ -219,8 +219,7 @@ def find_signer_calls(root: Path) -> list[SignerCall]:
                         path=relative,
                         line=node.lineno,
                         column=node.col_offset,
-                        expression=f"{_unparse(func)}(...)  [aliased from "
-                        f"{aliases[func.id]}]",
+                        expression=f"{_unparse(func)}(...)  [aliased from {aliases[func.id]}]",
                         is_test=_is_test_path(relative),
                     )
                 )
@@ -286,10 +285,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--root",
         default=str(default_root),
-        help=(
-            "package directory to scan (default: the installed "
-            "web3_agent_kit package)"
-        ),
+        help=("package directory to scan (default: the installed web3_agent_kit package)"),
     )
     parser.add_argument(
         "--include-tests",
@@ -327,9 +323,7 @@ def main(argv: list[str] | None = None) -> int:
         if expected is None:
             new_violations.extend(group)
         elif len(group) > expected:
-            regressions.append(
-                f"{path}: {len(group)} unapproved calls, baseline allows {expected}"
-            )
+            regressions.append(f"{path}: {len(group)} unapproved calls, baseline allows {expected}")
 
     if not new_violations and not regressions:
         migrated = [

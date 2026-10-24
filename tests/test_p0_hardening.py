@@ -127,9 +127,7 @@ def test_p0_chain_mismatch_is_denied():
     """Reproduced: policy=Base(8453), tx=Base Sepolia(84532), signature produced."""
     signer = _Signer()
     with pytest.raises(EnforcementDenied) as excinfo:
-        _gate(signer).sign(
-            AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx(chainId=84532))
-        )
+        _gate(signer).sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx(chainId=84532)))
 
     assert "chain mismatch" in str(excinfo.value)
     assert len(signer.calls) == 0
@@ -139,9 +137,7 @@ def test_p0_chain_mismatch_reports_both_chain_ids():
     """The denial must name both chains, not just fail."""
     signer = _Signer()
     with pytest.raises(EnforcementDenied) as excinfo:
-        _gate(signer).sign(
-            AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx(chainId=42161))
-        )
+        _gate(signer).sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx(chainId=42161)))
 
     message = str(excinfo.value)
     assert "42161" in message
@@ -151,9 +147,7 @@ def test_p0_chain_mismatch_reports_both_chain_ids():
 def test_p0_matching_chain_still_signs():
     """The guard must not break the legitimate path."""
     signer = _Signer()
-    result = _gate(signer).sign(
-        AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx())
-    )
+    result = _gate(signer).sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx()))
     assert len(signer.calls) == 1
     assert result.call_fingerprint.startswith("0x")
 
@@ -253,9 +247,7 @@ def test_p0_refusing_provider_blocks_signing():
         def authorize(self, context):
             raise AuthorizationDenied("no authorization on file")
 
-    gate = PreSignInterceptor(
-        policy=_policy(), signer=signer, authorization_provider=_Refusing()
-    )
+    gate = PreSignInterceptor(policy=_policy(), signer=signer, authorization_provider=_Refusing())
     with pytest.raises(EnforcementDenied) as excinfo:
         gate.sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx()))
 
@@ -283,9 +275,7 @@ def test_p0_evidence_for_another_call_is_rejected():
                 policy_commitment_digest=context.policy_commitment.digest(),
             )
 
-    gate = PreSignInterceptor(
-        policy=_policy(), signer=signer, authorization_provider=_WrongCall()
-    )
+    gate = PreSignInterceptor(policy=_policy(), signer=signer, authorization_provider=_WrongCall())
     with pytest.raises(EnforcementDenied) as excinfo:
         gate.sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _tx()))
 
@@ -410,9 +400,7 @@ def test_envelope_treats_equivalent_calldata_identically():
 
     assert (
         CallEnvelopeV1.from_transaction(transaction=absent, chain=Chain.BASE).digest()
-        == CallEnvelopeV1.from_transaction(
-            transaction=explicit, chain=Chain.BASE
-        ).digest()
+        == CallEnvelopeV1.from_transaction(transaction=explicit, chain=Chain.BASE).digest()
     )
 
 
@@ -420,9 +408,7 @@ def test_envelope_rejects_chain_mismatch_directly():
     from web3_agent_kit.execution import CallEnvelopeError
 
     with pytest.raises(CallEnvelopeError):
-        CallEnvelopeV1.from_transaction(
-            transaction=_tx(chainId=84532), chain=Chain.BASE
-        )
+        CallEnvelopeV1.from_transaction(transaction=_tx(chainId=84532), chain=Chain.BASE)
 
 
 def test_envelope_rejects_boolean_nonce_and_value():
@@ -431,15 +417,12 @@ def test_envelope_rejects_boolean_nonce_and_value():
 
     for field in ("nonce", "value"):
         with pytest.raises(CallEnvelopeError):
-            CallEnvelopeV1.from_transaction(
-                transaction=_tx(**{field: True}), chain=Chain.BASE
-            )
+            CallEnvelopeV1.from_transaction(transaction=_tx(**{field: True}), chain=Chain.BASE)
 
 
 def test_contract_creation_uses_a_distinct_profile():
     envelope = CallEnvelopeV1.from_transaction(
-        transaction={"to": None, "from": SENDER, "data": "0x60806040", "nonce": 0,
-                     "chainId": 8453},
+        transaction={"to": None, "from": SENDER, "data": "0x60806040", "nonce": 0, "chainId": 8453},
         chain=Chain.BASE,
     )
     assert envelope.execution_profile == "create"
@@ -485,11 +468,7 @@ def _run_checker(source: str) -> subprocess.CompletedProcess:
         return subprocess.run(
             [
                 sys.executable,
-                str(
-                    Path(__file__).resolve().parents[1]
-                    / "tools"
-                    / "check_signing_surface.py"
-                ),
+                str(Path(__file__).resolve().parents[1] / "tools" / "check_signing_surface.py"),
                 "--root",
                 str(pkg),
             ],
@@ -509,24 +488,14 @@ def _run_checker(source: str) -> subprocess.CompletedProcess:
             "    again = signer\n"
             "    return again(tx)\n"
         ),
-        (
-            "def f(acct, tx):\n"
-            "    signer: object = acct.sign_transaction\n"
-            "    return signer(tx)\n"
-        ),
-        (
-            "from eth_account import sign_transaction as st\n"
-            "def f(tx):\n"
-            "    return st(tx)\n"
-        ),
+        ("def f(acct, tx):\n    signer: object = acct.sign_transaction\n    return signer(tx)\n"),
+        ("from eth_account import sign_transaction as st\ndef f(tx):\n    return st(tx)\n"),
     ],
     ids=["direct", "alias", "alias-chain", "annotated-alias", "import-alias"],
 )
 def test_p1_static_check_catches_every_signer_shape(source):
     result = _run_checker(source)
-    assert result.returncode == 1, (
-        f"checker missed a signer shape:\n{result.stdout}"
-    )
+    assert result.returncode == 1, f"checker missed a signer shape:\n{result.stdout}"
 
 
 def test_p1_static_check_does_not_flag_unrelated_methods():

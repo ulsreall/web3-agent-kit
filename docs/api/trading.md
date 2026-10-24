@@ -17,7 +17,7 @@ bot = DCABot(
     token_in="ETH",
     token_out="USDC",
     amount_per_buy=0.01,  # 0.01 ETH per buy
-    interval_hours=24,     # Every 24 hours
+    interval_hours=24,  # Every 24 hours
 )
 
 # Start DCA
@@ -44,10 +44,10 @@ config = DCAConfig(
     amount_per_buy=0.01,
     interval_hours=24,
     # Price-based triggers
-    buy_more_if_drops=5.0,     # Buy 2x if price drops 5%
-    stop_if_drops=20.0,        # Stop if price drops 20%
-    take_profit_at=50.0,       # Sell 50% if price rises 50%
-    max_total_spend=1.0,       # Max 1 ETH total
+    buy_more_if_drops=5.0,  # Buy 2x if price drops 5%
+    stop_if_drops=20.0,  # Stop if price drops 20%
+    take_profit_at=50.0,  # Sell 50% if price rises 50%
+    max_total_spend=1.0,  # Max 1 ETH total
 )
 
 bot = DCABot(wallet=wallet, chain_manager=chain_manager, config=config)

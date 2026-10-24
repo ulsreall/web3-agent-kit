@@ -60,9 +60,11 @@ class MEVProtector:
         """
         self.config = config or MEVConfig()
         self.session = requests.Session()
-        self.session.headers.update({
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Content-Type": "application/json",
+            }
+        )
         if self.config.flashbots_auth_key:
             self.session.headers["X-Flashbots-Signature"] = self.config.flashbots_auth_key
         self._web3: Any = None
@@ -143,10 +145,12 @@ class MEVProtector:
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "eth_sendBundle",
-                "params": [{
-                    "txs": [self._encode_tx(tx) for tx in txs],
-                    "blockNumber": hex(target_block),
-                }],
+                "params": [
+                    {
+                        "txs": [self._encode_tx(tx) for tx in txs],
+                        "blockNumber": hex(target_block),
+                    }
+                ],
             }
 
             resp = self.session.post(
@@ -190,10 +194,12 @@ class MEVProtector:
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "eth_callBundle",
-                "params": [{
-                    "txs": [self._encode_tx(tx) for tx in txs],
-                    "blockNumber": hex(block_number),
-                }],
+                "params": [
+                    {
+                        "txs": [self._encode_tx(tx) for tx in txs],
+                        "blockNumber": hex(block_number),
+                    }
+                ],
             }
 
             resp = self.session.post(

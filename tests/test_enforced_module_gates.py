@@ -7,7 +7,7 @@ that the bypass that existed before is actually closed on each of them.
 
 from __future__ import annotations
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -19,7 +19,6 @@ from web3_agent_kit.execution import (
     ExecutionPolicy,
     PreSignInterceptor,
 )
-from web3_agent_kit.execution.envelope import CallEnvelopeV1
 
 
 class _AllowingProvider:
@@ -44,12 +43,14 @@ class _AllowingProvider:
             nonce="1",
             policy_commitment_digest=context.policy_commitment.digest(),
         )
-from web3_agent_kit.messaging import CrossChainMessenger
+
 
 # Address derived from TEST_KEY, so the "from" field matches the signer.
 SENDER = "0x5CbDd86a2FA8Dc4bDdd8a8f69dBa48572EeC07FB"
 ENDPOINT = "0x7564105E977516C53bE337314c7E53838967bDaC"
 TEST_KEY = "0x" + "33" * 32
+
+from web3_agent_kit.messaging import CrossChainMessenger  # noqa: E402
 
 
 def _tx(to: str = ENDPOINT, value: int = 0, chainId: int = 42161) -> dict:
@@ -239,9 +240,7 @@ def test_airdrop_gate_signs_when_policy_allows():
     receipt.transactionHash.hex.return_value = "0xairdrop"
     f._web3.eth.wait_for_transaction_receipt.return_value = receipt
 
-    result = f._send_transaction(
-        _tx(to="0x" + "dd" * 20, chainId=1)
-    )
+    result = f._send_transaction(_tx(to="0x" + "dd" * 20, chainId=1))
 
     assert result == "0xairdrop"
     f._web3.eth.send_raw_transaction.assert_called_once_with(b"raw-bytes")

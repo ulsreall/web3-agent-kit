@@ -12,6 +12,7 @@ from typing import Optional
 
 class AlertLevel(Enum):
     """Notification alert levels."""
+
     INFO = "info"
     SUCCESS = "success"
     WARNING = "warning"
@@ -22,6 +23,7 @@ class AlertLevel(Enum):
 @dataclass
 class NotifierConfig:
     """Configuration for notifications."""
+
     # Telegram
     telegram_bot_token: str = ""
     telegram_chat_id: str = ""
@@ -49,6 +51,7 @@ class NotifierConfig:
 @dataclass
 class Notification:
     """A notification message."""
+
     title: str
     message: str
     level: AlertLevel = AlertLevel.INFO

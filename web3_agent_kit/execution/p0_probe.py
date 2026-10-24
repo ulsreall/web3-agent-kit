@@ -164,11 +164,7 @@ def probe_chain_mismatch() -> dict[str, Any]:
     gate = _build_gate(policy=_signing_policy(), signer=signer)
 
     try:
-        gate.sign(
-            AuthorizationRequest(
-                Chain.BASE, ActionType.SWAP, _transaction(chainId=84532)
-            )
-        )
+        gate.sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _transaction(chainId=84532)))
         result["observed"] = True
         result["detail"] = "signed a transaction whose chainId the policy never evaluated"
     except (EnforcementDenied, ExecutionError) as exc:
@@ -244,9 +240,7 @@ def probe_policy_allow_without_authorization() -> dict[str, Any]:
     gate = _build_gate(policy=_signing_policy(), signer=signer, with_provider=False)
 
     try:
-        gate.sign(
-            AuthorizationRequest(Chain.BASE, ActionType.SWAP, _transaction())
-        )
+        gate.sign(AuthorizationRequest(Chain.BASE, ActionType.SWAP, _transaction()))
         result["observed"] = True
         result["detail"] = "policy allow alone produced a signature"
     except (EnforcementDenied, ExecutionError) as exc:
@@ -284,9 +278,7 @@ def probe_aliased_signer() -> dict[str, Any]:
         pkg = Path(tmp) / "pkg"
         pkg.mkdir()
         (pkg / "module.py").write_text(
-            "def send(account, tx):\n"
-            "    signer = account.sign_transaction\n"
-            "    return signer(tx)\n"
+            "def send(account, tx):\n    signer = account.sign_transaction\n    return signer(tx)\n"
         )
         proc = subprocess.run(
             [sys.executable, str(checker), "--root", str(pkg)],
@@ -367,9 +359,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print("P0 probe - reproduced findings, not claims\n")
         for r in results:
-            marker = {"OPEN": "OPEN  ", "closed": "closed", "UNKNOWN": "unknown"}[
-                r["status"]
-            ]
+            marker = {"OPEN": "OPEN  ", "closed": "closed", "UNKNOWN": "unknown"}[r["status"]]
             print(f"  [{marker}] {r['id']}")
             print(f"           {r['detail']}")
             if "signer_reached" in r:

@@ -43,9 +43,7 @@ def check_sandwich_risk(tx: dict[str, Any]) -> dict[str, Any]:
 
     # Check value
     value_raw = tx.get("value", "0x0")
-    value: int = (
-        int(value_raw, 16) if isinstance(value_raw, str) else int(value_raw)
-    )
+    value: int = int(value_raw, 16) if isinstance(value_raw, str) else int(value_raw)
     if value > 1e18:  # > 1 ETH
         risk_factors.append("High value transaction")
         risk_score += 20

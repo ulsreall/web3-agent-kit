@@ -40,7 +40,12 @@ class TestLLMConfig:
     def test_custom_providers(self):
         """Test custom provider configuration."""
         providers = [
-            {"name": "openai", "api_key": "test", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
         ]
         config = LLMConfig(providers=providers)
         assert len(config.providers) == 1
@@ -72,7 +77,12 @@ class TestLLM:
     def test_chat_openai(self):
         """Test chat with OpenAI provider."""
         providers = [
-            {"name": "openai", "api_key": "test", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
         ]
         llm = LLM(config=LLMConfig(providers=providers))
 
@@ -86,7 +96,12 @@ class TestLLM:
     def test_chat_json(self):
         """Test chat_json parsing."""
         providers = [
-            {"name": "openai", "api_key": "test", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
         ]
         llm = LLM(config=LLMConfig(providers=providers))
 
@@ -100,13 +115,24 @@ class TestLLM:
     def test_cascade_fallback(self):
         """Test cascade fallback on failure."""
         providers = [
-            {"name": "openai", "api_key": "test1", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
-            {"name": "openai", "api_key": "test2", "model": "gpt-3.5-turbo", "base_url": "https://api.openai.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test1",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
+            {
+                "name": "openai",
+                "api_key": "test2",
+                "model": "gpt-3.5-turbo",
+                "base_url": "https://api.openai.com/v1",
+            },
         ]
         llm = LLM(config=LLMConfig(providers=providers))
 
         # Mock _call_provider to fail on first, succeed on second
         call_count = [0]
+
         def mock_call_provider(provider, messages, response_format):
             call_count[0] += 1
             if call_count[0] == 1:
@@ -122,12 +148,18 @@ class TestLLM:
     def test_system_prompt(self):
         """Test chat with system prompt."""
         providers = [
-            {"name": "openai", "api_key": "test", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
         ]
         llm = LLM(config=LLMConfig(providers=providers))
 
         # Capture the messages passed to _call_provider
         captured_messages = []
+
         def mock_call_provider(provider, messages, response_format):
             captured_messages.extend(messages)
             return "Response"
@@ -144,8 +176,18 @@ class TestLLM:
     def test_repr(self):
         """Test string representation."""
         providers = [
-            {"name": "openai", "api_key": "test", "model": "gpt-4", "base_url": "https://api.openai.com/v1"},
-            {"name": "anthropic", "api_key": "test", "model": "claude-3", "base_url": "https://api.anthropic.com/v1"},
+            {
+                "name": "openai",
+                "api_key": "test",
+                "model": "gpt-4",
+                "base_url": "https://api.openai.com/v1",
+            },
+            {
+                "name": "anthropic",
+                "api_key": "test",
+                "model": "claude-3",
+                "base_url": "https://api.anthropic.com/v1",
+            },
         ]
         llm = LLM(config=LLMConfig(providers=providers))
         assert "openai" in repr(llm)

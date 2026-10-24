@@ -50,6 +50,7 @@ from web3_agent_kit.wallet.wallet import Wallet
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mock_w3():
     """Return a fully-mocked Web3 instance."""
     w3 = MagicMock()
@@ -131,6 +132,7 @@ def _make_sample_position(**overrides) -> MonitoredPosition:
 # Constants & imports
 # ===========================================================================
 
+
 class TestModuleImports:
     """Verify all exports are importable."""
 
@@ -184,11 +186,16 @@ class TestModuleImports:
 # RestakeResult & OperatorInfo
 # ===========================================================================
 
+
 class TestRestakeResult:
     def test_fields(self):
         result = RestakeResult(
-            tx_hash="0xabc", strategy="0xstrat", amount=5.0,
-            operator="0xop", chain=Chain.ETHEREUM, gas_used=250_000,
+            tx_hash="0xabc",
+            strategy="0xstrat",
+            amount=5.0,
+            operator="0xop",
+            chain=Chain.ETHEREUM,
+            gas_used=250_000,
             status="confirmed",
         )
         assert result.tx_hash == "0xabc"
@@ -199,8 +206,13 @@ class TestRestakeResult:
     def test_timestamp_auto_set(self):
         before = time.time()
         result = RestakeResult(
-            tx_hash="0x", strategy="", amount=0, operator=None,
-            chain=Chain.ETHEREUM, gas_used=0, status="pending",
+            tx_hash="0x",
+            strategy="",
+            amount=0,
+            operator=None,
+            chain=Chain.ETHEREUM,
+            gas_used=0,
+            status="pending",
         )
         assert result.timestamp >= before
 
@@ -208,8 +220,12 @@ class TestRestakeResult:
 class TestOperatorInfo:
     def test_fields(self):
         info = OperatorInfo(
-            address="0x123", name="TestOp", total_delegated_stake=1000.0,
-            num_stakers=50, commission_rate=10.0, slashing_history=0,
+            address="0x123",
+            name="TestOp",
+            total_delegated_stake=1000.0,
+            num_stakers=50,
+            commission_rate=10.0,
+            slashing_history=0,
             uptime_pct=99.9,
         )
         assert info.name == "TestOp"
@@ -220,6 +236,7 @@ class TestOperatorInfo:
 # ===========================================================================
 # EigenLayer
 # ===========================================================================
+
 
 class TestEigenLayerInit:
     def test_default_config(self):
@@ -241,10 +258,14 @@ class TestEigenLayerRestake:
 
         # Mock contract interactions
         strategy_contract = MagicMock()
-        strategy_contract.functions.depositIntoStrategy.return_value.build_transaction.return_value = {"dummy": "tx"}
+        strategy_contract.functions.depositIntoStrategy.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         token_contract = MagicMock()
         token_contract.functions.allowance.return_value.call.return_value = 0
-        token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+        token_contract.functions.approve.return_value.build_transaction.return_value = {
+            "dummy": "approve"
+        }
 
         def contract_factory(address, abi):
             if "depositIntoStrategy" in str(abi):
@@ -273,13 +294,18 @@ class TestEigenLayerRestake:
         el, w3, wallet = _make_eigenlayer()
 
         strategy_contract = MagicMock()
-        strategy_contract.functions.depositIntoStrategy.return_value.build_transaction.return_value = {"dummy": "tx"}
+        strategy_contract.functions.depositIntoStrategy.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         delegation_contract = MagicMock()
-        delegation_contract.functions.delegateTo.return_value.build_transaction.return_value = {"dummy": "delegate"}
+        delegation_contract.functions.delegateTo.return_value.build_transaction.return_value = {
+            "dummy": "delegate"
+        }
         token_contract = MagicMock()
         token_contract.functions.allowance.return_value.call.return_value = 999999
 
         call_count = [0]
+
         def contract_factory(address, abi):
             call_count[0] += 1
             abi_str = str(abi)
@@ -301,7 +327,9 @@ class TestEigenLayerDelegate:
         el, w3, _ = _make_eigenlayer()
 
         delegation_contract = MagicMock()
-        delegation_contract.functions.delegateTo.return_value.build_transaction.return_value = {"dummy": "tx"}
+        delegation_contract.functions.delegateTo.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         w3.eth.contract.return_value = delegation_contract
 
         result = el.delegate("0xOperator")
@@ -314,7 +342,9 @@ class TestEigenLayerWithdraw:
         el, w3, _ = _make_eigenlayer()
 
         strategy_contract = MagicMock()
-        strategy_contract.functions.withdrawSharesAsTokens.return_value.build_transaction.return_value = {"dummy": "tx"}
+        strategy_contract.functions.withdrawSharesAsTokens.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         w3.eth.contract.return_value = strategy_contract
 
         result = el.withdraw("stETH", 3.0)
@@ -351,7 +381,9 @@ class TestEigenLayerQueryOps:
     def test_get_delegated_operator_none(self):
         el, w3, _ = _make_eigenlayer()
         delegation_contract = MagicMock()
-        delegation_contract.functions.delegatedTo.return_value.call.return_value = "0x0000000000000000000000000000000000000000"
+        delegation_contract.functions.delegatedTo.return_value.call.return_value = (
+            "0x0000000000000000000000000000000000000000"
+        )
         w3.eth.contract.return_value = delegation_contract
 
         operator = el.get_delegated_operator()
@@ -366,7 +398,9 @@ class TestEigenLayerQueryOps:
 
         info = el.get_operator_info("0x123")
         assert isinstance(info, OperatorInfo)
-        assert info.is_active is True if hasattr(info, 'is_active') else True  # just verify no crash
+        assert (
+            info.is_active is True if hasattr(info, "is_active") else True
+        )  # just verify no crash
 
     def test_get_rewards(self):
         el, _, _ = _make_eigenlayer()
@@ -378,6 +412,7 @@ class TestEigenLayerQueryOps:
 # RestakingStrategy enum
 # ===========================================================================
 
+
 class TestRestakingStrategy:
     def test_enum_values(self):
         assert RestakingStrategy.LST.value == "lst"
@@ -388,6 +423,7 @@ class TestRestakingStrategy:
 # ===========================================================================
 # Babylon BTC Restaking
 # ===========================================================================
+
 
 class TestBabylonBtcRestaking:
     def test_init(self):
@@ -401,7 +437,9 @@ class TestBabylonBtcRestaking:
         cm = _mock_chain_manager(w3)
         wallet = _mock_wallet()
         vault_contract = MagicMock()
-        vault_contract.functions.delegate.return_value.build_transaction.return_value = {"dummy": "tx"}
+        vault_contract.functions.delegate.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         w3.eth.contract.return_value = vault_contract
 
         babylon = BabylonBtcRestaking(wallet, cm)
@@ -455,6 +493,7 @@ class TestBabylonBtcRestaking:
 # Solana Restaking
 # ===========================================================================
 
+
 class TestSolanaRestaking:
     def test_init_solayer(self):
         cm = _mock_chain_manager()
@@ -475,7 +514,9 @@ class TestSolanaRestaking:
         w3 = _mock_w3()
         cm = _mock_chain_manager(w3)
         vault_contract = MagicMock()
-        vault_contract.functions.restake.return_value.build_transaction.return_value = {"dummy": "tx"}
+        vault_contract.functions.restake.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         w3.eth.contract.return_value = vault_contract
 
         sol = SolanaRestaking(_mock_wallet(), cm, protocol="solayer")
@@ -495,7 +536,9 @@ class TestSolanaRestaking:
         w3 = _mock_w3()
         cm = _mock_chain_manager(w3)
         vault_contract = MagicMock()
-        vault_contract.functions.unstake.return_value.build_transaction.return_value = {"dummy": "tx"}
+        vault_contract.functions.unstake.return_value.build_transaction.return_value = {
+            "dummy": "tx"
+        }
         w3.eth.contract.return_value = vault_contract
 
         sol = SolanaRestaking(_mock_wallet(), cm)
@@ -519,7 +562,9 @@ class TestSolanaRestaking:
         w3 = _mock_w3()
         cm = _mock_chain_manager(w3)
         vault_contract = MagicMock()
-        vault_contract.functions.getPendingRewards.return_value.call.return_value = 2 * 10**9  # 2 SOL
+        vault_contract.functions.getPendingRewards.return_value.call.return_value = (
+            2 * 10**9
+        )  # 2 SOL
         w3.eth.contract.return_value = vault_contract
 
         sol = SolanaRestaking(_mock_wallet(), cm)
@@ -532,6 +577,7 @@ class TestSolanaRestaking:
 # ===========================================================================
 # RestakingOpportunity
 # ===========================================================================
+
 
 class TestRestakingOpportunity:
     def test_risk_adjusted_yield(self):
@@ -556,6 +602,7 @@ class TestRestakingOpportunity:
 # ===========================================================================
 # RestakingOptimizer
 # ===========================================================================
+
 
 class TestRestakingOptimizerInit:
     def test_defaults(self):
@@ -707,17 +754,24 @@ class TestRestakingOptimizerTop:
 # MonitoredPosition
 # ===========================================================================
 
+
 class TestMonitoredPosition:
     def test_pnl_positive(self):
-        pos = _make_sample_position(value_usd=38_000, entry_price_usd=3500, amount=10, rewards_usd=500)
+        pos = _make_sample_position(
+            value_usd=38_000, entry_price_usd=3500, amount=10, rewards_usd=500
+        )
         assert pos.pnl_usd > 0
 
     def test_pnl_negative(self):
-        pos = _make_sample_position(value_usd=30_000, entry_price_usd=3500, amount=10, rewards_usd=0)
+        pos = _make_sample_position(
+            value_usd=30_000, entry_price_usd=3500, amount=10, rewards_usd=0
+        )
         assert pos.pnl_usd < 0
 
     def test_pnl_pct(self):
-        pos = _make_sample_position(value_usd=35_000, entry_price_usd=3500, amount=10, rewards_usd=350)
+        pos = _make_sample_position(
+            value_usd=35_000, entry_price_usd=3500, amount=10, rewards_usd=350
+        )
         assert pos.pnl_pct == pytest.approx(1.0, abs=0.1)
 
     def test_is_locked(self):
@@ -736,6 +790,7 @@ class TestMonitoredPosition:
 # ===========================================================================
 # Alert
 # ===========================================================================
+
 
 class TestAlert:
     def test_is_critical(self):
@@ -758,7 +813,7 @@ class TestAlert:
 
     def test_age_seconds(self):
         alert = Alert(
-            alert_type=AlertType.INFO if hasattr(AlertType, 'INFO') else AlertType.POSITION_CHANGE,
+            alert_type=AlertType.INFO if hasattr(AlertType, "INFO") else AlertType.POSITION_CHANGE,
             severity="info",
             message="test",
             protocol="test",
@@ -770,6 +825,7 @@ class TestAlert:
 # ===========================================================================
 # RestakingMonitor
 # ===========================================================================
+
 
 class TestRestakingMonitorInit:
     def test_defaults(self):
@@ -906,7 +962,9 @@ class TestRestakingMonitorSnapshot:
     def test_snapshot(self):
         monitor = RestakingMonitor()
         monitor.add_position(_make_sample_position(position_id="p1", value_usd=35_000))
-        monitor.add_position(_make_sample_position(position_id="p2", protocol="babylon", value_usd=65_000))
+        monitor.add_position(
+            _make_sample_position(position_id="p2", protocol="babylon", value_usd=65_000)
+        )
 
         snapshot = monitor.get_snapshot()
         assert isinstance(snapshot, PortfolioSnapshot)
@@ -927,8 +985,13 @@ class TestRestakingMonitorSnapshot:
     def test_slashing_history(self):
         monitor = RestakingMonitor()
         event = SlashingEvent(
-            protocol="test", operator="op", amount_slashed=1.0,
-            amount_usd=100, reason="test", block_number=1, timestamp=time.time(),
+            protocol="test",
+            operator="op",
+            amount_slashed=1.0,
+            amount_usd=100,
+            reason="test",
+            block_number=1,
+            timestamp=time.time(),
         )
         monitor.report_slashing(event)
         assert len(monitor.get_slashing_history()) == 1

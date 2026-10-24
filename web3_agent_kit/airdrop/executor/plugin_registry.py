@@ -66,12 +66,9 @@ class PlatformPluginRegistry:
             TypeError: If executor_class is not a BasePlatformExecutor subclass.
         """
         if not (
-            isinstance(executor_class, type)
-            and issubclass(executor_class, BasePlatformExecutor)
+            isinstance(executor_class, type) and issubclass(executor_class, BasePlatformExecutor)
         ):
-            raise TypeError(
-                f"{executor_class} must be a subclass of BasePlatformExecutor"
-            )
+            raise TypeError(f"{executor_class} must be a subclass of BasePlatformExecutor")
 
         cls._registry[name.lower()] = executor_class
         logger.info(f"Registered platform executor: {name}")

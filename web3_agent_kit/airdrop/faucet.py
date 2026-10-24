@@ -30,6 +30,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FaucetConfig:
     """Configuration for a faucet."""
+
     name: str
     chain: str
     url: str
@@ -61,6 +62,7 @@ class FaucetConfig:
 @dataclass
 class ClaimResult:
     """Result of a faucet claim attempt."""
+
     faucet: str
     chain: str
     token: str
@@ -234,13 +236,15 @@ class FaucetClaimer:
         """
         self._captcha_api_key = captcha_api_key
         self._session = requests.Session()
-        self._session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
-        })
+        self._session.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                ),
+            }
+        )
         if proxy:
             self._session.proxies = {"http": proxy, "https": proxy}
         self._faucets: dict[str, FaucetConfig] = FAUCETS.copy()
@@ -277,22 +281,22 @@ class FaucetClaimer:
         """
         self._results = []
         faucets = (
-            {k: v for k, v in self._faucets.items() if k in chains}
-            if chains
-            else self._faucets
+            {k: v for k, v in self._faucets.items() if k in chains} if chains else self._faucets
         )
 
         for key, faucet in faucets.items():
             # Check cooldown
             if not skip_cooldown and self._in_cooldown(key):
                 logger.info(f"Skipping {key}: in cooldown")
-                self._results.append(ClaimResult(
-                    faucet=faucet.name,
-                    chain=faucet.chain,
-                    token=faucet.token,
-                    success=False,
-                    error="In cooldown",
-                ))
+                self._results.append(
+                    ClaimResult(
+                        faucet=faucet.name,
+                        chain=faucet.chain,
+                        token=faucet.token,
+                        success=False,
+                        error="In cooldown",
+                    )
+                )
                 continue
 
             logger.info(f"Claiming from {faucet.name}...")
@@ -327,21 +331,21 @@ class FaucetClaimer:
         """
         self._results = []
         faucets = (
-            {k: v for k, v in self._faucets.items() if k in chains}
-            if chains
-            else self._faucets
+            {k: v for k, v in self._faucets.items() if k in chains} if chains else self._faucets
         )
 
         for key, faucet in faucets.items():
             if not skip_cooldown and self._in_cooldown(key):
                 logger.info(f"Skipping {key}: in cooldown")
-                self._results.append(ClaimResult(
-                    faucet=faucet.name,
-                    chain=faucet.chain,
-                    token=faucet.token,
-                    success=False,
-                    error="In cooldown",
-                ))
+                self._results.append(
+                    ClaimResult(
+                        faucet=faucet.name,
+                        chain=faucet.chain,
+                        token=faucet.token,
+                        success=False,
+                        error="In cooldown",
+                    )
+                )
                 continue
 
             logger.info(f"Claiming from {faucet.name}...")
@@ -380,13 +384,15 @@ class FaucetClaimer:
             return []
 
         if not skip_cooldown and self._in_cooldown(chain):
-            return [ClaimResult(
-                faucet=faucet.name,
-                chain=faucet.chain,
-                token=faucet.token,
-                success=False,
-                error="In cooldown",
-            )]
+            return [
+                ClaimResult(
+                    faucet=faucet.name,
+                    chain=faucet.chain,
+                    token=faucet.token,
+                    success=False,
+                    error="In cooldown",
+                )
+            ]
 
         result = await self._claim_faucet(faucet, wallet)
         if result.success:
@@ -402,10 +408,7 @@ class FaucetClaimer:
         Returns:
             List of available faucet configs.
         """
-        return [
-            f for k, f in self._faucets.items()
-            if not self._in_cooldown(k)
-        ]
+        return [f for k, f in self._faucets.items() if not self._in_cooldown(k)]
 
     def get_all_faucets(self) -> dict[str, FaucetConfig]:
         """Get all faucet configurations.
@@ -446,11 +449,13 @@ class FaucetClaimer:
             amount = f"{result.amount} {result.token}" if result.success else result.error
             lines.append(f"║  {status} {result.faucet:30} │ {amount}")
 
-        lines.extend([
-            "╠══════════════════════════════════════════════╣",
-            f"║  Total: {len(self._results)} | Success: {success} | Failed: {failed}",
-            "╚══════════════════════════════════════════════╝",
-        ])
+        lines.extend(
+            [
+                "╠══════════════════════════════════════════════╣",
+                f"║  Total: {len(self._results)} | Success: {success} | Failed: {failed}",
+                "╚══════════════════════════════════════════════╝",
+            ]
+        )
 
         summary = "\n".join(lines)
         logger.info(summary)
@@ -468,9 +473,7 @@ class FaucetClaimer:
         data = {
             "exported_at": datetime.now(timezone.utc).isoformat(),
             "results": [r.to_dict() for r in self._results],
-            "cooldowns": {
-                k: v.isoformat() for k, v in self._cooldowns.items()
-            },
+            "cooldowns": {k: v.isoformat() for k, v in self._cooldowns.items()},
         }
         json_str = json.dumps(data, indent=2, default=str)
 
@@ -483,9 +486,7 @@ class FaucetClaimer:
 
     # ─── Private Methods ─────────────────────────────────────────
 
-    async def _claim_faucet(
-        self, faucet: FaucetConfig, wallet: str
-    ) -> ClaimResult:
+    async def _claim_faucet(self, faucet: FaucetConfig, wallet: str) -> ClaimResult:
         """Claim tokens from a single faucet."""
         result = ClaimResult(
             faucet=faucet.name,
@@ -520,17 +521,17 @@ class FaucetClaimer:
 
             # Make request
             if faucet.method.upper() == "POST":
-                resp = self._session.post(
-                    url, json=body, headers=headers, timeout=30
-                )
+                resp = self._session.post(url, json=body, headers=headers, timeout=30)
             else:
-                resp = self._session.get(
-                    url, params=body, headers=headers, timeout=30
-                )
+                resp = self._session.get(url, params=body, headers=headers, timeout=30)
 
             # Check response
             if resp.status_code in (200, 201):
-                data = resp.json() if resp.headers.get("content-type", "").startswith("application/json") else {}
+                data = (
+                    resp.json()
+                    if resp.headers.get("content-type", "").startswith("application/json")
+                    else {}
+                )
                 if isinstance(data, dict):
                     result.success = (
                         data.get("success", False)
@@ -650,9 +651,7 @@ class FaucetClaimer:
 
     def _set_cooldown(self, key: str, hours: int) -> None:
         """Set cooldown for a faucet."""
-        self._cooldowns[key] = (
-            datetime.now(timezone.utc) + timedelta(hours=hours)
-        )
+        self._cooldowns[key] = datetime.now(timezone.utc) + timedelta(hours=hours)
         self._save_cooldowns()
 
     def _load_cooldowns(self) -> None:

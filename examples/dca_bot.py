@@ -50,17 +50,21 @@ if result.success:
 else:
     print(f"Failed: {result.error}")
 
+
 # 3. Register callback for notifications
 def on_buy(result):
     print(f"🔔 DCA: {result.amount_spent} spent → {result.amount_received:.6f} bought")
+
 
 bot.on_execution(on_buy)
 
 # 4. Check status
 print("\n=== Orders ===")
 for order in bot.list_orders():
-    print(f"  [{order.status.value}] {order.from_token}→{order.to_token}: "
-          f"${order.amount_per_buy}/{order.interval.name}")
+    print(
+        f"  [{order.status.value}] {order.from_token}→{order.to_token}: "
+        f"${order.amount_per_buy}/{order.interval.name}"
+    )
 
 # 5. Cost average analysis
 avg = bot.get_cost_average(eth_order.id)

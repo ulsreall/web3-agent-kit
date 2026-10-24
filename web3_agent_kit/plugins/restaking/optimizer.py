@@ -16,28 +16,31 @@ logger = logging.getLogger(__name__)
 # Data classes & enums
 # ---------------------------------------------------------------------------
 
+
 class OptimizationStrategy(Enum):
     """Yield optimization strategy types."""
-    MAX_YIELD = "max_yield"                        # Highest raw APY
-    RISK_ADJUSTED = "risk_adjusted"                 # Best Sharpe-like ratio
-    BALANCED = "balanced"                           # Balance yield, risk, and diversification
-    CONSERVATIVE = "conservative"                   # Minimize risk above all
-    DIVERSIFIED = "diversified"                     # Spread across multiple protocols
+
+    MAX_YIELD = "max_yield"  # Highest raw APY
+    RISK_ADJUSTED = "risk_adjusted"  # Best Sharpe-like ratio
+    BALANCED = "balanced"  # Balance yield, risk, and diversification
+    CONSERVATIVE = "conservative"  # Minimize risk above all
+    DIVERSIFIED = "diversified"  # Spread across multiple protocols
 
 
 @dataclass
 class RestakingOpportunity:
     """A restaking yield opportunity from any protocol."""
-    protocol: str                # e.g. "eigenlayer", "babylon", "solayer"
-    chain: str                   # e.g. "ethereum", "solana"
-    asset: str                   # e.g. "ETH", "BTC", "SOL"
-    apy: float                   # Annual percentage yield (e.g. 5.2 = 5.2%)
-    tvl_usd: float               # Total value locked in USD
-    risk_score: float            # 0-100 (0 = no risk, 100 = max risk)
-    min_deposit: float = 0.0     # Minimum deposit
-    lock_period_days: int = 0    # 0 = flexible
+
+    protocol: str  # e.g. "eigenlayer", "babylon", "solayer"
+    chain: str  # e.g. "ethereum", "solana"
+    asset: str  # e.g. "ETH", "BTC", "SOL"
+    apy: float  # Annual percentage yield (e.g. 5.2 = 5.2%)
+    tvl_usd: float  # Total value locked in USD
+    risk_score: float  # 0-100 (0 = no risk, 100 = max risk)
+    min_deposit: float = 0.0  # Minimum deposit
+    lock_period_days: int = 0  # 0 = flexible
     slashing_coverage: bool = False  # Whether slashing losses are covered
-    audit_count: int = 0         # Number of audits
+    audit_count: int = 0  # Number of audits
     is_native_staking: bool = False
     reward_tokens: list[str] = field(default_factory=list)
     pool_address: str = ""
@@ -57,7 +60,7 @@ class RestakingOpportunity:
     def liquidity_score(self) -> float:
         """Score reflecting TVL and lock period (higher = more liquid)."""
         tvl_score = math.log10(max(self.tvl_usd, 1)) / 10  # 0-8ish
-        lock_penalty = self.lock_period_days / 365           # 0-1
+        lock_penalty = self.lock_period_days / 365  # 0-1
         return max(tvl_score - lock_penalty, 0)
 
     @property
@@ -68,23 +71,25 @@ class RestakingOpportunity:
 @dataclass
 class RiskAdjustedYield:
     """Risk-adjusted yield analysis for an opportunity."""
+
     opportunity: RestakingOpportunity
     raw_apy: float
     risk_adjusted_apy: float
-    max_drawdown_est: float          # Estimated max drawdown %
-    sharpe_ratio: float              # Simplified Sharpe-like ratio
-    confidence_score: float          # 0-100
+    max_drawdown_est: float  # Estimated max drawdown %
+    sharpe_ratio: float  # Simplified Sharpe-like ratio
+    confidence_score: float  # 0-100
     recommended_allocation_pct: float  # 0-100
 
 
 @dataclass
 class OptimizationResult:
     """Result of a yield optimization run."""
+
     strategy: OptimizationStrategy
     opportunities: list[RiskAdjustedYield]
     total_expected_apy: float
     portfolio_risk_score: float
-    allocations: dict[str, float]    # protocol -> allocation %
+    allocations: dict[str, float]  # protocol -> allocation %
     timestamp: float = 0.0
     recommendations: list[str] = field(default_factory=list)
 
@@ -100,6 +105,7 @@ class OptimizationResult:
 # ---------------------------------------------------------------------------
 # Optimizer
 # ---------------------------------------------------------------------------
+
 
 class RestakingOptimizer:
     """Yield optimizer for restaking protocols.
@@ -141,7 +147,12 @@ class RestakingOptimizer:
     def add_opportunity(self, opportunity: RestakingOpportunity) -> None:
         """Add a restaking opportunity for analysis."""
         self._opportunities.append(opportunity)
-        logger.debug("Added opportunity: %s %s @ %.2f%%", opportunity.protocol, opportunity.asset, opportunity.apy)
+        logger.debug(
+            "Added opportunity: %s %s @ %.2f%%",
+            opportunity.protocol,
+            opportunity.asset,
+            opportunity.apy,
+        )
 
     def add_opportunities(self, opportunities: list[RestakingOpportunity]) -> None:
         """Add multiple opportunities."""
@@ -318,8 +329,7 @@ class RestakingOptimizer:
 
         # Remove below-minimum APY and over-risk-limit
         candidates = [
-            o for o in candidates
-            if o.apy >= self.min_apy and o.risk_score <= self.max_risk_score
+            o for o in candidates if o.apy >= self.min_apy and o.risk_score <= self.max_risk_score
         ]
 
         if not candidates:
@@ -363,12 +373,10 @@ class RestakingOptimizer:
 
         # Compute portfolio metrics
         total_apy = sum(
-            ray.risk_adjusted_apy * (ray.recommended_allocation_pct / 100)
-            for ray in selected
+            ray.risk_adjusted_apy * (ray.recommended_allocation_pct / 100) for ray in selected
         )
         portfolio_risk = sum(
-            ray.opportunity.risk_score * (ray.recommended_allocation_pct / 100)
-            for ray in selected
+            ray.opportunity.risk_score * (ray.recommended_allocation_pct / 100) for ray in selected
         )
 
         # Generate recommendations
@@ -385,7 +393,9 @@ class RestakingOptimizer:
         self._last_result = result
         return result
 
-    def compare_strategies(self, asset_filter: Optional[str] = None) -> dict[str, OptimizationResult]:
+    def compare_strategies(
+        self, asset_filter: Optional[str] = None
+    ) -> dict[str, OptimizationResult]:
         """Compare all optimization strategies.
 
         Returns:
@@ -396,7 +406,9 @@ class RestakingOptimizer:
             results[strategy.value] = self.optimize(strategy=strategy, asset_filter=asset_filter)
         return results
 
-    def get_top_opportunities(self, n: int = 5, sort_by: str = "risk_adjusted") -> list[RestakingOpportunity]:
+    def get_top_opportunities(
+        self, n: int = 5, sort_by: str = "risk_adjusted"
+    ) -> list[RestakingOpportunity]:
         """Get top N opportunities sorted by a metric.
 
         Args:
@@ -427,7 +439,11 @@ class RestakingOptimizer:
 
         # Simplified Sharpe: (yield - risk_free) / volatility proxy
         vol_proxy = opp.risk_score / 10  # 0-10
-        sharpe = (opp.apy - self.RISK_FREE_RATE) / max(vol_proxy, 0.1) if opp.apy > self.RISK_FREE_RATE else -1
+        sharpe = (
+            (opp.apy - self.RISK_FREE_RATE) / max(vol_proxy, 0.1)
+            if opp.apy > self.RISK_FREE_RATE
+            else -1
+        )
 
         # Confidence based on audit count, TVL, and track record
         audit_score = min(opp.audit_count / 5, 1.0) * 30
@@ -565,8 +581,7 @@ class RestakingOptimizer:
         locked = [ray for ray in selected if ray.opportunity.lock_period_days > 7]
         if locked:
             names = ", ".join(
-                f"{r.opportunity.protocol} ({r.opportunity.lock_period_days}d)"
-                for r in locked
+                f"{r.opportunity.protocol} ({r.opportunity.lock_period_days}d)" for r in locked
             )
             recs.append(f"⏱️ Lock periods: {names}")
 

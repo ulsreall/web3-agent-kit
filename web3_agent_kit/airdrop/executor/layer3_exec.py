@@ -27,6 +27,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class Layer3Task(PlatformTask):
     """A Layer3-specific task entry."""
+
     quest_id: str = ""
     step_id: str = ""
     chain_id: Optional[int] = None
@@ -38,6 +39,7 @@ class Layer3Task(PlatformTask):
 @dataclass
 class Layer3Result(ExecutorResult):
     """Result of farming a Layer3 quest."""
+
     xp_earned: int = 0
     tokens_earned: float = 0.0
     chains_interacted: list[str] = field(default_factory=list)
@@ -69,20 +71,32 @@ class Layer3Executor(BasePlatformExecutor):
     platform_name = "layer3"
     platform_url = "https://layer3.xyz"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like",
-        "discord_join", "telegram_join", "quiz", "visit_url",
-        "on_chain_tx", "on_chain_swap", "on_chain_bridge", "on_chain_stake",
-        "wallet_connect", "cross_chain", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "on_chain_tx",
+        "on_chain_swap",
+        "on_chain_bridge",
+        "on_chain_stake",
+        "wallet_connect",
+        "cross_chain",
+        "custom",
     ]
 
     API_BASE = "https://api.layer3.xyz"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._quest_id: Optional[str] = None
         self._quest_data: Optional[dict] = None
         self._auth_token: Optional[str] = None
@@ -351,7 +365,11 @@ class Layer3Executor(BasePlatformExecutor):
                 chain_name=chain_name,
                 requires_wallet=requires_wallet,
                 difficulty=difficulty,
-                metadata={"quest_id": self._quest_id, "chain_id": chain_id, "chain_name": chain_name},
+                metadata={
+                    "quest_id": self._quest_id,
+                    "chain_id": chain_id,
+                    "chain_name": chain_name,
+                },
             )
 
         except Exception as e:
@@ -388,10 +406,12 @@ class Layer3Executor(BasePlatformExecutor):
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            CaptchaSolver(CaptchaConfig(
-                provider=CaptchaProvider(self.config.captcha_provider),
-                api_key=self.config.captcha_api_key,
-            ))
+            CaptchaSolver(
+                CaptchaConfig(
+                    provider=CaptchaProvider(self.config.captcha_provider),
+                    api_key=self.config.captcha_api_key,
+                )
+            )
 
             # Layer3 may use custom CAPTCHA or reCAPTCHA
             # This would be detected from the response in a real implementation

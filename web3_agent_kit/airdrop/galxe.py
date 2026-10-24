@@ -24,6 +24,7 @@ GALXE_API_BASE = "https://graphigo.prd.galaxy.eco/api"
 @dataclass
 class GalxeCredential:
     """A Galxe credential/eligibility check."""
+
     credential_id: str
     name: str
     description: str = ""
@@ -34,6 +35,7 @@ class GalxeCredential:
 @dataclass
 class GalxePoints:
     """Points earned on Galxe."""
+
     campaign_id: str
     points: int = 0
     badges: list[str] = field(default_factory=list)

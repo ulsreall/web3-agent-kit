@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class CaptchaProvider(Enum):
     """Supported CAPTCHA solving providers."""
+
     ANTICAPTCHA = "anticaptcha"
     TWOCAPTCHA = "2captcha"
 
@@ -27,6 +28,7 @@ class CaptchaProvider(Enum):
 @dataclass
 class CaptchaConfig:
     """Configuration for CAPTCHA solver."""
+
     provider: CaptchaProvider = CaptchaProvider.ANTICAPTCHA
     api_key: Optional[str] = None
     timeout: int = 120
@@ -381,7 +383,11 @@ class CaptchaSolver:
                         logger.info("GeeTest solved successfully")
                         return solution
                     # For reCAPTCHA/hCaptcha, return the token
-                    token = solution.get("gRecaptchaResponse") or solution.get("token") or solution.get("text", "")
+                    token = (
+                        solution.get("gRecaptchaResponse")
+                        or solution.get("token")
+                        or solution.get("text", "")
+                    )
                     logger.info(f"CAPTCHA solved: {token[:30]}...")
                     return token
 
@@ -408,9 +414,7 @@ class CaptchaSolver:
             result = response.json()
 
             if result.get("errorId", 0) != 0:
-                raise CaptchaSolvingError(
-                    f"Anticaptcha error: {result.get('errorDescription')}"
-                )
+                raise CaptchaSolvingError(f"Anticaptcha error: {result.get('errorDescription')}")
 
             return float(result.get("balance", 0))
 
@@ -476,9 +480,7 @@ class CaptchaSolver:
             result = response.json()
 
             if result.get("status") != 1:
-                raise CaptchaSolvingError(
-                    f"2captcha error: {result.get('request', 'Unknown')}"
-                )
+                raise CaptchaSolvingError(f"2captcha error: {result.get('request', 'Unknown')}")
 
             task_id = result.get("request")
             logger.info(f"2captcha task created: {task_id}")
@@ -520,9 +522,7 @@ class CaptchaSolver:
             result = response.json()
 
             if result.get("status") != 1:
-                raise CaptchaSolvingError(
-                    f"2captcha GeeTest error: {result.get('request')}"
-                )
+                raise CaptchaSolvingError(f"2captcha GeeTest error: {result.get('request')}")
 
             task_id = result.get("request")
             logger.info(f"2captcha GeeTest task created: {task_id}")
@@ -536,6 +536,7 @@ class CaptchaSolver:
         # Parse GeeTest response
         if isinstance(raw, str):
             import json as json_mod
+
             try:
                 parts = json_mod.loads(raw)
                 return {
@@ -546,7 +547,11 @@ class CaptchaSolver:
             except (ValueError, AttributeError):
                 return {"challenge": challenge, "validate": raw, "seccode": ""}
 
-        return raw if isinstance(raw, dict) else {"challenge": challenge, "validate": raw, "seccode": ""}
+        return (
+            raw
+            if isinstance(raw, dict)
+            else {"challenge": challenge, "validate": raw, "seccode": ""}
+        )
 
     def _poll_2captcha(self, task_id: str) -> str:
         """Poll 2captcha for task result.
@@ -590,9 +595,7 @@ class CaptchaSolver:
                     time.sleep(self.config.poll_interval)
                     continue
 
-                raise CaptchaSolvingError(
-                    f"2captcha error: {result.get('request', 'Unknown')}"
-                )
+                raise CaptchaSolvingError(f"2captcha error: {result.get('request', 'Unknown')}")
 
             except requests.RequestException as e:
                 logger.warning(f"2captcha poll error: {e}")
@@ -619,9 +622,7 @@ class CaptchaSolver:
             result = response.json()
 
             if result.get("status") != 1:
-                raise CaptchaSolvingError(
-                    f"2captcha error: {result.get('request')}"
-                )
+                raise CaptchaSolvingError(f"2captcha error: {result.get('request')}")
 
             return float(result.get("request", 0))
 
@@ -631,4 +632,5 @@ class CaptchaSolver:
 
 class CaptchaSolvingError(Exception):
     """Exception raised when CAPTCHA solving fails."""
+
     pass

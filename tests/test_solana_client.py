@@ -105,7 +105,11 @@ class TestSolanaClient:
                                 "parsed": {
                                     "info": {
                                         "mint": "mint_address_1",
-                                        "tokenAmount": {"amount": "1000", "decimals": 6, "uiAmount": 0.001},
+                                        "tokenAmount": {
+                                            "amount": "1000",
+                                            "decimals": 6,
+                                            "uiAmount": 0.001,
+                                        },
                                     }
                                 }
                             }
@@ -168,7 +172,11 @@ class TestSolanaClient:
                                 "parsed": {
                                     "info": {
                                         "mint": "USDC_MINT",
-                                        "tokenAmount": {"amount": "5000000", "decimals": 6, "uiAmount": 5.0},
+                                        "tokenAmount": {
+                                            "amount": "5000000",
+                                            "decimals": 6,
+                                            "uiAmount": 5.0,
+                                        },
                                     }
                                 }
                             }
@@ -181,7 +189,11 @@ class TestSolanaClient:
                                 "parsed": {
                                     "info": {
                                         "mint": "OTHER_MINT",
-                                        "tokenAmount": {"amount": "100", "decimals": 0, "uiAmount": 100},
+                                        "tokenAmount": {
+                                            "amount": "100",
+                                            "decimals": 0,
+                                            "uiAmount": 100,
+                                        },
                                     }
                                 }
                             }
@@ -211,7 +223,9 @@ class TestSolanaClient:
     @pytest.mark.asyncio
     async def test_get_account_info(self, solana_client):
         mock_resp = MagicMock()
-        mock_resp.json.return_value = {"result": {"value": {"lamports": 5000000, "executable": False}}}
+        mock_resp.json.return_value = {
+            "result": {"value": {"lamports": 5000000, "executable": False}}
+        }
         mock_resp.raise_for_status = MagicMock()
 
         with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):
@@ -221,7 +235,9 @@ class TestSolanaClient:
     @pytest.mark.asyncio
     async def test_get_token_supply(self, solana_client):
         mock_resp = MagicMock()
-        mock_resp.json.return_value = {"result": {"value": {"amount": "1000000000000", "decimals": 6, "uiAmount": 1000000.0}}}
+        mock_resp.json.return_value = {
+            "result": {"value": {"amount": "1000000000000", "decimals": 6, "uiAmount": 1000000.0}}
+        }
         mock_resp.raise_for_status = MagicMock()
 
         with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):

@@ -48,12 +48,14 @@ class DiscordNotifier:
 
         try:
             payload = {
-                "embeds": [{
-                    "title": notification.title,
-                    "description": notification.message,
-                    "color": self.LEVEL_COLORS.get(notification.level, 0x95A5A6),
-                    "timestamp": notification.timestamp.isoformat(),
-                }],
+                "embeds": [
+                    {
+                        "title": notification.title,
+                        "description": notification.message,
+                        "color": self.LEVEL_COLORS.get(notification.level, 0x95A5A6),
+                        "timestamp": notification.timestamp.isoformat(),
+                    }
+                ],
             }
 
             resp = self.session.post(

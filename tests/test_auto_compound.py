@@ -12,14 +12,16 @@ from web3_agent_kit.defi.auto_compound import (
 
 @pytest.fixture
 def compounder():
-    return AutoCompound(CompoundConfig(
-        protocol=Protocol.AAVE_V3,
-        min_reward_threshold_usd=10.0,
-        max_gas_cost_usd=5.0,
-        gas_price_gwei=30,
-        check_interval_minutes=60,
-        dry_run=True,
-    ))
+    return AutoCompound(
+        CompoundConfig(
+            protocol=Protocol.AAVE_V3,
+            min_reward_threshold_usd=10.0,
+            max_gas_cost_usd=5.0,
+            gas_price_gwei=30,
+            check_interval_minutes=60,
+            dry_run=True,
+        )
+    )
 
 
 @pytest.fixture
@@ -164,9 +166,7 @@ class TestAutoCompound:
         assert effective < 6.0  # Should be around 5.13%
 
     def test_calculate_optimal_interval(self, compounder, usdc_position):
-        interval = compounder.calculate_optimal_interval(
-            usdc_position, gas_cost_usd=2.0
-        )
+        interval = compounder.calculate_optimal_interval(usdc_position, gas_cost_usd=2.0)
         assert interval > 0
         # Should be in our tested intervals
         assert interval in [60, 120, 240, 360, 720, 1440, 2880, 4320, 5760, 10080]
@@ -198,16 +198,26 @@ class TestAutoCompound:
 
     def test_multiple_positions(self, compounder):
         pos1 = Position(
-            chain="ethereum", protocol=Protocol.AAVE_V3, token="USDC",
-            deposited_amount=10000, deposited_value_usd=10000,
-            current_apy=5.0, reward_token="AAVE",
-            pending_rewards=25, pending_rewards_usd=25,
+            chain="ethereum",
+            protocol=Protocol.AAVE_V3,
+            token="USDC",
+            deposited_amount=10000,
+            deposited_value_usd=10000,
+            current_apy=5.0,
+            reward_token="AAVE",
+            pending_rewards=25,
+            pending_rewards_usd=25,
         )
         pos2 = Position(
-            chain="arbitrum", protocol=Protocol.COMPOUND_V3, token="ETH",
-            deposited_amount=5, deposited_value_usd=15000,
-            current_apy=3.0, reward_token="COMP",
-            pending_rewards=2, pending_rewards_usd=2,
+            chain="arbitrum",
+            protocol=Protocol.COMPOUND_V3,
+            token="ETH",
+            deposited_amount=5,
+            deposited_value_usd=15000,
+            current_apy=3.0,
+            reward_token="COMP",
+            pending_rewards=2,
+            pending_rewards_usd=2,
         )
         compounder.add_position(pos1)
         compounder.add_position(pos2)

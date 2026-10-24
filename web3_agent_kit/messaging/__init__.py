@@ -49,6 +49,7 @@ def _resolve_chain(value) -> Chain:
 
 class BridgeProtocol(Enum):
     """Supported cross-chain messaging protocols."""
+
     LAYERZERO = "layerzero"
     WORMHOLE = "wormhole"
     CHAINLINK_CCIP = "chainlink_ccip"
@@ -58,6 +59,7 @@ class BridgeProtocol(Enum):
 
 class MessageStatus(Enum):
     """Cross-chain message delivery status."""
+
     PENDING = "pending"
     DELIVERED = "delivered"
     EXECUTED = "executed"
@@ -68,6 +70,7 @@ class MessageStatus(Enum):
 @dataclass
 class MessageConfig:
     """Configuration for cross-chain message sending."""
+
     dst_chain: str
     dst_address: str
     payload: str = "0x"
@@ -80,6 +83,7 @@ class MessageConfig:
 @dataclass
 class MessageResult:
     """Result of a cross-chain message send."""
+
     tx_hash: str
     dst_chain: str
     src_chain: str
@@ -207,6 +211,7 @@ class CrossChainMessenger:
         self._gate_instance = gate
 
         from web3 import Web3
+
         self.w3 = Web3(Web3.HTTPProvider(rpc_url)) if rpc_url else None
 
     def _gate(self):
@@ -258,7 +263,9 @@ class CrossChainMessenger:
             MessageResult with tx hash and status
         """
         if self.bridge == BridgeProtocol.LAYERZERO:
-            return self._send_layerzero(dst_chain, dst_address, payload, value, gas_limit, refund_address)
+            return self._send_layerzero(
+                dst_chain, dst_address, payload, value, gas_limit, refund_address
+            )
         elif self.bridge == BridgeProtocol.WORMHOLE:
             return self._send_wormhole(dst_chain, dst_address, payload, value)
         elif self.bridge == BridgeProtocol.CHAINLINK_CCIP:
@@ -286,10 +293,14 @@ class CrossChainMessenger:
         if not endpoint_addr:
             raise ValueError(f"No LayerZero endpoint for {self.src_chain}")
 
-        refund = refund_address or self.w3.eth.default_account or "0x0000000000000000000000000000000000000000"
+        refund = (
+            refund_address
+            or self.w3.eth.default_account
+            or "0x0000000000000000000000000000000000000000"
+        )
 
         # Encode destination address as bytes
-        dst_bytes = Web3.to_bytes(hexstr=dst_address).rjust(32, b'\x00')
+        dst_bytes = Web3.to_bytes(hexstr=dst_address).rjust(32, b"\x00")
 
         # Build adapter params (v2 format)
         adapter_params = Web3.solidity_keccak(
@@ -318,23 +329,31 @@ class CrossChainMessenger:
             self.w3.to_checksum_address(refund),
             "0x0000000000000000000000000000000000000000",  # zro payment address
             Web3.to_bytes(hexstr=adapter_params),
-        ).build_transaction({
-            "from": self.w3.eth.default_account or self.w3.eth.accounts[0],
-            "value": value,
-            "gas": gas_limit,
-            "nonce": self.w3.eth.get_transaction_count(self.w3.eth.default_account or self.w3.eth.accounts[0]),
-        })
+        ).build_transaction(
+            {
+                "from": self.w3.eth.default_account or self.w3.eth.accounts[0],
+                "value": value,
+                "gas": gas_limit,
+                "nonce": self.w3.eth.get_transaction_count(
+                    self.w3.eth.default_account or self.w3.eth.accounts[0]
+                ),
+            }
+        )
 
         if self.private_key:
             # Route through the enforced gate. The raw signer is wrapped so a
             # denial produces no signature at all.
-            signed = self._gate().sign(
-                AuthorizationRequest(
-                    chain=_resolve_chain(self.src_chain),
-                    action=ActionType.BRIDGE,
-                    transaction=tx,
+            signed = (
+                self._gate()
+                .sign(
+                    AuthorizationRequest(
+                        chain=_resolve_chain(self.src_chain),
+                        action=ActionType.BRIDGE,
+                        transaction=tx,
+                    )
                 )
-            ).raw_transaction
+                .raw_transaction
+            )
             tx_hash = self.w3.eth.send_raw_transaction(signed)
         else:
             tx_hash = "0x" + "0" * 64  # Read-only mode
@@ -343,7 +362,7 @@ class CrossChainMessenger:
         estimated_delivery = 120  # ~2 min for LZ
 
         return MessageResult(
-            tx_hash=tx_hash.hex() if hasattr(tx_hash, 'hex') else tx_hash,
+            tx_hash=tx_hash.hex() if hasattr(tx_hash, "hex") else tx_hash,
             dst_chain=dst_chain,
             src_chain=self.src_chain,
             estimated_delivery=estimated_delivery,
@@ -414,6 +433,7 @@ class CrossChainMessenger:
     def _track_lz(self, tx_hash: str) -> MessageStatus:
         """Track LayerZero message status."""
         import requests
+
         try:
             resp = requests.get(
                 f"https://api-mainnet.layerzero-scan.com/tx/{tx_hash}",
@@ -435,6 +455,7 @@ class CrossChainMessenger:
     def _track_wormhole(self, tx_hash: str) -> MessageStatus:
         """Track Wormhole message status."""
         import requests
+
         try:
             resp = requests.get(
                 f"https://api.wormholescan.io/api/v1/operations?txHash={tx_hash}",

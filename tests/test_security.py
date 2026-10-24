@@ -408,6 +408,7 @@ class TestIntegration:
             SecurityConfig,
             TokenAnalyzer,
         )
+
         assert TokenAnalyzer is not None
         assert SecurityConfig is not None
 

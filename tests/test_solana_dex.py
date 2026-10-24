@@ -99,8 +99,10 @@ class TestJupiterDEX:
         }
         mock_swap_resp.raise_for_status = MagicMock()
 
-        with patch("httpx.AsyncClient.get", AsyncMock(return_value=mock_quote_resp)), \
-             patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_swap_resp)):
+        with (
+            patch("httpx.AsyncClient.get", AsyncMock(return_value=mock_quote_resp)),
+            patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_swap_resp)),
+        ):
             result = await jupiter.swap(
                 "wallet_address",
                 "So11111111111111111111111111111111111111112",
@@ -114,8 +116,16 @@ class TestJupiterDEX:
     async def test_get_tokens(self, jupiter):
         mock_resp = MagicMock()
         mock_resp.json.return_value = [
-            {"address": "So11111111111111111111111111111111111111112", "symbol": "SOL", "decimals": 9},
-            {"address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "symbol": "USDC", "decimals": 6},
+            {
+                "address": "So11111111111111111111111111111111111111112",
+                "symbol": "SOL",
+                "decimals": 9,
+            },
+            {
+                "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "symbol": "USDC",
+                "decimals": 6,
+            },
         ]
         mock_resp.raise_for_status = MagicMock()
 
@@ -128,7 +138,11 @@ class TestJupiterDEX:
     async def test_get_token_by_symbol(self, jupiter):
         mock_resp = MagicMock()
         mock_resp.json.return_value = [
-            {"address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "symbol": "USDC", "decimals": 6},
+            {
+                "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                "symbol": "USDC",
+                "decimals": 6,
+            },
         ]
         mock_resp.raise_for_status = MagicMock()
 
@@ -163,7 +177,15 @@ class TestJupiterDEX:
     @pytest.mark.asyncio
     async def test_api_error(self, jupiter):
         import httpx
-        with patch("httpx.AsyncClient.get", AsyncMock(side_effect=httpx.HTTPStatusError("error", request=MagicMock(), response=MagicMock(status_code=500)))):
+
+        with patch(
+            "httpx.AsyncClient.get",
+            AsyncMock(
+                side_effect=httpx.HTTPStatusError(
+                    "error", request=MagicMock(), response=MagicMock(status_code=500)
+                )
+            ),
+        ):
             with pytest.raises(JupiterAPIError):
                 await jupiter.get_quote("SOL", "USDC", 1000000)
 

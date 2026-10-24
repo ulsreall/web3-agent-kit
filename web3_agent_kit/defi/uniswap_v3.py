@@ -65,9 +65,9 @@ FACTORY = "0x1F98431c8aD98523631AE4a59f267346ea31F984"
 
 # Fee tiers: fee value -> tick spacing
 FEE_TIERS = {
-    100: 1,      # 0.01%
-    500: 10,     # 0.05%
-    3000: 60,    # 0.3%
+    100: 1,  # 0.01%
+    500: 10,  # 0.05%
+    3000: 60,  # 0.3%
     10000: 200,  # 1%
 }
 
@@ -384,9 +384,17 @@ def get_sqrt_ratio_at_tick(tick: int) -> int:
         raise ValueError(f"Tick {tick} out of range [{MIN_TICK}, {MAX_TICK}]")
 
     abs_tick = abs(tick)
-    ratio = 0x100000000000000000000000000000000 if (abs_tick & 0x1) else 0x100000000000000000000000000000000  # placeholder
+    ratio = (
+        0x100000000000000000000000000000000
+        if (abs_tick & 0x1)
+        else 0x100000000000000000000000000000000
+    )  # placeholder
     # Exact bit-by-bit computation matching the Solidity implementation
-    ratio = 0xFFFCB933BD6FAD37AA2D162D1A594001 if (abs_tick & 0x1) != 0 else 0x100000000000000000000000000000000
+    ratio = (
+        0xFFFCB933BD6FAD37AA2D162D1A594001
+        if (abs_tick & 0x1) != 0
+        else 0x100000000000000000000000000000000
+    )
     if (abs_tick & 0x2) != 0:
         ratio = (ratio * 0xFFF97272373D413259A46990580E213A) >> 128
     if (abs_tick & 0x4) != 0:
@@ -593,20 +601,22 @@ class UniswapV3:
         approve_tx = token.functions.approve(
             self._to_checksum(w3, spender),
             2**256 - 1,
-        ).build_transaction({
-            "from": self._to_checksum(w3, wallet.address),
-            "gas": 100_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": w3.eth.get_transaction_count(self._to_checksum(w3, wallet.address)),
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
-
-        signed = wallet.sign_transaction(
-            approve_tx, self.chain, action=ActionType.APPROVE_TOKEN
+        ).build_transaction(
+            {
+                "from": self._to_checksum(w3, wallet.address),
+                "gas": 100_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": w3.eth.get_transaction_count(self._to_checksum(w3, wallet.address)),
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
         )
+
+        signed = wallet.sign_transaction(approve_tx, self.chain, action=ActionType.APPROVE_TOKEN)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=60)
-        logger.info(f"Approved {spender} for {token_addr}: {tx_hash.hex()} (gas: {receipt.gasUsed})")
+        logger.info(
+            f"Approved {spender} for {token_addr}: {tx_hash.hex()} (gas: {receipt.gasUsed})"
+        )
 
     @staticmethod
     def _sort_tokens(token_a: str, token_b: str) -> tuple[str, str]:
@@ -640,7 +650,9 @@ class UniswapV3:
             V3SwapResult with tx hash and amounts.
         """
         if fee_tier not in FEE_TIERS:
-            raise ValueError(f"Invalid fee tier {fee_tier}. Must be one of {list(FEE_TIERS.keys())}")
+            raise ValueError(
+                f"Invalid fee tier {fee_tier}. Must be one of {list(FEE_TIERS.keys())}"
+            )
 
         w3 = self._get_w3()
         slippage_pct = slippage if slippage is not None else self.slippage
@@ -668,7 +680,9 @@ class UniswapV3:
         )
 
         deadline = int(time.time()) + 1200
-        nonce = w3.eth.get_transaction_count(self._to_checksum(w3, "0x0"))  # caller must pass wallet
+        nonce = w3.eth.get_transaction_count(
+            self._to_checksum(w3, "0x0")
+        )  # caller must pass wallet
         gas_price = w3.eth.gas_price
 
         params = {
@@ -682,14 +696,16 @@ class UniswapV3:
             "sqrtPriceLimitX96": 0,
         }
 
-        router.functions.exactInputSingle(params).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),
-            "value": amount_in_wei if is_eth_in else 0,
-            "gas": 300_000,
-            "gasPrice": gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        router.functions.exactInputSingle(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),
+                "value": amount_in_wei if is_eth_in else 0,
+                "gas": 300_000,
+                "gasPrice": gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         # Sign & send (requires wallet — here we return the built tx for external signing)
         # In production the caller signs via wallet.sign_transaction
@@ -719,7 +735,9 @@ class UniswapV3:
         transaction building, signing, and submission.
         """
         if fee_tier not in FEE_TIERS:
-            raise ValueError(f"Invalid fee tier {fee_tier}. Must be one of {list(FEE_TIERS.keys())}")
+            raise ValueError(
+                f"Invalid fee tier {fee_tier}. Must be one of {list(FEE_TIERS.keys())}"
+            )
 
         w3 = self._get_w3()
         slippage_pct = slippage if slippage is not None else self.slippage
@@ -740,7 +758,9 @@ class UniswapV3:
 
         # Approve
         if not is_eth_in:
-            self._ensure_approval(wallet, token_in_addr, self.swap_router_address, amount_in_wei, w3)
+            self._ensure_approval(
+                wallet, token_in_addr, self.swap_router_address, amount_in_wei, w3
+            )
 
         router = w3.eth.contract(
             address=self._to_checksum(w3, self.swap_router_address),
@@ -761,14 +781,16 @@ class UniswapV3:
             "sqrtPriceLimitX96": 0,
         }
 
-        tx = router.functions.exactInputSingle(params).build_transaction({
-            "from": self._to_checksum(w3, wallet.address),
-            "value": amount_in_wei if is_eth_in else 0,
-            "gas": 300_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        tx = router.functions.exactInputSingle(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, wallet.address),
+                "value": amount_in_wei if is_eth_in else 0,
+                "gas": 300_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         signed = wallet.sign_transaction(tx, self.chain, action=ActionType.SWAP)
         tx_hash = w3.eth.send_raw_transaction(signed)
@@ -1029,13 +1051,15 @@ class UniswapV3:
             self._to_checksum(w3, token0),
             self._to_checksum(w3, token1),
             fee_tier,
-        ).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),  # caller sets
-            "gas": 500_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": 0,  # caller sets
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        ).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),  # caller sets
+                "gas": 500_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": 0,  # caller sets
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         return {
             "function": "createPool",
@@ -1107,14 +1131,16 @@ class UniswapV3:
 
         nfp = self._get_nfp_manager(w3)
 
-        tx = nfp.functions.mint(params).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),
-            "value": 0,
-            "gas": 500_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": 0,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        tx = nfp.functions.mint(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),
+                "value": 0,
+                "gas": 500_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": 0,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         return {"function": "mint", "params": params, "tx": tx}
 
@@ -1156,14 +1182,16 @@ class UniswapV3:
             "deadline": deadline,
         }
 
-        tx = nfp.functions.increaseLiquidity(params).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),
-            "value": 0,
-            "gas": 300_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": 0,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        tx = nfp.functions.increaseLiquidity(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),
+                "value": 0,
+                "gas": 300_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": 0,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         return {"function": "increaseLiquidity", "params": params, "tx": tx}
 
@@ -1198,14 +1226,16 @@ class UniswapV3:
             "deadline": deadline,
         }
 
-        tx = nfp.functions.decreaseLiquidity(params).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),
-            "value": 0,
-            "gas": 300_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": 0,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        tx = nfp.functions.decreaseLiquidity(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),
+                "value": 0,
+                "gas": 300_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": 0,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         return {"function": "decreaseLiquidity", "params": params, "tx": tx}
 
@@ -1233,14 +1263,16 @@ class UniswapV3:
             "amount1Max": tokens_owed1,
         }
 
-        tx = nfp.functions.collect(params).build_transaction({
-            "from": self._to_checksum(w3, "0x0"),
-            "value": 0,
-            "gas": 200_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": 0,
-            "chainId": CHAIN_IDS.get(self.chain, 1),
-        })
+        tx = nfp.functions.collect(params).build_transaction(
+            {
+                "from": self._to_checksum(w3, "0x0"),
+                "value": 0,
+                "gas": 200_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": 0,
+                "chainId": CHAIN_IDS.get(self.chain, 1),
+            }
+        )
 
         return {
             "function": "collect",

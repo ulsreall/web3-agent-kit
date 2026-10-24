@@ -32,6 +32,7 @@ from web3_agent_kit.defi.uniswap_v3 import (
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mock_w3():
     """Return a fully-mocked Web3 instance."""
     w3 = MagicMock()
@@ -75,8 +76,8 @@ def _setup_quoter_mock(amount_out_raw=1500 * 10**6, gas_estimate=150_000):
     quoter.functions.quoteExactInputSingle.return_value.call.return_value = (
         amount_out_raw,
         79228162514264337593543950336,  # sqrtPriceX96After
-        3,                              # initializedTicksCrossed
-        gas_estimate,                   # gasEstimate
+        3,  # initializedTicksCrossed
+        gas_estimate,  # gasEstimate
     )
     return quoter
 
@@ -85,7 +86,9 @@ def _setup_factory_mock(pool_addr="0xPoolAddress1234567890abcdef1234567890abcdef
     """Return a mock Factory contract."""
     factory = MagicMock()
     factory.functions.getPool.return_value.call.return_value = pool_addr
-    factory.functions.createPool.return_value.build_transaction.return_value = {"dummy": "create_pool"}
+    factory.functions.createPool.return_value.build_transaction.return_value = {
+        "dummy": "create_pool"
+    }
     return factory
 
 
@@ -93,11 +96,7 @@ def _setup_pool_mock(liquidity=1_000_000, sqrt_price_x96=79228162514264337593543
     """Return a mock Pool contract."""
     pool = MagicMock()
     pool.functions.liquidity.return_value.call.return_value = liquidity
-    pool.functions.slot0.return_value.call.return_value = (
-        sqrt_price_x96,
-        tick,
-        0, 0, 0, 0, True
-    )
+    pool.functions.slot0.return_value.call.return_value = (sqrt_price_x96, tick, 0, 0, 0, 0, True)
     return pool
 
 
@@ -108,21 +107,26 @@ def _setup_nfp_mock():
     #                      liquidity, feeGrowthInside0LastX128, feeGrowthInside1LastX128,
     #                      tokensOwed0, tokensOwed1)
     nfp.functions.positions.return_value.call.return_value = (
-        0,                                    # nonce
-        "0xOperator",                         # operator
-        "0xToken0Addr",                       # token0
-        "0xToken1Addr",                       # token1
-        3000,                                 # fee
-        -600,                                 # tickLower
-        600,                                  # tickUpper
-        500_000,                              # liquidity
-        0, 0,                                 # feeGrowth
-        100 * 10**6,                          # tokensOwed0
-        50 * 10**18,                          # tokensOwed1
+        0,  # nonce
+        "0xOperator",  # operator
+        "0xToken0Addr",  # token0
+        "0xToken1Addr",  # token1
+        3000,  # fee
+        -600,  # tickLower
+        600,  # tickUpper
+        500_000,  # liquidity
+        0,
+        0,  # feeGrowth
+        100 * 10**6,  # tokensOwed0
+        50 * 10**18,  # tokensOwed1
     )
     nfp.functions.mint.return_value.build_transaction.return_value = {"dummy": "mint"}
-    nfp.functions.increaseLiquidity.return_value.build_transaction.return_value = {"dummy": "increase"}
-    nfp.functions.decreaseLiquidity.return_value.build_transaction.return_value = {"dummy": "decrease"}
+    nfp.functions.increaseLiquidity.return_value.build_transaction.return_value = {
+        "dummy": "increase"
+    }
+    nfp.functions.decreaseLiquidity.return_value.build_transaction.return_value = {
+        "dummy": "decrease"
+    }
     nfp.functions.collect.return_value.build_transaction.return_value = {"dummy": "collect"}
     return nfp
 
@@ -130,6 +134,7 @@ def _setup_nfp_mock():
 # ---------------------------------------------------------------------------
 # Constants & Addresses
 # ---------------------------------------------------------------------------
+
 
 class TestConstants:
     """Verify module-level constants."""
@@ -179,11 +184,17 @@ class TestConstants:
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 class TestV3SwapResult:
     def test_fields(self):
         sr = V3SwapResult(
-            tx_hash="0x123", token_in="0xA", token_out="0xB",
-            amount_in=1.0, amount_out=1500.0, gas_used=200_000, fee_tier=3000,
+            tx_hash="0x123",
+            token_in="0xA",
+            token_out="0xB",
+            amount_in=1.0,
+            amount_out=1500.0,
+            gas_used=200_000,
+            fee_tier=3000,
         )
         assert sr.tx_hash == "0x123"
         assert sr.fee_tier == 3000
@@ -192,8 +203,13 @@ class TestV3SwapResult:
 class TestPoolInfo:
     def test_fields(self):
         pi = PoolInfo(
-            pool_address="0xPool", token0="0xA", token1="0xB", fee=3000,
-            liquidity=1_000_000, sqrt_price_x96=79228162514264337593543950336, tick=0,
+            pool_address="0xPool",
+            token0="0xA",
+            token1="0xB",
+            fee=3000,
+            liquidity=1_000_000,
+            sqrt_price_x96=79228162514264337593543950336,
+            tick=0,
         )
         assert pi.pool_address == "0xPool"
         assert pi.liquidity == 1_000_000
@@ -202,8 +218,13 @@ class TestPoolInfo:
 class TestPositionInfo:
     def test_fields(self):
         pi = PositionInfo(
-            token_id=1, token0="0xA", token1="0xB", fee=3000,
-            tick_lower=-600, tick_upper=600, liquidity=500_000,
+            token_id=1,
+            token0="0xA",
+            token1="0xB",
+            fee=3000,
+            tick_lower=-600,
+            tick_upper=600,
+            liquidity=500_000,
         )
         assert pi.token_id == 1
         assert pi.tick_lower == -600
@@ -212,6 +233,7 @@ class TestPositionInfo:
 # ---------------------------------------------------------------------------
 # Tick math
 # ---------------------------------------------------------------------------
+
 
 class TestTickMath:
     def test_sqrt_ratio_at_tick_zero(self):
@@ -270,6 +292,7 @@ class TestTickMath:
 # UniswapV3 constructor
 # ---------------------------------------------------------------------------
 
+
 class TestUniswapV3Init:
     def test_default_init(self):
         v3 = UniswapV3()
@@ -294,6 +317,7 @@ class TestUniswapV3Init:
 # ---------------------------------------------------------------------------
 # UniswapV3._resolve_token
 # ---------------------------------------------------------------------------
+
 
 class TestResolveToken:
     def test_native_eth(self):
@@ -320,6 +344,7 @@ class TestResolveToken:
 # UniswapV3._is_native
 # ---------------------------------------------------------------------------
 
+
 class TestIsNative:
     def test_eth(self):
         v3 = UniswapV3()
@@ -333,6 +358,7 @@ class TestIsNative:
 # ---------------------------------------------------------------------------
 # UniswapV3.get_quote
 # ---------------------------------------------------------------------------
+
 
 class TestGetQuote:
     def _build_v3(self, decimals=6):
@@ -394,6 +420,7 @@ class TestGetQuote:
 # UniswapV3.get_pool_info
 # ---------------------------------------------------------------------------
 
+
 class TestGetPoolInfo:
     def test_pool_info(self):
         w3 = _mock_w3()
@@ -413,9 +440,11 @@ class TestGetPoolInfo:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        info = v3.get_pool_info("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                 "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                 fee_tier=3000)
+        info = v3.get_pool_info(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            fee_tier=3000,
+        )
 
         assert isinstance(info, PoolInfo)
         assert info.pool_address == "0xPool123"
@@ -428,7 +457,9 @@ class TestGetPoolInfo:
         cm = _mock_chain_manager(w3)
 
         factory = MagicMock()
-        factory.functions.getPool.return_value.call.return_value = "0x0000000000000000000000000000000000000000"
+        factory.functions.getPool.return_value.call.return_value = (
+            "0x0000000000000000000000000000000000000000"
+        )
         token = _setup_token_contract()
 
         def contract_factory(address, abi):
@@ -440,14 +471,17 @@ class TestGetPoolInfo:
 
         v3 = UniswapV3(chain_manager=cm)
         with pytest.raises(ValueError, match="Pool does not exist"):
-            v3.get_pool_info("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                              "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                              fee_tier=3000)
+            v3.get_pool_info(
+                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                fee_tier=3000,
+            )
 
 
 # ---------------------------------------------------------------------------
 # UniswapV3.create_pool
 # ---------------------------------------------------------------------------
+
 
 class TestCreatePool:
     def test_create_pool_default_price(self):
@@ -465,9 +499,11 @@ class TestCreatePool:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        result = v3.create_pool("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                 "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                 fee_tier=3000)
+        result = v3.create_pool(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            fee_tier=3000,
+        )
 
         assert result["function"] == "createPool"
         assert result["fee"] == 3000
@@ -483,6 +519,7 @@ class TestCreatePool:
 # UniswapV3.swap
 # ---------------------------------------------------------------------------
 
+
 class TestSwap:
     def _build_v3_for_swap(self, out_decimals=6):
         w3 = _mock_w3()
@@ -492,7 +529,9 @@ class TestSwap:
         token = _setup_token_contract(decimals=18)
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -521,6 +560,7 @@ class TestSwap:
 # UniswapV3.swap_with_wallet
 # ---------------------------------------------------------------------------
 
+
 class TestSwapWithWallet:
     def test_swap_eth_for_tokens(self):
         w3 = _mock_w3()
@@ -531,7 +571,9 @@ class TestSwapWithWallet:
         token = _setup_token_contract(decimals=18)
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -560,7 +602,9 @@ class TestSwapWithWallet:
         token.functions.allowance.return_value.call.return_value = 0  # needs approval
 
         router = MagicMock()
-        router.functions.exactInputSingle.return_value.build_transaction.return_value = {"dummy": "swap"}
+        router.functions.exactInputSingle.return_value.build_transaction.return_value = {
+            "dummy": "swap"
+        }
 
         def contract_factory(address, abi):
             if abi == QUOTER_V2_ABI:
@@ -584,6 +628,7 @@ class TestSwapWithWallet:
 # UniswapV3.swap_exact_output
 # ---------------------------------------------------------------------------
 
+
 class TestSwapExactOutput:
     def test_returns_params(self):
         w3 = _mock_w3()
@@ -596,11 +641,14 @@ class TestSwapExactOutput:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm)
-        result = v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                       "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                       100.0, fee_tier=3000,
-                                       amount_in_max=200.0,
-                                       recipient="0x1234567890123456789012345678901234567890")
+        result = v3.swap_exact_output(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            100.0,
+            fee_tier=3000,
+            amount_in_max=200.0,
+            recipient="0x1234567890123456789012345678901234567890",
+        )
 
         assert result["function"] == "exactOutputSingle"
         assert result["params"]["fee"] == 3000
@@ -609,16 +657,20 @@ class TestSwapExactOutput:
     def test_invalid_fee_tier(self):
         v3 = UniswapV3(chain_manager=_mock_chain_manager())
         with pytest.raises(ValueError, match="Invalid fee tier"):
-            v3.swap_exact_output("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                  100.0, fee_tier=999,
-                                  amount_in_max=200.0,
-                                  recipient="0x1234567890123456789012345678901234567890")
+            v3.swap_exact_output(
+                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+                100.0,
+                fee_tier=999,
+                amount_in_max=200.0,
+                recipient="0x1234567890123456789012345678901234567890",
+            )
 
 
 # ---------------------------------------------------------------------------
 # UniswapV3.mint_position
 # ---------------------------------------------------------------------------
+
 
 class TestMintPosition:
     def test_mint_basic(self):
@@ -636,9 +688,15 @@ class TestMintPosition:
         w3.eth.contract.side_effect = contract_factory
 
         v3 = UniswapV3(chain_manager=cm, slippage=0.5)
-        result = v3.mint_position("0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-                                   "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                                   3000, -600, 600, 1.0, 1500.0)
+        result = v3.mint_position(
+            "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+            "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            3000,
+            -600,
+            600,
+            1.0,
+            1500.0,
+        )
 
         assert result["function"] == "mint"
         assert result["params"]["fee"] == 3000
@@ -649,6 +707,7 @@ class TestMintPosition:
 # ---------------------------------------------------------------------------
 # UniswapV3.increase_liquidity
 # ---------------------------------------------------------------------------
+
 
 class TestIncreaseLiquidity:
     def test_increase_basic(self):
@@ -676,6 +735,7 @@ class TestIncreaseLiquidity:
 # UniswapV3.decrease_liquidity
 # ---------------------------------------------------------------------------
 
+
 class TestDecreaseLiquidity:
     def test_decrease_basic(self):
         w3 = _mock_w3()
@@ -701,6 +761,7 @@ class TestDecreaseLiquidity:
 # ---------------------------------------------------------------------------
 # UniswapV3.collect_fees
 # ---------------------------------------------------------------------------
+
 
 class TestCollectFees:
     def test_collect_basic(self):
@@ -728,6 +789,7 @@ class TestCollectFees:
 # ---------------------------------------------------------------------------
 # _sort_tokens
 # ---------------------------------------------------------------------------
+
 
 class TestSortTokens:
     def test_already_sorted(self):

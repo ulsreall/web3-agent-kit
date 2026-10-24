@@ -16,6 +16,7 @@ Natural language token swapping with LLM reasoning.
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
 
+
 def main():
     # Setup
     chain_manager = ChainManager(chains=[Chain.BASE])
@@ -34,6 +35,7 @@ def main():
     result = agent.run("Swap 0.01 ETH to USDC on Base")
     print(f"Result: {result}")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -51,6 +53,7 @@ Programmatic Uniswap swap without LLM.
 
 from web3_agent_kit import Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
+
 
 def main():
     chain_manager = ChainManager(chains=[Chain.BASE])
@@ -77,6 +80,7 @@ def main():
     print(f"TX: {result.tx_hash}")
     print(f"Swapped {result.amount_in} → {result.amount_out} USDC")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -95,6 +99,7 @@ Monitor new pairs and auto-buy safe tokens.
 from web3_agent_kit import TokenSniper, SniperConfig, Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
 
+
 def on_new_pair(pair):
     """Callback for new pair detection."""
     print(f"🚨 New pair detected!")
@@ -102,6 +107,7 @@ def on_new_pair(pair):
     print(f"   Risk: {pair.risk_level.value}")
     print(f"   Liquidity: {pair.liquidity_eth:.2f} ETH")
     print(f"   Score: {pair.score:.1f}/100")
+
 
 def main():
     chain_manager = ChainManager(chains=[Chain.BASE])
@@ -127,6 +133,7 @@ def main():
     # print("Starting live monitor...")
     # sniper.start(chain=Chain.BASE, poll_interval=12)
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -144,6 +151,7 @@ Real-time portfolio tracking across chains.
 
 from web3_agent_kit import PortfolioTracker, Wallet, Chain, ChainManager
 
+
 def main():
     chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM])
     wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
@@ -159,6 +167,7 @@ def main():
     pnl = tracker.get_pnl()
     if pnl["pnl_absolute"] != 0:
         print(f"P&L: ${pnl['pnl_absolute']:.2f} ({pnl['pnl_percent']:.1f}%)")
+
 
 if __name__ == "__main__":
     main()
@@ -176,6 +185,7 @@ Cross-chain transfers via Li.Fi and Socket.
 """Cross-chain transfers via Li.Fi/Socket."""
 
 from web3_agent_kit import BridgeAgent, Wallet, Chain, ChainManager
+
 
 def main():
     chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
@@ -200,6 +210,7 @@ def main():
         result = bridge.transfer("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
         print(f"TX: {result.tx_hash}")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -217,6 +228,7 @@ Autonomous token swapping agent.
 
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
+
 
 def main():
     chain_manager = ChainManager(chains=[Chain.BASE, Chain.ETHEREUM])
@@ -241,6 +253,7 @@ def main():
     )
     print(f"Result: {result}")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -259,6 +272,7 @@ Scan, compare, and auto-compound yields across DeFi protocols.
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap, Aave
 
+
 def main():
     chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM])
     wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
@@ -275,6 +289,7 @@ def main():
         "Compare APYs and suggest where to deposit."
     )
     print(f"Result: {result}")
+
 
 if __name__ == "__main__":
     main()
@@ -294,6 +309,7 @@ Multi-chain airdrop farming with tracking and quest automation.
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
 
+
 def main():
     chain_manager = ChainManager(chains=[Chain.BASE, Chain.ARBITRUM, Chain.OPTIMISM])
     wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
@@ -312,6 +328,7 @@ def main():
     )
     print(f"Result: {result}")
 
+
 if __name__ == "__main__":
     main()
 ```
@@ -329,6 +346,7 @@ Portfolio tracking and reporting.
 
 import time
 from web3_agent_kit import PortfolioTracker, Wallet, Chain, ChainManager
+
 
 def main():
     chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
@@ -353,6 +371,7 @@ def main():
     print(f"Initial: ${pnl['initial_value']:,.2f}")
     print(f"Current: ${pnl['current_value']:,.2f}")
     print(f"P&L: ${pnl['pnl_absolute']:,.2f} ({pnl['pnl_percent']:.1f}%)")
+
 
 if __name__ == "__main__":
     main()

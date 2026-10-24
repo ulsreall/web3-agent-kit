@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 # === Wallet ===
 
+
 class CreateWalletRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
 
@@ -24,6 +25,7 @@ class WalletResponse(BaseModel):
 
 
 # === Swap ===
+
 
 class SwapRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
@@ -45,6 +47,7 @@ class SwapQuoteResponse(BaseModel):
 
 # === Portfolio ===
 
+
 class PortfolioRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
     address: Optional[str] = Field(None, description="Wallet address (uses configured if None)")
@@ -61,6 +64,7 @@ class PortfolioResponse(BaseModel):
 
 # === Gas ===
 
+
 class GasRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
 
@@ -76,6 +80,7 @@ class GasResponse(BaseModel):
 
 # === Watcher ===
 
+
 class WatchRequest(BaseModel):
     address: str = Field(..., description="Wallet address to watch")
     chain: str = Field("ethereum", description="Chain name")
@@ -90,6 +95,7 @@ class AlertRequest(BaseModel):
 
 # === Approval ===
 
+
 class ApprovalScanRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
     address: Optional[str] = Field(None, description="Wallet address")
@@ -103,6 +109,7 @@ class RevokeRequest(BaseModel):
 
 
 # === DCA ===
+
 
 class DCAOrderRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
@@ -124,6 +131,7 @@ class DCAStatusResponse(BaseModel):
 
 # === Yield ===
 
+
 class YieldScanRequest(BaseModel):
     chain: str = Field("ethereum", description="Chain name")
     category: Optional[str] = Field(None, description="Protocol category (lending, dex, etc)")
@@ -141,6 +149,7 @@ class YieldResponse(BaseModel):
 
 
 # === Bridge ===
+
 
 class BridgeRequest(BaseModel):
     from_chain: str = Field(..., description="Source chain")

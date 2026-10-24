@@ -21,6 +21,7 @@ powered by an LLM to autonomously execute natural language goals on-chain.
 ```python
 from web3_agent_kit import Agent, Wallet, Chain, ChainManager
 from web3_agent_kit.defi import Uniswap
+
 chain_manager = ChainManager(chains=[Chain.BASE])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 uniswap = Uniswap(chain_manager=chain_manager)
@@ -36,6 +37,7 @@ print(result)
 ### With Configuration
 ```python
 from web3_agent_kit import Agent, AgentConfig
+
 config = AgentConfig(
     wallet=wallet,
     chains=[Chain.BASE, Chain.ETHEREUM],

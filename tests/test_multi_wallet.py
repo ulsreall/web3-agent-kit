@@ -51,6 +51,7 @@ class TestWalletCreation:
     def test_import_wallet(self, manager):
         # Generate a test key
         from eth_account import Account
+
         acct = Account.create()
 
         info = manager.import_wallet("imported", private_key=acct.key.hex())
@@ -59,6 +60,7 @@ class TestWalletCreation:
 
     def test_import_wallet_adds_0x_prefix(self, manager):
         from eth_account import Account
+
         acct = Account.create()
         key = acct.key.hex()  # Without 0x prefix
 
@@ -227,6 +229,7 @@ class TestBatchOperations:
         # Remove wallet instance to simulate missing
         # Manually create wallet info but skip instance
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
+
         info = WalletInfo(label="orphan", address="0x1234567890123456789012345678901234567890")
         manager.wallets["orphan"] = info
         # No instance in _wallet_instances
@@ -305,6 +308,7 @@ class TestBatchOperations:
     def test_batch_send_token_skipped(self, manager):
         """Test batch_send_token skips wallets without instance."""
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
+
         info = WalletInfo(label="orphan", address="0x1234567890123456789012345678901234567890")
         manager.wallets["orphan"] = info
 
@@ -360,6 +364,7 @@ class TestBatchOperations:
     def test_batch_execute_skipped(self, manager):
         """Test batch_execute skips wallets without instance."""
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
+
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 
@@ -451,6 +456,7 @@ class TestConsolidation:
         main.get_balance = MagicMock(return_value={"native": 10.0})
 
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
+
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 
@@ -466,15 +472,19 @@ class TestGetConsolidatedBalance:
         manager.create_wallet("w2")
 
         w1 = manager.get_wallet("w1")
-        w1.get_balance = MagicMock(return_value={
-            "native": 1.5,
-            "tokens": {"USDC": 500, "WETH": 0.5},
-        })
+        w1.get_balance = MagicMock(
+            return_value={
+                "native": 1.5,
+                "tokens": {"USDC": 500, "WETH": 0.5},
+            }
+        )
         w2 = manager.get_wallet("w2")
-        w2.get_balance = MagicMock(return_value={
-            "native": 2.5,
-            "tokens": {"USDC": 300, "DAI": 1000},
-        })
+        w2.get_balance = MagicMock(
+            return_value={
+                "native": 2.5,
+                "tokens": {"USDC": 300, "DAI": 1000},
+            }
+        )
 
         balance = manager.get_consolidated_balance()
         assert balance.total_native == 4.0
@@ -487,6 +497,7 @@ class TestGetConsolidatedBalance:
     def test_skips_missing_instance(self, manager):
         manager.create_wallet("w1")
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
+
         info = WalletInfo(label="orphan", address="0xorphan")
         manager.wallets["orphan"] = info
 
@@ -579,6 +590,7 @@ class TestWalletInfoProperties:
 
     def test_default_created_at(self):
         import time
+
         info = WalletInfo(label="test", address="0xabc")
         assert info.created_at > 0
         assert info.created_at <= time.time() + 1

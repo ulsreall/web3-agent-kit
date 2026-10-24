@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GalxeTask(PlatformTask):
     """A Galxe-specific task entry."""
+
     campaign_id: str = ""
     credential_id: str = ""
     task_id_galxe: str = ""
@@ -39,6 +40,7 @@ class GalxeTask(PlatformTask):
 @dataclass
 class GalxeResult(ExecutorResult):
     """Result of farming a Galxe campaign."""
+
     points_earned: int = 0
     credentials_verified: int = 0
     reward_claimed: bool = False
@@ -159,10 +161,22 @@ class GalxeExecutor(BasePlatformExecutor):
     platform_name = "galxe"
     platform_url = "https://app.galxe.com"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like", "twitter_comment",
-        "discord_join", "discord_verify", "telegram_join",
-        "on_chain_tx", "on_chain_swap", "on_chain_bridge", "on_chain_stake",
-        "quiz", "visit_url", "nft_mint", "referral", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "twitter_comment",
+        "discord_join",
+        "discord_verify",
+        "telegram_join",
+        "on_chain_tx",
+        "on_chain_swap",
+        "on_chain_bridge",
+        "on_chain_stake",
+        "quiz",
+        "visit_url",
+        "nft_mint",
+        "referral",
+        "custom",
     ]
 
     GRAPHQL_API = "https://graphigo.prd.galaxy.eco/query"
@@ -170,10 +184,12 @@ class GalxeExecutor(BasePlatformExecutor):
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
         self._campaign_data: Optional[dict] = None
         self._wallet_address: Optional[str] = None
@@ -539,10 +555,12 @@ class GalxeExecutor(BasePlatformExecutor):
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            CaptchaSolver(CaptchaConfig(
-                provider=CaptchaProvider(self.config.captcha_provider),
-                api_key=self.config.captcha_api_key,
-            ))
+            CaptchaSolver(
+                CaptchaConfig(
+                    provider=CaptchaProvider(self.config.captcha_provider),
+                    api_key=self.config.captcha_api_key,
+                )
+            )
 
             # Check if GeeTest is required (Galxe uses GeeTest)
             # This would be detected from the response in a real implementation

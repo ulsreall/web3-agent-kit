@@ -150,9 +150,11 @@ class BridgeAgent:
         self.wallet = wallet
         self.lifi_api_key = lifi_api_key
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": "web3-agent-kit/0.2.0",
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": "web3-agent-kit/0.2.0",
+            }
+        )
 
     def get_routes(
         self,
@@ -210,7 +212,7 @@ class BridgeAgent:
 
         # Get decimals
         decimals = self._get_decimals(token_addr, from_chain)
-        amount_wei = str(int(amount * (10 ** decimals)))
+        amount_wei = str(int(amount * (10**decimals)))
 
         url = "https://li.quest/v1/quote"
         params = {
@@ -234,21 +236,25 @@ class BridgeAgent:
             for route in data["routes"][:3]:  # Top 3 routes
                 to_amount = int(route.get("toAmount", "0"))
                 to_decimals = self._get_decimals(to_token_addr, to_chain)
-                amount_out = to_amount / (10 ** to_decimals)
+                amount_out = to_amount / (10**to_decimals)
 
-                routes.append(BridgeRoute(
-                    bridge_name=route.get("tags", ["unknown"])[0] if route.get("tags") else "Li.Fi",
-                    from_chain=from_chain,
-                    to_chain=to_chain,
-                    token_in=token_addr,
-                    token_out=to_token_addr,
-                    amount_in=amount,
-                    amount_out=amount_out,
-                    gas_estimate=float(route.get("gasCostUSD", "0")),
-                    time_estimate=int(route.get("duration", 300)),
-                    fee_usd=float(route.get("gasCostUSD", "0")),
-                    steps=route.get("steps", []),
-                ))
+                routes.append(
+                    BridgeRoute(
+                        bridge_name=route.get("tags", ["unknown"])[0]
+                        if route.get("tags")
+                        else "Li.Fi",
+                        from_chain=from_chain,
+                        to_chain=to_chain,
+                        token_in=token_addr,
+                        token_out=to_token_addr,
+                        amount_in=amount,
+                        amount_out=amount_out,
+                        gas_estimate=float(route.get("gasCostUSD", "0")),
+                        time_estimate=int(route.get("duration", 300)),
+                        fee_usd=float(route.get("gasCostUSD", "0")),
+                        steps=route.get("steps", []),
+                    )
+                )
 
         return routes
 
@@ -266,7 +272,7 @@ class BridgeAgent:
         to_token_addr = self._resolve_token(token, to_chain)
 
         decimals = self._get_decimals(token_addr, from_chain)
-        amount_wei = str(int(amount * (10 ** decimals)))
+        amount_wei = str(int(amount * (10**decimals)))
 
         url = "https://api.socket.tech/v2/quote"
         params = {
@@ -294,24 +300,26 @@ class BridgeAgent:
         for route in routes_data[:3]:
             to_amount = int(route.get("toAmount", "0"))
             to_decimals = self._get_decimals(to_token_addr, to_chain)
-            amount_out = to_amount / (10 ** to_decimals)
+            amount_out = to_amount / (10**to_decimals)
 
             bridge_name = route.get("bridgeName", "Socket")
             gas_usd = float(route.get("gasFees", {}).get("gasAmountUSD", "0"))
 
-            routes.append(BridgeRoute(
-                bridge_name=bridge_name,
-                from_chain=from_chain,
-                to_chain=to_chain,
-                token_in=token_addr,
-                token_out=to_token_addr,
-                amount_in=amount,
-                amount_out=amount_out,
-                gas_estimate=gas_usd,
-                time_estimate=int(route.get("serviceTime", 300)),
-                fee_usd=gas_usd,
-                steps=[],
-            ))
+            routes.append(
+                BridgeRoute(
+                    bridge_name=bridge_name,
+                    from_chain=from_chain,
+                    to_chain=to_chain,
+                    token_in=token_addr,
+                    token_out=to_token_addr,
+                    amount_in=amount,
+                    amount_out=amount_out,
+                    gas_estimate=gas_usd,
+                    time_estimate=int(route.get("serviceTime", 300)),
+                    fee_usd=gas_usd,
+                    steps=[],
+                )
+            )
 
         return routes
 
@@ -356,7 +364,7 @@ class BridgeAgent:
         to_chain_id = LIFI_CHAIN_IDS.get(route.to_chain)
 
         decimals = self._get_decimals(route.token_in, route.from_chain)
-        amount_wei = str(int(route.amount_in * (10 ** decimals)))
+        amount_wei = str(int(route.amount_in * (10**decimals)))
 
         url = "https://li.quest/v1/quote"
         params = {
@@ -394,9 +402,7 @@ class BridgeAgent:
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
-        signed = self.wallet.sign_transaction(
-            tx, route.from_chain, action=ActionType.BRIDGE
-        )
+        signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -416,7 +422,7 @@ class BridgeAgent:
         to_chain_id = SOCKET_CHAIN_IDS.get(route.to_chain)
 
         decimals = self._get_decimals(route.token_in, route.from_chain)
-        amount_wei = str(int(route.amount_in * (10 ** decimals)))
+        amount_wei = str(int(route.amount_in * (10**decimals)))
 
         # Get transaction data
         url = "https://api.socket.tech/v2/build-tx"
@@ -452,9 +458,7 @@ class BridgeAgent:
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
-        signed = self.wallet.sign_transaction(
-            tx, route.from_chain, action=ActionType.BRIDGE
-        )
+        signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -477,6 +481,7 @@ class BridgeAgent:
             return WETH[chain]
         # Check known tokens
         from ..portfolio.tracker import KNOWN_TOKENS
+
         chain_tokens = KNOWN_TOKENS.get(chain, {})
         if token in chain_tokens:
             return chain_tokens[token]
@@ -492,13 +497,15 @@ class BridgeAgent:
         try:
             token = w3.eth.contract(
                 address=w3.to_checksum_address(token_address),
-                abi=[{
-                    "inputs": [],
-                    "name": "decimals",
-                    "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
-                    "stateMutability": "view",
-                    "type": "function"
-                }],
+                abi=[
+                    {
+                        "inputs": [],
+                        "name": "decimals",
+                        "outputs": [{"internalType": "uint8", "name": "", "type": "uint8"}],
+                        "stateMutability": "view",
+                        "type": "function",
+                    }
+                ],
             )
             return token.functions.decimals().call()
         except Exception:

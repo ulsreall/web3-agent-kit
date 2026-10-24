@@ -125,8 +125,7 @@ def verify_insight_attestation(
                     {"name": "chainId", "type": "uint256"},
                 ],
                 "OracleSafetyCheck": [
-                    {"name": name, "type": field_type}
-                    for name, field_type in _INSIGHT_FIELDS
+                    {"name": name, "type": field_type} for name, field_type in _INSIGHT_FIELDS
                 ],
             },
             "primaryType": "OracleSafetyCheck",
@@ -149,9 +148,7 @@ def verify_insight_attestation(
         raise BoundaryError("INSIGHT_WINDOW_INVALID")
 
 
-def insight_pair_commitment(
-    source: Mapping[str, Any], destination: Mapping[str, Any]
-) -> str:
+def insight_pair_commitment(source: Mapping[str, Any], destination: Mapping[str, Any]) -> str:
     encoded = encode(
         ["bytes32", "bytes32", "bytes32", "bytes32", "uint16"],
         [
@@ -350,10 +347,24 @@ def _normalize_priorseal_intent(value: Any) -> dict[str, Any]:
     _only_fields(
         value,
         {
-            "schema", "executionProfile", "intentId", "chainId", "chainIds",
-            "action", "asset", "amount", "sender", "recipient", "validUntil",
-            "nonce", "callTarget", "calldataHash", "transactionValue",
-            "contextCommitments", "constraints", "intentHash",
+            "schema",
+            "executionProfile",
+            "intentId",
+            "chainId",
+            "chainIds",
+            "action",
+            "asset",
+            "amount",
+            "sender",
+            "recipient",
+            "validUntil",
+            "nonce",
+            "callTarget",
+            "calldataHash",
+            "transactionValue",
+            "contextCommitments",
+            "constraints",
+            "intentHash",
         },
         "intent",
     )
@@ -371,8 +382,16 @@ def _normalize_priorseal_intent(value: Any) -> dict[str, Any]:
         raise AuthorizationDenied("PriorSeal intent chainId is invalid")
     chain_id = _chain_id(raw_chain_id)
     required = (
-        "intentId", "asset", "amount", "sender", "recipient", "validUntil",
-        "nonce", "callTarget", "calldataHash", "transactionValue",
+        "intentId",
+        "asset",
+        "amount",
+        "sender",
+        "recipient",
+        "validUntil",
+        "nonce",
+        "callTarget",
+        "calldataHash",
+        "transactionValue",
     )
     if any(value.get(field) is None for field in required):
         raise AuthorizationDenied("PriorSeal exact-call intent is incomplete")
@@ -393,14 +412,16 @@ def _normalize_priorseal_intent(value: Any) -> dict[str, Any]:
             raise AuthorizationDenied("PriorSeal context commitment algorithm is invalid")
         if not re.fullmatch(r"0x[0-9a-f]{64}", digest):
             raise AuthorizationDenied("PriorSeal context commitment digest is invalid")
-        normalized_commitments.append({
-            "namespace": _protocol_id(
-                entry["namespace"] if "namespace" in entry else _UNDEFINED,
-                "context namespace",
-            ),
-            "algorithm": algorithm,
-            "digest": digest,
-        })
+        normalized_commitments.append(
+            {
+                "namespace": _protocol_id(
+                    entry["namespace"] if "namespace" in entry else _UNDEFINED,
+                    "context namespace",
+                ),
+                "algorithm": algorithm,
+                "digest": digest,
+            }
+        )
     normalized_commitments.sort(
         key=lambda item: f"{item['namespace']}:{item['algorithm']}:{item['digest']}"
     )
@@ -411,9 +432,7 @@ def _normalize_priorseal_intent(value: Any) -> dict[str, Any]:
     if len(commitment_keys) != len(normalized_commitments):
         raise AuthorizationDenied("PriorSeal context commitments contain duplicates")
     asset = str(value["asset"])
-    asset_match = re.fullmatch(
-        r"eip155:([1-9][0-9]*)/(native|erc20:0x[0-9a-fA-F]{40})", asset
-    )
+    asset_match = re.fullmatch(r"eip155:([1-9][0-9]*)/(native|erc20:0x[0-9a-fA-F]{40})", asset)
     if asset_match is None or int(asset_match.group(1)) != chain_id:
         raise AuthorizationDenied("PriorSeal intent asset is invalid")
     normalized: dict[str, Any] = {
@@ -476,10 +495,22 @@ def _verify_priorseal_authorization(signed: Mapping[str, Any]) -> dict[str, Any]
     _only_fields(
         signed,
         {
-            "schema", "domain", "authorizationId", "intent", "intentHash",
-            "principal", "authorizer", "delegate", "issuedAt", "notBefore",
-            "expiresAt", "authorizationNonce", "maxUses", "audience",
-            "policyHash", "signature",
+            "schema",
+            "domain",
+            "authorizationId",
+            "intent",
+            "intentHash",
+            "principal",
+            "authorizer",
+            "delegate",
+            "issuedAt",
+            "notBefore",
+            "expiresAt",
+            "authorizationNonce",
+            "maxUses",
+            "audience",
+            "policyHash",
+            "signature",
         },
         "authorization",
     )
@@ -589,7 +620,10 @@ def _verify_priorseal_authorization(signed: Mapping[str, Any]) -> dict[str, Any]
     }
     unsigned = {key: value for key, value in normalized.items() if key != "signature"}
     authorization_id = f"auth_{_hash_json(unsigned)[:32]}"
-    if _js_truthy(signed.get("authorizationId")) and signed.get("authorizationId") != authorization_id:
+    if (
+        _js_truthy(signed.get("authorizationId"))
+        and signed.get("authorizationId") != authorization_id
+    ):
         raise AuthorizationDenied("PriorSeal authorization identity binding failed")
     normalized["authorizationId"] = authorization_id
     try:
@@ -656,9 +690,20 @@ def _verify_priorseal_acceptance(
     _only_fields(
         acceptance,
         {
-            "schema", "domain", "authorizationId", "authorizationHash", "intentHash",
-            "acceptedAt", "sequence", "previousEntryHash", "entryHash", "status",
-            "issuer", "algorithm", "keyId", "signature",
+            "schema",
+            "domain",
+            "authorizationId",
+            "authorizationHash",
+            "intentHash",
+            "acceptedAt",
+            "sequence",
+            "previousEntryHash",
+            "entryHash",
+            "status",
+            "issuer",
+            "algorithm",
+            "keyId",
+            "signature",
         },
         "acceptance",
     )
@@ -710,9 +755,7 @@ def _verify_priorseal_acceptance(
             raise AuthorizationDenied(
                 "PriorSeal acceptance trust root carries no usable PEM public key"
             )
-        public_key = serialization.load_pem_public_key(
-            public_key_pem.encode("ascii")
-        )
+        public_key = serialization.load_pem_public_key(public_key_pem.encode("ascii"))
         if not isinstance(public_key, Ed25519PublicKey):
             raise TypeError("not an Ed25519 key")
         spki = public_key.public_bytes(
@@ -787,7 +830,10 @@ class FixtureBundle:
             raise BoundaryError(f"unsupported fixture version: {version}")
         archive_name, pin_name = {
             "v1": ("2026-09-21-wak-insight-priorseal-conformance-v1.zip", "UPSTREAM_BUNDLE.sha256"),
-            "v1.1": ("2026-09-21-wak-insight-priorseal-conformance-v1.1.zip", "UPSTREAM_BUNDLE-v1.1.sha256"),
+            "v1.1": (
+                "2026-09-21-wak-insight-priorseal-conformance-v1.1.zip",
+                "UPSTREAM_BUNDLE-v1.1.sha256",
+            ),
         }[version]
 
         declared = manifest.get("files")
@@ -921,9 +967,7 @@ class PriorSealAuthorizationProvider:
         def commitment(namespace: str) -> Mapping[str, Any]:
             matches = [item for item in commitments if item.get("namespace") == namespace]
             if len(matches) != 1:
-                raise AuthorizationDenied(
-                    f"PriorSeal commitment is not unique: {namespace}"
-                )
+                raise AuthorizationDenied(f"PriorSeal commitment is not unique: {namespace}")
             return matches[0]
 
         envelope_commitment = commitment("agent-call-envelope.v1")
@@ -936,20 +980,15 @@ class PriorSealAuthorizationProvider:
             str(envelope_commitment.get("digest", "")).lower() == envelope_digest.lower()
         )
         policy_matches = (
-            str(policy_commitment.get("digest", "")).lower()
-            == policy_commitment_digest.lower()
+            str(policy_commitment.get("digest", "")).lower() == policy_commitment_digest.lower()
         )
         if envelope_matches and not policy_matches:
-            raise AuthorizationDenied(
-                "PriorSeal authorization covers another policy decision"
-            )
+            raise AuthorizationDenied("PriorSeal authorization covers another policy decision")
         if self._acceptance_store is not None:
             if not envelope_matches:
                 raise AuthorizationDenied("PriorSeal authorization covers another envelope")
             if not policy_matches:
-                raise AuthorizationDenied(
-                    "PriorSeal authorization covers another policy decision"
-                )
+                raise AuthorizationDenied("PriorSeal authorization covers another policy decision")
 
         acceptance = response.get("acceptance")
         if not isinstance(acceptance, Mapping):

@@ -9,6 +9,7 @@ from enum import Enum
 
 class MEVStrategy(Enum):
     """MEV protection strategies."""
+
     FLASHBOTS = "flashbots"  # Flashbots Protect
     PRIVATE_RPC = "private_rpc"  # Private transaction relay
     BUNDLE = "bundle"  # Flashbots bundle
@@ -18,17 +19,20 @@ class MEVStrategy(Enum):
 @dataclass
 class MEVConfig:
     """Configuration for MEV protection."""
+
     chain: str = "ethereum"
     strategy: MEVStrategy = MEVStrategy.FLASHBOTS
     # Flashbots
     flashbots_rpc: str = "https://rpc.flashbots.net"
     flashbots_auth_key: str = ""  # Optional: Flashbots auth key
     # Private RPCs
-    private_rpcs: list[str] = field(default_factory=lambda: [
-        "https://rpc.flashbots.net",
-        "https://protect.flashbots.net",
-        "https://mev-share.flashbots.net",
-    ])
+    private_rpcs: list[str] = field(
+        default_factory=lambda: [
+            "https://rpc.flashbots.net",
+            "https://protect.flashbots.net",
+            "https://mev-share.flashbots.net",
+        ]
+    )
     # Settings
     max_block_range: int = 25  # Max blocks for bundle
     retry_count: int = 3
@@ -41,6 +45,7 @@ class MEVConfig:
 @dataclass
 class ProtectedTx:
     """A protected transaction."""
+
     original_tx: dict
     protected_tx: dict
     strategy: MEVStrategy
@@ -64,6 +69,7 @@ class ProtectedTx:
 @dataclass
 class BundleResult:
     """Result of submitting a Flashbots bundle."""
+
     bundle_hash: str
     block_number: int
     success: bool = False

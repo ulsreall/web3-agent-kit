@@ -65,19 +65,12 @@ class TestMainGroup:
             r'^version\s*=\s*"([^"]+)"', pyproject.read_text(), re.MULTILINE
         ).group(1)
         cli_source = (
-            Path(__file__).resolve().parents[1]
-            / "web3_agent_kit"
-            / "cli"
-            / "main.py"
+            Path(__file__).resolve().parents[1] / "web3_agent_kit" / "cli" / "main.py"
         ).read_text()
         pinned = re.search(r'version_option\(version="([^"]+)"', cli_source).group(1)
 
-        assert declared == __version__, (
-            f"pyproject says {declared}, package says {__version__}"
-        )
-        assert pinned == __version__, (
-            f"CLI is pinned to {pinned}, package is {__version__}"
-        )
+        assert declared == __version__, f"pyproject says {declared}, package says {__version__}"
+        assert pinned == __version__, f"CLI is pinned to {pinned}, package is {__version__}"
 
     def test_subcommands_registered(self):
         result = runner.invoke(main, ["--help"])
@@ -114,10 +107,7 @@ class TestInfoCommand:
         chains_dir = tmp_path / "chains"
         chains_dir.mkdir()
         (chains_dir / "chain.py").write_text(
-            'class Chain:\n'
-            '    ETHEREUM = "ethereum"\n'
-            '    BASE = "base"\n'
-            '    # COMMENT = "skip"\n'
+            'class Chain:\n    ETHEREUM = "ethereum"\n    BASE = "base"\n    # COMMENT = "skip"\n'
         )
         assert _count_chains(str(tmp_path)) == 2
 
@@ -180,9 +170,7 @@ class TestWalletCommand:
         assert "balance" in result.output
 
     def test_wallet_balance(self):
-        result = runner.invoke(
-            wallet, ["balance", "--address", "0xabc", "--chain", "base"]
-        )
+        result = runner.invoke(wallet, ["balance", "--address", "0xabc", "--chain", "base"])
         assert result.exit_code == 0
         assert "0xabc" in result.output
         assert "base" in result.output
@@ -207,9 +195,7 @@ class TestTokenCommand:
         assert "check" in result.output
 
     def test_token_check(self):
-        result = runner.invoke(
-            token, ["check", "--address", "0xtoken", "--chain", "ethereum"]
-        )
+        result = runner.invoke(token, ["check", "--address", "0xtoken", "--chain", "ethereum"])
         assert result.exit_code == 0
         assert "0xtoken" in result.output
         assert "Token Safety Check" in result.output

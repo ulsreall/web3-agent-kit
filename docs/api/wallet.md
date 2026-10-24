@@ -26,6 +26,7 @@ and balance queries across multiple chains.
 ### Create from Environment Variable
 ```python
 from web3_agent_kit import Wallet, ChainManager, Chain
+
 chain_manager = ChainManager(chains=[Chain.BASE, Chain.ETHEREUM])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 print(f"Address: {wallet.address}")
@@ -41,7 +42,9 @@ wallet = Wallet.from_seed("word1 word2 ... word12", chain_manager=chain_manager)
 ### Create from Keystore File
 ```python
 # Standard Ethereum JSON (V3/UTC) keystore file, e.g. exported from geth/Parity
-wallet = Wallet.from_keystore("path/to/keystore.json", password="your-password", chain_manager=chain_manager)
+wallet = Wallet.from_keystore(
+    "path/to/keystore.json", password="your-password", chain_manager=chain_manager
+)
 ```
 ### Check Balance
 ```python

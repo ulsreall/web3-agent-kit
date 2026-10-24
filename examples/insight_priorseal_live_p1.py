@@ -59,8 +59,18 @@ def main() -> int:
             "but no private key is used and nothing is broadcast."
         ),
     )
-    parser.add_argument("--insight-drop", type=Path, default=None, help="directory with both signed attestations + insight-oracle-keys.json")
-    parser.add_argument("--materials", type=Path, default=None, help="issuer materials drop carrying priorSeal.trustRoot")
+    parser.add_argument(
+        "--insight-drop",
+        type=Path,
+        default=None,
+        help="directory with both signed attestations + insight-oracle-keys.json",
+    )
+    parser.add_argument(
+        "--materials",
+        type=Path,
+        default=None,
+        help="issuer materials drop carrying priorSeal.trustRoot",
+    )
     parser.add_argument("--rehearsal-output-dir", type=Path, default=None)
     parser.add_argument("--chain-id", type=int, default=84532)
     parser.add_argument("--cutoff-check-seconds", type=int, default=60)
@@ -94,7 +104,16 @@ def main() -> int:
         wak_commit=args.wak_commit,
         call_events=args.call_events,
     )
-    print(json.dumps({"report": str(args.report), "outcome": evidence.get("outcome"), "counts": evidence.get("counts")}, indent=2))
+    print(
+        json.dumps(
+            {
+                "report": str(args.report),
+                "outcome": evidence.get("outcome"),
+                "counts": evidence.get("counts"),
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

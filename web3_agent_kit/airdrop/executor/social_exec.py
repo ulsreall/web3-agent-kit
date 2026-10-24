@@ -83,7 +83,8 @@ class TwitterExecutor:
                     cookies = json.load(f)
                 # Filter for twitter/x.com cookies
                 twitter_cookies = [
-                    c for c in cookies
+                    c
+                    for c in cookies
                     if "twitter.com" in c.get("domain", "") or "x.com" in c.get("domain", "")
                 ]
                 if twitter_cookies:
@@ -357,9 +358,7 @@ class TwitterExecutor:
                         time.sleep(1)
 
                         # Click reply button
-                        reply_btn = self._page.query_selector(
-                            '[data-testid="tweetButton"]'
-                        )
+                        reply_btn = self._page.query_selector('[data-testid="tweetButton"]')
                         if reply_btn:
                             reply_btn.click()
                             time.sleep(2)
@@ -460,10 +459,7 @@ class DiscordExecutor:
             try:
                 with open(cookie_file) as f:
                     cookies = json.load(f)
-                discord_cookies = [
-                    c for c in cookies
-                    if "discord.com" in c.get("domain", "")
-                ]
+                discord_cookies = [c for c in cookies if "discord.com" in c.get("domain", "")]
                 if discord_cookies:
                     self.browser._context.add_cookies(discord_cookies)
             except Exception as e:
@@ -663,10 +659,7 @@ class TelegramExecutor:
             try:
                 with open(cookie_file) as f:
                     cookies = json.load(f)
-                tg_cookies = [
-                    c for c in cookies
-                    if "telegram.org" in c.get("domain", "")
-                ]
+                tg_cookies = [c for c in cookies if "telegram.org" in c.get("domain", "")]
                 if tg_cookies:
                     self.browser._context.add_cookies(tg_cookies)
                     return True
@@ -725,8 +718,8 @@ class TelegramExecutor:
                 'button:has-text("Join")',
                 'a:has-text("Join Channel")',
                 'button:has-text("Subscribe")',
-                '.tgme_action_button_new',
-                '.tgme_page_action',
+                ".tgme_action_button_new",
+                ".tgme_page_action",
             ]
 
             for selector in join_selectors:

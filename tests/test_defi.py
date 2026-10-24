@@ -25,6 +25,7 @@ from web3_agent_kit.wallet.wallet import Wallet
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _mock_w3():
     """Return a fully-mocked Web3 instance."""
     w3 = MagicMock()
@@ -56,12 +57,16 @@ def _mock_wallet():
 def _setup_router_mock(w3):
     """Set up router contract mock with getAmountsOut."""
     router_contract = MagicMock()
-    router_contract.functions.getAmountsOut.return_value.call.return_value = [
-        10**18, 1500 * 10**6
-    ]
-    router_contract.functions.swapExactETHForTokens.return_value.build_transaction.return_value = {"dummy": "eth_for_tokens"}
-    router_contract.functions.swapExactTokensForETH.return_value.build_transaction.return_value = {"dummy": "tokens_for_eth"}
-    router_contract.functions.swapExactTokensForTokens.return_value.build_transaction.return_value = {"dummy": "tokens_for_tokens"}
+    router_contract.functions.getAmountsOut.return_value.call.return_value = [10**18, 1500 * 10**6]
+    router_contract.functions.swapExactETHForTokens.return_value.build_transaction.return_value = {
+        "dummy": "eth_for_tokens"
+    }
+    router_contract.functions.swapExactTokensForETH.return_value.build_transaction.return_value = {
+        "dummy": "tokens_for_eth"
+    }
+    router_contract.functions.swapExactTokensForTokens.return_value.build_transaction.return_value = {
+        "dummy": "tokens_for_tokens"
+    }
     return router_contract
 
 
@@ -70,7 +75,9 @@ def _setup_token_contract(w3, decimals=18):
     token_contract = MagicMock()
     token_contract.functions.decimals.return_value.call.return_value = decimals
     token_contract.functions.allowance.return_value.call.return_value = 0
-    token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+    token_contract.functions.approve.return_value.build_transaction.return_value = {
+        "dummy": "approve"
+    }
     return token_contract
 
 
@@ -82,6 +89,7 @@ def _make_uniswap(chain_manager, slippage=0.5):
 # ---------------------------------------------------------------------------
 # Constants & data classes
 # ---------------------------------------------------------------------------
+
 
 class TestConstants:
     """Verify module-level constants are well-formed."""
@@ -110,8 +118,12 @@ class TestConstants:
 class TestSwapResult:
     def test_fields(self):
         sr = SwapResult(
-            tx_hash="0x123", token_in="ETH", token_out="USDC",
-            amount_in=1.0, amount_out=1500.0, gas_used=150_000,
+            tx_hash="0x123",
+            token_in="ETH",
+            token_out="USDC",
+            amount_in=1.0,
+            amount_out=1500.0,
+            gas_used=150_000,
             chain=Chain.ETHEREUM,
         )
         assert sr.tx_hash == "0x123"
@@ -121,8 +133,12 @@ class TestSwapResult:
 class TestYieldOpportunity:
     def test_fields(self):
         yo = YieldOpportunity(
-            protocol="aave", pool="USDC", apy=5.0,
-            tvl=1_000_000, chain=Chain.ETHEREUM, risk_score=2.0,
+            protocol="aave",
+            pool="USDC",
+            apy=5.0,
+            tvl=1_000_000,
+            chain=Chain.ETHEREUM,
+            risk_score=2.0,
         )
         assert yo.apy == 5.0
 
@@ -130,6 +146,7 @@ class TestYieldOpportunity:
 # ---------------------------------------------------------------------------
 # DeFiTool ABC
 # ---------------------------------------------------------------------------
+
 
 class TestDeFiTool:
     def test_cannot_instantiate(self):
@@ -140,6 +157,7 @@ class TestDeFiTool:
 # ---------------------------------------------------------------------------
 # Uniswap.resolve_token
 # ---------------------------------------------------------------------------
+
 
 class TestResolveToken:
     def setup_method(self):
@@ -184,6 +202,7 @@ class TestResolveToken:
 # ---------------------------------------------------------------------------
 # Uniswap.get_quote
 # ---------------------------------------------------------------------------
+
 
 class TestGetQuote:
     def _build_quote_uniswap(self):
@@ -235,7 +254,9 @@ class TestGetQuote:
         cm = _mock_chain_manager(w3)
 
         router_contract = MagicMock()
-        router_contract.functions.getAmountsOut.return_value.call.side_effect = Exception("No liquidity")
+        router_contract.functions.getAmountsOut.return_value.call.side_effect = Exception(
+            "No liquidity"
+        )
         token_contract = _setup_token_contract(w3)
 
         def contract_factory(address, abi):
@@ -254,6 +275,7 @@ class TestGetQuote:
 # Uniswap._approve_token
 # ---------------------------------------------------------------------------
 
+
 class TestApproveToken:
     def test_approve_when_no_allowance(self):
         w3 = _mock_w3()
@@ -262,7 +284,9 @@ class TestApproveToken:
 
         token_contract = MagicMock()
         token_contract.functions.allowance.return_value.call.return_value = 0
-        token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+        token_contract.functions.approve.return_value.build_transaction.return_value = {
+            "dummy": "approve"
+        }
         w3.eth.contract.return_value = token_contract
 
         uni = Uniswap(chain_manager=cm)
@@ -289,6 +313,7 @@ class TestApproveToken:
 # ---------------------------------------------------------------------------
 # Uniswap.execute — full swap flows
 # ---------------------------------------------------------------------------
+
 
 class TestExecuteSwap:
     def _prepare_swap(self, is_eth_in=True, is_eth_out=False, decimals=18, out_decimals=6):
@@ -328,14 +353,19 @@ class TestExecuteSwap:
 
         router_contract = MagicMock()
         router_contract.functions.getAmountsOut.return_value.call.return_value = [
-            1000 * 10**6, 10**18
+            1000 * 10**6,
+            10**18,
         ]
-        router_contract.functions.swapExactTokensForETH.return_value.build_transaction.return_value = {"dummy": "tfe"}
+        router_contract.functions.swapExactTokensForETH.return_value.build_transaction.return_value = {
+            "dummy": "tfe"
+        }
 
         token_contract = MagicMock()
         token_contract.functions.decimals.return_value.call.return_value = 6
         token_contract.functions.allowance.return_value.call.return_value = 0
-        token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+        token_contract.functions.approve.return_value.build_transaction.return_value = {
+            "dummy": "approve"
+        }
 
         def contract_factory(address, abi):
             if abi == UNISWAP_V2_ROUTER_ABI:
@@ -357,14 +387,19 @@ class TestExecuteSwap:
 
         router_contract = MagicMock()
         router_contract.functions.getAmountsOut.return_value.call.return_value = [
-            1000 * 10**6, 999 * 10**6
+            1000 * 10**6,
+            999 * 10**6,
         ]
-        router_contract.functions.swapExactTokensForTokens.return_value.build_transaction.return_value = {"dummy": "tft"}
+        router_contract.functions.swapExactTokensForTokens.return_value.build_transaction.return_value = {
+            "dummy": "tft"
+        }
 
         token_contract = MagicMock()
         token_contract.functions.decimals.return_value.call.return_value = 6
         token_contract.functions.allowance.return_value.call.return_value = 0
-        token_contract.functions.approve.return_value.build_transaction.return_value = {"dummy": "approve"}
+        token_contract.functions.approve.return_value.build_transaction.return_value = {
+            "dummy": "approve"
+        }
 
         def contract_factory(address, abi):
             if abi == UNISWAP_V2_ROUTER_ABI:
@@ -439,6 +474,7 @@ class TestExecuteSwap:
 # Uniswap — slippage
 # ---------------------------------------------------------------------------
 
+
 class TestSlippage:
     def test_custom_slippage(self):
         uni = Uniswap(slippage=1.0)
@@ -452,6 +488,7 @@ class TestSlippage:
 # ---------------------------------------------------------------------------
 # Aerodrome
 # ---------------------------------------------------------------------------
+
 
 class TestAerodrome:
     def test_name(self):
@@ -467,6 +504,7 @@ class TestAerodrome:
 # ---------------------------------------------------------------------------
 # Aave
 # ---------------------------------------------------------------------------
+
 
 class TestAave:
     def test_name(self):
@@ -488,6 +526,7 @@ class TestAave:
 # Curve
 # ---------------------------------------------------------------------------
 
+
 class TestCurve:
     def test_name(self):
         assert Curve.name == "curve"
@@ -501,6 +540,7 @@ class TestCurve:
 # ---------------------------------------------------------------------------
 # Routers dict
 # ---------------------------------------------------------------------------
+
 
 class TestRouters:
     def test_all_supported_chains_have_router(self):

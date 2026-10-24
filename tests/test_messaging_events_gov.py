@@ -7,13 +7,6 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from web3_agent_kit.chains import Chain
-from web3_agent_kit.execution import (
-    ActionType,
-    AuthorizationEvidence,
-    EnforcementDenied,
-    ExecutionPolicy,
-)
 from web3_agent_kit.account_abstraction import (
     BUNDLER_RPCS,
     ENTRY_POINTS,
@@ -23,11 +16,18 @@ from web3_agent_kit.account_abstraction import (
     UserOperation,
     UserOpResult,
 )
+from web3_agent_kit.chains import Chain
 from web3_agent_kit.events import (
     ERC20_TRANSFER_ABI,
     EventConfig,
     EventListener,
     Subscription,
+)
+from web3_agent_kit.execution import (
+    ActionType,
+    AuthorizationEvidence,
+    EnforcementDenied,
+    ExecutionPolicy,
 )
 from web3_agent_kit.governance import (
     KNOWN_DAOS,
@@ -230,9 +230,13 @@ class TestEvents:
 
     def test_subscribe_max_reached(self):
         listener = EventListener(rpc_url="https://x", max_subscriptions=1)
-        listener.subscribe(address="0xa", abi=self._abi(), event="Transfer", callback=lambda e: None)
+        listener.subscribe(
+            address="0xa", abi=self._abi(), event="Transfer", callback=lambda e: None
+        )
         with pytest.raises(ValueError, match="Max subscriptions"):
-            listener.subscribe(address="0xb", abi=self._abi(), event="Transfer", callback=lambda e: None)
+            listener.subscribe(
+                address="0xb", abi=self._abi(), event="Transfer", callback=lambda e: None
+            )
 
     def test_unsubscribe(self):
         listener = EventListener(rpc_url="https://x")
@@ -374,8 +378,11 @@ class TestEvents:
     def test_send_webhook_error_swallowed(self):
         listener = EventListener(rpc_url="https://x")
         config = EventConfig(
-            address="0xa", abi=self._abi(), event_name="Transfer",
-            callback=lambda e: None, webhook_url="https://hook",
+            address="0xa",
+            abi=self._abi(),
+            event_name="Transfer",
+            callback=lambda e: None,
+            webhook_url="https://hook",
         )
         with patch("requests.post", side_effect=RuntimeError("net down")):
             listener._send_webhook({"x": 1}, config)  # must not raise
@@ -533,14 +540,16 @@ class TestGovernance:
     def test_get_voting_power_with_dao(self):
         t = self._tracker()
         token = MagicMock()
-        token.functions.balanceOf.return_value.call.return_value = 10 ** 18
+        token.functions.balanceOf.return_value.call.return_value = 10**18
         token.functions.delegates.return_value.call.return_value = (
             "0x000000000000000000000000000000000000000b"
         )
-        token.functions.getCurrentVotes.return_value.call.return_value = 5 * 10 ** 18
+        token.functions.getCurrentVotes.return_value.call.return_value = 5 * 10**18
         t.w3.eth.contract.return_value = token
-        with patch("web3.Web3.from_wei", side_effect=lambda v, u: v / 10 ** 18):
-            vp = t.get_voting_power(address="0x000000000000000000000000000000000000000a", dao="uniswap")
+        with patch("web3.Web3.from_wei", side_effect=lambda v, u: v / 10**18):
+            vp = t.get_voting_power(
+                address="0x000000000000000000000000000000000000000a", dao="uniswap"
+            )
         assert vp.power == 5.0
         assert vp.delegated_to is not None
         assert vp.can_vote is True
@@ -548,11 +557,11 @@ class TestGovernance:
     def test_get_voting_power_fallback_to_balance(self):
         t = self._tracker()
         token = MagicMock()
-        token.functions.balanceOf.return_value.call.return_value = 2 * 10 ** 18
+        token.functions.balanceOf.return_value.call.return_value = 2 * 10**18
         token.functions.delegates.return_value.call.side_effect = RuntimeError("no delegates")
         token.functions.getCurrentVotes.return_value.call.side_effect = RuntimeError("no votes")
         t.w3.eth.contract.return_value = token
-        with patch("web3.Web3.from_wei", side_effect=lambda v, u: v / 10 ** 18):
+        with patch("web3.Web3.from_wei", side_effect=lambda v, u: v / 10**18):
             vp = t.get_voting_power(address="0xa", token="0xt")
         assert vp.power == 2.0
         assert vp.delegated_to is None
@@ -587,9 +596,7 @@ class TestGovernance:
         t._policy = ExecutionPolicy(
             allowed_chains=frozenset({Chain.ETHEREUM}),
             allowed_actions=frozenset({ActionType.GOVERNANCE}),
-            allowed_contracts=frozenset(
-                {"0x0000000000000000000000000000000000000001"}
-            ),
+            allowed_contracts=frozenset({"0x0000000000000000000000000000000000000001"}),
             require_confirmation=False,
         )
         # Policy allow is not authority: the gate also requires a principal
@@ -626,9 +633,7 @@ class TestGovernance:
         resp = MagicMock()
         resp.status_code = 200
         resp.json.return_value = {
-            "delegates": [
-                {"address": "0xa", "name": "A", "votingPower": 100, "delegators": 3}
-            ]
+            "delegates": [{"address": "0xa", "name": "A", "votingPower": 100, "delegators": 3}]
         }
         with patch("requests.get", return_value=resp):
             dels = t.get_delegates("uniswap")
@@ -686,9 +691,12 @@ class TestAccountAbstraction:
         w = self._wallet()
         with patch.object(w, "_encode_init_code", return_value="0x1234"):
             from web3 import Web3
-            with patch("web3.Web3.keccak", return_value=b"\x00" * 32), \
-                 patch("web3.Web3.to_bytes", side_effect=lambda *a, **k: b"\x00" * 20), \
-                 patch("web3.Web3.to_checksum_address", side_effect=lambda a: a):
+
+            with (
+                patch("web3.Web3.keccak", return_value=b"\x00" * 32),
+                patch("web3.Web3.to_bytes", side_effect=lambda *a, **k: b"\x00" * 20),
+                patch("web3.Web3.to_checksum_address", side_effect=lambda a: a),
+            ):
                 addr = w.get_counterfactual_address(owner="0xowner")
         assert isinstance(addr, str)
         assert Web3  # imported
@@ -728,16 +736,19 @@ class TestAccountAbstraction:
         w.w3.eth.chain_id = 8453
         w.w3.eth.gas_price = 1_000_000_000
         w.w3.eth.get_code.return_value = b"\x00"  # not deployed
-        with patch.object(w, "get_counterfactual_address", return_value="0xsender"), \
-             patch.object(w, "_encode_init_code", return_value="0xinit"), \
-             patch.object(w, "_submit_to_bundler", return_value="0xuohash"):
+        with (
+            patch.object(w, "get_counterfactual_address", return_value="0xsender"),
+            patch.object(w, "_encode_init_code", return_value="0xinit"),
+            patch.object(w, "_submit_to_bundler", return_value="0xuohash"),
+        ):
             res = w.send_user_op(to="0xdest", owner="0xowner")
         assert res.user_op_hash == "0xuohash"
 
     def test_send_user_op_with_paymaster(self):
         pm = MagicMock()
         pm.get_paymaster_data.return_value = {
-            "paymasterAndData": "0xpm", "verificationGasLimit": 600000
+            "paymasterAndData": "0xpm",
+            "verificationGasLimit": 600000,
         }
         w = self._wallet()
         w.paymaster = pm
@@ -781,7 +792,7 @@ class TestAccountAbstraction:
     def test_get_account_info(self):
         w = self._wallet()
         w.w3.eth.get_code.return_value = b"\x60\x60\x60"
-        w.w3.eth.get_balance.return_value = 10 ** 18
+        w.w3.eth.get_balance.return_value = 10**18
         w.w3.from_wei.return_value = 1.0
         info = w.get_account_info("0xacct")
         assert info.deployed is True
@@ -809,9 +820,7 @@ class TestAAPaymaster:
             pm.get_paymaster_data(op, "0xep", 1)
 
     def test_verifying_paymaster_success(self):
-        pm = AAPaymaster(
-            paymaster_type="verifying", url="https://pm", api_key="k", policy_id="p1"
-        )
+        pm = AAPaymaster(paymaster_type="verifying", url="https://pm", api_key="k", policy_id="p1")
         op = UserOperation(sender="0xa", nonce=0)
         resp = MagicMock()
         resp.json.return_value = {

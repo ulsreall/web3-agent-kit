@@ -16,6 +16,7 @@ from web3_agent_kit.notifications.utils import NotifierConfig, log_notification_
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _make_config(**overrides):
     defaults = dict(enabled=True, rate_limit_seconds=0)
     defaults.update(overrides)
@@ -32,6 +33,7 @@ def _make_notification(**overrides):
 # AlertLevel enum
 # ===========================================================================
 
+
 class TestAlertLevel:
     def test_values(self):
         assert AlertLevel.INFO.value == "info"
@@ -44,6 +46,7 @@ class TestAlertLevel:
 # ===========================================================================
 # NotifierConfig
 # ===========================================================================
+
 
 class TestNotifierConfig:
     def test_defaults(self):
@@ -67,6 +70,7 @@ class TestNotifierConfig:
 # ===========================================================================
 # Notification
 # ===========================================================================
+
 
 class TestNotification:
     def test_fields(self):
@@ -106,6 +110,7 @@ class TestNotification:
 # log_notification_to_file
 # ===========================================================================
 
+
 class TestLogNotificationToFile:
     def test_log_creates_file(self, tmp_path):
         log_file = str(tmp_path / "notifications.jsonl")
@@ -124,6 +129,7 @@ class TestLogNotificationToFile:
 # ===========================================================================
 # TelegramNotifier
 # ===========================================================================
+
 
 class TestTelegramNotifier:
     def test_send_no_config(self):
@@ -165,6 +171,7 @@ class TestTelegramNotifier:
 # ===========================================================================
 # DiscordNotifier
 # ===========================================================================
+
 
 class TestDiscordNotifier:
     def test_send_no_config(self):
@@ -218,6 +225,7 @@ class TestDiscordNotifier:
 # EmailNotifier
 # ===========================================================================
 
+
 class TestEmailNotifier:
     def test_send_no_config(self):
         config = _make_config()
@@ -258,6 +266,7 @@ class TestEmailNotifier:
 # ===========================================================================
 # Notifier (facade)
 # ===========================================================================
+
 
 class TestNotifierInit:
     def test_default(self):
@@ -411,7 +420,9 @@ class TestNotifierAlertMethods:
         mock_resp.status_code = 200
         mock_post.return_value = mock_resp
 
-        config = _make_config(slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0)
+        config = _make_config(
+            slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0
+        )
         notifier = Notifier(config)
         result = notifier.send_gas_alert("ethereum", 15.0, 30.0)
         assert isinstance(result, bool)
@@ -422,7 +433,9 @@ class TestNotifierAlertMethods:
         mock_resp.status_code = 200
         mock_post.return_value = mock_resp
 
-        config = _make_config(slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0)
+        config = _make_config(
+            slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0
+        )
         notifier = Notifier(config)
         result = notifier.send_wallet_alert("0xABCDEF", "swap", "Swapped 1 ETH")
         assert isinstance(result, bool)
@@ -433,7 +446,9 @@ class TestNotifierAlertMethods:
         mock_resp.status_code = 200
         mock_post.return_value = mock_resp
 
-        config = _make_config(slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0)
+        config = _make_config(
+            slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0
+        )
         notifier = Notifier(config)
         result = notifier.send_price_alert("ETH", 3500.0, 15.0)
         assert isinstance(result, bool)
@@ -444,7 +459,9 @@ class TestNotifierAlertMethods:
         mock_resp.status_code = 200
         mock_post.return_value = mock_resp
 
-        config = _make_config(slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0)
+        config = _make_config(
+            slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0
+        )
         notifier = Notifier(config)
         result = notifier.send_price_alert("ETH", 3000.0, -5.0)
         assert isinstance(result, bool)
@@ -455,7 +472,9 @@ class TestNotifierAlertMethods:
         mock_resp.status_code = 200
         mock_post.return_value = mock_resp
 
-        config = _make_config(slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0)
+        config = _make_config(
+            slack_webhook_url="https://hooks.slack.com/test", rate_limit_seconds=0
+        )
         notifier = Notifier(config)
         result = notifier.send_airdrop_alert("EigenLayer", "Season 2", "https://claim.xyz")
         assert isinstance(result, bool)

@@ -100,7 +100,9 @@ class CallEventRecorder:
         return list(self._events)
 
     def counts(self) -> dict[str, dict[str, int]]:
-        per: dict[str, dict[str, int]] = {b: {"attempted": 0, "success": 0, "error": 0} for b in BOUNDARIES}
+        per: dict[str, dict[str, int]] = {
+            b: {"attempted": 0, "success": 0, "error": 0} for b in BOUNDARIES
+        }
         for ev in self._events:
             per[ev["boundary"]][ev["outcome"]] += 1
         return per
@@ -175,7 +177,9 @@ def _record_receipt(boundary: str, recorder: CallEventRecorder, fn: Callable[...
         detail = None
         if isinstance(result, Mapping) and "status" in result:
             detail = {"status": str(result.get("status"))}
-        recorder.record(boundary, "success", started_at=started, finished_at=finished, detail=detail)
+        recorder.record(
+            boundary, "success", started_at=started, finished_at=finished, detail=detail
+        )
         return result
 
     return wrapper
@@ -242,7 +246,15 @@ class EvmSigner:
         if from_ is not None and str(from_).lower() != self.address().lower():
             raise ValueError("transaction 'from' does not match the signer address")
         tx["from"] = self.address()
-        for key in ("chainId", "nonce", "value", "gas", "gasPrice", "maxFeePerGas", "maxPriorityFeePerGas"):
+        for key in (
+            "chainId",
+            "nonce",
+            "value",
+            "gas",
+            "gasPrice",
+            "maxFeePerGas",
+            "maxPriorityFeePerGas",
+        ):
             if key in tx and not isinstance(tx[key], int):
                 tx[key] = int(tx[key])
         if "data" in tx and tx["data"] is None:
@@ -277,9 +289,17 @@ class RpcBroadcast:
         self._timeout = timeout
 
     def __call__(self, raw_transaction: bytes) -> Mapping[str, Any]:
-        raw_hex = raw_transaction.hex() if isinstance(raw_transaction, bytes) else str(raw_transaction)
-        tx_hash = _jsonrpc(self._rpc_url, "eth_sendRawTransaction", [raw_hex], timeout=self._timeout)
-        return {"txHash": tx_hash, "rawLength": len(raw_transaction), "method": "eth_sendRawTransaction"}
+        raw_hex = (
+            raw_transaction.hex() if isinstance(raw_transaction, bytes) else str(raw_transaction)
+        )
+        tx_hash = _jsonrpc(
+            self._rpc_url, "eth_sendRawTransaction", [raw_hex], timeout=self._timeout
+        )
+        return {
+            "txHash": tx_hash,
+            "rawLength": len(raw_transaction),
+            "method": "eth_sendRawTransaction",
+        }
 
 
 class RpcReceipt:
@@ -304,7 +324,9 @@ class RpcReceipt:
         polled = 0
         while time.time() < deadline:
             polled += 1
-            receipt = _jsonrpc(self._rpc_url, "eth_getTransactionReceipt", [tx_hash], timeout=self._timeout)
+            receipt = _jsonrpc(
+                self._rpc_url, "eth_getTransactionReceipt", [tx_hash], timeout=self._timeout
+            )
             head = _jsonrpc(self._rpc_url, "eth_blockNumber", [], timeout=self._timeout)
             if isinstance(receipt, dict) and receipt.get("blockNumber") is not None:
                 block = int(receipt["blockNumber"], 16)
@@ -316,7 +338,9 @@ class RpcReceipt:
                         "blockNumber": block,
                         "headBlock": head_num,
                         "confirmations": head_num - block + 1,
-                        "gasUsed": int(str(receipt["gasUsed"]), 16) if "gasUsed" in receipt else None,
+                        "gasUsed": int(str(receipt["gasUsed"]), 16)
+                        if "gasUsed" in receipt
+                        else None,
                         "polled": polled,
                     }
             time.sleep(self._poll)
@@ -339,7 +363,11 @@ class InertBroadcast:
     def __call__(self, raw_transaction: bytes) -> Mapping[str, Any]:
         import hashlib
 
-        payload = raw_transaction if isinstance(raw_transaction, bytes) else bytes.fromhex(str(raw_transaction))
+        payload = (
+            raw_transaction
+            if isinstance(raw_transaction, bytes)
+            else bytes.fromhex(str(raw_transaction))
+        )
         tx_hash = "0x" + hashlib.sha256(payload).hexdigest()
         return {
             "txHash": tx_hash,
@@ -519,7 +547,9 @@ def live_execution_boundaries(
 # -- runtime provenance --------------------------------------------------------
 
 
-def runtime_provenance(*, package_version: str, commit: str | None = None, tree_clean: bool | None = None) -> dict[str, Any]:
+def runtime_provenance(
+    *, package_version: str, commit: str | None = None, tree_clean: bool | None = None
+) -> dict[str, Any]:
     return {
         "schema": "wak-p1.runtime-provenance.v1",
         "packageVersion": package_version,

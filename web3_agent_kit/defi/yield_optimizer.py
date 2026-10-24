@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class Protocol(Enum):
     """Supported DeFi protocols."""
+
     AAVE_V3 = "aave_v3"
     COMPOUND_V3 = "compound_v3"
     MORPHO = "morpho"
@@ -27,27 +28,29 @@ class Protocol(Enum):
 
 class RiskLevel(Enum):
     """Risk level for yield strategies."""
-    LOW = "low"           # Blue chips, battle-tested
-    MEDIUM = "medium"     # Newer protocols, minor risks
-    HIGH = "high"         # Exotic strategies, higher APY
+
+    LOW = "low"  # Blue chips, battle-tested
+    MEDIUM = "medium"  # Newer protocols, minor risks
+    HIGH = "high"  # Exotic strategies, higher APY
 
 
 @dataclass
 class YieldOpportunity:
     """A yield opportunity from a protocol."""
+
     protocol: Protocol
     chain: Chain
-    asset: str                    # e.g. "USDC", "WETH"
-    apy: float                    # Annual percentage yield (e.g. 5.2 = 5.2%)
-    tvl: float                    # Total value locked in USD
+    asset: str  # e.g. "USDC", "WETH"
+    apy: float  # Annual percentage yield (e.g. 5.2 = 5.2%)
+    tvl: float  # Total value locked in USD
     risk: RiskLevel
-    pool_address: str             # Contract address
-    pool_name: str                # Human-readable name
-    deposit_token: str            # Token address to deposit
+    pool_address: str  # Contract address
+    pool_name: str  # Human-readable name
+    deposit_token: str  # Token address to deposit
     reward_tokens: list[str] = field(default_factory=list)  # Reward token addresses
     is_compoundable: bool = True  # Whether auto-compound is supported
-    min_deposit: float = 0        # Minimum deposit in USD
-    last_updated: float = 0       # Timestamp of last APY update
+    min_deposit: float = 0  # Minimum deposit in USD
+    last_updated: float = 0  # Timestamp of last APY update
 
     @property
     def apy_display(self) -> str:
@@ -65,13 +68,14 @@ class YieldOpportunity:
 @dataclass
 class YieldPosition:
     """An active yield position."""
+
     opportunity: YieldOpportunity
-    deposited_amount: float       # Amount of deposit token
-    deposited_value_usd: float    # Value at deposit time
-    current_value_usd: float      # Current value including yield
-    rewards_earned: float         # Unclaimed rewards in USD
-    entry_timestamp: float        # When position was opened
-    last_compound: float          # Last auto-compound timestamp
+    deposited_amount: float  # Amount of deposit token
+    deposited_value_usd: float  # Value at deposit time
+    current_value_usd: float  # Current value including yield
+    rewards_earned: float  # Unclaimed rewards in USD
+    entry_timestamp: float  # When position was opened
+    last_compound: float  # Last auto-compound timestamp
 
     @property
     def pnl(self) -> float:
@@ -89,12 +93,13 @@ class YieldPosition:
 @dataclass
 class YieldConfig:
     """Configuration for yield optimizer."""
-    min_apy: float = 1.0              # Minimum APY to consider (%)
+
+    min_apy: float = 1.0  # Minimum APY to consider (%)
     max_risk: RiskLevel = RiskLevel.MEDIUM
-    min_tvl: float = 1_000_000        # Minimum TVL in USD
+    min_tvl: float = 1_000_000  # Minimum TVL in USD
     auto_compound_threshold: float = 50  # Compound when rewards > $50
-    compound_interval: int = 86400    # Max compound every 24h
-    slippage_tolerance: float = 0.5   # 0.5% slippage
+    compound_interval: int = 86400  # Max compound every 24h
+    slippage_tolerance: float = 0.5  # 0.5% slippage
     preferred_protocols: list[Protocol] = field(default_factory=lambda: list(Protocol))
     excluded_protocols: list[Protocol] = field(default_factory=list)
 
@@ -317,10 +322,7 @@ class YieldOptimizer:
 
         avg_apy = 0
         if self.positions:
-            weighted_apy = sum(
-                p.opportunity.apy * p.deposited_value_usd
-                for p in self.positions
-            )
+            weighted_apy = sum(p.opportunity.apy * p.deposited_value_usd for p in self.positions)
             avg_apy = weighted_apy / total_deposited if total_deposited > 0 else 0
 
         return {

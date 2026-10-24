@@ -67,11 +67,10 @@ def test_ignores_comments_and_strings(tmp_path: Path):
     _write(
         package,
         "module.py",
-        '''
+        """
         # never call account.sign_transaction directly
         DOCS = "use wallet.sign_transaction instead"
-        '''
-        ,
+        """,
     )
 
     assert tool.find_signer_calls(package) == []
@@ -118,9 +117,7 @@ def test_approved_file_is_not_a_violation(tmp_path: Path):
 
     calls = tool.find_signer_calls(package)
     violations = [
-        call
-        for call in calls
-        if call.path not in tool.APPROVED_FILES and not call.is_test
+        call for call in calls if call.path not in tool.APPROVED_FILES and not call.is_test
     ]
     assert len(violations) == 1
     assert violations[0].path == "pkg/other.py"
@@ -196,12 +193,8 @@ def _classify(calls, baseline):
         by_file.setdefault(call.path, []).append(call)
 
     new = [c for p, g in by_file.items() if p not in baseline for c in g]
-    regressions = [
-        p for p, g in by_file.items() if p in baseline and len(g) > baseline[p]
-    ]
-    migrated = [
-        p for p, n in baseline.items() if len(by_file.get(p, [])) < n
-    ]
+    regressions = [p for p, g in by_file.items() if p in baseline and len(g) > baseline[p]]
+    migrated = [p for p, n in baseline.items() if len(by_file.get(p, [])) < n]
     return new, regressions, migrated
 
 
@@ -255,6 +248,5 @@ def test_repo_baseline_is_accurate():
         by_file[call.path] = by_file.get(call.path, 0) + 1
 
     assert by_file == tool.LEGACY_BASELINE, (
-        "LEGACY_BASELINE is out of date. Migrated a call? Remove its entry. "
-        f"Actual: {by_file}"
+        f"LEGACY_BASELINE is out of date. Migrated a call? Remove its entry. Actual: {by_file}"
     )

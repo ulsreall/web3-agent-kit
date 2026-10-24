@@ -157,9 +157,7 @@ class GleamExecutor:
             True if page loaded successfully.
         """
         self._page = self.browser.new_page()
-        success = self.browser.navigate_with_retry(
-            self._page, url, timeout=self.PAGE_LOAD_TIMEOUT
-        )
+        success = self.browser.navigate_with_retry(self._page, url, timeout=self.PAGE_LOAD_TIMEOUT)
         if success:
             # Wait for widget to load
             self.browser.wait_for_element(
@@ -183,9 +181,7 @@ class GleamExecutor:
         entries: list[GleamTaskEntry] = []
         try:
             # Wait for entry methods to render
-            self._page.wait_for_selector(
-                self.SELECTORS["entry_method"], timeout=10000
-            )
+            self._page.wait_for_selector(self.SELECTORS["entry_method"], timeout=10000)
 
             # Get all entry method elements
             methods = self._page.query_selector_all(self.SELECTORS["entry_method"])
@@ -279,9 +275,7 @@ class GleamExecutor:
                     result.skipped_tasks += 1
                     continue
 
-                logger.info(
-                    f"Gleam: [{i + 1}/{len(tasks)}] {task.title} ({task.task_type.value})"
-                )
+                logger.info(f"Gleam: [{i + 1}/{len(tasks)}] {task.title} ({task.task_type.value})")
 
                 success = self.complete_task(task)
                 if success:

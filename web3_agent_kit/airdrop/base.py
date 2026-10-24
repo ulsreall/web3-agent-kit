@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 class TaskType(Enum):
     """Types of airdrop tasks."""
+
     SOCIAL_TWITTER_FOLLOW = "twitter_follow"
     SOCIAL_TWITTER_RETWEET = "twitter_retweet"
     SOCIAL_TWITTER_LIKE = "twitter_like"
@@ -40,6 +41,7 @@ class TaskType(Enum):
 
 class TaskStatus(Enum):
     """Status of a task."""
+
     PENDING = "pending"
     IN_PROGRESS = "in_progress"
     COMPLETED = "completed"
@@ -51,6 +53,7 @@ class TaskStatus(Enum):
 @dataclass
 class AirdropTask:
     """A single airdrop task."""
+
     task_id: str
     platform: str
     task_type: TaskType
@@ -74,6 +77,7 @@ class AirdropTask:
 @dataclass
 class AirdropCampaign:
     """An airdrop campaign listing."""
+
     campaign_id: str
     platform: str
     name: str
@@ -102,6 +106,7 @@ class AirdropCampaign:
 @dataclass
 class PlatformConfig:
     """Configuration for an airdrop platform."""
+
     api_key: Optional[str] = None
     session_cookie: Optional[str] = None
     user_agent: str = (
@@ -145,9 +150,11 @@ class BaseAirdropPlatform(ABC):
     def __init__(self, config: Optional[PlatformConfig] = None):
         self.config = config or PlatformConfig()
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": self.config.user_agent,
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": self.config.user_agent,
+            }
+        )
         if self.config.session_cookie:
             self.session.cookies.set("session", self.config.session_cookie)
         if self.config.proxy:
@@ -309,9 +316,7 @@ class BaseAirdropPlatform(ABC):
             try:
                 response = self.session.request(method, url, **kwargs)
                 if response.status_code == 429:
-                    retry_after = int(
-                        response.headers.get("Retry-After", self.config.retry_delay)
-                    )
+                    retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
                     logger.warning(f"Rate limited, waiting {retry_after}s")
                     await asyncio.sleep(retry_after)
                     continue

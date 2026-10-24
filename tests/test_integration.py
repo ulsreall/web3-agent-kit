@@ -63,7 +63,14 @@ def test_wallet_sign_transaction():
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     wallet = Wallet.from_key(key)
-    tx = {"to": "0x0000000000000000000000000000000000000000", "value": 0, "gas": 21000, "gasPrice": 1, "nonce": 0, "chainId": 1}
+    tx = {
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": 0,
+        "gas": 21000,
+        "gasPrice": 1,
+        "nonce": 0,
+        "chainId": 1,
+    }
     signed = wallet.sign_transaction(tx, Chain.ETHEREUM)
     assert isinstance(signed, bytes)
     assert len(signed) > 0

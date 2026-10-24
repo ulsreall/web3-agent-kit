@@ -32,14 +32,16 @@ logger = logging.getLogger(__name__)
 
 class SimMode(Enum):
     """Simulation mode."""
-    ETH_CALL = "eth_call"         # Simple eth_call (fast but limited)
-    TENDERLY = "tenderly"         # Tenderly Simulation API (full state diff)
-    LOCAL_FORK = "local_fork"     # Anvil/Hardhat local fork
+
+    ETH_CALL = "eth_call"  # Simple eth_call (fast but limited)
+    TENDERLY = "tenderly"  # Tenderly Simulation API (full state diff)
+    LOCAL_FORK = "local_fork"  # Anvil/Hardhat local fork
 
 
 @dataclass
 class SimResult:
     """Result of a transaction simulation."""
+
     success: bool
     gas_used: int = 0
     gas_limit: int = 0
@@ -67,6 +69,7 @@ class SimResult:
 @dataclass
 class SimConfig:
     """Configuration for transaction simulation."""
+
     mode: SimMode = SimMode.ETH_CALL
     block_number: Optional[int] = None  # None = latest
     tenderly_api_key: Optional[str] = None
@@ -105,6 +108,7 @@ class TxSimulator:
         self.config = config or SimConfig()
 
         from web3 import Web3
+
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
 
     def simulate(
@@ -136,7 +140,9 @@ class TxSimulator:
         elif self.config.mode == SimMode.LOCAL_FORK:
             return self._simulate_fork(from_address, to, data, value)
         else:
-            return self._simulate_eth_call(from_address, to, data, value, gas_limit, block_number, warnings)
+            return self._simulate_eth_call(
+                from_address, to, data, value, gas_limit, block_number, warnings
+            )
 
     def _simulate_eth_call(
         self,
@@ -184,11 +190,13 @@ class TxSimulator:
                     self.w3.to_checksum_address(from_address),
                     block_identifier=block,
                 )
-                balance_changes.append({
-                    "address": from_address,
-                    "change": -value,
-                    "currency": "ETH",
-                })
+                balance_changes.append(
+                    {
+                        "address": from_address,
+                        "change": -value,
+                        "currency": "ETH",
+                    }
+                )
 
             # Check for common issues
             if value > 0 and to:
@@ -198,11 +206,13 @@ class TxSimulator:
                 )
                 if recipient_balance == 0:
                     warnings.append("Recipient has zero balance")
-                balance_changes.append({
-                    "address": to,
-                    "change": value,
-                    "currency": "ETH",
-                })
+                balance_changes.append(
+                    {
+                        "address": to,
+                        "change": value,
+                        "currency": "ETH",
+                    }
+                )
 
             return SimResult(
                 success=True,
@@ -238,9 +248,12 @@ class TxSimulator:
         value: int,
     ) -> SimResult:
         """Simulate using Tenderly Simulation API."""
-        if not self.config.tenderly_api_key or not self.config.tenderly_user or not self.config.tenderly_project:
+        if (
+            not self.config.tenderly_api_key
+            or not self.config.tenderly_user
+            or not self.config.tenderly_project
+        ):
             raise ValueError("Tenderly API key, user, and project required for Tenderly mode")
-
 
         import requests
 
@@ -263,7 +276,10 @@ class TxSimulator:
 
         resp = requests.post(
             url,
-            headers={"X-Access-Key": self.config.tenderly_api_key, "Content-Type": "application/json"},
+            headers={
+                "X-Access-Key": self.config.tenderly_api_key,
+                "Content-Type": "application/json",
+            },
             json=payload,
             timeout=30,
         )
@@ -323,7 +339,12 @@ class TxSimulator:
             try:
                 requests.post(
                     self.config.fork_url,
-                    json={"method": "anvil_impersonateAccount", "params": [from_address], "id": 1, "jsonrpc": "2.0"},
+                    json={
+                        "method": "anvil_impersonateAccount",
+                        "params": [from_address],
+                        "id": 1,
+                        "jsonrpc": "2.0",
+                    },
                     timeout=5,
                 )
             except Exception:
@@ -376,8 +397,16 @@ class TxSimulator:
     ) -> dict:
         """Check current token approval amount."""
         erc20_abi = [
-            {"constant": True, "inputs": [{"name": "_owner", "type": "address"}, {"name": "_spender", "type": "address"}],
-             "name": "allowance", "outputs": [{"name": "", "type": "uint256"}], "type": "function"},
+            {
+                "constant": True,
+                "inputs": [
+                    {"name": "_owner", "type": "address"},
+                    {"name": "_spender", "type": "address"},
+                ],
+                "name": "allowance",
+                "outputs": [{"name": "", "type": "uint256"}],
+                "type": "function",
+            },
         ]
         contract = self.w3.eth.contract(address=self.w3.to_checksum_address(token), abi=erc20_abi)
         allowance = contract.functions.allowance(

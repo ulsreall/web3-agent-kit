@@ -22,6 +22,7 @@ logger = logging.getLogger(__name__)
 
 class TaskDifficulty(Enum):
     """Difficulty level of a platform task."""
+
     EASY = "easy"
     MEDIUM = "medium"
     HARD = "hard"
@@ -30,6 +31,7 @@ class TaskDifficulty(Enum):
 @dataclass
 class PlatformTask:
     """A task discovered on a platform."""
+
     task_id: str
     title: str
     description: str = ""
@@ -79,6 +81,7 @@ class PlatformTask:
 @dataclass
 class ExecutorResult:
     """Result of running an executor."""
+
     platform: str
     url: str
     total_tasks: int = 0
@@ -106,6 +109,7 @@ class ExecutorResult:
 @dataclass
 class ExecutorConfig:
     """Configuration for a platform executor."""
+
     rate_limit_delay: float = 2.0
     max_retries: int = 3
     retry_delay: float = 5.0
@@ -254,9 +258,7 @@ class BasePlatformExecutor(ABC):
                     self._results.skipped_tasks += 1
                     continue
 
-                logger.info(
-                    f"{self.platform_name}: [{i + 1}/{len(tasks)}] {task.title}"
-                )
+                logger.info(f"{self.platform_name}: [{i + 1}/{len(tasks)}] {task.title}")
 
                 # Notify progress callback
                 if self._progress_callback:
@@ -369,9 +371,7 @@ class BasePlatformExecutor(ABC):
             try:
                 response = self.session.request(method, url, **kwargs)
                 if response.status_code == 429:
-                    retry_after = int(
-                        response.headers.get("Retry-After", self.config.retry_delay)
-                    )
+                    retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
                     logger.warning(f"Rate limited, waiting {retry_after}s")
                     time.sleep(retry_after)
                     continue
@@ -396,12 +396,14 @@ class BasePlatformExecutor(ABC):
     def _extract_id_from_url(self, url: str) -> str:
         """Extract an ID from a URL. Override for platform-specific parsing."""
         import re
+
         # Try to find a UUID or alphanumeric ID in the URL
         match = re.search(r"[0-9a-f]{24}", url)
         if match:
             return match.group(0)
         # Fallback: use last path segment
         from urllib.parse import urlparse
+
         parsed = urlparse(url)
         path_parts = [p for p in parsed.path.split("/") if p]
         return path_parts[-1] if path_parts else "unknown"

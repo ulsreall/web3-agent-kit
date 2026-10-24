@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class IntractTask(PlatformTask):
     """An Intract-specific task entry."""
+
     campaign_id: str = ""
     quest_id: str = ""
     verification_type: str = "auto"
@@ -35,6 +36,7 @@ class IntractTask(PlatformTask):
 @dataclass
 class IntractResult(ExecutorResult):
     """Result of farming an Intract quest."""
+
     xp_earned: int = 0
     badges_earned: int = 0
 
@@ -64,19 +66,28 @@ class IntractExecutor(BasePlatformExecutor):
     platform_name = "intract"
     platform_url = "https://intract.io"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like",
-        "discord_join", "telegram_join", "quiz", "visit_url",
-        "on_chain_tx", "content_creation", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "on_chain_tx",
+        "content_creation",
+        "custom",
     ]
 
     API_BASE = "https://api.intract.io"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
         self._quest_id: Optional[str] = None
         self._auth_token: Optional[str] = None
@@ -300,10 +311,12 @@ class IntractExecutor(BasePlatformExecutor):
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            solver = CaptchaSolver(CaptchaConfig(
-                provider=CaptchaProvider(self.config.captcha_provider),
-                api_key=self.config.captcha_api_key,
-            ))
+            solver = CaptchaSolver(
+                CaptchaConfig(
+                    provider=CaptchaProvider(self.config.captcha_provider),
+                    api_key=self.config.captcha_api_key,
+                )
+            )
 
             # Intract typically uses reCAPTCHA v2
             site_key = task.metadata.get("recaptcha_site_key", "")

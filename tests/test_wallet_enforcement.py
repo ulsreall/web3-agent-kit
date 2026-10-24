@@ -14,8 +14,8 @@ from __future__ import annotations
 
 from web3_agent_kit.chains import Chain
 from web3_agent_kit.execution import (
-    AuthorizationEvidence,
     ActionType,
+    AuthorizationEvidence,
     EnforcementDenied,
     ExecutionPolicy,
     PolicyReason,
@@ -161,9 +161,7 @@ def test_native_value_limit_applies_through_the_wallet():
     wallet = _enforced(max_native_value_wei=1000)
 
     try:
-        wallet.sign_transaction(
-            _tx(value=5000), Chain.BASE, action=ActionType.SWAP
-        )
+        wallet.sign_transaction(_tx(value=5000), Chain.BASE, action=ActionType.SWAP)
     except EnforcementDenied as exc:
         assert PolicyReason.NATIVE_VALUE_EXCEEDED.value in str(exc)
     else:  # pragma: no cover

@@ -34,6 +34,7 @@ total portfolio value across multiple chains.
 ### Get Portfolio Summary
 ```python
 from web3_agent_kit import PortfolioTracker, Wallet, Chain, ChainManager
+
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 tracker = PortfolioTracker(chain_manager, wallet)
@@ -62,6 +63,7 @@ print(f"P&L: ${pnl['pnl_absolute']:.2f} ({pnl['pnl_percent']:.1f}%)")
 summary = tracker.get_summary()
 data = summary.to_dict()
 import json
+
 print(json.dumps(data, indent=2))
 ```
 ---

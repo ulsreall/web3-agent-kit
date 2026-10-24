@@ -159,16 +159,19 @@ EIGENLAYER_ABI = {
 # Data classes
 # ---------------------------------------------------------------------------
 
+
 class RestakingStrategy(Enum):
     """EigenLayer restaking strategy types."""
-    LST = "lst"              # Liquid staking token restaking
-    NATIVE = "native"        # Native ETH restaking via pod
-    LP_POSITION = "lp"       # LP token restaking
+
+    LST = "lst"  # Liquid staking token restaking
+    NATIVE = "native"  # Native ETH restaking via pod
+    LP_POSITION = "lp"  # LP token restaking
 
 
 @dataclass
 class EigenLayerConfig:
     """Configuration for EigenLayer interactions."""
+
     strategy_manager: str = EIGENLAYER_STRATEGY_MANAGER
     delegation_manager: str = EIGENLAYER_DELEGATION_MANAGER
     slasher: str = EIGENLAYER_SLASHER
@@ -181,13 +184,14 @@ class EigenLayerConfig:
 @dataclass
 class OperatorInfo:
     """Information about an EigenLayer operator."""
+
     address: str
     name: str
-    total_delegated_stake: float     # ETH
+    total_delegated_stake: float  # ETH
     num_stakers: int
-    commission_rate: float           # 0-100%
-    slashing_history: int            # number of slashing events
-    uptime_pct: float                # 0-100%
+    commission_rate: float  # 0-100%
+    slashing_history: int  # number of slashing events
+    uptime_pct: float  # 0-100%
     supported_strategies: list[str] = field(default_factory=list)
     metadata_url: str = ""
 
@@ -195,13 +199,14 @@ class OperatorInfo:
 @dataclass
 class RestakeResult:
     """Result of a restaking operation."""
+
     tx_hash: str
     strategy: str
     amount: float
     operator: Optional[str]
     chain: Chain
     gas_used: int
-    status: str                  # "confirmed", "pending", "failed"
+    status: str  # "confirmed", "pending", "failed"
     timestamp: float = 0.0
 
     def __post_init__(self) -> None:
@@ -212,20 +217,22 @@ class RestakeResult:
 @dataclass
 class RestakingPosition:
     """A user's restaking position."""
+
     strategy_address: str
     strategy_name: str
     shares: int
-    underlying_amount: float      # In ETH terms
+    underlying_amount: float  # In ETH terms
     operator: Optional[str]
     operator_name: str
-    rewards_earned: float         # In ETH
-    slashing_risk_score: float    # 0-100
+    rewards_earned: float  # In ETH
+    slashing_risk_score: float  # 0-100
     delegation_timestamp: float
 
 
 # ---------------------------------------------------------------------------
 # EigenLayer client
 # ---------------------------------------------------------------------------
+
 
 class EigenLayer:
     """EigenLayer restaking integration.
@@ -298,7 +305,11 @@ class EigenLayer:
         # Approve strategy manager to spend LST token
         self._approve_token(
             w3,
-            token_addr=w3.to_checksum_address(lst_token if lst_token.startswith("0x") else LST_STRATEGIES.get(lst_token, strategy_addr)),
+            token_addr=w3.to_checksum_address(
+                lst_token
+                if lst_token.startswith("0x")
+                else LST_STRATEGIES.get(lst_token, strategy_addr)
+            ),
             spender=self.config.strategy_manager,
             amount=amount_wei,
         )
@@ -308,23 +319,26 @@ class EigenLayer:
         tx = strategy_contract.functions.depositIntoStrategy(
             w3.to_checksum_address(strategy_addr),
             amount_wei,
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": self.config.gas_limit,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.config.chain, 1),
-        })
-
-        signed = self.wallet.sign_transaction(
-            tx, self.config.chain, action=ActionType.STAKE
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": self.config.gas_limit,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.config.chain, 1),
+            }
         )
+
+        signed = self.wallet.sign_transaction(tx, self.config.chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
         logger.info(
             "Restaked %.4f %s into EigenLayer strategy %s (tx: %s)",
-            amount, lst_token, strategy_addr, tx_hash.hex(),
+            amount,
+            lst_token,
+            strategy_addr,
+            tx_hash.hex(),
         )
 
         # Delegate to operator if specified
@@ -360,17 +374,17 @@ class EigenLayer:
         nonce = w3.eth.get_transaction_count(self.wallet.address)
         tx = delegation_contract.functions.delegateTo(
             w3.to_checksum_address(operator),
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": self.config.gas_limit,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.config.chain, 1),
-        })
-
-        signed = self.wallet.sign_transaction(
-            tx, self.config.chain, action=ActionType.STAKE
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": self.config.gas_limit,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.config.chain, 1),
+            }
         )
+
+        signed = self.wallet.sign_transaction(tx, self.config.chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -400,17 +414,17 @@ class EigenLayer:
         )
 
         nonce = w3.eth.get_transaction_count(self.wallet.address)
-        tx = delegation_contract.functions.undelegate().build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": self.config.gas_limit,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.config.chain, 1),
-        })
-
-        signed = self.wallet.sign_transaction(
-            tx, self.config.chain, action=ActionType.STAKE
+        tx = delegation_contract.functions.undelegate().build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": self.config.gas_limit,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.config.chain, 1),
+            }
         )
+
+        signed = self.wallet.sign_transaction(tx, self.config.chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -447,17 +461,17 @@ class EigenLayer:
         tx = strategy_contract.functions.withdrawSharesAsTokens(
             w3.to_checksum_address(strategy_addr),
             shares_wei,
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": self.config.gas_limit,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.config.chain, 1),
-        })
-
-        signed = self.wallet.sign_transaction(
-            tx, self.config.chain, action=ActionType.STAKE
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": self.config.gas_limit,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.config.chain, 1),
+            }
         )
+
+        signed = self.wallet.sign_transaction(tx, self.config.chain, action=ActionType.STAKE)
         tx_hash = w3.eth.send_raw_transaction(signed)
         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -529,17 +543,19 @@ class EigenLayer:
                     operator_addr = ""
                     operator_name = "Not delegated"
 
-                positions.append(RestakingPosition(
-                    strategy_address=strategy_addr,
-                    strategy_name=strategy_name,
-                    shares=shares,
-                    underlying_amount=float(underlying),
-                    operator=operator_addr,
-                    operator_name=operator_name,
-                    rewards_earned=0.0,  # Requires subgraph/indexer
-                    slashing_risk_score=self._estimate_slashing_risk(operator_addr),
-                    delegation_timestamp=now,
-                ))
+                positions.append(
+                    RestakingPosition(
+                        strategy_address=strategy_addr,
+                        strategy_name=strategy_name,
+                        shares=shares,
+                        underlying_amount=float(underlying),
+                        operator=operator_addr,
+                        operator_name=operator_name,
+                        rewards_earned=0.0,  # Requires subgraph/indexer
+                        slashing_risk_score=self._estimate_slashing_risk(operator_addr),
+                        delegation_timestamp=now,
+                    )
+                )
             except Exception as e:
                 logger.warning("Failed to read strategy %s: %s", strategy_addr, e)
 
@@ -583,9 +599,7 @@ class EigenLayer:
         )
 
         try:
-            delegation_contract.functions.isOperator(
-                w3.to_checksum_address(operator)
-            ).call()
+            delegation_contract.functions.isOperator(w3.to_checksum_address(operator)).call()
         except Exception:
             pass  # Assume valid
 
@@ -602,8 +616,8 @@ class EigenLayer:
             address=operator,
             name=self._operator_name(operator),
             total_delegated_stake=total_stake,
-            num_stakers=0,            # Requires subgraph
-            commission_rate=10.0,     # Default estimate
+            num_stakers=0,  # Requires subgraph
+            commission_rate=10.0,  # Default estimate
             slashing_history=0,
             uptime_pct=99.9,
             supported_strategies=list(LST_STRATEGIES.keys()),
@@ -641,8 +655,7 @@ class EigenLayer:
             if symbol.upper() == upper:
                 return addr
         raise ValueError(
-            f"Unsupported LST: {token_or_strategy}. "
-            f"Supported: {list(LST_STRATEGIES.keys())}"
+            f"Unsupported LST: {token_or_strategy}. Supported: {list(LST_STRATEGIES.keys())}"
         )
 
     def _strategy_name(self, address: str) -> str:
@@ -718,13 +731,15 @@ class EigenLayer:
         approve_tx = token.functions.approve(
             w3.to_checksum_address(spender),
             2**256 - 1,
-        ).build_transaction({
-            "from": w3.to_checksum_address(self.wallet.address),
-            "gas": 100_000,
-            "gasPrice": w3.eth.gas_price,
-            "nonce": nonce,
-            "chainId": CHAIN_IDS.get(self.config.chain, 1),
-        })
+        ).build_transaction(
+            {
+                "from": w3.to_checksum_address(self.wallet.address),
+                "gas": 100_000,
+                "gasPrice": w3.eth.gas_price,
+                "nonce": nonce,
+                "chainId": CHAIN_IDS.get(self.config.chain, 1),
+            }
+        )
 
         signed = self.wallet.sign_transaction(
             approve_tx, self.config.chain, action=ActionType.APPROVE_TOKEN

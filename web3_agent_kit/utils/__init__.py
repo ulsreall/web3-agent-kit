@@ -14,9 +14,9 @@ from ..notifications import AlertLevel, Notification, Notifier, NotifierConfig
 class SpendLimits:
     """Spend limits for the governor."""
 
-    max_per_tx: float = 1.0        # Max ETH per transaction
-    daily_limit: float = 10.0      # Max ETH per day
-    session_limit: float = 50.0    # Max ETH per session
+    max_per_tx: float = 1.0  # Max ETH per transaction
+    daily_limit: float = 10.0  # Max ETH per day
+    session_limit: float = 50.0  # Max ETH per session
 
 
 @dataclass
@@ -147,6 +147,7 @@ class SpendGovernor:
             "session_limit": self.limits.session_limit,
             "kill_switch": self._kill_switch,
         }
+
 
 __all__ = [
     "SpendLimits",

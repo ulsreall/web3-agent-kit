@@ -120,7 +120,7 @@ async def lifespan(app: FastAPI):
     if not os.environ.get("WEB3_API_KEY"):
         raise RuntimeError(
             "WEB3_API_KEY must be set before starting the API server. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\" "
+            'Generate one with: python -c "import secrets; print(secrets.token_hex(32))" '
             "and export it as WEB3_API_KEY before launching the server."
         )
     yield
@@ -183,18 +183,14 @@ async def root():
 app.include_router(
     wallet.router, prefix="/wallet", tags=["wallet"], dependencies=[Depends(get_api_key)]
 )
-app.include_router(
-    swap.router, prefix="/swap", tags=["swap"], dependencies=[Depends(get_api_key)]
-)
+app.include_router(swap.router, prefix="/swap", tags=["swap"], dependencies=[Depends(get_api_key)])
 app.include_router(
     portfolio.router,
     prefix="/portfolio",
     tags=["portfolio"],
     dependencies=[Depends(get_api_key)],
 )
-app.include_router(
-    gas.router, prefix="/gas", tags=["gas"], dependencies=[Depends(get_api_key)]
-)
+app.include_router(gas.router, prefix="/gas", tags=["gas"], dependencies=[Depends(get_api_key)])
 app.include_router(
     watcher.router, prefix="/watcher", tags=["watcher"], dependencies=[Depends(get_api_key)]
 )
@@ -204,9 +200,7 @@ app.include_router(
     tags=["approval"],
     dependencies=[Depends(get_api_key)],
 )
-app.include_router(
-    dca.router, prefix="/dca", tags=["dca"], dependencies=[Depends(get_api_key)]
-)
+app.include_router(dca.router, prefix="/dca", tags=["dca"], dependencies=[Depends(get_api_key)])
 app.include_router(
     yield_opt.router, prefix="/yield", tags=["yield"], dependencies=[Depends(get_api_key)]
 )

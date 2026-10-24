@@ -16,6 +16,7 @@ def print_slow(text, delay=0.03):
         time.sleep(delay)
     print()
 
+
 def demo():
     """Run demo sequence"""
     print("\033[1;36m")  # Cyan
@@ -128,5 +129,6 @@ def demo():
 
     print("\033[0m")  # Reset
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     demo()

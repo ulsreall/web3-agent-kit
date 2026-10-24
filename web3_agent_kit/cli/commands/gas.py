@@ -5,8 +5,13 @@ import click
 
 @click.command("gas")
 @click.option("--chain", "-c", default="ethereum", help="Blockchain network")
-@click.option("--priority", "-p", default="medium", type=click.Choice(["low", "medium", "high", "urgent"]),
-              help="Gas priority level")
+@click.option(
+    "--priority",
+    "-p",
+    default="medium",
+    type=click.Choice(["low", "medium", "high", "urgent"]),
+    help="Gas priority level",
+)
 def gas(chain, priority):
     """Show current gas prices for a chain.
 
@@ -27,8 +32,13 @@ def gas(chain, priority):
     click.echo(click.style("    export RPC_URL=https://eth.llamarpc.com", fg="green"))
     click.echo()
     click.echo("  Or use the Python API directly:")
-    click.echo(click.style('    from web3_agent_kit import GasOptimizer', fg="green"))
+    click.echo(click.style("    from web3_agent_kit import GasOptimizer", fg="green"))
     click.echo(click.style('    optimizer = GasOptimizer(rpc_url="...")', fg="green"))
     click.echo(click.style('    estimate = optimizer.get_estimate("ethereum")', fg="green"))
-    click.echo(click.style('    print(f"Low: {estimate.low} | Med: {estimate.medium} | High: {estimate.high}")', fg="green"))
+    click.echo(
+        click.style(
+            '    print(f"Low: {estimate.low} | Med: {estimate.medium} | High: {estimate.high}")',
+            fg="green",
+        )
+    )
     click.echo()

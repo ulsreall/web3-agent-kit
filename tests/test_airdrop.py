@@ -44,16 +44,14 @@ class TestTaskType:
 
     def test_social_flag(self):
         task = AirdropTask(
-            task_id="1", platform="test",
-            task_type=TaskType.SOCIAL_TWITTER_FOLLOW, title="Follow"
+            task_id="1", platform="test", task_type=TaskType.SOCIAL_TWITTER_FOLLOW, title="Follow"
         )
         assert task.is_social is True
         assert task.is_on_chain is False
 
     def test_on_chain_flag(self):
         task = AirdropTask(
-            task_id="1", platform="test",
-            task_type=TaskType.ON_CHAIN_SWAP, title="Swap"
+            task_id="1", platform="test", task_type=TaskType.ON_CHAIN_SWAP, title="Swap"
         )
         assert task.is_on_chain is True
         assert task.is_social is False
@@ -61,14 +59,19 @@ class TestTaskType:
 
 class TestAirdropTask:
     def test_default_status(self):
-        task = AirdropTask(task_id="1", platform="test", task_type=TaskType.VISIT_URL, title="Visit")
+        task = AirdropTask(
+            task_id="1", platform="test", task_type=TaskType.VISIT_URL, title="Visit"
+        )
         assert task.status == TaskStatus.PENDING
         assert task.completed_at is None
 
     def test_metadata(self):
         task = AirdropTask(
-            task_id="1", platform="test", task_type=TaskType.CUSTOM,
-            title="Custom", metadata={"key": "value"}
+            task_id="1",
+            platform="test",
+            task_type=TaskType.CUSTOM,
+            title="Custom",
+            metadata={"key": "value"},
         )
         assert task.metadata["key"] == "value"
 
@@ -80,8 +83,11 @@ class TestAirdropCampaign:
 
     def test_progress_partial(self):
         campaign = AirdropCampaign(
-            campaign_id="1", platform="test", name="Test",
-            total_points=100, earned_points=50,
+            campaign_id="1",
+            platform="test",
+            name="Test",
+            total_points=100,
+            earned_points=50,
         )
         assert campaign.progress == 0.5
 
@@ -91,14 +97,18 @@ class TestAirdropCampaign:
 
     def test_is_expired_past(self):
         campaign = AirdropCampaign(
-            campaign_id="1", platform="test", name="Test",
+            campaign_id="1",
+            platform="test",
+            name="Test",
             deadline=time.time() - 3600,
         )
         assert campaign.is_expired is True
 
     def test_is_expired_future(self):
         campaign = AirdropCampaign(
-            campaign_id="1", platform="test", name="Test",
+            campaign_id="1",
+            platform="test",
+            name="Test",
             deadline=time.time() + 3600,
         )
         assert campaign.is_expired is False
@@ -265,9 +275,7 @@ class TestGitHubHelper:
 class TestSocialTaskManager:
     def test_complete_task(self):
         manager = SocialTaskManager()
-        result = manager.complete_social_task(
-            TaskType.SOCIAL_TWITTER_FOLLOW, "test_user"
-        )
+        result = manager.complete_social_task(TaskType.SOCIAL_TWITTER_FOLLOW, "test_user")
         assert result.success is True
         assert len(manager.get_all_results()) == 1
 
@@ -298,8 +306,10 @@ class TestAirdropTracker:
     def test_add_campaign(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
         campaign = AirdropCampaign(
-            campaign_id="test1", platform="galxe",
-            name="Test Campaign", total_points=100,
+            campaign_id="test1",
+            platform="galxe",
+            name="Test Campaign",
+            total_points=100,
         )
         tracker.add_campaign(campaign)
         assert len(tracker.list_campaigns()) == 1
@@ -307,13 +317,18 @@ class TestAirdropTracker:
     def test_mark_task_completed(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
         task = AirdropTask(
-            task_id="t1", platform="galxe",
+            task_id="t1",
+            platform="galxe",
             task_type=TaskType.SOCIAL_TWITTER_FOLLOW,
-            title="Follow", points=10,
+            title="Follow",
+            points=10,
         )
         campaign = AirdropCampaign(
-            campaign_id="c1", platform="galxe",
-            name="Test", total_points=100, tasks=[task],
+            campaign_id="c1",
+            platform="galxe",
+            name="Test",
+            total_points=100,
+            tasks=[task],
         )
         tracker.add_campaign(campaign)
         tracker.mark_task_completed(task)
@@ -325,25 +340,35 @@ class TestAirdropTracker:
     def test_add_reward(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
         reward = AirdropReward(
-            platform="galxe", campaign_id="c1",
-            campaign_name="Test", points=100,
+            platform="galxe",
+            campaign_id="c1",
+            campaign_name="Test",
+            points=100,
         )
         tracker.add_reward(reward)
         assert len(tracker.rewards) == 1
 
     def test_get_summary(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
-        tracker.add_campaign(AirdropCampaign(
-            campaign_id="c1", platform="galxe", name="Test 1",
-        ))
+        tracker.add_campaign(
+            AirdropCampaign(
+                campaign_id="c1",
+                platform="galxe",
+                name="Test 1",
+            )
+        )
         summary = tracker.get_summary()
         assert summary.total_campaigns == 1
 
     def test_export_json(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
-        tracker.add_campaign(AirdropCampaign(
-            campaign_id="c1", platform="galxe", name="Test",
-        ))
+        tracker.add_campaign(
+            AirdropCampaign(
+                campaign_id="c1",
+                platform="galxe",
+                name="Test",
+            )
+        )
         out_path = str(tmp_path / "export.json")
         tracker.export_json(out_path)
         assert os.path.exists(out_path)
@@ -353,23 +378,35 @@ class TestAirdropTracker:
 
     def test_export_csv(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
-        tracker.add_campaign(AirdropCampaign(
-            campaign_id="c1", platform="galxe", name="Test",
-        ))
+        tracker.add_campaign(
+            AirdropCampaign(
+                campaign_id="c1",
+                platform="galxe",
+                name="Test",
+            )
+        )
         out_path = str(tmp_path / "export.csv")
         tracker.export_csv(out_path)
         assert os.path.exists(out_path)
 
     def test_upcoming_deadlines(self, tmp_path):
         tracker = AirdropTracker(str(tmp_path / "test.json"))
-        tracker.add_campaign(AirdropCampaign(
-            campaign_id="c1", platform="galxe", name="Soon",
-            deadline=time.time() + 3600,
-        ))
-        tracker.add_campaign(AirdropCampaign(
-            campaign_id="c2", platform="galxe", name="Later",
-            deadline=time.time() + 86400 * 7,
-        ))
+        tracker.add_campaign(
+            AirdropCampaign(
+                campaign_id="c1",
+                platform="galxe",
+                name="Soon",
+                deadline=time.time() + 3600,
+            )
+        )
+        tracker.add_campaign(
+            AirdropCampaign(
+                campaign_id="c2",
+                platform="galxe",
+                name="Later",
+                deadline=time.time() + 86400 * 7,
+            )
+        )
         upcoming = tracker.get_upcoming_deadlines(within_hours=48)
         assert len(upcoming) == 1
         assert upcoming[0].name == "Soon"
@@ -413,8 +450,14 @@ class TestAirdropFarmer:
     async def test_farm_campaign_no_wallets(self):
         farmer = AirdropFarmer()
         campaign = AirdropCampaign(
-            campaign_id="c1", platform="test", name="Test",
-            tasks=[AirdropTask(task_id="t1", platform="test", task_type=TaskType.VISIT_URL, title="Visit")],
+            campaign_id="c1",
+            platform="test",
+            name="Test",
+            tasks=[
+                AirdropTask(
+                    task_id="t1", platform="test", task_type=TaskType.VISIT_URL, title="Visit"
+                )
+            ],
         )
         results = await farmer.farm_campaign(campaign, execute=True)
         assert results == []

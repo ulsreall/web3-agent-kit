@@ -27,6 +27,7 @@ finding the best cross-chain transfer routes.
 ### Get Bridge Routes
 ```python
 from web3_agent_kit import BridgeAgent, Wallet, Chain, ChainManager
+
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 bridge = BridgeAgent(chain_manager, wallet)
@@ -52,6 +53,7 @@ result = bridge.transfer("ETH", 0.1, Chain.ETHEREUM, Chain.BASE, route=routes[0]
 result = bridge.transfer("ETH", 0.1, Chain.ETHEREUM, Chain.BASE)
 data = result.to_dict()
 import json
+
 print(json.dumps(data, indent=2))
 ```
 ---

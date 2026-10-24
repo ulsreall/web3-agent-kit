@@ -166,10 +166,10 @@ wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 uniswap = Uniswap(chain_manager=chain_manager)
 
 config = SniperConfig(
-    max_buy=0.005,          # max 0.005 ETH per snipe
-    auto_buy=True,          # auto-buy safe tokens
-    honeypot_check=True,    # check if token is honeypot
-    min_liquidity=0.5,      # min 0.5 ETH liquidity
+    max_buy=0.005,  # max 0.005 ETH per snipe
+    auto_buy=True,  # auto-buy safe tokens
+    honeypot_check=True,  # check if token is honeypot
+    min_liquidity=0.5,  # min 0.5 ETH liquidity
     callback=lambda pair: print(f"🚨 New pair: {pair.token_symbol}"),
 )
 
@@ -228,15 +228,15 @@ from web3_agent_kit.utils import SpendGovernor, SpendLimits
 
 governor = SpendGovernor(
     limits=SpendLimits(
-        max_per_tx=0.1,      # max 0.1 ETH per transaction
-        daily_limit=1.0,     # max 1 ETH per day
+        max_per_tx=0.1,  # max 0.1 ETH per transaction
+        daily_limit=1.0,  # max 1 ETH per day
     ),
-    require_confirm=True,    # operator must confirm
+    require_confirm=True,  # operator must confirm
 )
 
 # Kill switch for emergencies
-governor.kill()   # blocks all transactions
-governor.unkill() # resume
+governor.kill()  # blocks all transactions
+governor.unkill()  # resume
 ```
 
 ---

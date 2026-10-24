@@ -218,8 +218,7 @@ def fetch_go_message(db_path: str | Path, message_id: int) -> Mapping[str, Any]:
     """Return the full GO message row (id, role, content, timestamp) by id."""
     with _readonly_connection(db_path) as con:
         row = con.execute(
-            "SELECT id, role, content, timestamp "
-            f"FROM {GO_MESSAGES_TABLE} WHERE id = ?",
+            f"SELECT id, role, content, timestamp FROM {GO_MESSAGES_TABLE} WHERE id = ?",
             (int(message_id),),
         ).fetchone()
     if row is None:

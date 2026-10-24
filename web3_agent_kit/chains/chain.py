@@ -110,11 +110,13 @@ class ChainManager:
             raise ValueError(f"Chain {chain.value} is not EVM — use get_solana() instead")
 
         from web3 import Web3
+
         return Web3(Web3.HTTPProvider(config.rpc_url))
 
     def get_solana(self):
         """Get Solana client."""
         from solana.rpc.api import Client
+
         config = self.get_config(Chain.SOLANA)
         return Client(config.rpc_url)
 

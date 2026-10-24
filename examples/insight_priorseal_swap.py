@@ -63,7 +63,6 @@ except ModuleNotFoundError:  # direct: python examples/insight_priorseal_swap.py
     )
 
 
-
 @runtime_checkable
 class SignerProtocol(Protocol):
     """Explicit signing boundary used by the spike."""
@@ -168,7 +167,9 @@ BoundaryFactory = Callable[[BoundaryCounters], ExecutionBoundaries]
 
 
 class _CountingProvider:
-    def __init__(self, provider: PriorSealAuthorizationProvider, counters: BoundaryCounterSink) -> None:
+    def __init__(
+        self, provider: PriorSealAuthorizationProvider, counters: BoundaryCounterSink
+    ) -> None:
         self._provider = provider
         self._counters = counters
 
@@ -199,7 +200,9 @@ class _CountingProvider:
                 )
             raise
         if recorder is not None:
-            recorder("authorizationProvider", "success", started_at=started, finished_at=int(time.time()))
+            recorder(
+                "authorizationProvider", "success", started_at=started, finished_at=int(time.time())
+            )
         return result
 
 
@@ -484,7 +487,8 @@ def _run_case(
                 "differentBroadcastInstance": (
                     first_boundaries.broadcast is not second_boundaries.broadcast
                 ),
-                "differentReceiptInstance": first_boundaries.receipt is not second_boundaries.receipt,
+                "differentReceiptInstance": first_boundaries.receipt
+                is not second_boundaries.receipt,
                 "sameDatabase": first_store.database_path == second_store.database_path,
                 "samePersistedAcceptanceId": authorization_id in str(second_error),
             }
@@ -495,9 +499,7 @@ def _run_case(
             )
 
         provider_reason = (
-            "AUTHORIZATION_REPLAYED"
-            if "AUTHORIZATION_REPLAYED" in str(second_error)
-            else ""
+            "AUTHORIZATION_REPLAYED" if "AUTHORIZATION_REPLAYED" in str(second_error) else ""
         )
         if (
             second_receipt is not None
@@ -725,7 +727,11 @@ def validate_p1_evidence(report: Mapping[str, Any]) -> None:
     execution = receipt.get("execution")
     compliance = receipt.get("compliance")
     binding = receipt.get("binding")
-    if not isinstance(execution, Mapping) or not isinstance(compliance, Mapping) or not isinstance(binding, Mapping):
+    if (
+        not isinstance(execution, Mapping)
+        or not isinstance(compliance, Mapping)
+        or not isinstance(binding, Mapping)
+    ):
         raise BoundaryError("P1 receipt status blocks are malformed")
     if int(execution.get("chainId", 0)) != 84532 or execution.get("status") != "CONFIRMED":
         raise BoundaryError("P1 receipt execution is not a confirmed Base Sepolia transaction")
@@ -913,14 +919,12 @@ def run_live_p1(
 
     try:
         from examples.support.go_arrival import (
-            GoArrivalError,
             authorize_go_sheet,
             query_go_messages,
             resolve_go_arrival,
         )
         from examples.support.insight_priorseal_live import (
             CallEventRecorder,
-            CutoffError,
             EvmSigner,
             InertBroadcast,
             InertReceipt,
@@ -937,14 +941,12 @@ def run_live_p1(
         from examples.support.insight_priorseal_rehearsal import generate_rehearsal_materials
     except ModuleNotFoundError:  # running as examples/insight_priorseal_swap.py
         from support.go_arrival import (
-            GoArrivalError,
             authorize_go_sheet,
             query_go_messages,
             resolve_go_arrival,
         )
         from support.insight_priorseal_live import (
             CallEventRecorder,
-            CutoffError,
             EvmSigner,
             InertBroadcast,
             InertReceipt,
@@ -989,7 +991,9 @@ def run_live_p1(
         run_sheet_hash = hashlib.sha256(rehearsal_materials.sheet_bytes).hexdigest()
         session_db = rehearsal_materials.session_db
         if go_file is not None:
-            Path(go_file).write_text(json.dumps(go, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+            Path(go_file).write_text(
+                json.dumps(go, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+            )
         if run_sheet is not None:
             Path(run_sheet).write_text(rehearsal_materials.sheet_text + "\n", encoding="utf-8")
     else:
@@ -1262,9 +1266,7 @@ def run_live_p1(
                         _dst,
                         _insight_trust,
                         now=int(time.time()),
-                        expected_pair_commitment=(sheet.get("insight") or {}).get(
-                            "pairCommitment"
-                        ),
+                        expected_pair_commitment=(sheet.get("insight") or {}).get("pairCommitment"),
                     )
                     insight_verdict_record = evaluate_insight_verdict_gate(
                         verdicts=_verdicts,
@@ -1324,7 +1326,12 @@ def run_live_p1(
                         priorseal_gate_checks = getattr(inner_provider, "gate_checks", None)
                 except Exception as exc:  # noqa: BLE001 - classified below
                     attempt_receipt, attempt_error = None, f"{type(exc).__name__}: {exc}"
-                if attempt_error is not None and "covers another policy decision" in str(attempt_error) and rehearsal and attempt_index < max_attempts - 1:
+                if (
+                    attempt_error is not None
+                    and "covers another policy decision" in str(attempt_error)
+                    and rehearsal
+                    and attempt_index < max_attempts - 1
+                ):
                     attempts.append(
                         {
                             "attempt": attempt_index + 1,
@@ -1387,11 +1394,7 @@ def run_live_p1(
         "mode": (
             "REHEARSAL"
             if rehearsal
-            else (
-                "LIVE"
-                if allow_broadcast
-                else ("DRY_RUN_GATE" if exercise_gate else "DRY_RUN")
-            )
+            else ("LIVE" if allow_broadcast else ("DRY_RUN_GATE" if exercise_gate else "DRY_RUN"))
         ),
         "goArrival": arrival_metadata,
         "goArrivalRunwaySeconds": go_runway,
@@ -1464,7 +1467,10 @@ def run_live_p1(
     if call_events is not None:
         events_path = Path(call_events)
         events_path.parent.mkdir(parents=True, exist_ok=True)
-        events_path.write_text(json.dumps(final_recorder.as_report(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        events_path.write_text(
+            json.dumps(final_recorder.as_report(), indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     return evidence
 
 
@@ -1475,7 +1481,11 @@ def _rpc_preflight(rpc_url: str | None, config: Any, signer: Any) -> dict[str, A
         raise BoundaryError("live broadcast requires --rpc-url")
 
     def jsonrpc(method: str, params: list[Any], *, timeout: float = 20.0) -> Any:
-        resp = httpx.post(rpc_url, json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params}, timeout=timeout)
+        resp = httpx.post(
+            rpc_url,
+            json={"jsonrpc": "2.0", "id": 1, "method": method, "params": params},
+            timeout=timeout,
+        )
         resp.raise_for_status()
         body = resp.json()
         if "error" in body:
@@ -1486,9 +1496,17 @@ def _rpc_preflight(rpc_url: str | None, config: Any, signer: Any) -> dict[str, A
     if chain_id != config.chain_id:
         raise RuntimeError(f"RPC chainId {chain_id} != configured {config.chain_id}")
     block = int(str(jsonrpc("eth_blockNumber", [])), 16)
-    nonce = int(str(jsonrpc("eth_getTransactionCount", [signer.address(), "pending"], timeout=20)), 16)
+    nonce = int(
+        str(jsonrpc("eth_getTransactionCount", [signer.address(), "pending"], timeout=20)), 16
+    )
     balance = int(str(jsonrpc("eth_getBalance", [signer.address(), "latest"], timeout=20)), 16)
-    return {"chainId": chain_id, "headBlock": block, "pendingNonce": nonce, "balanceWei": balance, "inert": False}
+    return {
+        "chainId": chain_id,
+        "headBlock": block,
+        "pendingNonce": nonce,
+        "balanceWei": balance,
+        "inert": False,
+    }
 
 
 def _git_head() -> str | None:
@@ -1529,8 +1547,16 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("fixture", type=Path)
     parser.add_argument("--report", required=True, type=Path)
-    parser.add_argument("--live-p1", action="store_true", help="run the P1 leg (live or rehearsal) instead of the offline N1-N5b suite")
-    parser.add_argument("--rehearsal", action="store_true", help="inert-boundary rehearsal: same runner path, no on-chain effect")
+    parser.add_argument(
+        "--live-p1",
+        action="store_true",
+        help="run the P1 leg (live or rehearsal) instead of the offline N1-N5b suite",
+    )
+    parser.add_argument(
+        "--rehearsal",
+        action="store_true",
+        help="inert-boundary rehearsal: same runner path, no on-chain effect",
+    )
     parser.add_argument("--go-file", type=Path, default=None)
     parser.add_argument("--run-sheet", type=Path, default=None)
     parser.add_argument("--session-db", type=Path, default=None)
@@ -1568,7 +1594,16 @@ def main() -> int:
             wak_commit=args.wak_commit,
             call_events=args.call_events,
         )
-        print(json.dumps({"report": str(args.report), "outcome": evidence.get("outcome"), "counts": evidence.get("counts")}, indent=2))
+        print(
+            json.dumps(
+                {
+                    "report": str(args.report),
+                    "outcome": evidence.get("outcome"),
+                    "counts": evidence.get("counts"),
+                },
+                indent=2,
+            )
+        )
         return 0
     write_acceptance_report(args.fixture, args.report)
     print(args.report)

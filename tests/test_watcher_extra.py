@@ -75,9 +75,7 @@ class TestAddRemoveList:
 class TestSnapshot:
     def test_snapshot_success(self, watcher):
         watcher.chain_manager.get_web3.return_value = _mock_w3(3.0)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=2000.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=2000.0):
             snap = watcher.snapshot("0xABC", Chain.ETHEREUM)
         assert isinstance(snap, BalanceSnapshot)
         assert snap.native_balance == 3.0
@@ -92,17 +90,13 @@ class TestSnapshot:
         watcher.add_wallet("0x1", "a", Chain.ETHEREUM)
         watcher.add_wallet("0x2", "b", Chain.ETHEREUM)
         watcher.chain_manager.get_web3.return_value = _mock_w3(1.0)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=100.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=100.0):
             snaps = watcher.snapshot_all()
         assert len(snaps) == 2
 
     def test_snapshot_history_capped(self, watcher):
         watcher.chain_manager.get_web3.return_value = _mock_w3(1.0)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0):
             for _ in range(105):
                 watcher.snapshot("0xABC", Chain.ETHEREUM)
         assert len(watcher.get_balance_history("0xABC")) == 100
@@ -115,25 +109,19 @@ class TestCheckWallet:
     def test_check_wallet_first_snapshot_no_alert(self, watcher):
         watcher.add_wallet("0xABC", "whale", Chain.ETHEREUM)
         watcher.chain_manager.get_web3.return_value = _mock_w3(5.0)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0):
             alerts = watcher.check_wallet("0xABC", Chain.ETHEREUM)
         assert alerts == []
 
     def test_check_wallet_balance_change_alert(self, watcher):
         watcher.add_wallet("0xABC", "whale", Chain.ETHEREUM)
         # Seed a history snapshot at 5 ETH
-        watcher.snapshots["0xabc"] = [
-            BalanceSnapshot("0xABC", Chain.ETHEREUM, 5.0, {}, 5.0, 0)
-        ]
+        watcher.snapshots["0xabc"] = [BalanceSnapshot("0xABC", Chain.ETHEREUM, 5.0, {}, 5.0, 0)]
         # Now the balance jumps to 20 ETH -> HIGH severity
         watcher.chain_manager.get_web3.return_value = _mock_w3(20.0)
         callback = MagicMock()
         watcher.on_alert(callback)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0):
             alerts = watcher.check_wallet("0xABC", Chain.ETHEREUM)
         assert len(alerts) == 1
         assert alerts[0].alert_type == AlertType.BALANCE_CHANGE
@@ -142,26 +130,18 @@ class TestCheckWallet:
 
     def test_check_wallet_callback_exception_swallowed(self, watcher):
         watcher.add_wallet("0xABC", "whale", Chain.ETHEREUM)
-        watcher.snapshots["0xabc"] = [
-            BalanceSnapshot("0xABC", Chain.ETHEREUM, 1.0, {}, 1.0, 0)
-        ]
+        watcher.snapshots["0xabc"] = [BalanceSnapshot("0xABC", Chain.ETHEREUM, 1.0, {}, 1.0, 0)]
         watcher.chain_manager.get_web3.return_value = _mock_w3(200.0)
         watcher.on_alert(MagicMock(side_effect=RuntimeError("boom")))
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0):
             alerts = watcher.check_wallet("0xABC", Chain.ETHEREUM)
         assert alerts[0].severity == AlertSeverity.CRITICAL
 
     def test_check_all(self, watcher):
         watcher.add_wallet("0x1", "a", Chain.ETHEREUM)
-        watcher.snapshots["0x1"] = [
-            BalanceSnapshot("0x1", Chain.ETHEREUM, 1.0, {}, 1.0, 0)
-        ]
+        watcher.snapshots["0x1"] = [BalanceSnapshot("0x1", Chain.ETHEREUM, 1.0, {}, 1.0, 0)]
         watcher.chain_manager.get_web3.return_value = _mock_w3(3.0)
-        with patch(
-            "web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0
-        ):
+        with patch("web3_agent_kit.wallet.watcher.get_eth_price_usd", return_value=1.0):
             alerts = watcher.check_all()
         assert len(alerts) == 1
         assert alerts[0].severity == AlertSeverity.MEDIUM
@@ -173,12 +153,20 @@ class TestAlerts:
 
     def test_get_alerts_filters(self, watcher):
         a1 = WalletAlert(
-            "0x1", "a", Chain.ETHEREUM, AlertType.BALANCE_CHANGE,
-            AlertSeverity.LOW, "m1",
+            "0x1",
+            "a",
+            Chain.ETHEREUM,
+            AlertType.BALANCE_CHANGE,
+            AlertSeverity.LOW,
+            "m1",
         )
         a2 = WalletAlert(
-            "0x2", "b", Chain.ETHEREUM, AlertType.LARGE_TRANSFER,
-            AlertSeverity.HIGH, "m2",
+            "0x2",
+            "b",
+            Chain.ETHEREUM,
+            AlertType.LARGE_TRANSFER,
+            AlertSeverity.HIGH,
+            "m2",
         )
         watcher.alerts = [a1, a2]
         assert len(watcher.get_alerts()) == 2
@@ -188,8 +176,12 @@ class TestAlerts:
     def test_acknowledge_alert(self, watcher):
         watcher.alerts = [
             WalletAlert(
-                "0x1", "a", Chain.ETHEREUM, AlertType.BALANCE_CHANGE,
-                AlertSeverity.LOW, "m1",
+                "0x1",
+                "a",
+                Chain.ETHEREUM,
+                AlertType.BALANCE_CHANGE,
+                AlertSeverity.LOW,
+                "m1",
             )
         ]
         assert watcher.acknowledge_alert(0) is True
@@ -201,8 +193,12 @@ class TestAlerts:
     def test_acknowledge_all(self, watcher):
         watcher.alerts = [
             WalletAlert(
-                "0x1", "a", Chain.ETHEREUM, AlertType.BALANCE_CHANGE,
-                AlertSeverity.LOW, str(i),
+                "0x1",
+                "a",
+                Chain.ETHEREUM,
+                AlertType.BALANCE_CHANGE,
+                AlertSeverity.LOW,
+                str(i),
             )
             for i in range(3)
         ]
@@ -215,8 +211,12 @@ class TestSummaryAndPersistence:
         watcher.add_wallet("0x1234567890abcdef", "a", Chain.ETHEREUM, tags=["x"])
         watcher.alerts = [
             WalletAlert(
-                "0x1", "a", Chain.ETHEREUM, AlertType.BALANCE_CHANGE,
-                AlertSeverity.LOW, "m",
+                "0x1",
+                "a",
+                Chain.ETHEREUM,
+                AlertType.BALANCE_CHANGE,
+                AlertSeverity.LOW,
+                "m",
             )
         ]
         summary = watcher.get_summary()
@@ -229,8 +229,7 @@ class TestSummaryAndPersistence:
     def test_save_and_load_wallets(self, temp_storage):
         cm = MagicMock()
         w1 = WalletWatcher(cm, storage_path=temp_storage)
-        w1.add_wallet("0xABC", "whale", Chain.BASE, tags=["t"],
-                      alert_threshold_usd=5000)
+        w1.add_wallet("0xABC", "whale", Chain.BASE, tags=["t"], alert_threshold_usd=5000)
         # New watcher loads the persisted file
         w2 = WalletWatcher(cm, storage_path=temp_storage)
         assert len(w2.wallets) == 1

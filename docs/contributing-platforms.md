@@ -31,8 +31,10 @@ All platform executors extend `BasePlatformExecutor`, which provides:
 def visit(self, url: str) -> bool:
     """Navigate to the platform URL. Return True on success."""
 
+
 def get_tasks(self) -> list[PlatformTask]:
     """Discover and return available tasks."""
+
 
 def complete_task(self, task: PlatformTask) -> bool:
     """Execute a single task. Return True on success."""
@@ -44,14 +46,18 @@ def complete_task(self, task: PlatformTask) -> bool:
 def complete_all(self, url: str, tracker=None) -> ExecutorResult:
     """Complete all tasks at URL. Default: visit → get_tasks → complete each."""
 
+
 def verify(self) -> bool:
     """Verify task completion. Default: returns True."""
+
 
 def get_results(self) -> ExecutorResult:
     """Return current results."""
 
+
 def login(self, credentials: dict) -> bool:
     """Authenticate with the platform. Default: returns True (no auth needed)."""
+
 
 def close(self) -> None:
     """Clean up resources (sessions, browser, etc.)."""
@@ -77,12 +83,12 @@ self._rate_limit()  # Enforces self.config.rate_limit_delay between calls
 from web3_agent_kit.airdrop.executor.base_executor import ExecutorConfig
 
 config = ExecutorConfig(
-    rate_limit_delay=2.0,    # Seconds between requests
-    max_retries=3,           # Retry count on failure
-    retry_delay=5.0,         # Base delay between retries
-    timeout=30,              # HTTP timeout in seconds
-    proxy=None,              # HTTP proxy URL
-    captcha_api_key=None,    # CAPTCHA provider API key
+    rate_limit_delay=2.0,  # Seconds between requests
+    max_retries=3,  # Retry count on failure
+    retry_delay=5.0,  # Base delay between retries
+    timeout=30,  # HTTP timeout in seconds
+    proxy=None,  # HTTP proxy URL
+    captcha_api_key=None,  # CAPTCHA provider API key
     captcha_provider="anticaptcha",  # or "2captcha"
     verbose=False,
 )
@@ -120,6 +126,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class MyPlatformTask(PlatformTask):
     """A MyPlatform-specific task entry."""
+
     campaign_id: str = ""
     requires_verification: bool = False
 
@@ -127,6 +134,7 @@ class MyPlatformTask(PlatformTask):
 @dataclass
 class MyPlatformResult(ExecutorResult):
     """Result of farming a MyPlatform campaign."""
+
     xp_earned: int = 0
     badges_earned: int = 0
 
@@ -144,19 +152,25 @@ class MyPlatformExecutor(BasePlatformExecutor):
     platform_name = "my_platform"
     platform_url = "https://myplatform.io"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet",
-        "discord_join", "telegram_join",
-        "quiz", "visit_url", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "custom",
     ]
 
     API_BASE = "https://api.myplatform.io"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
 
     def visit(self, url: str) -> bool:
@@ -181,20 +195,20 @@ class MyPlatformExecutor(BasePlatformExecutor):
             return []
 
         try:
-            response = self._get(
-                f"{self.API_BASE}/quest/{self._campaign_id}/tasks"
-            )
+            response = self._get(f"{self.API_BASE}/quest/{self._campaign_id}/tasks")
             data = response.json()
 
             tasks = []
             for i, task_data in enumerate(data.get("tasks", [])):
-                tasks.append(MyPlatformTask(
-                    task_id=f"myplat_{self._campaign_id}_{task_data['id']}",
-                    title=task_data.get("title", f"Task {i}"),
-                    task_type=task_data.get("type", "custom"),
-                    points=task_data.get("points", 0),
-                    campaign_id=self._campaign_id,
-                ))
+                tasks.append(
+                    MyPlatformTask(
+                        task_id=f"myplat_{self._campaign_id}_{task_data['id']}",
+                        title=task_data.get("title", f"Task {i}"),
+                        task_type=task_data.get("type", "custom"),
+                        points=task_data.get("points", 0),
+                        campaign_id=self._campaign_id,
+                    )
+                )
 
             return tasks
 
@@ -232,6 +246,7 @@ class MyPlatformExecutor(BasePlatformExecutor):
 
 ```python
 from .plugin_registry import PlatformPluginRegistry
+
 
 @PlatformPluginRegistry.from_class
 class MyPlatformExecutor(BasePlatformExecutor):
@@ -289,9 +304,9 @@ Tasks use a standard type system for cross-platform compatibility:
 ```python
 from web3_agent_kit.airdrop.executor.base_executor import TaskDifficulty
 
-TaskDifficulty.EASY    # Social tasks, visits
+TaskDifficulty.EASY  # Social tasks, visits
 TaskDifficulty.MEDIUM  # On-chain transactions, wallet connections
-TaskDifficulty.HARD    # Cross-chain bridges, NFT mints
+TaskDifficulty.HARD  # Cross-chain bridges, NFT mints
 ```
 
 ### Converting to AirdropTask
@@ -316,10 +331,12 @@ from web3_agent_kit.airdrop.executor.captcha_solver import (
 )
 
 # Initialize
-solver = CaptchaSolver(CaptchaConfig(
-    provider=CaptchaProvider.ANTICAPTCHA,  # or TWOCAPTCHA
-    api_key="your-api-key",
-))
+solver = CaptchaSolver(
+    CaptchaConfig(
+        provider=CaptchaProvider.ANTICAPTCHA,  # or TWOCAPTCHA
+        api_key="your-api-key",
+    )
+)
 
 # Solve reCAPTCHA v2
 token = solver.solve_recaptcha_v2(
@@ -351,10 +368,12 @@ def complete_task(self, task: MyPlatformTask) -> bool:
     if task.requires_captcha:
         from .captcha_solver import CaptchaSolver, CaptchaConfig, CaptchaProvider
 
-        solver = CaptchaSolver(CaptchaConfig(
-            provider=CaptchaProvider(self.config.captcha_provider),
-            api_key=self.config.captcha_api_key,
-        ))
+        solver = CaptchaSolver(
+            CaptchaConfig(
+                provider=CaptchaProvider(self.config.captcha_provider),
+                api_key=self.config.captcha_api_key,
+            )
+        )
         token = solver.solve_recaptcha_v2(
             site_key=task.metadata["recaptcha_site_key"],
             url=self._current_url,
@@ -393,6 +412,7 @@ On startup, the framework discovers executors from two locations:
 # ~/.web3-agent-kit/plugins/my_custom_executor.py
 from web3_agent_kit.airdrop.executor.base_executor import BasePlatformExecutor, ExecutorConfig
 from typing import Optional
+
 
 class MyCustomExecutor(BasePlatformExecutor):
     platform_name = "my_custom"
@@ -440,6 +460,7 @@ import pytest
 from unittest.mock import MagicMock, patch
 from web3_agent_kit.airdrop.executor.my_platform import MyPlatformExecutor, MyPlatformTask
 
+
 class TestMyPlatformExecutor:
     def test_init(self):
         executor = MyPlatformExecutor()
@@ -466,9 +487,9 @@ class TestMyPlatformExecutor:
     def test_get_tasks(self, mock_get):
         mock_get.return_value = MagicMock(
             status_code=200,
-            json=lambda: {"tasks": [
-                {"id": "1", "title": "Follow", "type": "twitter_follow", "points": 10}
-            ]},
+            json=lambda: {
+                "tasks": [{"id": "1", "title": "Follow", "type": "twitter_follow", "points": 10}]
+            },
             raise_for_status=lambda: None,
         )
         executor = MyPlatformExecutor()

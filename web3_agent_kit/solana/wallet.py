@@ -43,6 +43,7 @@ class SolanaWallet:
     def _load_keypair(self):
         """Load or create keypair."""
         from solders.keypair import Keypair  # noqa: F811
+
         if self.config.private_key:
             pk_bytes = self._decode_private_key(self.config.private_key)
             self._keypair = Keypair.from_bytes(pk_bytes)
@@ -51,7 +52,11 @@ class SolanaWallet:
             if not path.exists():
                 raise FileNotFoundError(f"Keypair file not found: {path}")
             keypair_data = json.loads(path.read_text())
-            pk_bytes = bytes(keypair_data) if isinstance(keypair_data, list) else bytes(keypair_data["secret_key"])
+            pk_bytes = (
+                bytes(keypair_data)
+                if isinstance(keypair_data, list)
+                else bytes(keypair_data["secret_key"])
+            )
             self._keypair = Keypair.from_bytes(pk_bytes)
         else:
             self._keypair = Keypair()
@@ -61,6 +66,7 @@ class SolanaWallet:
         if len(key) <= 88:
             try:
                 import base58
+
                 return base58.b58decode(key)
             except ImportError:
                 pass
@@ -226,6 +232,7 @@ class SolanaWallet:
     def sign_message_base58(self, message: str) -> str:
         """Sign a message and return base58-encoded signature."""
         import base58
+
         sig_bytes = self.sign_message(message.encode("utf-8"))
         return base58.b58encode(sig_bytes).decode("utf-8")
 
@@ -234,6 +241,7 @@ class SolanaWallet:
     def export_private_key_base58(self) -> str:
         """Export private key as base58 string."""
         import base58
+
         return base58.b58encode(bytes(self._keypair)).decode("utf-8")
 
     def export_keypair_bytes(self) -> bytes:

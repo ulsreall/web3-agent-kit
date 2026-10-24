@@ -1,10 +1,12 @@
 """Tests for airdrop executor layer — browser automation."""
+
 from unittest.mock import MagicMock
 
 import pytest
 
 try:
     from playwright.sync_api import sync_playwright  # noqa: F401
+
     HAS_PLAYWRIGHT = True
 except ImportError:
     HAS_PLAYWRIGHT = False
@@ -27,6 +29,7 @@ from web3_agent_kit.airdrop.executor.zealy_exec import ZealyExecutor, ZealyResul
 
 # ─── BrowserConfig ────────────────────────────────────────────
 
+
 class TestBrowserConfig:
     def test_defaults(self):
         cfg = BrowserConfig()
@@ -47,6 +50,7 @@ class TestBrowserConfig:
 
 
 # ─── BrowserManager ──────────────────────────────────────────
+
 
 @requires_playwright
 class TestBrowserManager:
@@ -82,6 +86,7 @@ class TestBrowserManager:
 
 # ─── GleamTaskEntry ──────────────────────────────────────────
 
+
 class TestGleamTaskEntry:
     def test_create(self):
         task = GleamTaskEntry(
@@ -110,6 +115,7 @@ class TestGleamTaskEntry:
 
 # ─── GleamResult ─────────────────────────────────────────────
 
+
 class TestGleamResult:
     def test_create(self):
         result = GleamResult(
@@ -125,8 +131,11 @@ class TestGleamResult:
 
     def test_success_rate(self):
         result = GleamResult(
-            campaign_url="x", campaign_id="x",
-            total_tasks=10, completed_tasks=8, failed_tasks=2,
+            campaign_url="x",
+            campaign_id="x",
+            total_tasks=10,
+            completed_tasks=8,
+            failed_tasks=2,
         )
         assert abs(result.success_rate - 0.8) < 0.01
 
@@ -136,20 +145,27 @@ class TestGleamResult:
 
     def test_is_fully_completed(self):
         result = GleamResult(
-            campaign_url="x", campaign_id="x",
-            total_tasks=5, completed_tasks=5, failed_tasks=0,
+            campaign_url="x",
+            campaign_id="x",
+            total_tasks=5,
+            completed_tasks=5,
+            failed_tasks=0,
         )
         assert result.is_fully_completed is True
 
     def test_is_not_fully_completed(self):
         result = GleamResult(
-            campaign_url="x", campaign_id="x",
-            total_tasks=5, completed_tasks=3, failed_tasks=2,
+            campaign_url="x",
+            campaign_id="x",
+            total_tasks=5,
+            completed_tasks=3,
+            failed_tasks=2,
         )
         assert result.is_fully_completed is False
 
 
 # ─── GleamExecutor ───────────────────────────────────────────
+
 
 class TestGleamExecutor:
     def test_init(self):
@@ -168,6 +184,7 @@ class TestGleamExecutor:
 
 # ─── SocialExecutorConfig ────────────────────────────────────
 
+
 class TestSocialExecutorConfig:
     def test_defaults(self):
         cfg = SocialExecutorConfig()
@@ -183,6 +200,7 @@ class TestSocialExecutorConfig:
 
 
 # ─── TwitterExecutor ─────────────────────────────────────────
+
 
 class TestTwitterExecutor:
     def test_init(self):
@@ -206,6 +224,7 @@ class TestTwitterExecutor:
 
 # ─── DiscordExecutor ─────────────────────────────────────────
 
+
 class TestDiscordExecutor:
     def test_init(self):
         browser = MagicMock()
@@ -215,6 +234,7 @@ class TestDiscordExecutor:
 
 # ─── TelegramExecutor ────────────────────────────────────────
 
+
 class TestTelegramExecutor:
     def test_init(self):
         browser = MagicMock()
@@ -223,6 +243,7 @@ class TestTelegramExecutor:
 
 
 # ─── ZealyResult ─────────────────────────────────────────────
+
 
 class TestZealyResult:
     def test_create(self):
@@ -240,8 +261,12 @@ class TestZealyResult:
 
     def test_success_rate(self):
         result = ZealyResult(
-            community="X", community_url="x",
-            total_quests=4, completed_quests=3, failed_quests=1, xp_earned=100,
+            community="X",
+            community_url="x",
+            total_quests=4,
+            completed_quests=3,
+            failed_quests=1,
+            xp_earned=100,
         )
         assert abs(result.success_rate - 0.75) < 0.01
 
@@ -251,6 +276,7 @@ class TestZealyResult:
 
 
 # ─── ZealyExecutor ───────────────────────────────────────────
+
 
 class TestZealyExecutor:
     def test_init(self):

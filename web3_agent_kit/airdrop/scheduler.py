@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 
 class ScheduleFrequency(Enum):
     """Task execution frequency."""
+
     ONCE = "once"
     HOURLY = "hourly"
     DAILY = "daily"
@@ -40,6 +41,7 @@ class ScheduleFrequency(Enum):
 
 class TaskExecutionStatus(Enum):
     """Status of a task execution."""
+
     PENDING = "pending"
     RUNNING = "running"
     SUCCESS = "success"
@@ -50,6 +52,7 @@ class TaskExecutionStatus(Enum):
 @dataclass
 class ScheduledTask:
     """A scheduled airdrop task."""
+
     task_id: str
     name: str
     frequency: ScheduleFrequency
@@ -113,6 +116,7 @@ class ScheduledTask:
 @dataclass
 class SchedulerConfig:
     """Configuration for the scheduler."""
+
     check_interval: float = 60.0  # Check every 60 seconds
     max_concurrent: int = 3
     log_path: Optional[str] = None
@@ -124,6 +128,7 @@ class SchedulerConfig:
 @dataclass
 class ExecutionLog:
     """Log of a task execution."""
+
     task_id: str
     started_at: datetime
     finished_at: Optional[datetime] = None
@@ -518,8 +523,7 @@ class AirdropScheduler:
         task_id: Optional[str] = None,
         limit: int = 100,
     ) -> list[ExecutionLog]:
-        """Get execution log.
-        """
+        """Get execution log."""
         logs = self._execution_log
         if task_id:
             logs = [entry for entry in logs if entry.task_id == task_id]
@@ -605,17 +609,13 @@ class AirdropScheduler:
                 task.total_runs += 1
                 task.total_successes += 1
                 task.consecutive_failures = 0
-                task.next_run = self._calculate_next_run(
-                    task.frequency, task.target_time
-                )
+                task.next_run = self._calculate_next_run(task.frequency, task.target_time)
 
                 logger.info(f"Task {task.name} completed in {duration:.1f}s")
                 break
 
             except Exception as e:
-                logger.warning(
-                    f"Task {task.name} failed (attempt {attempt + 1}): {e}"
-                )
+                logger.warning(f"Task {task.name} failed (attempt {attempt + 1}): {e}")
                 if attempt < task.max_retries - 1:
                     await asyncio.sleep(task.retry_delay)
 
@@ -663,17 +663,13 @@ class AirdropScheduler:
                 task.total_runs += 1
                 task.total_successes += 1
                 task.consecutive_failures = 0
-                task.next_run = self._calculate_next_run(
-                    task.frequency, task.target_time
-                )
+                task.next_run = self._calculate_next_run(task.frequency, task.target_time)
 
                 logger.info(f"Task {task.name} completed in {duration:.1f}s")
                 break
 
             except Exception as e:
-                logger.warning(
-                    f"Task {task.name} failed (attempt {attempt + 1}): {e}"
-                )
+                logger.warning(f"Task {task.name} failed (attempt {attempt + 1}): {e}")
                 if attempt < task.max_retries - 1:
                     await asyncio.sleep(task.retry_delay)
 
@@ -710,9 +706,7 @@ class AirdropScheduler:
             minute = int(parts[1])
 
         if frequency == ScheduleFrequency.DAILY:
-            next_run = now.replace(
-                hour=hour, minute=minute, second=0, microsecond=0
-            )
+            next_run = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
             if next_run <= now:
                 next_run += timedelta(days=1)
             return next_run
@@ -742,9 +736,7 @@ class AirdropScheduler:
             days_ahead += 7
 
         next_run = now + timedelta(days=days_ahead)
-        return next_run.replace(
-            hour=hour, minute=minute, second=0, microsecond=0
-        )
+        return next_run.replace(hour=hour, minute=minute, second=0, microsecond=0)
 
     def _log_execution(self, log: ExecutionLog) -> None:
         """Log execution to file if configured."""

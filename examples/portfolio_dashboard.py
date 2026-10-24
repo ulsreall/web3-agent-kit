@@ -51,6 +51,7 @@ def main():
     # Get JSON
     print("\n📋 JSON:")
     import json
+
     print(json.dumps(summary.to_dict(), indent=2, default=str))
 
     # Track P&L (take snapshots over time)

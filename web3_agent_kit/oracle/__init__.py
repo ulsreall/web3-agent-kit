@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 
 class OracleSource(Enum):
     """Supported oracle sources."""
+
     CHAINLINK = "chainlink"
     PYTH = "pyth"
     REDSTONE = "redstone"
@@ -36,6 +37,7 @@ class OracleSource(Enum):
 @dataclass
 class PricePoint:
     """A single price data point from one source."""
+
     source: OracleSource
     price: float
     timestamp: int
@@ -45,11 +47,12 @@ class PricePoint:
 @dataclass
 class AggregatedPrice:
     """Aggregated price from multiple sources."""
-    pair: str                     # e.g. "ETH/USD"
-    price: float                  # Weighted median price
+
+    pair: str  # e.g. "ETH/USD"
+    price: float  # Weighted median price
     sources: list[PricePoint] = field(default_factory=list)
     num_sources: int = 0
-    deviation: float = 0.0        # Max deviation among sources
+    deviation: float = 0.0  # Max deviation among sources
     timestamp: int = 0
     stale: bool = False
 
@@ -85,14 +88,26 @@ CHAINLINK_FEEDS: dict[str, dict[str, str]] = {
 
 # Chainlink ABI (minimal for price feed)
 CHAINLINK_AGGREGATOR_ABI = [
-    {"inputs": [], "name": "latestRoundData", "outputs": [
-        {"name": "roundId", "type": "uint80"},
-        {"name": "answer", "type": "int256"},
-        {"name": "startedAt", "type": "uint256"},
-        {"name": "updatedAt", "type": "uint256"},
-        {"name": "answeredInRound", "type": "uint80"},
-    ], "stateMutability": "view", "type": "function"},
-    {"inputs": [], "name": "decimals", "outputs": [{"name": "", "type": "uint8"}], "stateMutability": "view", "type": "function"},
+    {
+        "inputs": [],
+        "name": "latestRoundData",
+        "outputs": [
+            {"name": "roundId", "type": "uint80"},
+            {"name": "answer", "type": "int256"},
+            {"name": "startedAt", "type": "uint256"},
+            {"name": "updatedAt", "type": "uint256"},
+            {"name": "answeredInRound", "type": "uint80"},
+        ],
+        "stateMutability": "view",
+        "type": "function",
+    },
+    {
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [{"name": "", "type": "uint8"}],
+        "stateMutability": "view",
+        "type": "function",
+    },
 ]
 
 
@@ -112,8 +127,8 @@ class OracleAggregator:
         self,
         rpc_url: str,
         sources: Optional[list[OracleSource]] = None,
-        max_age: int = 3600,   # Max age in seconds before considered stale
-        cache_ttl: int = 30,   # Cache TTL in seconds
+        max_age: int = 3600,  # Max age in seconds before considered stale
+        cache_ttl: int = 30,  # Cache TTL in seconds
     ):
         self.rpc_url = rpc_url
         self.sources = sources or [
@@ -195,14 +210,17 @@ class OracleAggregator:
 
         try:
             from web3 import Web3
+
             w3 = Web3(Web3.HTTPProvider(self.rpc_url))
             contract = w3.eth.contract(
                 address=Web3.to_checksum_address(feed_addr),
                 abi=CHAINLINK_AGGREGATOR_ABI,
             )
-            _round_id, answer, _started_at, updated_at, _answered = contract.functions.latestRoundData().call()
+            _round_id, answer, _started_at, updated_at, _answered = (
+                contract.functions.latestRoundData().call()
+            )
             decimals = contract.functions.decimals().call()
-            price = float(answer) / (10 ** decimals)
+            price = float(answer) / (10**decimals)
             return PricePoint(
                 source=OracleSource.CHAINLINK,
                 price=price,
@@ -216,6 +234,7 @@ class OracleAggregator:
     def _fetch_dexscreener(self, base: str, quote: str) -> Optional[PricePoint]:
         """Fetch from DexScreener API."""
         import requests
+
         try:
             # DexScreener search for top pair
             resp = requests.get(
@@ -242,14 +261,24 @@ class OracleAggregator:
     def _fetch_coingecko(self, base: str, quote: str) -> Optional[PricePoint]:
         """Fetch from CoinGecko free API."""
         import requests
+
         try:
             # Map symbols to CoinGecko IDs
             symbol_map = {
-                "ETH": "ethereum", "BTC": "bitcoin", "SOL": "solana",
-                "MATIC": "matic-network", "ARB": "arbitrum", "OP": "optimism",
-                "LINK": "chainlink", "UNI": "uniswap", "AAVE": "aave",
-                "USDC": "usd-coin", "USDT": "tether", "DAI": "dai",
-                "AVAX": "avalanche-2", "BNB": "binancecoin",
+                "ETH": "ethereum",
+                "BTC": "bitcoin",
+                "SOL": "solana",
+                "MATIC": "matic-network",
+                "ARB": "arbitrum",
+                "OP": "optimism",
+                "LINK": "chainlink",
+                "UNI": "uniswap",
+                "AAVE": "aave",
+                "USDC": "usd-coin",
+                "USDT": "tether",
+                "DAI": "dai",
+                "AVAX": "avalanche-2",
+                "BNB": "binancecoin",
             }
             cg_id = symbol_map.get(base.upper(), base.lower())
             resp = requests.get(

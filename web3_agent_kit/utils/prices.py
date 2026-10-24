@@ -86,7 +86,9 @@ def get_price_usd(asset: str, fallback: Optional[float] = None) -> float:
     except Exception as e:
         logger.warning(
             "Failed to fetch price for %s (coin_id=%s): %s. Using fallback.",
-            asset, coin_id, e,
+            asset,
+            coin_id,
+            e,
         )
         if fallback is not None:
             return fallback

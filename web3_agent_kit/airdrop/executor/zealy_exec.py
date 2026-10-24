@@ -154,9 +154,7 @@ class ZealyExecutor:
 
         try:
             # Wait for quest cards to render
-            self._page.wait_for_selector(
-                self.SELECTORS["quest_card"], timeout=15000
-            )
+            self._page.wait_for_selector(self.SELECTORS["quest_card"], timeout=15000)
 
             cards = self._page.query_selector_all(self.SELECTORS["quest_card"])
             logger.info(f"Zealy: found {len(cards)} quest cards")
@@ -265,9 +263,7 @@ class ZealyExecutor:
                     result.skipped_quests += 1
                     continue
 
-                logger.info(
-                    f"Zealy: [{i + 1}/{len(quests)}] {quest.title} ({quest.xp_reward} XP)"
-                )
+                logger.info(f"Zealy: [{i + 1}/{len(quests)}] {quest.title} ({quest.xp_reward} XP)")
 
                 success = self.complete_quest(quest)
                 if success:
@@ -333,7 +329,9 @@ class ZealyExecutor:
                 url = link.get_attribute("href") or ""
 
             # Build a CSS selector for clicking this specific card
-            selector = f'[data-testid*="quest"]:nth-child({index + 1}), .quest-card:nth-child({index + 1})'
+            selector = (
+                f'[data-testid*="quest"]:nth-child({index + 1}), .quest-card:nth-child({index + 1})'
+            )
 
             quest_id = element.get_attribute("data-quest-id") or str(index)
 
@@ -362,13 +360,15 @@ class ZealyExecutor:
                 text = link.inner_text().strip()
                 href = link.get_attribute("href") or ""
                 if text and href:
-                    quests.append(ZealyQuestEntry(
-                        quest_id=str(i),
-                        title=text,
-                        url=href,
-                        selector=f'a[href*="quest"]:nth-child({i + 1})',
-                        metadata={"index": i},
-                    ))
+                    quests.append(
+                        ZealyQuestEntry(
+                            quest_id=str(i),
+                            title=text,
+                            url=href,
+                            selector=f'a[href*="quest"]:nth-child({i + 1})',
+                            metadata={"index": i},
+                        )
+                    )
         except Exception as e:
             logger.debug(f"Link parsing failed: {e}")
         return quests
@@ -476,8 +476,17 @@ class ZealyExecutor:
 
     def _is_social_quest(self, quest: ZealyQuestEntry) -> bool:
         """Check if quest is social media related."""
-        social_keywords = ["twitter", "follow", "retweet", "like", "discord",
-                          "telegram", "youtube", "subscribe", "join"]
+        social_keywords = [
+            "twitter",
+            "follow",
+            "retweet",
+            "like",
+            "discord",
+            "telegram",
+            "youtube",
+            "subscribe",
+            "join",
+        ]
         text = f"{quest.title} {quest.quest_type}".lower()
         return any(kw in text for kw in social_keywords)
 
@@ -515,6 +524,7 @@ class ZealyExecutor:
     def _parse_xp(self, text: str) -> int:
         """Parse XP amount from text."""
         import re
+
         match = re.search(r"(\d+)", text.replace(",", ""))
         return int(match.group(1)) if match else 0
 
@@ -531,5 +541,6 @@ class ZealyExecutor:
     def _random_delay(self) -> None:
         """Sleep a random human-like delay."""
         import random
+
         delay = random.uniform(self.QUEST_DELAY_MIN, self.QUEST_DELAY_MAX)
         time.sleep(delay)

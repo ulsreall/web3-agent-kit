@@ -16,21 +16,23 @@ logger = logging.getLogger(__name__)
 
 class GasPriority(Enum):
     """Gas priority levels."""
-    LOW = "low"           # Cheapest, can wait
-    MEDIUM = "medium"     # Normal speed
-    HIGH = "high"         # Fast, time-sensitive
-    URGENT = "urgent"     # ASAP, no waiting
+
+    LOW = "low"  # Cheapest, can wait
+    MEDIUM = "medium"  # Normal speed
+    HIGH = "high"  # Fast, time-sensitive
+    URGENT = "urgent"  # ASAP, no waiting
 
 
 @dataclass
 class GasEstimate:
     """Gas estimate for a transaction."""
+
     gas_limit: int
-    base_fee: float           # In gwei
-    priority_fee: float       # In gwei (EIP-1559)
-    max_fee: float            # In gwei
-    total_cost_eth: float     # Total cost in ETH
-    total_cost_usd: float     # Total cost in USD
+    base_fee: float  # In gwei
+    priority_fee: float  # In gwei (EIP-1559)
+    max_fee: float  # In gwei
+    total_cost_eth: float  # Total cost in ETH
+    total_cost_usd: float  # Total cost in USD
     priority: GasPriority
     chain: Chain
 
@@ -38,8 +40,9 @@ class GasEstimate:
 @dataclass
 class GasRecommendation:
     """Gas timing recommendation."""
+
     current_gwei: float
-    recommended_action: str    # "execute_now", "wait", "batch"
+    recommended_action: str  # "execute_now", "wait", "batch"
     estimated_savings_pct: float
     optimal_gwei: float
     estimated_wait_hours: float
@@ -49,8 +52,9 @@ class GasRecommendation:
 @dataclass
 class BatchResult:
     """Result of batching multiple transactions."""
+
     tx_count: int
-    total_gas_saved: float     # ETH saved vs individual txs
+    total_gas_saved: float  # ETH saved vs individual txs
     estimated_time_s: float
     status: str
 
@@ -386,8 +390,7 @@ class GasOptimizer:
         # Keep only last 24 hours
         cutoff = now - 86400
         self._gas_history[chain_key] = [
-            (ts, g) for ts, g in self._gas_history[chain_key]
-            if ts > cutoff
+            (ts, g) for ts, g in self._gas_history[chain_key] if ts > cutoff
         ]
 
         return self._gas_history[chain_key]

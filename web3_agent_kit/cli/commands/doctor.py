@@ -32,7 +32,10 @@ def doctor():
     # ── Package import path ──
     try:
         import web3_agent_kit
-        all_ok &= _check("web3_agent_kit import", True, getattr(web3_agent_kit, "__version__", "ok"))
+
+        all_ok &= _check(
+            "web3_agent_kit import", True, getattr(web3_agent_kit, "__version__", "ok")
+        )
     except Exception as e:
         all_ok &= _check("web3_agent_kit import", False, str(e))
 
@@ -70,6 +73,7 @@ def doctor():
     if env_exists:
         try:
             from dotenv import load_dotenv
+
             load_dotenv(env_path, override=False)
         except Exception:
             pass
@@ -86,6 +90,14 @@ def doctor():
     # ── Summary ──
     click.echo()
     if all_ok:
-        click.echo(click.style("  🎉 All checks passed! You're ready to use WAK.\n", fg="green", bold=True))
+        click.echo(
+            click.style("  🎉 All checks passed! You're ready to use WAK.\n", fg="green", bold=True)
+        )
     else:
-        click.echo(click.style("  ⚠️  Some checks failed. Fix issues above for full functionality.\n", fg="yellow", bold=True))
+        click.echo(
+            click.style(
+                "  ⚠️  Some checks failed. Fix issues above for full functionality.\n",
+                fg="yellow",
+                bold=True,
+            )
+        )

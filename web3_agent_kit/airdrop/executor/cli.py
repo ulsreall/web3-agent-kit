@@ -34,6 +34,7 @@ def _ensure_playwright():
     """Check if playwright is available."""
     try:
         from .browser import HAS_PLAYWRIGHT
+
         if not HAS_PLAYWRIGHT:
             click.echo(
                 click.style(
@@ -74,7 +75,9 @@ def farm():
 @click.option("--delay-min", default=2.0, help="Minimum delay between tasks (seconds)")
 @click.option("--delay-max", default=5.0, help="Maximum delay between tasks (seconds)")
 @click.option("--screenshot-dir", default=None, help="Directory for debug screenshots")
-def farm_gleam(url: str, headless: bool, proxy: str, delay_min: float, delay_max: float, screenshot_dir: str):
+def farm_gleam(
+    url: str, headless: bool, proxy: str, delay_min: float, delay_max: float, screenshot_dir: str
+):
     """Farm a Gleam.io campaign.
 
     URL is the full Gleam.io contest URL.
@@ -104,9 +107,7 @@ def farm_gleam(url: str, headless: bool, proxy: str, delay_min: float, delay_max
             executor.TASK_DELAY_MIN = delay_min
             executor.TASK_DELAY_MAX = delay_max
 
-            with click.progressbar(
-                length=100, label="Completing tasks", show_pos=True
-            ) as bar:
+            with click.progressbar(length=100, label="Completing tasks", show_pos=True) as bar:
                 result = executor.complete_all(url, tracker=tracker)
                 bar.update(100)
 
@@ -151,9 +152,7 @@ def farm_zealy(url: str, headless: bool, proxy: str, delay_min: float, delay_max
             executor.QUEST_DELAY_MIN = delay_min
             executor.QUEST_DELAY_MAX = delay_max
 
-            with click.progressbar(
-                length=100, label="Completing quests", show_pos=True
-            ) as bar:
+            with click.progressbar(length=100, label="Completing quests", show_pos=True) as bar:
                 result = executor.complete_all(url, tracker=tracker)
                 bar.update(100)
 
@@ -318,7 +317,11 @@ def browser_sessions():
             size = cookie_file.stat().st_size if has_cookies else 0
             modified = time.ctime(cookie_file.stat().st_mtime) if has_cookies else "never"
 
-            status = click.style("✓ cookies", fg="green") if has_cookies else click.style("○ no cookies", fg="yellow")
+            status = (
+                click.style("✓ cookies", fg="green")
+                if has_cookies
+                else click.style("○ no cookies", fg="yellow")
+            )
             click.echo(f"   {click.style(name, bold=True)} — {status}")
             if has_cookies:
                 click.echo(f"     Size: {size:,} bytes, Modified: {modified}")
@@ -327,7 +330,11 @@ def browser_sessions():
             for subdir in sorted(session_dir.iterdir()):
                 if subdir.is_dir():
                     sub_cookie = subdir / "cookies.json"
-                    sub_status = click.style("✓", fg="green") if sub_cookie.exists() else click.style("○", fg="yellow")
+                    sub_status = (
+                        click.style("✓", fg="green")
+                        if sub_cookie.exists()
+                        else click.style("○", fg="yellow")
+                    )
                     click.echo(f"     └─ {subdir.name} {sub_status}")
 
     click.echo()

@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 class CampaignStatus(Enum):
     """Campaign lifecycle status."""
+
     UPCOMING = "upcoming"
     ACTIVE = "active"
     ENDING_SOON = "ending_soon"
@@ -41,6 +42,7 @@ class CampaignStatus(Enum):
 
 class CampaignCategory(Enum):
     """Campaign category."""
+
     DEFI = "defi"
     NFT = "nft"
     SOCIAL = "social"
@@ -56,6 +58,7 @@ class CampaignCategory(Enum):
 @dataclass
 class DiscoveredCampaign:
     """A discovered campaign from any platform."""
+
     platform: str
     campaign_id: str
     title: str
@@ -117,10 +120,11 @@ class DiscoveredCampaign:
 @dataclass
 class DiscoveryConfig:
     """Configuration for campaign discovery."""
+
     # Platforms to scan
-    platforms: list[str] = field(default_factory=lambda: [
-        "galxe", "zealy", "layer3", "questn", "taskon", "intract", "port3"
-    ])
+    platforms: list[str] = field(
+        default_factory=lambda: ["galxe", "zealy", "layer3", "questn", "taskon", "intract", "port3"]
+    )
     # Minimum points to include
     min_points: int = 0
     # Only include active campaigns
@@ -203,14 +207,16 @@ class CampaignDiscovery:
         """
         self.config = config or DiscoveryConfig()
         self.session = requests.Session()
-        self.session.headers.update({
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/120.0.0.0 Safari/537.36"
-            ),
-            "Accept": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "User-Agent": (
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                    "AppleWebKit/537.36 (KHTML, like Gecko) "
+                    "Chrome/120.0.0.0 Safari/537.36"
+                ),
+                "Accept": "application/json",
+            }
+        )
         if self.config.proxy:
             self.session.proxies = {
                 "http": self.config.proxy,
@@ -247,14 +253,10 @@ class CampaignDiscovery:
                 logger.info(f"Scanning {platform}...")
                 campaigns = scanner()
                 new_campaigns = [
-                    c for c in campaigns
-                    if self._campaign_key(c) not in self._seen_campaigns
+                    c for c in campaigns if self._campaign_key(c) not in self._seen_campaigns
                 ]
                 all_campaigns.extend(new_campaigns)
-                logger.info(
-                    f"{platform}: found {len(campaigns)} total, "
-                    f"{len(new_campaigns)} new"
-                )
+                logger.info(f"{platform}: found {len(campaigns)} total, {len(new_campaigns)} new")
                 await asyncio.sleep(self.config.rate_limit_delay)
             except Exception as e:
                 logger.error(f"Failed to scan {platform}: {e}")
@@ -269,8 +271,7 @@ class CampaignDiscovery:
         self._save_seen(filtered)
 
         logger.info(
-            f"Discovery complete: {len(filtered)} campaigns "
-            f"(from {len(all_campaigns)} raw)"
+            f"Discovery complete: {len(filtered)} campaigns (from {len(all_campaigns)} raw)"
         )
         return filtered
 
@@ -304,14 +305,9 @@ class CampaignDiscovery:
             List of new (unseen) campaigns.
         """
         all_campaigns = await self.discover_all()
-        return [
-            c for c in all_campaigns
-            if self._campaign_key(c) not in self._seen_campaigns
-        ]
+        return [c for c in all_campaigns if self._campaign_key(c) not in self._seen_campaigns]
 
-    async def get_high_value_campaigns(
-        self, min_points: int = 100
-    ) -> list[DiscoveredCampaign]:
+    async def get_high_value_campaigns(self, min_points: int = 100) -> list[DiscoveredCampaign]:
         """Get only high-value campaigns.
 
         Args:
@@ -387,16 +383,8 @@ class CampaignDiscovery:
                 resp.raise_for_status()
                 data = resp.json()
 
-                edges = (
-                    data.get("data", {})
-                    .get("campaignList", {})
-                    .get("edges", [])
-                )
-                page_info = (
-                    data.get("data", {})
-                    .get("campaignList", {})
-                    .get("pageInfo", {})
-                )
+                edges = data.get("data", {}).get("campaignList", {}).get("edges", [])
+                page_info = data.get("data", {}).get("campaignList", {}).get("pageInfo", {})
 
                 for edge in edges:
                     node = edge.get("node", {})
@@ -428,19 +416,21 @@ class CampaignDiscovery:
             if resp.status_code == 200:
                 data = resp.json()
                 communities = data if isinstance(data, list) else data.get("data", [])
-                for comm in communities[:self.config.max_per_platform]:
+                for comm in communities[: self.config.max_per_platform]:
                     slug = comm.get("slug", "")
                     name = comm.get("name", "")
-                    campaigns.append(DiscoveredCampaign(
-                        platform="zealy",
-                        campaign_id=slug,
-                        title=f"{name} Community Quests",
-                        url=f"https://zealy.io/c/{slug}",
-                        description=comm.get("description", "")[:200],
-                        space_name=name,
-                        participant_count=comm.get("memberCount", 0),
-                        tags=comm.get("tags", []),
-                    ))
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="zealy",
+                            campaign_id=slug,
+                            title=f"{name} Community Quests",
+                            url=f"https://zealy.io/c/{slug}",
+                            description=comm.get("description", "")[:200],
+                            space_name=name,
+                            participant_count=comm.get("memberCount", 0),
+                            tags=comm.get("tags", []),
+                        )
+                    )
         except Exception as e:
             logger.error(f"Zealy scan error: {e}")
         return campaigns
@@ -457,20 +447,22 @@ class CampaignDiscovery:
             if resp.status_code == 200:
                 data = resp.json()
                 quests = data if isinstance(data, list) else data.get("data", [])
-                for quest in quests[:self.config.max_per_platform]:
-                    campaigns.append(DiscoveredCampaign(
-                        platform="layer3",
-                        campaign_id=str(quest.get("id", "")),
-                        title=quest.get("title", "Untitled"),
-                        url=f"https://layer3.xyz/quests/{quest.get('slug', quest.get('id', ''))}",
-                        description=quest.get("description", "")[:200],
-                        points=quest.get("xp", 0),
-                        chain=quest.get("chain", ""),
-                        participant_count=quest.get("completions", 0),
-                        reward_amount=str(quest.get("reward", "")),
-                        reward_token=quest.get("rewardToken", ""),
-                        tags=quest.get("tags", []),
-                    ))
+                for quest in quests[: self.config.max_per_platform]:
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="layer3",
+                            campaign_id=str(quest.get("id", "")),
+                            title=quest.get("title", "Untitled"),
+                            url=f"https://layer3.xyz/quests/{quest.get('slug', quest.get('id', ''))}",
+                            description=quest.get("description", "")[:200],
+                            points=quest.get("xp", 0),
+                            chain=quest.get("chain", ""),
+                            participant_count=quest.get("completions", 0),
+                            reward_amount=str(quest.get("reward", "")),
+                            reward_token=quest.get("rewardToken", ""),
+                            tags=quest.get("tags", []),
+                        )
+                    )
         except Exception as e:
             logger.error(f"Layer3 scan error: {e}")
         return campaigns
@@ -488,16 +480,18 @@ class CampaignDiscovery:
                 data = resp.json()
                 items = data.get("data", {}).get("list", [])
                 for item in items:
-                    campaigns.append(DiscoveredCampaign(
-                        platform="questn",
-                        campaign_id=str(item.get("id", "")),
-                        title=item.get("title", "Untitled"),
-                        url=f"https://questn.com/detail/{item.get('id', '')}",
-                        description=item.get("description", "")[:200],
-                        points=item.get("points", 0),
-                        participant_count=item.get("participantCount", 0),
-                        tags=item.get("tags", []),
-                    ))
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="questn",
+                            campaign_id=str(item.get("id", "")),
+                            title=item.get("title", "Untitled"),
+                            url=f"https://questn.com/detail/{item.get('id', '')}",
+                            description=item.get("description", "")[:200],
+                            points=item.get("points", 0),
+                            participant_count=item.get("participantCount", 0),
+                            tags=item.get("tags", []),
+                        )
+                    )
         except Exception as e:
             logger.error(f"QuestN scan error: {e}")
         return campaigns
@@ -515,15 +509,19 @@ class CampaignDiscovery:
                 data = resp.json()
                 items = data.get("data", {}).get("list", [])
                 for item in items:
-                    campaigns.append(DiscoveredCampaign(
-                        platform="taskon",
-                        campaign_id=str(item.get("id", "")),
-                        title=item.get("title", "Untitled"),
-                        url=item.get("url", f"https://taskon.xyz/campaign/{item.get('id', '')}"),
-                        description=item.get("description", "")[:200],
-                        points=item.get("points", 0),
-                        participant_count=item.get("participantCount", 0),
-                    ))
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="taskon",
+                            campaign_id=str(item.get("id", "")),
+                            title=item.get("title", "Untitled"),
+                            url=item.get(
+                                "url", f"https://taskon.xyz/campaign/{item.get('id', '')}"
+                            ),
+                            description=item.get("description", "")[:200],
+                            points=item.get("points", 0),
+                            participant_count=item.get("participantCount", 0),
+                        )
+                    )
         except Exception as e:
             logger.error(f"TaskOn scan error: {e}")
         return campaigns
@@ -540,17 +538,19 @@ class CampaignDiscovery:
             if resp.status_code == 200:
                 data = resp.json()
                 items = data if isinstance(data, list) else data.get("data", [])
-                for item in items[:self.config.max_per_platform]:
-                    campaigns.append(DiscoveredCampaign(
-                        platform="intract",
-                        campaign_id=str(item.get("id", "")),
-                        title=item.get("title", "Untitled"),
-                        url=f"https://intract.io/quest/{item.get('slug', item.get('id', ''))}",
-                        description=item.get("description", "")[:200],
-                        points=item.get("xp", 0),
-                        participant_count=item.get("participants", 0),
-                        tags=item.get("tags", []),
-                    ))
+                for item in items[: self.config.max_per_platform]:
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="intract",
+                            campaign_id=str(item.get("id", "")),
+                            title=item.get("title", "Untitled"),
+                            url=f"https://intract.io/quest/{item.get('slug', item.get('id', ''))}",
+                            description=item.get("description", "")[:200],
+                            points=item.get("xp", 0),
+                            participant_count=item.get("participants", 0),
+                            tags=item.get("tags", []),
+                        )
+                    )
         except Exception as e:
             logger.error(f"Intract scan error: {e}")
         return campaigns
@@ -567,16 +567,18 @@ class CampaignDiscovery:
             if resp.status_code == 200:
                 data = resp.json()
                 items = data if isinstance(data, list) else data.get("data", [])
-                for item in items[:self.config.max_per_platform]:
-                    campaigns.append(DiscoveredCampaign(
-                        platform="port3",
-                        campaign_id=str(item.get("id", "")),
-                        title=item.get("title", "Untitled"),
-                        url=f"https://port3.io/quest/{item.get('id', '')}",
-                        description=item.get("description", "")[:200],
-                        points=item.get("points", 0),
-                        participant_count=item.get("participants", 0),
-                    ))
+                for item in items[: self.config.max_per_platform]:
+                    campaigns.append(
+                        DiscoveredCampaign(
+                            platform="port3",
+                            campaign_id=str(item.get("id", "")),
+                            title=item.get("title", "Untitled"),
+                            url=f"https://port3.io/quest/{item.get('id', '')}",
+                            description=item.get("description", "")[:200],
+                            points=item.get("points", 0),
+                            participant_count=item.get("participants", 0),
+                        )
+                    )
         except Exception as e:
             logger.error(f"Port3 scan error: {e}")
         return campaigns
@@ -638,9 +640,7 @@ class CampaignDiscovery:
             logger.debug(f"Failed to parse Galxe campaign: {e}")
             return None
 
-    def _filter_campaigns(
-        self, campaigns: list[DiscoveredCampaign]
-    ) -> list[DiscoveredCampaign]:
+    def _filter_campaigns(self, campaigns: list[DiscoveredCampaign]) -> list[DiscoveredCampaign]:
         """Apply configured filters to campaigns."""
         filtered = []
         for c in campaigns:

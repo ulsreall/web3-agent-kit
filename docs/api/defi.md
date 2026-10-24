@@ -26,6 +26,7 @@ DeFi protocol integrations — Uniswap, Aerodrome, Aave, Curve.
 ```python
 from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
+
 chain_manager = ChainManager(chains=[Chain.BASE])
 wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
 uniswap = Uniswap(chain_manager=chain_manager, slippage=0.5)
@@ -50,6 +51,7 @@ print(f"TX: {result.tx_hash}")
 Aerodrome is a DEX on Base that uses a Uniswap V2-compatible router.
 ```python
 from web3_agent_kit.defi import Aerodrome
+
 aerodrome = Aerodrome(chain_manager=chain_manager)
 result = aerodrome.execute(wallet, "ETH", "USDC", 0.1)
 ```

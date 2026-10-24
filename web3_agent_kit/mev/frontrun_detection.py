@@ -58,11 +58,13 @@ def detect_frontrun(
             # Higher gas = likely frontrun attempt
             if pending_gas > our_gas_price and our_gas_price > 0:
                 gas_ratio = pending_gas / our_gas_price
-                competing_txs.append({
-                    "hash": pending.get("hash", "unknown"),
-                    "gas_price": pending_gas,
-                    "gas_ratio": round(gas_ratio, 2),
-                })
+                competing_txs.append(
+                    {
+                        "hash": pending.get("hash", "unknown"),
+                        "gas_price": pending_gas,
+                        "gas_ratio": round(gas_ratio, 2),
+                    }
+                )
                 risk_score += min(30, int(gas_ratio * 10))
 
     if competing_txs:

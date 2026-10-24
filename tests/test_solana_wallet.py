@@ -110,7 +110,10 @@ class TestSolanaWallet:
         wallet = SolanaWallet()
         mock_client = AsyncMock()
         mock_client.get_latest_blockhash = AsyncMock(
-            return_value={"blockhash": "5KQx2H8g3Bz6fNnQyVvRc9JmWpLk4Dh7TsXeA1CbEZaF", "lastValidBlockHeight": 123456}
+            return_value={
+                "blockhash": "5KQx2H8g3Bz6fNnQyVvRc9JmWpLk4Dh7TsXeA1CbEZaF",
+                "lastValidBlockHeight": 123456,
+            }
         )
         mock_client.send_transaction = AsyncMock(return_value="tx_sig_123")
         wallet._client = mock_client

@@ -141,6 +141,7 @@ WETH = {
 
 class RiskLevel(Enum):
     """Token risk assessment."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -151,12 +152,12 @@ class RiskLevel(Enum):
 class SniperConfig:
     """Configuration for token sniper."""
 
-    max_buy: float = 0.05           # max ETH per snipe
-    auto_buy: bool = True           # auto-buy safe tokens
-    honeypot_check: bool = True     # check if token is honeypot
-    min_liquidity: float = 1.0      # min ETH liquidity to consider
-    max_buy_tax: float = 10.0       # max buy tax percentage
-    max_sell_tax: float = 10.0      # max sell tax percentage
+    max_buy: float = 0.05  # max ETH per snipe
+    auto_buy: bool = True  # auto-buy safe tokens
+    honeypot_check: bool = True  # check if token is honeypot
+    min_liquidity: float = 1.0  # min ETH liquidity to consider
+    max_buy_tax: float = 10.0  # max buy tax percentage
+    max_sell_tax: float = 10.0  # max sell tax percentage
     blacklisted_tokens: list[str] = field(default_factory=list)
     whitelisted_tokens: list[str] = field(default_factory=list)
     callback: Optional[Callable] = None  # callback(new_pair_info)
@@ -293,8 +294,9 @@ class TokenSniper:
 
         return pairs
 
-    def _analyze_pair(self, pair_address: str, token0: str, token1: str,
-                      chain: Chain, block_number: int) -> Optional[NewPair]:
+    def _analyze_pair(
+        self, pair_address: str, token0: str, token1: str, chain: Chain, block_number: int
+    ) -> Optional[NewPair]:
         """Analyze a new pair for safety and profitability."""
         w3 = self.chain_manager.get_web3(chain)
 
@@ -365,8 +367,9 @@ class TokenSniper:
             score=score,
         )
 
-    def _assess_risk(self, token_address: str, liquidity_eth: float,
-                     chain: Chain) -> tuple[RiskLevel, float]:
+    def _assess_risk(
+        self, token_address: str, liquidity_eth: float, chain: Chain
+    ) -> tuple[RiskLevel, float]:
         """
         Assess token risk level.
 

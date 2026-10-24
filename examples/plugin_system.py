@@ -4,6 +4,7 @@ from web3_agent_kit.plugins import Plugin, PluginManager, PluginMeta
 
 # === Custom Plugin Example ===
 
+
 class WhaleWatcherPlugin(Plugin):
     """Monitor whale wallet movements."""
 

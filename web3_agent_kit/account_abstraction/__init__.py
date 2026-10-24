@@ -32,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 class AAChain(Enum):
     """Supported chains for ERC-4337."""
+
     ETHEREUM = "ethereum"
     BASE = "base"
     ARBITRUM = "arbitrum"
@@ -70,6 +71,7 @@ KNOWN_FACTORIES: dict[str, str] = {
 @dataclass
 class UserOperation:
     """ERC-4337 UserOperation structure."""
+
     sender: str
     nonce: int
     init_code: str = "0x"
@@ -86,6 +88,7 @@ class UserOperation:
 @dataclass
 class UserOpResult:
     """Result of a UserOperation submission."""
+
     user_op_hash: str
     tx_hash: Optional[str] = None
     status: str = "pending"  # pending, confirmed, failed
@@ -97,6 +100,7 @@ class UserOpResult:
 @dataclass
 class AAWalletInfo:
     """Smart account wallet information."""
+
     address: str
     owner: str
     factory: str
@@ -154,22 +158,27 @@ class AAPaymaster:
             raise ValueError("Paymaster URL and API key required for verifying paymaster")
 
         import requests
+
         payload = {
             "jsonrpc": "2.0",
             "method": "pm_sponsorUserOperation",
-            "params": [{
-                "sender": user_op.sender,
-                "nonce": hex(user_op.nonce),
-                "initCode": user_op.init_code,
-                "callData": user_op.call_data,
-                "callGasLimit": hex(user_op.call_gas_limit),
-                "verificationGasLimit": hex(user_op.verification_gas_limit),
-                "preVerificationGas": hex(user_op.pre_verification_gas),
-                "maxFeePerGas": hex(user_op.max_fee_per_gas),
-                "maxPriorityFeePerGas": hex(user_op.max_priority_fee_per_gas),
-                "paymasterAndData": "0x",
-                "signature": user_op.signature,
-            }, entry_point, hex(chain_id)],
+            "params": [
+                {
+                    "sender": user_op.sender,
+                    "nonce": hex(user_op.nonce),
+                    "initCode": user_op.init_code,
+                    "callData": user_op.call_data,
+                    "callGasLimit": hex(user_op.call_gas_limit),
+                    "verificationGasLimit": hex(user_op.verification_gas_limit),
+                    "preVerificationGas": hex(user_op.pre_verification_gas),
+                    "maxFeePerGas": hex(user_op.max_fee_per_gas),
+                    "maxPriorityFeePerGas": hex(user_op.max_priority_fee_per_gas),
+                    "paymasterAndData": "0x",
+                    "signature": user_op.signature,
+                },
+                entry_point,
+                hex(chain_id),
+            ],
             "id": 1,
         }
 
@@ -237,6 +246,7 @@ class AAWallet:
         self.entry_point = ENTRY_POINTS.get(chain, ENTRY_POINTS["ethereum"])
 
         from web3 import Web3
+
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
 
     def get_counterfactual_address(self, owner: str, salt: int = 0) -> str:
@@ -247,10 +257,10 @@ class AAWallet:
         # In production, this should call the factory's getAddress()
         init_code = self._encode_init_code(owner, salt)
         address = Web3.keccak(
-            bytes.fromhex("ff") +
-            Web3.to_bytes(hexstr=self.factory_address) +
-            Web3.to_bytes(salt).rjust(32, b'\x00') +
-            Web3.keccak(hexstr=init_code)
+            bytes.fromhex("ff")
+            + Web3.to_bytes(hexstr=self.factory_address)
+            + Web3.to_bytes(salt).rjust(32, b"\x00")
+            + Web3.keccak(hexstr=init_code)
         )[12:].hex()
         return Web3.to_checksum_address("0x" + address)
 
@@ -273,7 +283,9 @@ class AAWallet:
         if not deployed:
             # Deploy via factory — this is a simplified representation
             # In production, send a UserOp with initCode set
-            logger.info(f"Account {address} not yet deployed. Use send_user_op with init_code to deploy.")
+            logger.info(
+                f"Account {address} not yet deployed. Use send_user_op with init_code to deploy."
+            )
 
         return AAWalletInfo(
             address=address,
@@ -333,7 +345,9 @@ class AAWallet:
         if self.paymaster:
             pm_data = self.paymaster.get_paymaster_data(user_op, self.entry_point, chain_id)
             user_op.paymaster_and_data = pm_data["paymasterAndData"]
-            user_op.verification_gas_limit = pm_data.get("verificationGasLimit", user_op.verification_gas_limit)
+            user_op.verification_gas_limit = pm_data.get(
+                "verificationGasLimit", user_op.verification_gas_limit
+            )
 
         # Submit to bundler
         uo_hash = self._submit_to_bundler(user_op)
@@ -351,19 +365,22 @@ class AAWallet:
         payload = {
             "jsonrpc": "2.0",
             "method": "eth_sendUserOperation",
-            "params": [{
-                "sender": user_op.sender,
-                "nonce": hex(user_op.nonce),
-                "initCode": user_op.init_code,
-                "callData": user_op.call_data,
-                "callGasLimit": hex(user_op.call_gas_limit),
-                "verificationGasLimit": hex(user_op.verification_gas_limit),
-                "preVerificationGas": hex(user_op.pre_verification_gas),
-                "maxFeePerGas": hex(user_op.max_fee_per_gas),
-                "maxPriorityFeePerGas": hex(user_op.max_priority_fee_per_gas),
-                "paymasterAndData": user_op.paymaster_and_data,
-                "signature": user_op.signature,
-            }, self.entry_point],
+            "params": [
+                {
+                    "sender": user_op.sender,
+                    "nonce": hex(user_op.nonce),
+                    "initCode": user_op.init_code,
+                    "callData": user_op.call_data,
+                    "callGasLimit": hex(user_op.call_gas_limit),
+                    "verificationGasLimit": hex(user_op.verification_gas_limit),
+                    "preVerificationGas": hex(user_op.pre_verification_gas),
+                    "maxFeePerGas": hex(user_op.max_fee_per_gas),
+                    "maxPriorityFeePerGas": hex(user_op.max_priority_fee_per_gas),
+                    "paymasterAndData": user_op.paymaster_and_data,
+                    "signature": user_op.signature,
+                },
+                self.entry_point,
+            ],
             "id": 1,
         }
 
@@ -382,13 +399,17 @@ class AAWallet:
     def _encode_init_code(self, owner: str, salt: int) -> str:
         """Encode factory init code for account deployment."""
         from web3 import Web3
+
         # SimpleAccount factory: createAccount(owner, salt)
         factory_abi = ["function createAccount(address owner,uint256 salt)"]
         contract = self.w3.eth.contract(address=self.factory_address, abi=factory_abi)
-        return self.factory_address + contract.encode_abi(
-            "createAccount",
-            args=[Web3.to_checksum_address(owner), salt],
-        ).hex()
+        return (
+            self.factory_address
+            + contract.encode_abi(
+                "createAccount",
+                args=[Web3.to_checksum_address(owner), salt],
+            ).hex()
+        )
 
     def get_account_info(self, address: str) -> AAWalletInfo:
         """Get smart account information."""

@@ -258,5 +258,9 @@ class TestYieldOptimizer:
 
     def test_risk_priority(self):
         """Test risk priority ordering."""
-        assert YieldOptimizer._risk_priority(RiskLevel.LOW) < YieldOptimizer._risk_priority(RiskLevel.MEDIUM)
-        assert YieldOptimizer._risk_priority(RiskLevel.MEDIUM) < YieldOptimizer._risk_priority(RiskLevel.HIGH)
+        assert YieldOptimizer._risk_priority(RiskLevel.LOW) < YieldOptimizer._risk_priority(
+            RiskLevel.MEDIUM
+        )
+        assert YieldOptimizer._risk_priority(RiskLevel.MEDIUM) < YieldOptimizer._risk_priority(
+            RiskLevel.HIGH
+        )

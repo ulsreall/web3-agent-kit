@@ -62,7 +62,11 @@ TOOLS: list[ToolSpec] = [
             "type": "object",
             "properties": {
                 "address": {"type": "string", "description": "Wallet address"},
-                "chain": {"type": "string", "description": "Chain name (e.g. ethereum, base, solana)", "default": "ethereum"},
+                "chain": {
+                    "type": "string",
+                    "description": "Chain name (e.g. ethereum, base, solana)",
+                    "default": "ethereum",
+                },
             },
             "required": ["address"],
         },
@@ -108,7 +112,11 @@ TOOLS: list[ToolSpec] = [
                 "token_out": {"type": "string", "description": "Output token symbol or address"},
                 "amount": {"type": "number", "description": "Amount to swap"},
                 "chain": {"type": "string", "description": "Chain name", "default": "ethereum"},
-                "confirm": {"type": "boolean", "description": "Set to true to actually execute", "default": False},
+                "confirm": {
+                    "type": "boolean",
+                    "description": "Set to true to actually execute",
+                    "default": False,
+                },
             },
             "required": ["token_in", "token_out", "amount"],
         },
@@ -123,7 +131,11 @@ TOOLS: list[ToolSpec] = [
                 "token_address": {"type": "string", "description": "Token contract address"},
                 "spender_address": {"type": "string", "description": "Spender address to revoke"},
                 "chain": {"type": "string", "description": "Chain name", "default": "ethereum"},
-                "confirm": {"type": "boolean", "description": "Set to true to actually execute", "default": False},
+                "confirm": {
+                    "type": "boolean",
+                    "description": "Set to true to actually execute",
+                    "default": False,
+                },
             },
             "required": ["token_address", "spender_address"],
         },
@@ -143,6 +155,7 @@ def _get_wallet_from_env() -> Any | None:
     if key:
         try:
             from web3_agent_kit.wallet.wallet import Wallet
+
             return Wallet.from_key(key)
         except Exception as e:
             logger.warning("Failed to create wallet from env: %s", e)
@@ -152,6 +165,7 @@ def _get_wallet_from_env() -> Any | None:
 def _get_token_analyzer():
     """Create a TokenAnalyzer instance."""
     from web3_agent_kit.security import SecurityConfig, TokenAnalyzer
+
     config = SecurityConfig(chain=os.environ.get("MCP_CHAIN", "ethereum"))
     return TokenAnalyzer(config)
 
@@ -161,6 +175,7 @@ def handle_get_balance(args: dict) -> dict:
     wallet = _get_wallet_from_env()
     if wallet:
         from web3_agent_kit.chains.chain import Chain
+
         chain_name = args.get("chain", "ethereum").upper()
         try:
             chain = Chain[chain_name]
@@ -168,7 +183,10 @@ def handle_get_balance(args: dict) -> dict:
             return {"address": args["address"], "chain": chain_name.lower(), "balance": balance}
         except Exception as e:
             return {"error": str(e), "address": args["address"]}
-    return {"address": args["address"], "note": "Configure WALLET_PRIVATE_KEY for real balance checks"}
+    return {
+        "address": args["address"],
+        "note": "Configure WALLET_PRIVATE_KEY for real balance checks",
+    }
 
 
 def handle_check_honeypot(args: dict) -> dict:
@@ -190,6 +208,7 @@ def handle_get_portfolio(args: dict) -> dict:
     wallet = _get_wallet_from_env()
     if wallet:
         from web3_agent_kit.chains.chain import Chain
+
         requested = args.get("chains", ["ethereum", "base"])
         portfolio = {}
         for c_name in requested:
@@ -200,7 +219,10 @@ def handle_get_portfolio(args: dict) -> dict:
             except Exception as e:
                 portfolio[c_name] = {"error": str(e)}
         return {"address": args["address"], "portfolio": portfolio, "num_chains": len(portfolio)}
-    return {"address": args["address"], "note": "Configure WALLET_PRIVATE_KEY for real portfolio data"}
+    return {
+        "address": args["address"],
+        "note": "Configure WALLET_PRIVATE_KEY for real portfolio data",
+    }
 
 
 def handle_swap(args: dict) -> dict:
@@ -266,6 +288,7 @@ def handle_revoke_approval(args: dict) -> dict:
 
     try:
         from web3_agent_kit.wallet.approval import revoke_approval
+
         tx_hash = revoke_approval(
             wallet=wallet,
             token_address=args["token_address"],

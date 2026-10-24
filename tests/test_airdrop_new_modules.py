@@ -85,6 +85,7 @@ class TestCampaignDiscovery:
 
     def test_discovered_campaign_ending_soon(self):
         from datetime import timedelta
+
         campaign = DiscoveredCampaign(
             platform="galxe",
             campaign_id="123",
@@ -385,9 +386,7 @@ class TestPointsDashboard:
         assert d["total_points"] == 100
 
     def test_export_json(self):
-        dashboard = PointsDashboard(
-            DashboardConfig(wallet_address="0x123")
-        )
+        dashboard = PointsDashboard(DashboardConfig(wallet_address="0x123"))
         # Set current manually
         dashboard._current = PointsSnapshot(
             timestamp=datetime.now(timezone.utc),
@@ -608,6 +607,7 @@ class TestIntegration:
             PointsDashboard,
             ReferralManager,
         )
+
         assert CampaignDiscovery is not None
         assert OnChainAirdropFarmer is not None
         assert AirdropScheduler is not None

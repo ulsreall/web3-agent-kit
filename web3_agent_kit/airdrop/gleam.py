@@ -23,6 +23,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class GleamTask:
     """A Gleam.io specific task entry."""
+
     entry_id: str
     task_type: str
     title: str
@@ -87,7 +88,9 @@ class GleamCampaign(BaseAirdropPlatform):
         Returns:
             List of AirdropTask objects.
         """
-        campaign_url = campaign_id if campaign_id.startswith("http") else f"https://gleam.io/{campaign_id}"
+        campaign_url = (
+            campaign_id if campaign_id.startswith("http") else f"https://gleam.io/{campaign_id}"
+        )
         tasks: list[AirdropTask] = []
 
         try:

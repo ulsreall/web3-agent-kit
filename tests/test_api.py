@@ -118,17 +118,16 @@ class TestAPIKeyAuth:
     def test_swap_execute_without_key_returns_401(self, mock_env_api_key):
         """POST /swap/execute without X-API-Key must be rejected (401), even
         though it would otherwise execute a real on-chain swap."""
-        resp = client.post(
-            "/swap/execute?token_in=ETH&token_out=USDC&amount_in=1.0"
-        )
+        resp = client.post("/swap/execute?token_in=ETH&token_out=USDC&amount_in=1.0")
         assert resp.status_code == 401
 
     def test_swap_execute_with_key_passes_auth(self, mock_env_api_key):
         """POST /swap/execute with the correct X-API-Key passes auth (the
         actual swap execution is mocked so no real transaction happens)."""
-        with patch("web3_agent_kit.defi.Uniswap") as MockUni, patch(
-            "web3_agent_kit.wallet.wallet.Wallet"
-        ) as MockWallet:
+        with (
+            patch("web3_agent_kit.defi.Uniswap") as MockUni,
+            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+        ):
             mock_uni_instance = MagicMock()
             mock_uni_instance.execute.return_value = {
                 "tx_hash": "0xdeadbeef",
@@ -511,8 +510,9 @@ class TestBridgeEndpoints:
             assert resp.status_code == 200
 
     def test_bridge_chains(self, mock_no_api_key):
-        with patch("web3_agent_kit.bridge.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}), patch(
-            "web3_agent_kit.bridge.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}
+        with (
+            patch("web3_agent_kit.bridge.bridge.LIFI_CHAIN_IDS", {"ethereum": 1}),
+            patch("web3_agent_kit.bridge.bridge.SOCKET_CHAIN_IDS", {"arbitrum": 42161}),
         ):
             resp = client.get("/bridge/chains", headers=AUTH_HEADERS)
             assert resp.status_code == 200

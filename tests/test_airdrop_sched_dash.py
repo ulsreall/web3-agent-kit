@@ -236,18 +236,14 @@ class TestSchedulerPersistence:
 
     def test_log_execution_to_file(self, tmp_json):
         s = AirdropScheduler(SchedulerConfig(log_path=tmp_json))
-        log = ExecutionLog(
-            task_id="t1", started_at=datetime.now(timezone.utc)
-        )
+        log = ExecutionLog(task_id="t1", started_at=datetime.now(timezone.utc))
         log.finished_at = datetime.now(timezone.utc)
         s._log_execution(log)
         assert os.path.exists(tmp_json)
         assert "t1" in open(tmp_json).read()
 
     def test_execution_log_to_dict(self):
-        log = ExecutionLog(
-            task_id="t1", started_at=datetime.now(timezone.utc)
-        )
+        log = ExecutionLog(task_id="t1", started_at=datetime.now(timezone.utc))
         d = log.to_dict()
         assert d["task_id"] == "t1"
         assert d["finished_at"] is None
@@ -274,10 +270,8 @@ class TestPointsSnapshot:
         snap = PointsSnapshot(
             timestamp=datetime.now(timezone.utc),
             platforms={
-                "galxe": PlatformPoints("galxe", points=100,
-                                        campaigns_completed=3),
-                "layer3": PlatformPoints("layer3", points=50,
-                                         campaigns_completed=1),
+                "galxe": PlatformPoints("galxe", points=100, campaigns_completed=3),
+                "layer3": PlatformPoints("layer3", points=50, campaigns_completed=1),
             },
         )
         assert snap.total_points == 150
@@ -294,12 +288,8 @@ class TestDashboardSync:
     def test_sync_all_with_mocked_syncers(self):
         cfg = DashboardConfig(platforms=["galxe", "zealy"])
         d = PointsDashboard(cfg)
-        d._sync_galxe = MagicMock(
-            return_value=PlatformPoints("galxe", points=500)
-        )
-        d._sync_zealy = MagicMock(
-            return_value=PlatformPoints("zealy", points=0)
-        )
+        d._sync_galxe = MagicMock(return_value=PlatformPoints("galxe", points=500))
+        d._sync_zealy = MagicMock(return_value=PlatformPoints("zealy", points=0))
         snap = d.sync_all(wallet="0xABC")
         assert snap.total_points == 500
         assert d.get_current() is snap
@@ -374,10 +364,10 @@ class TestDashboardReporting:
         d._current = PointsSnapshot(
             timestamp=datetime.now(timezone.utc),
             platforms={
-                "galxe": PlatformPoints("galxe", points=1500, rank=10,
-                                        campaigns_completed=5, streak_days=3),
-                "layer3": PlatformPoints("layer3", points=800,
-                                         campaigns_completed=2),
+                "galxe": PlatformPoints(
+                    "galxe", points=1500, rank=10, campaigns_completed=5, streak_days=3
+                ),
+                "layer3": PlatformPoints("layer3", points=800, campaigns_completed=2),
             },
         )
         return d
@@ -447,13 +437,13 @@ class TestDashboardReporting:
 class TestDashboardPersistence:
     def test_save_and_load_history(self, tmp_json):
         cfg = DashboardConfig(
-            wallet_address="0xABC", history_path=tmp_json,
+            wallet_address="0xABC",
+            history_path=tmp_json,
             platforms=["galxe"],
         )
         d = PointsDashboard(cfg)
         d._sync_galxe = MagicMock(
-            return_value=PlatformPoints("galxe", points=999,
-                                        campaigns_completed=1)
+            return_value=PlatformPoints("galxe", points=999, campaigns_completed=1)
         )
         d.sync_all(wallet="0xABC")
         assert os.path.exists(tmp_json)

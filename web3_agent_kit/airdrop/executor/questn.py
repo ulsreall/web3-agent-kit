@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class QuestNTask(PlatformTask):
     """A QuestN-specific task entry."""
+
     quest_id: str = ""
     quest_type: str = ""
     action_url: str = ""
@@ -34,6 +35,7 @@ class QuestNTask(PlatformTask):
 @dataclass
 class QuestNResult(ExecutorResult):
     """Result of farming a QuestN campaign."""
+
     xp_earned: int = 0
     level_up: bool = False
 
@@ -64,19 +66,27 @@ class QuestNExecutor(BasePlatformExecutor):
     platform_name = "questn"
     platform_url = "https://questn.xyz"
     supported_task_types = [
-        "twitter_follow", "twitter_retweet", "twitter_like",
-        "discord_join", "telegram_join", "quiz", "visit_url",
-        "on_chain_tx", "custom",
+        "twitter_follow",
+        "twitter_retweet",
+        "twitter_like",
+        "discord_join",
+        "telegram_join",
+        "quiz",
+        "visit_url",
+        "on_chain_tx",
+        "custom",
     ]
 
     API_BASE = "https://api.questn.xyz"
 
     def __init__(self, config: Optional[ExecutorConfig] = None):
         super().__init__(config)
-        self.session.headers.update({
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-        })
+        self.session.headers.update(
+            {
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
         self._campaign_id: Optional[str] = None
         self._quests: list[QuestNTask] = []
 
@@ -122,9 +132,7 @@ class QuestNExecutor(BasePlatformExecutor):
         tasks: list[QuestNTask] = []
 
         try:
-            response = self._get(
-                f"{self.API_BASE}/campaign/{self._campaign_id}/tasks"
-            )
+            response = self._get(f"{self.API_BASE}/campaign/{self._campaign_id}/tasks")
             data = response.json()
 
             task_list = data.get("tasks") or data.get("data", {}).get("tasks", [])
@@ -286,9 +294,7 @@ class QuestNExecutor(BasePlatformExecutor):
         logger.info(f"QuestN: completing quiz — {task.title}")
         # For quiz tasks, we need to get questions and submit answers
         try:
-            response = self._get(
-                f"{self.API_BASE}/task/{task.quest_id}/quiz"
-            )
+            response = self._get(f"{self.API_BASE}/task/{task.quest_id}/quiz")
             data = response.json()
             questions = data.get("questions", [])
 

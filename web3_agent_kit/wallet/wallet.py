@@ -85,9 +85,7 @@ class Wallet:
             keystore_json = json.load(f)
 
         private_key = Account.decrypt(keystore_json, password)
-        config = WalletConfig(
-            private_key=private_key.hex(), keystore_path=keystore_path
-        )
+        config = WalletConfig(private_key=private_key.hex(), keystore_path=keystore_path)
         return cls(config, **kwargs)
 
     def _get_account(self):
@@ -96,6 +94,7 @@ class Wallet:
             if not self.config.private_key:
                 raise ValueError("No private key configured")
             from eth_account import Account
+
             self._account = Account.from_key(self.config.private_key)
         return self._account
 
@@ -104,8 +103,11 @@ class Wallet:
         if not self.config.seed_phrase:
             raise ValueError("No seed phrase configured")
         from eth_account import Account
+
         Account.enable_unaudited_hdwallet_features()
-        acct = Account.from_mnemonic(self.config.seed_phrase, account_path=f"m/44'/60'/0'/0/{index}")
+        acct = Account.from_mnemonic(
+            self.config.seed_phrase, account_path=f"m/44'/60'/0'/0/{index}"
+        )
         self.config.private_key = acct.key.hex()
         self._account = acct
 
@@ -144,6 +146,7 @@ class Wallet:
             raise ValueError("No private key configured")
 
         from eth_account import Account
+
         signed = Account.sign_transaction(tx, self.config.private_key)
         raw = getattr(signed, "raw_transaction", None)
         if raw is None:
@@ -212,7 +215,8 @@ class Wallet:
                 "wallet.bind_enforcement(gate), or sign through a gate directly."
             )
 
-        from ..execution import ActionType as _ActionType, AuthorizationRequest
+        from ..execution import ActionType as _ActionType
+        from ..execution import AuthorizationRequest
 
         resolved_action = action or _ActionType.CONTRACT_CALL
         if not isinstance(resolved_action, _ActionType):
@@ -228,8 +232,7 @@ class Wallet:
             from ..execution import EnforcementDenied
 
             raise EnforcementDenied(
-                "transaction sender does not match the wallet address: "
-                f"{sender} != {self.address}"
+                f"transaction sender does not match the wallet address: {sender} != {self.address}"
             )
 
         request = AuthorizationRequest(
@@ -253,9 +256,7 @@ class Wallet:
             raise ValueError("ChainManager not configured")
 
         w3 = self.chain_manager.get_web3(chain)
-        signed = self.sign_transaction(
-            tx, chain, action=action, metadata=metadata
-        )
+        signed = self.sign_transaction(tx, chain, action=action, metadata=metadata)
         tx_hash = w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
 

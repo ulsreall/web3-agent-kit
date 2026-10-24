@@ -32,7 +32,11 @@ def example_quick_check():
     for address, name in tokens:
         print(f"\nChecking {name} ({address[:10]}...)")
         result = analyzer.quick_check(address)
-        status = "⚠️ HONEYPOT" if result["is_honeypot"] is True else ("❓ Unknown" if result["is_honeypot"] is None else "✓ Safe")
+        status = (
+            "⚠️ HONEYPOT"
+            if result["is_honeypot"] is True
+            else ("❓ Unknown" if result["is_honeypot"] is None else "✓ Safe")
+        )
         print(f"  Status: {status}")
         print(f"  Buy Tax: {result['buy_tax']}%")
         print(f"  Sell Tax: {result['sell_tax']}%")
@@ -44,12 +48,14 @@ def example_full_analysis():
     print("🔒 FULL SECURITY ANALYSIS")
     print("=" * 60)
 
-    analyzer = TokenAnalyzer(SecurityConfig(
-        chain="ethereum",
-        max_buy_tax=5.0,
-        max_sell_tax=5.0,
-        min_liquidity_usd=10000,
-    ))
+    analyzer = TokenAnalyzer(
+        SecurityConfig(
+            chain="ethereum",
+            max_buy_tax=5.0,
+            max_sell_tax=5.0,
+            min_liquidity_usd=10000,
+        )
+    )
 
     # Analyze a token (replace with real address)
     address = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"  # USDC
@@ -127,11 +133,13 @@ def example_pre_trade_check():
     print("📊 PRE-TRADE SECURITY CHECK")
     print("=" * 60)
 
-    analyzer = TokenAnalyzer(SecurityConfig(
-        chain="base",
-        max_buy_tax=5.0,
-        min_liquidity_usd=50000,
-    ))
+    analyzer = TokenAnalyzer(
+        SecurityConfig(
+            chain="base",
+            max_buy_tax=5.0,
+            min_liquidity_usd=50000,
+        )
+    )
 
     # Simulate a trading decision
     token_address = "0x..."  # Replace with real address

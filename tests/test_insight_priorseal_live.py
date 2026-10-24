@@ -41,7 +41,9 @@ from examples.support.insight_priorseal_live import (
 )
 
 FIXTURE = Path(__file__).parent / "fixtures" / "insight_priorseal_spike" / "v1"
-P1_EVIDENCE = Path(__file__).parent / "fixtures" / "insight_priorseal_spike" / "attempt9-p1-evidence.json"
+P1_EVIDENCE = (
+    Path(__file__).parent / "fixtures" / "insight_priorseal_spike" / "attempt9-p1-evidence.json"
+)
 
 
 def test_recorder_retains_call_events():
@@ -49,13 +51,20 @@ def test_recorder_retains_call_events():
     recorder.record("signer", "attempted", started_at=1, finished_at=1)
     recorder.record("signer", "success", started_at=1, finished_at=2)
     recorder.record("broadcast", "attempted", started_at=2, finished_at=2)
-    recorder.record("broadcast", "error", started_at=2, finished_at=3, detail={"error": "RPC error"})
+    recorder.record(
+        "broadcast", "error", started_at=2, finished_at=3, detail={"error": "RPC error"}
+    )
 
     report = recorder.as_report()
     assert report["retained"] is True
     assert report["counts"]["signer"] == {"attempted": 1, "success": 1, "error": 0}
     assert report["counts"]["broadcast"] == {"attempted": 1, "success": 0, "error": 1}
-    assert [e["outcome"] for e in report["events"]] == ["attempted", "success", "attempted", "error"]
+    assert [e["outcome"] for e in report["events"]] == [
+        "attempted",
+        "success",
+        "attempted",
+        "error",
+    ]
     assert report["events"][-1]["detail"]["error"] == "RPC error"
 
 
@@ -93,7 +102,9 @@ def test_evm_signer_rejects_mismatched_from():
     other = eth_account.Account.create()
     signer = EvmSigner(account)
     with pytest.raises(ValueError):
-        signer.sign_transaction({"from": other.address, "to": "0x" + "00" * 20, "nonce": 0, "chainId": 84532})
+        signer.sign_transaction(
+            {"from": other.address, "to": "0x" + "00" * 20, "nonce": 0, "chainId": 84532}
+        )
 
 
 def test_check_cutoff_and_go_arrival_floors():
@@ -140,12 +151,24 @@ def test_cutoff_guard_records_and_blocks_late():
         recorder=recorder,
         signer=signer,
         broadcast=lambda raw_transaction: {"txHash": "0x" + "12" * 32},
-        receipt=lambda broadcast_result: {"status": "SYNTHETIC_CONFIRMED", "txHash": broadcast_result["txHash"]},
+        receipt=lambda broadcast_result: {
+            "status": "SYNTHETIC_CONFIRMED",
+            "txHash": broadcast_result["txHash"],
+        },
         config=config,
         cutoff_check_seconds=60,
     )
-    tx = {"from": account.address, "to": "0x" + "00" * 20, "value": 0, "gas": 21000,
-          "maxFeePerGas": 1, "maxPriorityFeePerGas": 1, "nonce": 0, "chainId": 84532, "data": b""}
+    tx = {
+        "from": account.address,
+        "to": "0x" + "00" * 20,
+        "value": 0,
+        "gas": 21000,
+        "maxFeePerGas": 1,
+        "maxPriorityFeePerGas": 1,
+        "nonce": 0,
+        "chainId": 84532,
+        "data": b"",
+    }
     raw = boundaries.signer.sign_transaction(tx)
     assert len(raw) > 0
     assert recorder.counts()["signer"] == {"attempted": 1, "success": 1, "error": 0}
@@ -164,7 +187,10 @@ def test_cutoff_guard_records_and_blocks_late():
         recorder=recorder,
         signer=signer,
         broadcast=lambda raw_transaction: {"txHash": "0x" + "12" * 32},
-        receipt=lambda broadcast_result: {"status": "SYNTHETIC_CONFIRMED", "txHash": broadcast_result["txHash"]},
+        receipt=lambda broadcast_result: {
+            "status": "SYNTHETIC_CONFIRMED",
+            "txHash": broadcast_result["txHash"],
+        },
         config=late_config,
         cutoff_check_seconds=60,
     )
@@ -175,7 +201,9 @@ def test_cutoff_guard_records_and_blocks_late():
 def test_go_arrival_reads_session_store(tmp_path):
     db = tmp_path / "state.db"
     con = sqlite3.connect(db)
-    con.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)")
+    con.execute(
+        "CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)"
+    )
     con.execute(
         "INSERT INTO messages (id, role, content, timestamp) VALUES (?, ?, ?, ?)",
         (3826, "user", "GO — run-specific, latestBroadcastAt 1790440202", 1790439543),
@@ -206,7 +234,9 @@ def test_go_arrival_reads_session_store(tmp_path):
 def test_go_arrival_requires_filters(tmp_path):
     db = tmp_path / "state.db"
     con = sqlite3.connect(db)
-    con.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)")
+    con.execute(
+        "CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)"
+    )
     con.commit()
     con.close()
     with pytest.raises(GoArrivalError):
@@ -218,7 +248,9 @@ def test_go_arrival_requires_filters(tmp_path):
 
 def test_build_p1_row_and_validation():
     with pytest.raises(BoundaryError):
-        build_p1_row(live_input_sha256="not-hex", baseline_sha256="ab" * 32, case_input_sha256="cd" * 32)
+        build_p1_row(
+            live_input_sha256="not-hex", baseline_sha256="ab" * 32, case_input_sha256="cd" * 32
+        )
 
     p1_row = build_p1_row(
         live_input_sha256="ddc9068d14e6b6a50ecbb31c830bc8ef47d856d2f7da2773d61320da6e7cad17",
@@ -227,7 +259,12 @@ def test_build_p1_row_and_validation():
     )
     assert p1_row["id"] == "P1"
     assert p1_row["actualTerminal"] == "LIVE_RECEIPT_VERIFIED"
-    assert p1_row["counts"] == {"authorizationProvider": 1, "signer": 1, "broadcast": 1, "receipt": 1}
+    assert p1_row["counts"] == {
+        "authorizationProvider": 1,
+        "signer": 1,
+        "broadcast": 1,
+        "receipt": 1,
+    }
 
 
 def test_attach_p1_and_provenance_with_real_evidence():
@@ -366,7 +403,9 @@ def test_runtime_provenance_and_alignment():
 def test_authorize_go_message_binds_exact_sheet_hash():
     """YuTao gap 1: the Hermes GO message itself must name the exact run-sheet hash."""
     sheet_hash = "ab" * 32
-    ok = authorize_go_message(f"GO — latestBroadcastAt 1790440202, runSheetSha256 {sheet_hash}", sheet_hash)
+    ok = authorize_go_message(
+        f"GO — latestBroadcastAt 1790440202, runSheetSha256 {sheet_hash}", sheet_hash
+    )
     assert ok["authorized"] is True and ok["authorizationSource"] == "label"
     ok_json = authorize_go_message(json.dumps({"runSheetSha256": sheet_hash}), sheet_hash)
     assert ok_json["authorized"] is True and ok_json["authorizationSource"] == "json"
@@ -382,10 +421,12 @@ def test_authorize_go_sheet_reads_full_message_from_store(tmp_path):
     """YuTao gap 1 end-to-end: full GO message content fetched and verified."""
     db = tmp_path / "go.db"
     con = sqlite3.connect(db)
-    con.execute("CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)")
+    con.execute(
+        "CREATE TABLE messages (id INTEGER PRIMARY KEY, role TEXT, content TEXT, timestamp REAL)"
+    )
     sheet = "ef" * 32
     con.execute(
-        'INSERT INTO messages (id, role, content, timestamp) VALUES (?, ?, ?, ?)',
+        "INSERT INTO messages (id, role, content, timestamp) VALUES (?, ?, ?, ?)",
         (511, "user", f"GO — latestBroadcastAt 1790442200, runSheetSha256 {sheet}", 1782399000),
     )
     con.commit()
@@ -405,7 +446,9 @@ def test_execution_flags_from_events_on_receipt_failure():
         recorder.record(b, "attempted", started_at=1, finished_at=1)
     recorder.record("signer", "success", started_at=1, finished_at=2)
     recorder.record("broadcast", "success", started_at=2, finished_at=3)
-    recorder.record("receipt", "error", started_at=3, finished_at=4, detail={"error": "TimeoutError"})
+    recorder.record(
+        "receipt", "error", started_at=3, finished_at=4, detail={"error": "TimeoutError"}
+    )
     flags = execution_flags(recorder)
     assert flags["signed"] is True and flags["broadcast"] is True
     assert recorder.boundary_counts()["signer"] == 1
@@ -419,19 +462,39 @@ def test_execution_flags_from_events_on_receipt_failure():
 
 def test_classify_outcome_reverted_and_no_receipt():
     ok = {"authorizationProvider": 1, "signer": 1, "broadcast": 1, "receipt": 1}
-    assert classify_run_outcome(receipt={"status": "REVERTED"}, attempt_error=None,
-                                counts=ok, rehearsal=False)[0] == "REVERTED"
-    assert classify_run_outcome(receipt={"status": "CONFIRMED"}, attempt_error=None,
-                                counts=ok, rehearsal=False)[0] == "LIVE_LEG_COMPLETED"
-    assert classify_run_outcome(receipt=None, attempt_error="TimeoutError", counts=ok,
-                                rehearsal=False)[0] == "BROADCAST_NO_CONFIRMED_RECEIPT"
+    assert (
+        classify_run_outcome(
+            receipt={"status": "REVERTED"}, attempt_error=None, counts=ok, rehearsal=False
+        )[0]
+        == "REVERTED"
+    )
+    assert (
+        classify_run_outcome(
+            receipt={"status": "CONFIRMED"}, attempt_error=None, counts=ok, rehearsal=False
+        )[0]
+        == "LIVE_LEG_COMPLETED"
+    )
+    assert (
+        classify_run_outcome(
+            receipt=None, attempt_error="TimeoutError", counts=ok, rehearsal=False
+        )[0]
+        == "BROADCAST_NO_CONFIRMED_RECEIPT"
+    )
     no_sign = {"authorizationProvider": 1, "signer": 0, "broadcast": 0, "receipt": 0}
-    assert classify_run_outcome(receipt=None, attempt_error="EnforcementDenied", counts=no_sign,
-                                rehearsal=False)[0] == "ENFORCEMENT_DENIED"
-    assert classify_run_outcome(receipt=None, attempt_error="boom", counts=no_sign,
-                                rehearsal=False)[0] == "ERROR"
-    assert classify_run_outcome(receipt=None, attempt_error=None, counts=no_sign,
-                                rehearsal=False)[0] == "NO_RECEIPT"
+    assert (
+        classify_run_outcome(
+            receipt=None, attempt_error="EnforcementDenied", counts=no_sign, rehearsal=False
+        )[0]
+        == "ENFORCEMENT_DENIED"
+    )
+    assert (
+        classify_run_outcome(receipt=None, attempt_error="boom", counts=no_sign, rehearsal=False)[0]
+        == "ERROR"
+    )
+    assert (
+        classify_run_outcome(receipt=None, attempt_error=None, counts=no_sign, rehearsal=False)[0]
+        == "NO_RECEIPT"
+    )
 
 
 # --- frozen-sheet policy commitment: the two-clock trap (2026-10-17) ---------
@@ -682,7 +745,9 @@ def test_collect_attestation_verdict_verifies_fixture_signatures():
     insight = baseline["insight"]
     registry = insight["keyRegistry"]
     attester = str(insight["sourceAttestation"]["attester"])
-    entry = [e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()][0]
+    entry = [
+        e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()
+    ][0]
     trust = {
         "baseline": {"insight": {"keyRegistry": registry}},
         "trust_roots": {"insight": {"attester": attester, "historicalKeyId": entry["key_id"]}},
@@ -730,7 +795,9 @@ def test_collect_attestation_verdict_refuses_when_pair_is_not_the_bound_one():
     insight = json.loads((root / "baseline.json").read_text())["insight"]
     registry = insight["keyRegistry"]
     attester = str(insight["sourceAttestation"]["attester"])
-    entry = [e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()][0]
+    entry = [
+        e for e in registry["public_keys"] if str(e["public_key"]).lower() == attester.lower()
+    ][0]
     trust = {
         "baseline": {"insight": {"keyRegistry": registry}},
         "trust_roots": {"insight": {"attester": attester, "historicalKeyId": entry["key_id"]}},

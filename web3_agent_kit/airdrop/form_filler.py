@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class FormProfile:
     """User profile for form auto-fill."""
+
     # Personal
     name: str = ""
     first_name: str = ""
@@ -105,6 +106,7 @@ class FormProfile:
 @dataclass
 class FormField:
     """A detected form field."""
+
     name: str
     label: str
     field_type: str  # text, email, url, select, textarea, checkbox, radio
@@ -127,6 +129,7 @@ class FormField:
 @dataclass
 class FillResult:
     """Result of form filling."""
+
     url: str
     platform: str = ""
     success: bool = False
@@ -160,44 +163,80 @@ class FillResult:
 # Field detection patterns
 FIELD_PATTERNS: dict[str, list[str]] = {
     "email": [
-        r"email", r"e-mail", r"mail", r"correo", r"メール",
+        r"email",
+        r"e-mail",
+        r"mail",
+        r"correo",
+        r"メール",
     ],
     "name": [
-        r"name", r"full.?name", r"your.?name", r"nombre", r"nom",
+        r"name",
+        r"full.?name",
+        r"your.?name",
+        r"nombre",
+        r"nom",
     ],
     "first_name": [
-        r"first.?name", r"given.?name", r"fname",
+        r"first.?name",
+        r"given.?name",
+        r"fname",
     ],
     "last_name": [
-        r"last.?name", r"family.?name", r"lname", r"surname",
+        r"last.?name",
+        r"family.?name",
+        r"lname",
+        r"surname",
     ],
     "wallet": [
-        r"wallet", r"address", r"eth.?address", r"evm", r"0x",
-        r"metamask", r"crypto.?address",
+        r"wallet",
+        r"address",
+        r"eth.?address",
+        r"evm",
+        r"0x",
+        r"metamask",
+        r"crypto.?address",
     ],
     "wallet_sol": [
-        r"solana", r"sol.?address", r"phantom",
+        r"solana",
+        r"sol.?address",
+        r"phantom",
     ],
     "twitter": [
-        r"twitter", r"x\.com", r"@", r"handle",
+        r"twitter",
+        r"x\.com",
+        r"@",
+        r"handle",
     ],
     "discord": [
-        r"discord", r"discord.?tag", r"discord.?user",
+        r"discord",
+        r"discord.?tag",
+        r"discord.?user",
     ],
     "telegram": [
-        r"telegram", r"tg", r"@.*bot",
+        r"telegram",
+        r"tg",
+        r"@.*bot",
     ],
     "github": [
-        r"github", r"gh",
+        r"github",
+        r"gh",
     ],
     "phone": [
-        r"phone", r"mobile", r"tel", r"number",
+        r"phone",
+        r"mobile",
+        r"tel",
+        r"number",
     ],
     "country": [
-        r"country", r"nation", r"region",
+        r"country",
+        r"nation",
+        r"region",
     ],
     "referral": [
-        r"referral", r"ref.?code", r"invited.?by", r"refer",
+        r"referral",
+        r"ref.?code",
+        r"invited.?by",
+        r"refer",
     ],
 }
 
@@ -510,14 +549,16 @@ class FormFiller:
                 else:
                     selector = f'input[placeholder="{placeholder}"]'
 
-                fields.append(FormField(
-                    name=name or id_attr,
-                    label=label,
-                    field_type=field_type,
-                    selector=selector,
-                    required=required,
-                    placeholder=placeholder,
-                ))
+                fields.append(
+                    FormField(
+                        name=name or id_attr,
+                        label=label,
+                        field_type=field_type,
+                        selector=selector,
+                        required=required,
+                        placeholder=placeholder,
+                    )
+                )
             except Exception as e:
                 logger.debug(f"Field detection failed: {e}")
                 continue
@@ -573,8 +614,8 @@ class FormFiller:
                 'button:has-text("Send")',
                 'button:has-text("Next")',
                 'button:has-text("Continue")',
-                '.submit-btn',
-                '#submit',
+                ".submit-btn",
+                "#submit",
             ]
 
             for selector in selectors:
@@ -615,9 +656,7 @@ class FormFiller:
 
     def _match_typeform_field(self, question: str) -> str:
         """Match Typeform question to profile value."""
-        return self._match_field(FormField(
-            name="", label=question, field_type="text", selector=""
-        ))
+        return self._match_field(FormField(name="", label=question, field_type="text", selector=""))
 
     def _fill_typeform_field(self, page, value: str) -> bool:
         """Fill Typeform input field."""
@@ -639,9 +678,7 @@ class FormFiller:
         """Click next button in Typeform."""
         try:
             btn = page.query_selector(
-                'button[data-qa="next-button"], '
-                'button:has-text("Next"), '
-                'button:has-text("OK")'
+                'button[data-qa="next-button"], button:has-text("Next"), button:has-text("OK")'
             )
             if btn:
                 btn.click()

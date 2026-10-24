@@ -15,8 +15,10 @@ logger = logging.getLogger(__name__)
 # Enums & data classes
 # ---------------------------------------------------------------------------
 
+
 class AlertType(Enum):
     """Types of monitoring alerts."""
+
     SLASHING = "slashing"
     REWARD_CLAIM = "reward_claim"
     POSITION_CHANGE = "position_change"
@@ -30,8 +32,9 @@ class AlertType(Enum):
 @dataclass
 class Alert:
     """A monitoring alert."""
+
     alert_type: AlertType
-    severity: str                # "info", "warning", "critical"
+    severity: str  # "info", "warning", "critical"
     message: str
     protocol: str
     timestamp: float = 0.0
@@ -53,9 +56,10 @@ class Alert:
 @dataclass
 class SlashingEvent:
     """Record of a slashing event."""
+
     protocol: str
     operator: str
-    amount_slashed: float        # In native token
+    amount_slashed: float  # In native token
     amount_usd: float
     reason: str
     block_number: int
@@ -67,6 +71,7 @@ class SlashingEvent:
 @dataclass
 class MonitoredPosition:
     """A position being tracked by the monitor."""
+
     position_id: str
     protocol: str
     chain: str
@@ -76,8 +81,8 @@ class MonitoredPosition:
     apy: float
     operator: str
     risk_score: float
-    lock_end: float               # Timestamp
-    rewards_pending: float        # In native token
+    lock_end: float  # Timestamp
+    rewards_pending: float  # In native token
     rewards_usd: float
     last_updated: float = 0.0
     entry_price_usd: float = 0.0
@@ -119,13 +124,14 @@ class MonitoredPosition:
 @dataclass
 class PortfolioSnapshot:
     """Snapshot of the entire restaking portfolio."""
+
     total_value_usd: float
     total_staked: float
     total_rewards_usd: float
     positions: list[MonitoredPosition]
     alerts: list[Alert]
-    protocol_breakdown: dict[str, float]   # protocol -> value USD
-    chain_breakdown: dict[str, float]      # chain -> value USD
+    protocol_breakdown: dict[str, float]  # protocol -> value USD
+    chain_breakdown: dict[str, float]  # chain -> value USD
     avg_apy: float
     total_risk_score: float
     timestamp: float = 0.0
@@ -147,6 +153,7 @@ class PortfolioSnapshot:
 # Monitor
 # ---------------------------------------------------------------------------
 
+
 class RestakingMonitor:
     """Track restaking positions, slashing risks, and reward claims.
 
@@ -165,8 +172,8 @@ class RestakingMonitor:
     def __init__(
         self,
         slashing_alert_threshold: float = 100.0,  # USD
-        apy_drop_threshold: float = 1.0,           # Percentage points
-        reward_claim_threshold: float = 50.0,      # USD
+        apy_drop_threshold: float = 1.0,  # Percentage points
+        reward_claim_threshold: float = 50.0,  # USD
     ):
         self.slashing_alert_threshold = slashing_alert_threshold
         self.apy_drop_threshold = apy_drop_threshold
@@ -174,7 +181,7 @@ class RestakingMonitor:
         self._positions: dict[str, MonitoredPosition] = {}
         self._alerts: list[Alert] = []
         self._slashing_events: list[SlashingEvent] = []
-        self._last_apy: dict[str, float] = {}   # position_id -> last known APY
+        self._last_apy: dict[str, float] = {}  # position_id -> last known APY
         self._callbacks: list = []
 
     # ------------------------------------------------------------------
@@ -187,8 +194,11 @@ class RestakingMonitor:
         self._last_apy[position.position_id] = position.apy
         logger.info(
             "Monitoring position %s: %s %.4f %s on %s",
-            position.position_id, position.protocol, position.amount,
-            position.asset, position.chain,
+            position.position_id,
+            position.protocol,
+            position.amount,
+            position.asset,
+            position.chain,
         )
 
     def remove_position(self, position_id: str) -> bool:
@@ -214,15 +224,17 @@ class RestakingMonitor:
 
         # Check for APY drop
         if "apy" in kwargs and old_apy - kwargs["apy"] >= self.apy_drop_threshold:
-            self._add_alert(Alert(
-                alert_type=AlertType.APY_DROP,
-                severity="warning",
-                message=(
-                    f"{pos.protocol} {pos.asset} APY dropped from "
-                    f"{old_apy:.2f}% to {kwargs['apy']:.2f}%"
-                ),
-                protocol=pos.protocol,
-            ))
+            self._add_alert(
+                Alert(
+                    alert_type=AlertType.APY_DROP,
+                    severity="warning",
+                    message=(
+                        f"{pos.protocol} {pos.asset} APY dropped from "
+                        f"{old_apy:.2f}% to {kwargs['apy']:.2f}%"
+                    ),
+                    protocol=pos.protocol,
+                )
+            )
 
         return True
 
@@ -261,27 +273,31 @@ class RestakingMonitor:
         now = time.time()
         for pos in self._positions.values():
             if 0 < pos.lock_end <= now:
-                self._add_alert(Alert(
-                    alert_type=AlertType.UNLOCK_AVAILABLE,
-                    severity="info",
-                    message=f"{pos.protocol} {pos.asset} position {pos.position_id} is now unlocked",
-                    protocol=pos.protocol,
-                    metadata={"position_id": pos.position_id},
-                ))
+                self._add_alert(
+                    Alert(
+                        alert_type=AlertType.UNLOCK_AVAILABLE,
+                        severity="info",
+                        message=f"{pos.protocol} {pos.asset} position {pos.position_id} is now unlocked",
+                        protocol=pos.protocol,
+                        metadata={"position_id": pos.position_id},
+                    )
+                )
 
     def _check_high_risk(self) -> None:
         """Check for positions with elevated risk."""
         for pos in self._positions.values():
             if pos.risk_score > 70:
-                self._add_alert(Alert(
-                    alert_type=AlertType.RISK_INCREASE,
-                    severity="warning",
-                    message=(
-                        f"{pos.protocol} {pos.asset} risk score elevated to "
-                        f"{pos.risk_score:.0f}/100"
-                    ),
-                    protocol=pos.protocol,
-                ))
+                self._add_alert(
+                    Alert(
+                        alert_type=AlertType.RISK_INCREASE,
+                        severity="warning",
+                        message=(
+                            f"{pos.protocol} {pos.asset} risk score elevated to "
+                            f"{pos.risk_score:.0f}/100"
+                        ),
+                        protocol=pos.protocol,
+                    )
+                )
 
     def report_slashing(self, event: SlashingEvent) -> None:
         """Record a slashing event and generate alert.
@@ -292,20 +308,22 @@ class RestakingMonitor:
         self._slashing_events.append(event)
         severity = "critical" if event.amount_usd >= self.slashing_alert_threshold else "warning"
 
-        self._add_alert(Alert(
-            alert_type=AlertType.SLASHING,
-            severity=severity,
-            message=(
-                f"🔴 Slashing on {event.protocol}: {event.amount_slashed:.4f} "
-                f"(${event.amount_usd:.2f}) — {event.reason}"
-            ),
-            protocol=event.protocol,
-            metadata={
-                "operator": event.operator,
-                "amount": event.amount_slashed,
-                "tx_hash": event.tx_hash,
-            },
-        ))
+        self._add_alert(
+            Alert(
+                alert_type=AlertType.SLASHING,
+                severity=severity,
+                message=(
+                    f"🔴 Slashing on {event.protocol}: {event.amount_slashed:.4f} "
+                    f"(${event.amount_usd:.2f}) — {event.reason}"
+                ),
+                protocol=event.protocol,
+                metadata={
+                    "operator": event.operator,
+                    "amount": event.amount_slashed,
+                    "tx_hash": event.tx_hash,
+                },
+            )
+        )
 
         # Update affected positions
         for pos in self._positions.values():
@@ -315,7 +333,10 @@ class RestakingMonitor:
 
         logger.warning(
             "Slashing event: %s operator %s lost %.4f ($%.2f)",
-            event.protocol, event.operator, event.amount_slashed, event.amount_usd,
+            event.protocol,
+            event.operator,
+            event.amount_slashed,
+            event.amount_usd,
         )
 
     def report_reward_claim(
@@ -330,21 +351,22 @@ class RestakingMonitor:
         protocol = pos.protocol if pos else "unknown"
 
         if value_usd >= self.reward_claim_threshold:
-            self._add_alert(Alert(
-                alert_type=AlertType.REWARD_CLAIM,
-                severity="info",
-                message=(
-                    f"💰 Claimed {amount:.6f} {reward_token} (${value_usd:.2f}) "
-                    f"from {protocol}"
-                ),
-                protocol=protocol,
-                metadata={
-                    "position_id": position_id,
-                    "reward_token": reward_token,
-                    "amount": amount,
-                    "value_usd": value_usd,
-                },
-            ))
+            self._add_alert(
+                Alert(
+                    alert_type=AlertType.REWARD_CLAIM,
+                    severity="info",
+                    message=(
+                        f"💰 Claimed {amount:.6f} {reward_token} (${value_usd:.2f}) from {protocol}"
+                    ),
+                    protocol=protocol,
+                    metadata={
+                        "position_id": position_id,
+                        "reward_token": reward_token,
+                        "amount": amount,
+                        "value_usd": value_usd,
+                    },
+                )
+            )
 
         if pos:
             pos.rewards_pending = max(pos.rewards_pending - amount, 0)
@@ -429,17 +451,18 @@ class RestakingMonitor:
             total_value = sum(p.value_usd for p in positions)
             total_rewards = sum(p.rewards_usd for p in positions)
             avg_apy = (
-                sum(p.apy * p.value_usd for p in positions) / total_value
-                if total_value > 0 else 0
+                sum(p.apy * p.value_usd for p in positions) / total_value if total_value > 0 else 0
             )
-            summaries.append({
-                "protocol": protocol,
-                "positions": len(positions),
-                "total_value_usd": total_value,
-                "total_rewards_usd": total_rewards,
-                "avg_apy": avg_apy,
-                "avg_risk": sum(p.risk_score for p in positions) / len(positions),
-            })
+            summaries.append(
+                {
+                    "protocol": protocol,
+                    "positions": len(positions),
+                    "total_value_usd": total_value,
+                    "total_rewards_usd": total_rewards,
+                    "avg_apy": avg_apy,
+                    "avg_risk": sum(p.risk_score for p in positions) / len(positions),
+                }
+            )
 
         summaries.sort(key=lambda x: x["total_value_usd"], reverse=True)
         return summaries

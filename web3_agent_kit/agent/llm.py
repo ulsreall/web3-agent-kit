@@ -40,52 +40,64 @@ class LLMConfig:
 
         # Cascade order: Anthropic → Kimi → OpenRouter → DeepSeek → Groq
         if os.environ.get("ANTHROPIC_API_KEY"):
-            providers.append({
-                "name": "anthropic",
-                "api_key": os.environ["ANTHROPIC_API_KEY"],
-                "model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
-                "base_url": "https://api.anthropic.com/v1",
-            })
+            providers.append(
+                {
+                    "name": "anthropic",
+                    "api_key": os.environ["ANTHROPIC_API_KEY"],
+                    "model": os.environ.get("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+                    "base_url": "https://api.anthropic.com/v1",
+                }
+            )
 
         if os.environ.get("KIMI_API_KEY"):
-            providers.append({
-                "name": "openai",
-                "api_key": os.environ["KIMI_API_KEY"],
-                "model": os.environ.get("KIMI_MODEL", "moonshot-v1-8k"),
-                "base_url": os.environ.get("KIMI_BASE_URL", "https://api.moonshot.cn/v1"),
-            })
+            providers.append(
+                {
+                    "name": "openai",
+                    "api_key": os.environ["KIMI_API_KEY"],
+                    "model": os.environ.get("KIMI_MODEL", "moonshot-v1-8k"),
+                    "base_url": os.environ.get("KIMI_BASE_URL", "https://api.moonshot.cn/v1"),
+                }
+            )
 
         if os.environ.get("OPENROUTER_API_KEY"):
-            providers.append({
-                "name": "openai",
-                "api_key": os.environ["OPENROUTER_API_KEY"],
-                "model": os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4"),
-                "base_url": "https://openrouter.ai/api/v1",
-            })
+            providers.append(
+                {
+                    "name": "openai",
+                    "api_key": os.environ["OPENROUTER_API_KEY"],
+                    "model": os.environ.get("OPENROUTER_MODEL", "anthropic/claude-sonnet-4"),
+                    "base_url": "https://openrouter.ai/api/v1",
+                }
+            )
 
         if os.environ.get("DEEPSEEK_API_KEY"):
-            providers.append({
-                "name": "openai",
-                "api_key": os.environ["DEEPSEEK_API_KEY"],
-                "model": os.environ.get("DEEPSEEK_MODEL", "deepseek-chat"),
-                "base_url": "https://api.deepseek.com/v1",
-            })
+            providers.append(
+                {
+                    "name": "openai",
+                    "api_key": os.environ["DEEPSEEK_API_KEY"],
+                    "model": os.environ.get("DEEPSEEK_MODEL", "deepseek-chat"),
+                    "base_url": "https://api.deepseek.com/v1",
+                }
+            )
 
         if os.environ.get("GROQ_API_KEY"):
-            providers.append({
-                "name": "openai",
-                "api_key": os.environ["GROQ_API_KEY"],
-                "model": os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
-                "base_url": "https://api.groq.com/openai/v1",
-            })
+            providers.append(
+                {
+                    "name": "openai",
+                    "api_key": os.environ["GROQ_API_KEY"],
+                    "model": os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile"),
+                    "base_url": "https://api.groq.com/openai/v1",
+                }
+            )
 
         if os.environ.get("OPENAI_API_KEY"):
-            providers.append({
-                "name": "openai",
-                "api_key": os.environ["OPENAI_API_KEY"],
-                "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
-                "base_url": "https://api.openai.com/v1",
-            })
+            providers.append(
+                {
+                    "name": "openai",
+                    "api_key": os.environ["OPENAI_API_KEY"],
+                    "model": os.environ.get("OPENAI_MODEL", "gpt-4o-mini"),
+                    "base_url": "https://api.openai.com/v1",
+                }
+            )
 
         return providers
 
@@ -192,9 +204,7 @@ class LLM:
         else:
             return self._call_openai_compatible(provider, headers, payload)
 
-    def _call_openai_compatible(
-        self, provider: dict, headers: dict, payload: dict
-    ) -> str:
+    def _call_openai_compatible(self, provider: dict, headers: dict, payload: dict) -> str:
         """Call OpenAI-compatible API."""
         import requests
 
@@ -207,9 +217,7 @@ class LLM:
 
         url = f"{provider['base_url']}/chat/completions"
 
-        resp = requests.post(
-            url, headers=headers, json=payload, timeout=self.config.timeout
-        )
+        resp = requests.post(url, headers=headers, json=payload, timeout=self.config.timeout)
 
         if resp.status_code == 429:
             raise RuntimeError(f"Rate limited by {provider['name']}")
@@ -221,9 +229,7 @@ class LLM:
 
         return data["choices"][0]["message"]["content"]
 
-    def _call_anthropic(
-        self, provider: dict, messages: list[dict], payload: dict
-    ) -> str:
+    def _call_anthropic(self, provider: dict, messages: list[dict], payload: dict) -> str:
         """Call Anthropic API."""
         import requests
 
@@ -252,9 +258,7 @@ class LLM:
 
         url = f"{provider['base_url']}/messages"
 
-        resp = requests.post(
-            url, headers=headers, json=payload, timeout=self.config.timeout
-        )
+        resp = requests.post(url, headers=headers, json=payload, timeout=self.config.timeout)
 
         if resp.status_code == 429:
             raise RuntimeError("Rate limited by Anthropic")

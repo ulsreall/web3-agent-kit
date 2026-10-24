@@ -52,12 +52,20 @@ class TestDataclasses:
 
     def test_portfolio_summary_to_dict_and_str(self):
         tb = TokenBalance(
-            symbol="USDC", address="0xusdc", balance=50.0, decimals=6,
-            chain=Chain.ETHEREUM, price_usd=1.0, value_usd=50.0,
+            symbol="USDC",
+            address="0xusdc",
+            balance=50.0,
+            decimals=6,
+            chain=Chain.ETHEREUM,
+            price_usd=1.0,
+            value_usd=50.0,
         )
         cp = ChainPortfolio(
-            chain=Chain.ETHEREUM, native_balance=1.0, native_value_usd=3500.0,
-            tokens=[tb], total_value_usd=3550.0,
+            chain=Chain.ETHEREUM,
+            native_balance=1.0,
+            native_value_usd=3500.0,
+            tokens=[tb],
+            total_value_usd=3550.0,
         )
         summary = PortfolioSummary(
             address="0x00000000000000000000000000000000000000ab",
@@ -85,7 +93,7 @@ class TestPortfolioTracker:
         w3 = MagicMock()
         w3.to_checksum_address.side_effect = lambda a: a
         contract = MagicMock()
-        contract.functions.balanceOf.return_value.call.return_value = 100 * 10 ** 6
+        contract.functions.balanceOf.return_value.call.return_value = 100 * 10**6
         contract.functions.decimals.return_value.call.return_value = 6
         contract.functions.symbol.return_value.call.return_value = "USDC"
         w3.eth.contract.return_value = contract

@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 class AlertType(Enum):
     """Types of wallet alerts."""
+
     LARGE_TRANSFER = "large_transfer"
     LARGE_SWAP = "large_swap"
     NEW_TOKEN = "new_token"
@@ -28,6 +29,7 @@ class AlertType(Enum):
 
 class AlertSeverity(Enum):
     """Alert severity levels."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -37,11 +39,12 @@ class AlertSeverity(Enum):
 @dataclass
 class WatchedWallet:
     """A wallet being monitored."""
+
     address: str
-    label: str                            # e.g. "vitalik.eth", "whale-01"
+    label: str  # e.g. "vitalik.eth", "whale-01"
     chain: Chain
     tags: list[str] = field(default_factory=list)
-    alert_threshold_usd: float = 10000    # Alert on transfers > $10K
+    alert_threshold_usd: float = 10000  # Alert on transfers > $10K
     watch_balance: bool = True
     watch_transfers: bool = True
     watch_approvals: bool = False
@@ -52,6 +55,7 @@ class WatchedWallet:
 @dataclass
 class WalletAlert:
     """An alert triggered by wallet activity."""
+
     wallet_address: str
     wallet_label: str
     chain: Chain
@@ -66,6 +70,7 @@ class WalletAlert:
 @dataclass
 class BalanceSnapshot:
     """Point-in-time balance snapshot."""
+
     address: str
     chain: Chain
     native_balance: float
@@ -105,7 +110,9 @@ class WalletWatcher:
         self.alerts: list[WalletAlert] = []
         self.snapshots: dict[str, list[BalanceSnapshot]] = {}  # address -> snapshots
         self._callbacks: list[Callable[[WalletAlert], None]] = []
-        self.STORAGE_PATH = storage_path or os.path.expanduser("~/.web3-agent-kit/watched_wallets.json")
+        self.STORAGE_PATH = storage_path or os.path.expanduser(
+            "~/.web3-agent-kit/watched_wallets.json"
+        )
         self._load_wallets()
 
     def add_wallet(

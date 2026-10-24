@@ -26,8 +26,12 @@ def tax_info_args(draw):
     return {
         "is_honeypot": draw(st.one_of(st.none(), st.booleans())),
         "can_sell": draw(st.one_of(st.none(), st.booleans())),
-        "buy_tax": draw(st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False)),
-        "sell_tax": draw(st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False)),
+        "buy_tax": draw(
+            st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False)
+        ),
+        "sell_tax": draw(
+            st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False)
+        ),
     }
 
 
@@ -50,8 +54,13 @@ def test_security_report_honeypot_state(args: dict[str, Any]):
     contract = ContractAudit(has_hidden_mint=False, is_proxy=False)
     tax = TaxInfo(**args)
     report = SecurityReport(
-        token=token, tax=tax, liquidity=liq, holders=holders, contract=contract,
-        safety_score=80, risk_level=RiskLevel.LOW,
+        token=token,
+        tax=tax,
+        liquidity=liq,
+        holders=holders,
+        contract=contract,
+        safety_score=80,
+        risk_level=RiskLevel.LOW,
     )
     if tax.is_honeypot is True:
         assert not report.is_safe
@@ -61,18 +70,26 @@ def test_security_report_honeypot_state(args: dict[str, Any]):
     tx_value=st.floats(min_value=0, max_value=1_000_000, allow_nan=False, allow_infinity=False),
     max_per_tx=st.floats(min_value=0, max_value=1_000_000, allow_nan=False, allow_infinity=False),
     daily_limit=st.floats(min_value=0, max_value=1_000_000, allow_nan=False, allow_infinity=False),
-    session_limit=st.floats(min_value=0, max_value=1_000_000, allow_nan=False, allow_infinity=False),
+    session_limit=st.floats(
+        min_value=0, max_value=1_000_000, allow_nan=False, allow_infinity=False
+    ),
 )
 @settings(max_examples=200)
-def test_governor_no_crash(tx_value: float, max_per_tx: float, daily_limit: float, session_limit: float):
-    limits = SpendLimits(max_per_tx=max_per_tx, daily_limit=daily_limit, session_limit=session_limit)
+def test_governor_no_crash(
+    tx_value: float, max_per_tx: float, daily_limit: float, session_limit: float
+):
+    limits = SpendLimits(
+        max_per_tx=max_per_tx, daily_limit=daily_limit, session_limit=session_limit
+    )
     gov = SpendGovernor(limits=limits, require_confirm=False)
     result = gov.authorize(tx_value=tx_value)
     assert result.allowed in (True, False)
 
 
 @given(
-    expected_out=st.floats(min_value=0.000001, max_value=1_000_000, allow_nan=False, allow_infinity=False),
+    expected_out=st.floats(
+        min_value=0.000001, max_value=1_000_000, allow_nan=False, allow_infinity=False
+    ),
     slippage=st.floats(min_value=0, max_value=100, allow_nan=False, allow_infinity=False),
 )
 @settings(max_examples=100)

@@ -40,6 +40,7 @@ logger = logging.getLogger(__name__)
 
 class ProposalStatus(Enum):
     """Proposal lifecycle status."""
+
     PENDING = "pending"
     ACTIVE = "active"
     SUCCEEDED = "succeeded"
@@ -52,6 +53,7 @@ class ProposalStatus(Enum):
 
 class VoteChoice(Enum):
     """Vote choices."""
+
     FOR = "for"
     AGAINST = "against"
     ABSTAIN = "abstain"
@@ -60,6 +62,7 @@ class VoteChoice(Enum):
 @dataclass
 class GovConfig:
     """Governance tracker configuration."""
+
     rpc_url: str
     snapshot_graphql_url: str = "https://hub.snapshot.org/graphql"
     tally_api_key: Optional[str] = None
@@ -69,6 +72,7 @@ class GovConfig:
 @dataclass
 class Proposal:
     """A governance proposal."""
+
     id: str
     title: str
     description: str = ""
@@ -101,6 +105,7 @@ class Proposal:
 @dataclass
 class VotingPower:
     """Voting power for an address."""
+
     address: str
     token: str
     power: float
@@ -112,6 +117,7 @@ class VotingPower:
 @dataclass
 class DelegateInfo:
     """Information about a delegate."""
+
     address: str
     name: str = ""
     voting_power: float = 0.0
@@ -182,22 +188,100 @@ class GovernanceTracker:
 
     # Governor ABI (minimal)
     GOVERNOR_ABI = [
-        {"inputs": [], "name": "proposalCount", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}], "name": "state", "outputs": [{"name": "", "type": "uint8"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}], "name": "proposalSnapshot", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}], "name": "proposalDeadline", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}], "name": "proposalProposer", "outputs": [{"name": "", "type": "address"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}], "name": "proposalThreshold", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "account", "type": "address"}, {"name": "blockNumber", "type": "uint256"}], "name": "getVotes", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "proposalId", "type": "uint256"}, {"name": "support", "type": "uint8"}], "name": "castVote", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "nonpayable", "type": "function"},
+        {
+            "inputs": [],
+            "name": "proposalCount",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "proposalId", "type": "uint256"}],
+            "name": "state",
+            "outputs": [{"name": "", "type": "uint8"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "proposalId", "type": "uint256"}],
+            "name": "proposalSnapshot",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "proposalId", "type": "uint256"}],
+            "name": "proposalDeadline",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "proposalId", "type": "uint256"}],
+            "name": "proposalProposer",
+            "outputs": [{"name": "", "type": "address"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "proposalId", "type": "uint256"}],
+            "name": "proposalThreshold",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [
+                {"name": "account", "type": "address"},
+                {"name": "blockNumber", "type": "uint256"},
+            ],
+            "name": "getVotes",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [
+                {"name": "proposalId", "type": "uint256"},
+                {"name": "support", "type": "uint8"},
+            ],
+            "name": "castVote",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "nonpayable",
+            "type": "function",
+        },
     ]
 
     # Token ABI (minimal)
     TOKEN_ABI = [
-        {"inputs": [{"name": "account", "type": "address"}], "name": "balanceOf", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "delegatee", "type": "address"}], "name": "delegates", "outputs": [{"name": "", "type": "address"}], "stateMutability": "view", "type": "function"},
-        {"inputs": [{"name": "delegatee", "type": "address"}], "name": "delegate", "outputs": [], "stateMutability": "nonpayable", "type": "function"},
-        {"inputs": [], "name": "getCurrentVotes", "outputs": [{"name": "", "type": "uint256"}], "stateMutability": "view", "type": "function"},
+        {
+            "inputs": [{"name": "account", "type": "address"}],
+            "name": "balanceOf",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "delegatee", "type": "address"}],
+            "name": "delegates",
+            "outputs": [{"name": "", "type": "address"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
+        {
+            "inputs": [{"name": "delegatee", "type": "address"}],
+            "name": "delegate",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function",
+        },
+        {
+            "inputs": [],
+            "name": "getCurrentVotes",
+            "outputs": [{"name": "", "type": "uint256"}],
+            "stateMutability": "view",
+            "type": "function",
+        },
     ]
 
     PROPOSAL_STATES = {
@@ -229,6 +313,7 @@ class GovernanceTracker:
         self._gate_instance = gate
 
         from web3 import Web3
+
         self.w3 = Web3(Web3.HTTPProvider(rpc_url))
 
     def _gate(self, private_key: str) -> PreSignInterceptor:
@@ -303,15 +388,17 @@ class GovernanceTracker:
                     deadline = governor.functions.proposalDeadline(pid).call()
                     proposer = governor.functions.proposalProposer(pid).call()
 
-                    proposals.append(Proposal(
-                        id=str(pid),
-                        title=f"Proposal #{pid}",
-                        dao=dao or governor_addr[:10],
-                        status=status,
-                        end_time=deadline,
-                        author=proposer,
-                        url=f"https://www.tally.xyz/gov/{dao}/proposal/{pid}" if dao else "",
-                    ))
+                    proposals.append(
+                        Proposal(
+                            id=str(pid),
+                            title=f"Proposal #{pid}",
+                            dao=dao or governor_addr[:10],
+                            status=status,
+                            end_time=deadline,
+                            author=proposer,
+                            url=f"https://www.tally.xyz/gov/{dao}/proposal/{pid}" if dao else "",
+                        )
+                    )
         except Exception as e:
             logger.error(f"Failed to fetch proposals: {e}")
 
@@ -325,6 +412,7 @@ class GovernanceTracker:
     def _fetch_snapshot_proposals(self, dao: str) -> list[Proposal]:
         """Fetch proposals from Snapshot GraphQL API."""
         import requests
+
         snapshot_name = KNOWN_DAOS.get(dao, {}).get("snapshot", dao)
         now = int(time.time())
 
@@ -473,19 +561,25 @@ class GovernanceTracker:
 
         tx = token_contract.functions.delegate(
             self.w3.to_checksum_address(delegatee),
-        ).build_transaction({
-            "from": account.address,
-            "nonce": self.w3.eth.get_transaction_count(account.address),
-            "gas": 200000,
-        })
+        ).build_transaction(
+            {
+                "from": account.address,
+                "nonce": self.w3.eth.get_transaction_count(account.address),
+                "gas": 200000,
+            }
+        )
 
-        signed = self._gate(private_key).sign(
-            AuthorizationRequest(
-                chain=self._chain,
-                action=ActionType.GOVERNANCE,
-                transaction=tx,
+        signed = (
+            self._gate(private_key)
+            .sign(
+                AuthorizationRequest(
+                    chain=self._chain,
+                    action=ActionType.GOVERNANCE,
+                    transaction=tx,
+                )
             )
-        ).raw_transaction
+            .raw_transaction
+        )
         tx_hash = self.w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
 
@@ -530,8 +624,12 @@ class GovernanceTracker:
     def get_all_daos(self) -> list[dict]:
         """List all known DAOs."""
         return [
-            {"name": name, "token": info["token"], "chain": info["chain"],
-             "governor": info["governor"]}
+            {
+                "name": name,
+                "token": info["token"],
+                "chain": info["chain"],
+                "governor": info["governor"],
+            }
             for name, info in KNOWN_DAOS.items()
         ]
 

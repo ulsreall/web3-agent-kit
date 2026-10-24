@@ -17,9 +17,10 @@ from .wallet import Wallet, WalletConfig
 @dataclass
 class WalletInfo:
     """Metadata for a managed wallet."""
-    label: str                    # Human-readable label (e.g. "main", "airdrop-01")
-    address: str                  # EVM address
-    group: str = "default"        # Wallet group name
+
+    label: str  # Human-readable label (e.g. "main", "airdrop-01")
+    address: str  # EVM address
+    group: str = "default"  # Wallet group name
     tags: list[str] = field(default_factory=list)  # Tags for filtering
     created_at: float = field(default_factory=time.time)
     is_active: bool = True
@@ -32,10 +33,11 @@ class WalletInfo:
 @dataclass
 class BatchTxResult:
     """Result of a batch transaction execution."""
+
     wallet_label: str
     wallet_address: str
     tx_hash: Optional[str]
-    status: str                   # "success", "failed", "skipped"
+    status: str  # "success", "failed", "skipped"
     error: Optional[str] = None
     gas_used: Optional[int] = None
 
@@ -43,10 +45,11 @@ class BatchTxResult:
 @dataclass
 class ConsolidatedBalance:
     """Consolidated balance across all wallets."""
-    total_native: float           # Total native token (ETH, BNB, etc.)
+
+    total_native: float  # Total native token (ETH, BNB, etc.)
     total_tokens: dict[str, float]  # Token symbol -> total balance
     wallet_count: int
-    wallets: list[dict]           # Per-wallet breakdown
+    wallets: list[dict]  # Per-wallet breakdown
 
 
 class MultiWalletManager:
@@ -80,7 +83,9 @@ class MultiWalletManager:
         self.chain = chain
         self.wallets: dict[str, WalletInfo] = {}
         self._wallet_instances: dict[str, Wallet] = {}  # label -> Wallet
-        self._private_keys: dict[str, str] = {}  # label -> plaintext PK in-memory (NOT encrypted; will be cleared on .clear())
+        self._private_keys: dict[
+            str, str
+        ] = {}  # label -> plaintext PK in-memory (NOT encrypted; will be cleared on .clear())
 
         # Storage for wallet metadata (NOT private keys)
         self.storage_path = storage_path or os.path.expanduser("~/.web3-agent-kit/wallets.json")
@@ -253,13 +258,15 @@ class MultiWalletManager:
         for wallet_info in wallets:
             wallet = self._wallet_instances.get(wallet_info.label)
             if not wallet:
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=None,
-                    status="skipped",
-                    error="No private key loaded",
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=None,
+                        status="skipped",
+                        error="No private key loaded",
+                    )
+                )
                 continue
 
             for recipient in recipients:
@@ -268,21 +275,25 @@ class MultiWalletManager:
                         to=recipient,
                         amount=amount,
                     )
-                    results.append(BatchTxResult(
-                        wallet_label=wallet_info.label,
-                        wallet_address=wallet_info.address,
-                        tx_hash=tx.get("hash"),
-                        status="success",
-                        gas_used=tx.get("gas"),
-                    ))
+                    results.append(
+                        BatchTxResult(
+                            wallet_label=wallet_info.label,
+                            wallet_address=wallet_info.address,
+                            tx_hash=tx.get("hash"),
+                            status="success",
+                            gas_used=tx.get("gas"),
+                        )
+                    )
                 except Exception as e:
-                    results.append(BatchTxResult(
-                        wallet_label=wallet_info.label,
-                        wallet_address=wallet_info.address,
-                        tx_hash=None,
-                        status="failed",
-                        error=str(e),
-                    ))
+                    results.append(
+                        BatchTxResult(
+                            wallet_label=wallet_info.label,
+                            wallet_address=wallet_info.address,
+                            tx_hash=None,
+                            status="failed",
+                            error=str(e),
+                        )
+                    )
 
                 if delay_between > 0:
                     time.sleep(delay_between)
@@ -317,13 +328,15 @@ class MultiWalletManager:
         for wallet_info in wallets:
             wallet = self._wallet_instances.get(wallet_info.label)
             if not wallet:
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=None,
-                    status="skipped",
-                    error="No private key loaded",
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=None,
+                        status="skipped",
+                        error="No private key loaded",
+                    )
+                )
                 continue
 
             for recipient in recipients:
@@ -333,21 +346,25 @@ class MultiWalletManager:
                         to=recipient,
                         amount=amount,
                     )
-                    results.append(BatchTxResult(
-                        wallet_label=wallet_info.label,
-                        wallet_address=wallet_info.address,
-                        tx_hash=tx.get("hash"),
-                        status="success",
-                        gas_used=tx.get("gas"),
-                    ))
+                    results.append(
+                        BatchTxResult(
+                            wallet_label=wallet_info.label,
+                            wallet_address=wallet_info.address,
+                            tx_hash=tx.get("hash"),
+                            status="success",
+                            gas_used=tx.get("gas"),
+                        )
+                    )
                 except Exception as e:
-                    results.append(BatchTxResult(
-                        wallet_label=wallet_info.label,
-                        wallet_address=wallet_info.address,
-                        tx_hash=None,
-                        status="failed",
-                        error=str(e),
-                    ))
+                    results.append(
+                        BatchTxResult(
+                            wallet_label=wallet_info.label,
+                            wallet_address=wallet_info.address,
+                            tx_hash=None,
+                            status="failed",
+                            error=str(e),
+                        )
+                    )
 
                 if delay_between > 0:
                     time.sleep(delay_between)
@@ -378,32 +395,38 @@ class MultiWalletManager:
         for wallet_info in wallets:
             wallet = self._wallet_instances.get(wallet_info.label)
             if not wallet:
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=None,
-                    status="skipped",
-                    error="No private key loaded",
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=None,
+                        status="skipped",
+                        error="No private key loaded",
+                    )
+                )
                 continue
 
             try:
                 tx = tx_builder(wallet)
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=tx.get("hash"),
-                    status="success",
-                    gas_used=tx.get("gas"),
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=tx.get("hash"),
+                        status="success",
+                        gas_used=tx.get("gas"),
+                    )
+                )
             except Exception as e:
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=None,
-                    status="failed",
-                    error=str(e),
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=None,
+                        status="failed",
+                        error=str(e),
+                    )
+                )
 
             if delay_between > 0:
                 time.sleep(delay_between)
@@ -442,22 +465,26 @@ class MultiWalletManager:
                     tokens[token_symbol] = token_balance
                     total_tokens[token_symbol] = total_tokens.get(token_symbol, 0) + token_balance
 
-                wallet_breakdown.append({
-                    "label": wallet_info.label,
-                    "address": wallet_info.address,
-                    "group": wallet_info.group,
-                    "native": native,
-                    "tokens": tokens,
-                })
+                wallet_breakdown.append(
+                    {
+                        "label": wallet_info.label,
+                        "address": wallet_info.address,
+                        "group": wallet_info.group,
+                        "native": native,
+                        "tokens": tokens,
+                    }
+                )
             except Exception:
-                wallet_breakdown.append({
-                    "label": wallet_info.label,
-                    "address": wallet_info.address,
-                    "group": wallet_info.group,
-                    "native": 0,
-                    "tokens": {},
-                    "error": "Failed to fetch balance",
-                })
+                wallet_breakdown.append(
+                    {
+                        "label": wallet_info.label,
+                        "address": wallet_info.address,
+                        "group": wallet_info.group,
+                        "native": 0,
+                        "tokens": {},
+                        "error": "Failed to fetch balance",
+                    }
+                )
 
         return ConsolidatedBalance(
             total_native=total_native,
@@ -506,31 +533,37 @@ class MultiWalletManager:
                 send_amount = balance - keep_minimum
 
                 if send_amount <= 0:
-                    results.append(BatchTxResult(
-                        wallet_label=wallet_info.label,
-                        wallet_address=wallet_info.address,
-                        tx_hash=None,
-                        status="skipped",
-                        error=f"Balance too low ({balance})",
-                    ))
+                    results.append(
+                        BatchTxResult(
+                            wallet_label=wallet_info.label,
+                            wallet_address=wallet_info.address,
+                            tx_hash=None,
+                            status="skipped",
+                            error=f"Balance too low ({balance})",
+                        )
+                    )
                     continue
 
                 tx = wallet.send(to=target.address, amount=send_amount)
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=tx.get("hash"),
-                    status="success",
-                    gas_used=tx.get("gas"),
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=tx.get("hash"),
+                        status="success",
+                        gas_used=tx.get("gas"),
+                    )
+                )
             except Exception as e:
-                results.append(BatchTxResult(
-                    wallet_label=wallet_info.label,
-                    wallet_address=wallet_info.address,
-                    tx_hash=None,
-                    status="failed",
-                    error=str(e),
-                ))
+                results.append(
+                    BatchTxResult(
+                        wallet_label=wallet_info.label,
+                        wallet_address=wallet_info.address,
+                        tx_hash=None,
+                        status="failed",
+                        error=str(e),
+                    )
+                )
 
             time.sleep(1)
 

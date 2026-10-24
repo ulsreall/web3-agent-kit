@@ -110,11 +110,13 @@ import pytest
 from unittest.mock import Mock, patch
 from web3_agent_kit import Agent, Wallet, Chain
 
+
 @pytest.fixture
 def mock_wallet():
     wallet = Mock(spec=Wallet)
     wallet.address = "0x1234..."
     return wallet
+
 
 def test_agent_creation(mock_wallet):
     agent = Agent(wallet=mock_wallet, chains=[Chain.BASE])
