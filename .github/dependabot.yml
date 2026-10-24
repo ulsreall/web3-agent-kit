@@ -10,13 +10,23 @@ updates:
       day: "monday"
       time: "09:00"
       timezone: "Asia/Jakarta"
-    open-pull-requests-limit: 10
+    open-pull-requests-limit: 5
     labels:
       - "dependencies"
       - "automated"
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      # Patch and minor bumps in one PR; majors stay separate so each
+      # breaking change is reviewed on its own.
+      pip-minor-patch:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -32,3 +42,8 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
+    groups:
+      github-actions:
+        applies-to: version-updates
+        patterns:
+          - "*"
