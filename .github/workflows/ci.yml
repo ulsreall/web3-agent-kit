@@ -10,12 +10,50 @@ on:
     branches: [ main, master ]
 
 jobs:
-  test:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.11'
+
+    - name: Install ruff
+      run: python -m pip install --upgrade pip ruff
+
+    - name: Lint
+      run: ruff check .
+
+    - name: Format check
+      run: ruff format --check .
+
+  audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Set up Python
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+      with:
+        python-version: '3.11'
+
+    - name: Audit dependencies
+      run: |
+        python -m pip install --upgrade pip pip-audit
+        pip-audit --progress-spinner off
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       matrix:
-        python-version: ['3.10', '3.11', '3.12']
+        python-version: ['3.10', '3.11', '3.12', '3.13']
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,13 +66,11 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov pytest-timeout httpx pytest-asyncio solders base58 solana hypothesis
+        pip install -e ".[dev,solana]"
         pip install "tomli>=2.0; python_version < '3.11'"
 
     - name: Import smoke test
       run: |
-        pip install -e .
         python - <<'PY'
         import web3_agent_kit
         from web3_agent_kit import Agent, Wallet, Chain
@@ -47,9 +83,9 @@ jobs:
         python tools/check_signing_surface.py
 
     - name: Run tests
-      timeout-minutes: 5
+      timeout-minutes: 10
       run: |
-        pytest tests/ -v --cov=web3_agent_kit --cov-report=xml --timeout=30 -x
+        pytest tests/ --cov=web3_agent_kit --cov-report=xml --timeout=30
 
     - name: Upload coverage
       if: matrix.python-version == '3.11'
