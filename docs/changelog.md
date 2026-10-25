@@ -4,6 +4,56 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.19.0] - 2026-10-25
+
+### Features
+- **p1:** gate-exercise mode, live trust root from materials, and PEM field tolerance,
+  so the verdict gate can be exercised against real material rather than fixtures alone.
+- **p1:** the Insight verdict gate now runs in the live path (verdict-gate spec v0.1,
+  `policy-decision` v1 half).
+- **report:** the acceptance report records the explicit outcome of both PriorSeal gate
+  checks instead of leaving a pass implicit.
+
+### Fixed
+- **p1:** the verdict gate refuses unless the attestations hash to the bound pair, and a
+  missing insight drop refuses rather than skipping the gate. The `policy-decision` v1
+  field set (verdict-gate spec v1.0 §3) is enforced. A missing drop reports
+  `MATERIALS_MISSING` per verdict-gate spec v0.3 §4.
+- **execution:** PriorSeal authorization is validated against the pinned sheet rather than
+  recomputed live, so a drifted tree cannot authorize a broadcast.
+- **cli:** `wak --version` reads `__version__` instead of a hardcoded literal. The literal
+  drifted from the package on every release and failed `test_version` on all four Python
+  versions; a release now needs only the single bump release-please already makes.
+
+### Build
+- `requirements-lock.txt` is regenerated with `pip-compile --generate-hashes` (54 pins,
+  transitive included). It previously aborted under `--require-hashes` because `py-ecc`
+  was unpinned.
+- The lock no longer pins `--index-url`/`--trusted-host` to a Tencent mirror that only
+  resolves inside a Chinese network, which broke every install from CI or a clean machine.
+- `multidict` 7.0.0 and `aiohttp` 3.14.3 were unsatisfiable together; the lock now holds
+  `aiohttp` 3.14.5 with `multidict` 7.2.0.
+- `pytest-timeout` joined the `dev` extra, so the `--timeout` flag CI passes always
+  resolves.
+- The `pkg_resources` fallback in the plugin registry is gone; entry points come from
+  `importlib.metadata` only.
+
+### CI
+- A dedicated `lint` job runs `ruff check` and `ruff format --check`; the tree is formatted
+  and lint-clean (18 findings and 182 unformatted files at the start of this cycle).
+- `pip-audit` audits `requirements-lock.txt` rather than the runner image, so a preinstalled
+  `setuptools` cannot fail the build.
+- The test matrix covers 3.10 through 3.13.
+- DCO skips bot-authored commits: release-please opens its version bump from `GITHUB_TOKEN`
+  as `github-actions[bot]`, and a bot cannot attach a personal `Signed-off-by`. Every human
+  commit is still checked.
+- Dependabot groups minor and patch bumps into a single PR and keeps majors separate.
+
+### Documentation
+- The headline test and coverage numbers were corrected on the banner, the README and the
+  docs home page. They had drifted to 1,971 tests and 75% coverage against an actual
+  1,832 passed / 171 skipped at 71%.
+
 ## [1.18.5] - 2026-09-29
 
 ### Features

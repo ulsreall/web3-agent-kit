@@ -1,7 +1,7 @@
 <div class="docs-hero" markdown>
 <div class="docs-hero-copy" markdown>
 
-<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.18.5</p>
+<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.19.0</p>
 
 # Build agents that can actually execute.
 
@@ -42,9 +42,9 @@ print(result)
 
 <div class="docs-metrics" markdown>
 <div><strong>25</strong><span>modules</span></div>
-<div><strong>1,957</strong><span>tests passing</span></div>
+<div><strong>1,832</strong><span>tests passing</span></div>
 <div><strong>9</strong><span>supported chains</span></div>
-<div><strong>75%</strong><span>coverage</span></div>
+<div><strong>71%</strong><span>coverage</span></div>
 <div><strong>MIT</strong><span>license</span></div>
 </div>
 
@@ -116,7 +116,7 @@ A write should follow this lifecycle where the module and application have the r
 
 <div class="docs-callout" markdown>
 <span>i</span>
-<p><strong>Beta software.</strong> The wallet gate fails closed, but write-path coverage is not yet uniform. Gated signing requires an application-supplied authorization provider; the current authorization digest does not bind gas limit or fee fields. Review the [safety pipeline](safety-and-transaction-pipeline.md), [maturity policy](project-maturity.md), and [risk disclosure](../RISKS.md) before using real funds.</p>
+<p><strong>Beta software.</strong> The wallet gate fails closed, but write-path coverage is not yet uniform. Gated signing requires an application-supplied authorization provider; the current authorization digest does not bind gas limit or fee fields. Review the [safety pipeline](safety-and-transaction-pipeline.md), [maturity policy](project-maturity.md), and [risk disclosure](https://github.com/ulsreall/web3-agent-kit/blob/master/RISKS.md) before using real funds.</p>
 </div>
 
 <div class="docs-rule"></div>
