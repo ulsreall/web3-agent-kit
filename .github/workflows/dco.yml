@@ -12,7 +12,14 @@ jobs:
           fetch-depth: 0
       - name: Check Signed-off-by
         run: |
+          # Automated release bumps are authored by github-actions[bot] via
+          # GITHUB_TOKEN and cannot carry a personal Signed-off-by. The DCO
+          # certifies that a human has the right to submit the code, so only
+          # human-authored commits are checked here.
           MISSING=$(git log --no-merges --format="%h %an <%ae>" origin/master..HEAD | while read hash author; do
+            case "$author" in
+              *"github-actions[bot]"*|*"dependabot[bot]"*) continue ;;
+            esac
             if ! git log --format="%B" -1 "$hash" | grep -q "^Signed-off-by:"; then
               echo "$hash $author"
             fi
@@ -20,6 +27,8 @@ jobs:
           if [ -n "$MISSING" ]; then
             echo "❌ Commits missing Signed-off-by:"
             echo "$MISSING"
+            echo ""
+            echo "Fix with: git commit --amend --signoff"
             exit 1
           fi
-          echo "✅ All commits have Signed-off-by"
+          echo "✅ All human-authored commits have Signed-off-by"
