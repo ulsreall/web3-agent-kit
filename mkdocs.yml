@@ -3,7 +3,13 @@ site_description: Open-source framework for building autonomous AI agents that i
 site_url: https://ulsreall.github.io/web3-agent-kit/
 repo_url: https://github.com/ulsreall/web3-agent-kit
 repo_name: ulsreall/web3-agent-kit
-edit_uri: edit/main/docs/
+edit_uri: edit/master/docs/
+
+# Internal working material that ships in the repo but not on the docs site:
+# outreach drafts, and the review directory holding a raw .patch artifact.
+exclude_docs: |
+  promotion/
+  review/
 
 theme:
   name: material
@@ -30,6 +36,8 @@ theme:
     - content.code.annotate
     - content.tabs.link
     - content.tooltips
+    - content.action.edit
+    - content.action.view
     - navigation.instant
     - navigation.instant.progress
     - navigation.tracking
@@ -105,52 +113,49 @@ extra:
 
 nav:
   - Home: index.md
-  - Getting Started: getting-started.md
-  - CLI Tool: cli.md
-  - REST API Server: api-server.md
-  - Features: features.md
-  - Project Maturity: project-maturity.md
-  - Capability Matrix: capability-matrix.md
-  - Safety and Transaction Pipeline: safety-and-transaction-pipeline.md
-  - Security Model: security-model.md
-  - Versioning Policy: versioning-policy.md
-  - Examples: examples.md
-  - Architecture:
-    - architecture/execution-paths.md
-  - Architecture Decision Records:
-    - adr/adr-001-public-rpc-defaults.md
-    - adr/adr-002-builder-pattern.md
-    - adr/adr-003-multi-source-oracle.md
+  - Start:
+      - Getting Started: getting-started.md
+      - Examples: examples.md
+      - CLI: cli.md
+      - REST API Server: api-server.md
+  - Concepts:
+      - Features: features.md
+      - Capability Matrix: capability-matrix.md
+      - Execution Paths: architecture/execution-paths.md
+      - Project Maturity: project-maturity.md
+      - Versioning Policy: versioning-policy.md
+  - Safety:
+      - Safety and Transaction Pipeline: safety-and-transaction-pipeline.md
+      - Security Model: security-model.md
+      - Safety Gap Matrix: security/safety-gap-matrix.md
   - API Reference:
-    - api/agent.md
-    - api/wallet.md
-    - api/chain.md
-    - api/llm.md
-    - api/sniper.md
-    - api/portfolio.md
-    - api/bridge.md
-    - api/defi.md
-    - api/airdrop.md
-    - api/security.md
-    - api/mev.md
-    - api/nft.md
-    - api/trading.md
-  - New Modules:
-    - api/oracle.md
-    - api/events.md
-    - api/simulator.md
-    - api/account_abstraction.md
-    - api/messaging.md
-    - api/governance.md
-  - Contributing: contributing.md
-  - Contributing Platforms: contributing-platforms.md
-  - Research:
-    - research/airdrop_landscape_2026.md
-  - Promotion:
-    - promotion/awesome-list-submissions.md
-    - promotion/hn-post-draft.md
-  - Blog:
-    - blog/comparison-vs-alternatives.md
-  - Security:
-    - security/safety-gap-matrix.md
+      - Agent: api/agent.md
+      - Wallet: api/wallet.md
+      - Chain: api/chain.md
+      - LLM: api/llm.md
+      - Portfolio: api/portfolio.md
+      - Trading: api/trading.md
+      - DeFi: api/defi.md
+      - Bridge: api/bridge.md
+      - Sniper: api/sniper.md
+      - Airdrop: api/airdrop.md
+      - NFT: api/nft.md
+      - MEV: api/mev.md
+      - Security Module: api/security.md
+      - Oracle: api/oracle.md
+      - Events: api/events.md
+      - Simulator: api/simulator.md
+      - Account Abstraction: api/account_abstraction.md
+      - Messaging: api/messaging.md
+      - Governance: api/governance.md
+  - Architecture Decision Records:
+      - ADR-001 Public RPC Defaults: adr/adr-001-public-rpc-defaults.md
+      - ADR-002 Builder Pattern: adr/adr-002-builder-pattern.md
+      - ADR-003 Multi-Source Oracle: adr/adr-003-multi-source-oracle.md
+  - Background:
+      - Airdrop Landscape 2026: research/airdrop_landscape_2026.md
+      - Comparison vs Alternatives: blog/comparison-vs-alternatives.md
+  - Contributing:
+      - Contributing: contributing.md
+      - Contributing Platforms: contributing-platforms.md
   - Changelog: changelog.md
