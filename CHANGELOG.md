@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.1](https://github.com/ulsreall/web3-agent-kit/compare/v1.19.0...v1.19.1) (2026-10-25)
+
+
+### Bug Fixes
+
+* **docs:** the toolchain pin rejected the version the site builds with ([b66c4cc](https://github.com/ulsreall/web3-agent-kit/commit/b66c4cc7cd5c4b5597fa5182edcc70aa9d4f16d9))
+
+
+### Documentation
+
+* sync the 1.19.0 release across the README, banner and site ([7bb69e4](https://github.com/ulsreall/web3-agent-kit/commit/7bb69e455ea062ccc0d5cde6854d7fa1e504d673))
+
 ## [1.19.0](https://github.com/ulsreall/web3-agent-kit/compare/v1.18.5...v1.19.0) (2026-10-25)
 
 
