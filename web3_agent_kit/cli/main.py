@@ -2,6 +2,7 @@
 
 import click
 
+from web3_agent_kit import __version__
 from web3_agent_kit.cli.commands.agent import agent
 from web3_agent_kit.cli.commands.doctor import doctor
 from web3_agent_kit.cli.commands.examples import examples
@@ -22,7 +23,7 @@ BANNER = r"""
 
 
 @click.group(invoke_without_command=True)
-@click.version_option(version="1.18.5", prog_name="wak")
+@click.version_option(version=__version__, prog_name="wak")
 @click.pass_context
 def main(ctx):
     """WAK — Web3 Agent Kit CLI.

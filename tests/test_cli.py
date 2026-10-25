@@ -54,7 +54,12 @@ class TestMainGroup:
         assert __version__ in result.output
 
     def test_cli_version_matches_package_metadata(self):
-        """pyproject.toml, __version__ and the CLI option must all agree."""
+        """pyproject.toml and __version__ must agree, and the CLI must not pin its own copy.
+
+        A hardcoded ``version="x.y.z"`` in the CLI used to drift from the
+        package version and broke every release PR, so the CLI now reads
+        ``__version__`` directly. This test fails if that literal comes back.
+        """
         import re
         from pathlib import Path
 
@@ -64,13 +69,16 @@ class TestMainGroup:
         declared = re.search(
             r'^version\s*=\s*"([^"]+)"', pyproject.read_text(), re.MULTILINE
         ).group(1)
+
         cli_source = (
             Path(__file__).resolve().parents[1] / "web3_agent_kit" / "cli" / "main.py"
         ).read_text()
-        pinned = re.search(r'version_option\(version="([^"]+)"', cli_source).group(1)
 
         assert declared == __version__, f"pyproject says {declared}, package says {__version__}"
-        assert pinned == __version__, f"CLI is pinned to {pinned}, package is {__version__}"
+        assert re.search(r'version_option\(version="[^"]+"', cli_source) is None, (
+            "web3_agent_kit/cli/main.py hardcodes a version literal; "
+            "use version=__version__ so release bumps do not need a third edit"
+        )
 
     def test_subcommands_registered(self):
         result = runner.invoke(main, ["--help"])
