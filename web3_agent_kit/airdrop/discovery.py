@@ -306,9 +306,7 @@ class CampaignDiscovery:
         """
         seen_before_discovery = self._seen_campaigns.copy()
         all_campaigns = await self.discover_all()
-        return [
-            c for c in all_campaigns if self._campaign_key(c) not in seen_before_discovery
-        ]
+        return [c for c in all_campaigns if self._campaign_key(c) not in seen_before_discovery]
 
     async def get_high_value_campaigns(self, min_points: int = 100) -> list[DiscoveredCampaign]:
         """Get only high-value campaigns.

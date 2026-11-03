@@ -183,9 +183,7 @@ def _chain_and_manager(chain_name: str):
         raise ValueError(f"Unsupported chain: {chain_name}") from exc
     rpc_url = os.environ.get(f"{chain.name}_RPC_URL") or os.environ.get("RPC_URL")
     if not rpc_url:
-        raise ValueError(
-            f"Set {chain.name}_RPC_URL or RPC_URL to query {chain.value}"
-        )
+        raise ValueError(f"Set {chain.name}_RPC_URL or RPC_URL to query {chain.value}")
     return chain, ChainManager([chain], {chain: rpc_url})
 
 
@@ -264,8 +262,7 @@ def handle_swap(args: dict) -> dict:
         if not wallet.is_enforced:
             return {
                 "error": (
-                    "No pre-sign authorization pipeline is configured; "
-                    "the swap was not submitted"
+                    "No pre-sign authorization pipeline is configured; the swap was not submitted"
                 ),
                 "preview": False,
             }
@@ -306,8 +303,7 @@ def handle_revoke_approval(args: dict) -> dict:
         if not wallet.is_enforced:
             return {
                 "error": (
-                    "No pre-sign authorization pipeline is configured; "
-                    "the approval was not revoked"
+                    "No pre-sign authorization pipeline is configured; the approval was not revoked"
                 )
             }
         from web3_agent_kit.wallet.approval import ApprovalManager
@@ -421,9 +417,7 @@ def handle_request(request: dict) -> dict | None:
                 failed = isinstance(result, dict) and result.get("error") is not None
                 _log(name, arguments, json.dumps(result), status="error" if failed else "ok")
                 response = {
-                    "content": [
-                        {"type": "text", "text": json.dumps(result, default=str)}
-                    ],
+                    "content": [{"type": "text", "text": json.dumps(result, default=str)}],
                     **({"isError": True} if failed else {}),
                 }
             except Exception as exc:

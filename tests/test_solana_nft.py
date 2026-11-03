@@ -82,9 +82,7 @@ class TestSolanaNFT:
     async def test_public_rpc_is_rejected_for_das_methods(self):
         nft = SolanaNFT(
             SolanaNFTConfig(
-                client_config=SolanaClientConfig(
-                    rpc_url="https://api.mainnet-beta.solana.com"
-                )
+                client_config=SolanaClientConfig(rpc_url="https://api.mainnet-beta.solana.com")
             )
         )
 

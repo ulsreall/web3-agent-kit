@@ -144,9 +144,7 @@ class TestCampaignDiscovery:
 
     @pytest.mark.asyncio
     async def test_get_new_campaigns_returns_campaign_before_seen_update(self):
-        discovery = CampaignDiscovery(
-            DiscoveryConfig(platforms=["galxe"], rate_limit_delay=0)
-        )
+        discovery = CampaignDiscovery(DiscoveryConfig(platforms=["galxe"], rate_limit_delay=0))
         campaign = DiscoveredCampaign(
             platform="galxe",
             campaign_id="new",

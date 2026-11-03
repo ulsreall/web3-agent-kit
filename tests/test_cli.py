@@ -180,12 +180,15 @@ class TestWalletCommand:
     def test_wallet_balance(self):
         from web3_agent_kit.chains.chain import Chain
 
-        with patch(
-            "web3_agent_kit.cli.commands.wallet.chain_manager_for",
-            return_value=(Chain.BASE, object()),
-        ), patch(
-            "web3_agent_kit.cli.commands.wallet.read_native_balance",
-            return_value=1.25,
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.wallet.chain_manager_for",
+                return_value=(Chain.BASE, object()),
+            ),
+            patch(
+                "web3_agent_kit.cli.commands.wallet.read_native_balance",
+                return_value=1.25,
+            ),
         ):
             result = runner.invoke(wallet, ["balance", "--address", "0xabc", "--chain", "base"])
         assert result.exit_code == 0
@@ -196,10 +199,13 @@ class TestWalletCommand:
     def test_wallet_balance_short_opts(self):
         from web3_agent_kit.chains.chain import Chain
 
-        with patch(
-            "web3_agent_kit.cli.commands.wallet.chain_manager_for",
-            return_value=(Chain.ETHEREUM, object()),
-        ), patch("web3_agent_kit.cli.commands.wallet.read_native_balance", return_value=0.5):
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.wallet.chain_manager_for",
+                return_value=(Chain.ETHEREUM, object()),
+            ),
+            patch("web3_agent_kit.cli.commands.wallet.read_native_balance", return_value=0.5),
+        ):
             result = runner.invoke(wallet, ["balance", "-a", "0xdef"])
         assert result.exit_code == 0
         assert "0xdef" in result.output
@@ -229,9 +235,7 @@ class TestTokenCommand:
                 "error": None,
             },
         ):
-            result = runner.invoke(
-                token, ["check", "--address", "0xtoken", "--chain", "ethereum"]
-            )
+            result = runner.invoke(token, ["check", "--address", "0xtoken", "--chain", "ethereum"])
         assert result.exit_code == 0
         assert "0xtoken" in result.output
         assert "Honeypot: False" in result.output
@@ -249,12 +253,15 @@ class TestGasCommand:
     def test_gas_default(self):
         from web3_agent_kit.chains.chain import Chain
 
-        with patch(
-            "web3_agent_kit.cli.commands.gas.chain_manager_for",
-            return_value=(Chain.ETHEREUM, object()),
-        ), patch(
-            "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
-            return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.gas.chain_manager_for",
+                return_value=(Chain.ETHEREUM, object()),
+            ),
+            patch(
+                "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
+                return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+            ),
         ):
             result = runner.invoke(gas, [])
         assert result.exit_code == 0
@@ -265,12 +272,15 @@ class TestGasCommand:
     def test_gas_with_options(self):
         from web3_agent_kit.chains.chain import Chain
 
-        with patch(
-            "web3_agent_kit.cli.commands.gas.chain_manager_for",
-            return_value=(Chain.BASE, object()),
-        ), patch(
-            "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
-            return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.gas.chain_manager_for",
+                return_value=(Chain.BASE, object()),
+            ),
+            patch(
+                "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
+                return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+            ),
         ):
             result = runner.invoke(gas, ["-c", "base", "-p", "high"])
         assert result.exit_code == 0

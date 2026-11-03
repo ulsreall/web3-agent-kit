@@ -206,9 +206,7 @@ class EventListener:
         )
 
         next_block = (
-            sub.last_block + 1
-            if sub.has_polled or sub.last_block > 0
-            else config.from_block
+            sub.last_block + 1 if sub.has_polled or sub.last_block > 0 else config.from_block
         )
         from_block = max(next_block, current_block - config.max_blocks_per_poll + 1)
         to_block = min(current_block, from_block + config.max_blocks_per_poll - 1)

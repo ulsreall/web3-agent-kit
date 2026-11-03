@@ -308,9 +308,7 @@ class ApprovalManager:
             if not isinstance(decimals, int) or not 0 <= decimals <= 255:
                 raise ValueError(f"Invalid token decimals: {decimals!r}")
 
-            approve_topic = (
-                "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
-            )
+            approve_topic = "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
 
             # Scan bounded ranges across the full chain, then keep the latest value per spender.
             latest_block = w3.eth.block_number
@@ -385,9 +383,7 @@ class ApprovalManager:
                 }
             ],
         )
-        return contract.functions.approve(
-            w3.to_checksum_address(spender), 0
-        ).build_transaction(
+        return contract.functions.approve(w3.to_checksum_address(spender), 0).build_transaction(
             {
                 "from": self.wallet.address,
                 "nonce": w3.eth.get_transaction_count(self.wallet.address),

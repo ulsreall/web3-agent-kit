@@ -23,9 +23,7 @@ def chain_manager_for(chain_name: str) -> tuple[Chain, ChainManager]:
     chain = resolve_chain(chain_name)
     rpc_url = os.environ.get(f"{chain.name}_RPC_URL") or os.environ.get("RPC_URL")
     if not rpc_url:
-        raise click.ClickException(
-            f"Set {chain.name}_RPC_URL or RPC_URL to query {chain.value}."
-        )
+        raise click.ClickException(f"Set {chain.name}_RPC_URL or RPC_URL to query {chain.value}.")
 
     return chain, ChainManager([chain], {chain: rpc_url})
 

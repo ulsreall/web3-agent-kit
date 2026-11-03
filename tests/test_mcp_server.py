@@ -27,9 +27,7 @@ def test_initialize_returns_standard_mcp_capabilities():
 
 
 def test_tools_list_uses_mcp_tool_shape():
-    response = mcp_server.handle_request(
-        {"jsonrpc": "2.0", "id": 1, "method": "tools/list"}
-    )
+    response = mcp_server.handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"})
 
     tool = response["result"]["tools"][0]
     assert tool["name"] == "get_balance"
@@ -63,10 +61,7 @@ def test_tools_call_uses_mcp_arguments_and_content():
 
 def test_notification_has_no_response():
     assert (
-        mcp_server.handle_request(
-            {"jsonrpc": "2.0", "method": "notifications/initialized"}
-        )
-        is None
+        mcp_server.handle_request({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None
     )
 
 
@@ -83,9 +78,7 @@ def test_balance_queries_supplied_address_without_private_key():
     )
     manager = SimpleNamespace(get_web3=lambda chain: web3)
     with patch.object(mcp_server, "_chain_and_manager", return_value=(Chain.ETHEREUM, manager)):
-        result = mcp_server.handle_get_balance(
-            {"address": "0xabc", "chain": "ethereum"}
-        )
+        result = mcp_server.handle_get_balance({"address": "0xabc", "chain": "ethereum"})
 
     assert result == {"address": "0xabc", "chain": "ethereum", "balance": 1.2}
 
@@ -129,9 +122,7 @@ def test_confirmed_approval_uses_approval_manager(monkeypatch):
         )
 
     assert result == {"status": "submitted", "tx_hash": "0xsent"}
-    manager.revoke.assert_called_once_with(
-        "0xtoken", "0xspender", Chain.BASE
-    )
+    manager.revoke.assert_called_once_with("0xtoken", "0xspender", Chain.BASE)
 
 
 def test_stdio_main_reads_jsonrpc_requests(monkeypatch):

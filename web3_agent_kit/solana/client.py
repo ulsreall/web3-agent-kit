@@ -156,9 +156,7 @@ class SolanaClient:
             status = statuses[0] if statuses else None
             if status:
                 if status.get("err") is not None:
-                    raise SolanaRPCError(
-                        f"Transaction '{signature}' failed: {status['err']}"
-                    )
+                    raise SolanaRPCError(f"Transaction '{signature}' failed: {status['err']}")
                 confirmation_status = status.get("confirmationStatus")
                 if confirmation_status is None:
                     confirmations = status.get("confirmations")

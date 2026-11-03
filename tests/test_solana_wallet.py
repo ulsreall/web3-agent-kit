@@ -141,25 +141,30 @@ class TestSolanaWallet:
     async def test_send_token_uses_idempotent_destination_ata_creation(self):
         from solders.hash import Hash
         from solders.instruction import Instruction
+        from solders.message import Message
         from solders.pubkey import Pubkey
+        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID
 
         wallet = SolanaWallet()
         mock_client = AsyncMock()
-        mock_client.get_latest_blockhash = AsyncMock(return_value={"blockhash": str(Hash.default())})
+        mock_client.get_latest_blockhash = AsyncMock(
+            return_value={"blockhash": str(Hash.default())}
+        )
         mock_client.send_transaction = AsyncMock(return_value="tx_sig_123")
         wallet._client = mock_client
         instruction = Instruction(Pubkey.new_unique(), b"", [])
 
         with (
-            patch(
-                "spl.token.instructions.create_associated_token_account_idempotent",
-                return_value=instruction,
-            ) as create_ata,
+            patch.object(
+                Message, "new_with_blockhash", wraps=Message.new_with_blockhash
+            ) as build_message,
             patch("spl.token.instructions.transfer_checked", return_value=instruction),
         ):
             await wallet.send_token(str(Pubkey.new_unique()), str(Pubkey.new_unique()), 1)
 
-        create_ata.assert_called_once()
+        create_ata = build_message.call_args.args[0][0]
+        assert create_ata.program_id == ASSOCIATED_TOKEN_PROGRAM_ID
+        assert create_ata.data == b"\x01"
         mock_client.send_transaction.assert_awaited_once()
 
     @pytest.mark.asyncio

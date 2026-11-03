@@ -163,14 +163,14 @@ class SolanaWallet:
         Creates the associated token account if needed.
         """
         from solders.hash import Hash
-        from solders.instruction import Instruction
+        from solders.instruction import AccountMeta, Instruction
         from solders.message import Message
         from solders.pubkey import Pubkey
+        from solders.system_program import ID as SYSTEM_PROGRAM_ID
         from solders.transaction import Transaction
-        from spl.token.constants import TOKEN_PROGRAM_ID
+        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
         from spl.token.instructions import (
             TransferCheckedParams,
-            create_associated_token_account_idempotent,
             get_associated_token_address,
             transfer_checked,
         )
@@ -191,7 +191,18 @@ class SolanaWallet:
         recent_blockhash = Hash.from_string(blockhash_str)
 
         instructions: list[Instruction] = [
-            create_associated_token_account_idempotent(from_pubkey, to_pubkey, mint_pubkey),
+            Instruction(
+                ASSOCIATED_TOKEN_PROGRAM_ID,
+                b"\x01",
+                [
+                    AccountMeta(from_pubkey, True, True),
+                    AccountMeta(to_ata, False, True),
+                    AccountMeta(to_pubkey, False, False),
+                    AccountMeta(mint_pubkey, False, False),
+                    AccountMeta(SYSTEM_PROGRAM_ID, False, False),
+                    AccountMeta(TOKEN_PROGRAM_ID, False, False),
+                ],
+            ),
             transfer_checked(
                 TransferCheckedParams(
                     amount=amount_raw,

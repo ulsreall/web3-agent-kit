@@ -314,9 +314,7 @@ class TestEvents:
         listener._poll_subscription(w3, sub, 10)
         assert sub.events_processed == 1
         assert received[0]["args"]["value"] == 100
-        contract.events.Transfer.get_logs.assert_called_once_with(
-            fromBlock=0, toBlock=10
-        )
+        contract.events.Transfer.get_logs.assert_called_once_with(fromBlock=0, toBlock=10)
 
     def test_poll_subscription_starts_after_last_scanned_block(self):
         listener = EventListener(rpc_url="https://x")
@@ -335,9 +333,7 @@ class TestEvents:
 
         listener._poll_subscription(w3, sub, 20)
 
-        contract.events.Transfer.get_logs.assert_called_once_with(
-            fromBlock=11, toBlock=20
-        )
+        contract.events.Transfer.get_logs.assert_called_once_with(fromBlock=11, toBlock=20)
 
     def test_poll_subscription_does_not_repeat_block_zero(self):
         listener = EventListener(rpc_url="https://x")
@@ -694,9 +690,7 @@ class TestGovernance:
 
     def test_current_votes_abi_takes_account_address(self):
         current_votes = next(
-            item
-            for item in GovernanceTracker.TOKEN_ABI
-            if item["name"] == "getCurrentVotes"
+            item for item in GovernanceTracker.TOKEN_ABI if item["name"] == "getCurrentVotes"
         )
         assert current_votes["inputs"] == [{"name": "account", "type": "address"}]
 
@@ -793,9 +787,7 @@ class TestAccountAbstraction:
         assert submit.call_args.args[0].call_data == "0xencoded"
         assert submit.call_args.args[0].nonce == 3
         assert submit.call_args.args[0].signature == "0x01"
-        contract.encode_abi.assert_called_once_with(
-            "execute", args=["0xdest", 0, b""]
-        )
+        contract.encode_abi.assert_called_once_with("execute", args=["0xdest", 0, b""])
 
     def test_send_user_op_requires_external_signature(self):
         w = self._wallet()

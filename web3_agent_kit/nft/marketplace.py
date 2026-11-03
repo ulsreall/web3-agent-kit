@@ -98,8 +98,7 @@ class NFTMarketplace:
             network = self.ALCHEMY_NETWORKS.get(self.config.chain.lower())
             if network is None:
                 raise ValueError(
-                    f"Alchemy NFT API does not support configured chain "
-                    f"{self.config.chain!r}"
+                    f"Alchemy NFT API does not support configured chain {self.config.chain!r}"
                 )
         try:
             if self.config.alchemy_api_key:

@@ -613,9 +613,7 @@ class TokenAnalyzer:
                 data = resp.json()
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
-                    result["is_honeypot"] = _parse_honeypot_status(
-                        token_data.get("is_honeypot")
-                    )
+                    result["is_honeypot"] = _parse_honeypot_status(token_data.get("is_honeypot"))
                     result["buy_tax"] = float(token_data.get("buy_tax", "0"))
                     result["sell_tax"] = float(token_data.get("sell_tax", "0"))
                     if result["is_honeypot"]:
@@ -734,9 +732,7 @@ class TokenAnalyzer:
                 if token_data:
                     tax.buy_tax = float(token_data.get("buy_tax", "0")) * 100
                     tax.sell_tax = float(token_data.get("sell_tax", "0")) * 100
-                    tax.is_honeypot = _parse_honeypot_status(
-                        token_data.get("is_honeypot")
-                    )
+                    tax.is_honeypot = _parse_honeypot_status(token_data.get("is_honeypot"))
                     tax.can_sell = not tax.is_honeypot if tax.is_honeypot is not None else None
         except Exception as e:
             msg = f"Tax check failed: {e}"

@@ -357,9 +357,7 @@ class TestApprovalManager:
         ]
 
         with patch.object(chain_manager, "get_web3", return_value=w3):
-            approvals = manager._check_token_approvals(
-                "0x" + "ab" * 20, "USDC", Chain.ETHEREUM
-            )
+            approvals = manager._check_token_approvals("0x" + "ab" * 20, "USDC", Chain.ETHEREUM)
 
         assert len(approvals) == 1
         assert approvals[0].spender.lower() == spender.lower()

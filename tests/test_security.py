@@ -471,9 +471,7 @@ class TestIntegration:
     def test_missing_honeypot_field_remains_unknown(self):
         response = MagicMock()
         response.status_code = 200
-        response.json.return_value = {
-            "result": {"0x123": {"buy_tax": "0", "sell_tax": "0"}}
-        }
+        response.json.return_value = {"result": {"0x123": {"buy_tax": "0", "sell_tax": "0"}}}
         with patch("web3_agent_kit.security.requests.Session.get", return_value=response):
             tax = TokenAnalyzer()._check_tax("0x123")
 
@@ -483,9 +481,7 @@ class TestIntegration:
     def test_explicit_safe_honeypot_status_is_false(self):
         response = MagicMock()
         response.status_code = 200
-        response.json.return_value = {
-            "result": {"0x123": {"is_honeypot": "0"}}
-        }
+        response.json.return_value = {"result": {"0x123": {"is_honeypot": "0"}}}
         with patch("web3_agent_kit.security.requests.Session.get", return_value=response):
             tax = TokenAnalyzer()._check_tax("0x123")
 

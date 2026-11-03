@@ -360,9 +360,7 @@ class AAWallet:
                 }
             ],
         )
-        nonce = entry_point_contract.functions.getNonce(
-            Web3.to_checksum_address(sender), 0
-        ).call()
+        nonce = entry_point_contract.functions.getNonce(Web3.to_checksum_address(sender), 0).call()
 
         # Build UserOperation
         user_op = UserOperation(
