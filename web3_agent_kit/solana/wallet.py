@@ -169,11 +169,7 @@ class SolanaWallet:
         from solders.system_program import ID as SYSTEM_PROGRAM_ID
         from solders.transaction import Transaction
         from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
-        from spl.token.instructions import (
-            TransferCheckedParams,
-            get_associated_token_address,
-            transfer_checked,
-        )
+        from spl.token.instructions import get_associated_token_address
 
         from_pubkey = self._keypair.pubkey()
         to_pubkey = Pubkey.from_string(to_address)
@@ -203,16 +199,15 @@ class SolanaWallet:
                     AccountMeta(TOKEN_PROGRAM_ID, False, False),
                 ],
             ),
-            transfer_checked(
-                TransferCheckedParams(
-                    amount=amount_raw,
-                    decimals=decimals,
-                    source=from_ata,
-                    mint=mint_pubkey,
-                    dest=to_ata,
-                    owner=from_pubkey,
-                    program_id=TOKEN_PROGRAM_ID,
-                )
+            Instruction(
+                TOKEN_PROGRAM_ID,
+                b"\x0c" + amount_raw.to_bytes(8, "little") + bytes([decimals]),
+                [
+                    AccountMeta(from_ata, False, True),
+                    AccountMeta(mint_pubkey, False, False),
+                    AccountMeta(to_ata, False, True),
+                    AccountMeta(from_pubkey, True, False),
+                ],
             ),
         ]
 
