@@ -176,7 +176,7 @@ class TestGasOptimizerBatchExecute:
         result = opt.batch_execute(txs, chain=Chain.ETHEREUM)
         assert isinstance(result, BatchResult)
         assert result.tx_count == 2
-        assert result.status == "batched"
+        assert result.status == "not_submitted"
 
     def test_batch_execute_single(self):
         opt, _ = _make_optimizer()

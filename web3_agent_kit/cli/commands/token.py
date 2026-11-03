@@ -1,11 +1,15 @@
 """wak token — token analysis commands."""
 
+import os
+
 import click
+
+from ._helpers import resolve_chain
 
 
 @click.group()
 def token():
-    """Token analysis (safety check, info, etc.)."""
+    """Token safety quick checks."""
     pass
 
 
@@ -13,34 +17,34 @@ def token():
 @click.option("--address", "-a", required=True, help="Token contract address (0x...)")
 @click.option("--chain", "-c", default="ethereum", help="Blockchain network")
 def check(address, chain):
-    """Check token safety: honeypot, rug pull risk, contract audit.
+    """Run a GoPlus honeypot/tax quick check.
 
     \b
     Example:
       wak token check --address 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
       wak token check -a 0xA0b8...eB48 -c base
     """
-    click.echo()
-    click.echo(click.style("  🔒 Token Safety Check", fg="cyan", bold=True))
-    click.echo()
-    click.echo(f"  Address: {address}")
-    click.echo(f"  Chain:   {chain}")
-    click.echo()
-    click.echo(
-        click.style("  ⚠️  This command requires an RPC endpoint and/or API key.", fg="yellow")
+    from web3_agent_kit.security import SecurityConfig, TokenAnalyzer
+
+    selected_chain = resolve_chain(chain)
+    analyzer = TokenAnalyzer(
+        SecurityConfig(
+            chain=selected_chain.value,
+            rpc_url=os.environ.get(f"{selected_chain.name}_RPC_URL")
+            or os.environ.get("RPC_URL", ""),
+            etherscan_api_key=os.environ.get("ETHERSCAN_API_KEY", ""),
+            goplus_api_key=os.environ.get("GOPLUS_API_KEY", ""),
+        )
     )
-    click.echo()
-    click.echo("  To use this feature, configure:")
-    click.echo(click.style("    export RPC_URL=https://eth.llamarpc.com", fg="green"))
-    click.echo(click.style("    export ETHERSCAN_API_KEY=your_key", fg="green"))
-    click.echo()
-    click.echo("  Or use the Python API directly:")
-    click.echo(
-        click.style("    from web3_agent_kit import TokenAnalyzer, SecurityConfig", fg="green")
-    )
-    click.echo(
-        click.style('    analyzer = TokenAnalyzer(SecurityConfig(rpc_url="..."))', fg="green")
-    )
-    click.echo(click.style(f'    report = analyzer.analyze_token("{address}")', fg="green"))
-    click.echo(click.style('    print(f"Safety: {report.safety_score}/100")', fg="green"))
-    click.echo()
+    result = analyzer.quick_check(address)
+    if result.get("error"):
+        raise click.ClickException(f"Token safety check failed: {result['error']}")
+
+    click.echo(f"Address: {address}")
+    click.echo(f"Chain: {selected_chain.value}")
+    click.echo("Check: GoPlus quick security lookup")
+    honeypot = result["is_honeypot"] if result["is_honeypot"] is not None else "unknown"
+    click.echo(f"Honeypot: {honeypot}")
+    click.echo(f"Buy tax: {result['buy_tax']}%")
+    click.echo(f"Sell tax: {result['sell_tax']}%")
+    click.echo(f"Risk: {result['risk_level']}")

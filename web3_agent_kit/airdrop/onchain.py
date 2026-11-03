@@ -1,4 +1,4 @@
-"""On-chain Airdrop Module — automate DeFi interactions for airdrop farming.
+"""On-chain Airdrop Module — plan DeFi interactions for airdrop campaigns.
 
 Automates on-chain activities that qualify for airdrops:
 - DEX swaps (Uniswap, Jupiter, Aerodrome)
@@ -6,6 +6,10 @@ Automates on-chain activities that qualify for airdrops:
 - Lending (Aave, Compound, Morpho)
 - Staking/Restaking (EigenLayer, Ether.fi, Renzo)
 - L2 activity (Base, Arbitrum, Optimism, zkSync, Scroll, Linea)
+
+Swap, bridge, lending, and staking execution is not implemented. Dry-run calls
+return previews and never produce transaction hashes; live calls report
+``unsupported`` instead of claiming completion.
 
 Usage::
 
@@ -117,7 +121,7 @@ class OnChainConfig:
     delay_between_txs: float = 10.0
     randomize_delay: bool = True
     # Safety
-    dry_run: bool = True  # Default: simulate only
+    dry_run: bool = True  # Default: preview only
     max_daily_txs: int = 50
     # Proxy
     proxy: Optional[str] = None
@@ -138,6 +142,7 @@ class TransactionResult:
     error: str = ""
     block_number: int = 0
     timestamp: float = 0.0
+    status: str = "not_submitted"
 
     def to_dict(self) -> dict:
         return {
@@ -151,6 +156,7 @@ class TransactionResult:
             "amount": self.amount,
             "error": self.error,
             "block_number": self.block_number,
+            "status": self.status,
         }
 
 
@@ -574,14 +580,14 @@ class OnChainAirdropFarmer:
             logger.info(
                 f"[DRY RUN] Swap {amount_in} {token_in} -> {token_out} on {protocol} ({chain})"
             )
-            result.success = True
-            result.tx_hash = "0xDRY_RUN"
+            result.status = "preview"
+            result.error = "Dry run only; no transaction was submitted"
             self._results.append(result)
             return result
 
-        # Real execution would go here
         logger.warning("Real swap execution not yet implemented")
-        result.error = "Not implemented"
+        result.status = "unsupported"
+        result.error = "Swap execution is not implemented; no transaction was submitted"
         self._results.append(result)
         return result
 
@@ -614,13 +620,14 @@ class OnChainAirdropFarmer:
             logger.info(
                 f"[DRY RUN] Bridge {amount_eth} ETH from {from_chain} to {to_chain} via {protocol}"
             )
-            result.success = True
-            result.tx_hash = "0xDRY_RUN"
+            result.status = "preview"
+            result.error = "Dry run only; no transaction was submitted"
             self._results.append(result)
             return result
 
         logger.warning("Real bridge execution not yet implemented")
-        result.error = "Not implemented"
+        result.status = "unsupported"
+        result.error = "Bridge execution is not implemented; no transaction was submitted"
         self._results.append(result)
         return result
 
@@ -653,13 +660,14 @@ class OnChainAirdropFarmer:
 
         if self.config.dry_run:
             logger.info(f"[DRY RUN] {action} {amount} {asset} on {protocol} ({chain})")
-            result.success = True
-            result.tx_hash = "0xDRY_RUN"
+            result.status = "preview"
+            result.error = "Dry run only; no transaction was submitted"
             self._results.append(result)
             return result
 
         logger.warning("Real lend execution not yet implemented")
-        result.error = "Not implemented"
+        result.status = "unsupported"
+        result.error = "Lending execution is not implemented; no transaction was submitted"
         self._results.append(result)
         return result
 
@@ -688,13 +696,14 @@ class OnChainAirdropFarmer:
 
         if self.config.dry_run:
             logger.info(f"[DRY RUN] Stake {amount_eth} ETH on {protocol} ({chain})")
-            result.success = True
-            result.tx_hash = "0xDRY_RUN"
+            result.status = "preview"
+            result.error = "Dry run only; no transaction was submitted"
             self._results.append(result)
             return result
 
         logger.warning("Real stake execution not yet implemented")
-        result.error = "Not implemented"
+        result.status = "unsupported"
+        result.error = "Staking execution is not implemented; no transaction was submitted"
         self._results.append(result)
         return result
 
@@ -714,12 +723,14 @@ class OnChainAirdropFarmer:
         """
         total = len(self._results)
         success = sum(1 for r in self._results if r.success)
-        failed = total - success
+        previews = sum(1 for r in self._results if r.status == "preview")
+        failed = sum(1 for r in self._results if not r.success and r.status != "preview")
         total_gas = sum(r.gas_cost_eth for r in self._results)
 
         return {
             "total_transactions": total,
             "successful": success,
+            "preview": previews,
             "failed": failed,
             "success_rate": success / total if total > 0 else 0.0,
             "total_gas_eth": total_gas,

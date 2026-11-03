@@ -170,7 +170,7 @@ class SolanaWallet:
         from spl.token.constants import TOKEN_PROGRAM_ID
         from spl.token.instructions import (
             TransferCheckedParams,
-            create_associated_token_account,
+            create_associated_token_account_idempotent,
             get_associated_token_address,
             transfer_checked,
         )
@@ -191,7 +191,7 @@ class SolanaWallet:
         recent_blockhash = Hash.from_string(blockhash_str)
 
         instructions: list[Instruction] = [
-            create_associated_token_account(from_pubkey, to_pubkey, mint_pubkey),
+            create_associated_token_account_idempotent(from_pubkey, to_pubkey, mint_pubkey),
             transfer_checked(
                 TransferCheckedParams(
                     amount=amount_raw,

@@ -70,7 +70,7 @@ Documentation = "https://ulsreall.github.io/web3-agent-kit/"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["web3_agent_kit*"]
+include = ["web3_agent_kit*", "mcp_server*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

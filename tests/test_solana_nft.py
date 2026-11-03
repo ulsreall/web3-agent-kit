@@ -4,6 +4,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from web3_agent_kit.solana.client import SolanaClientConfig, SolanaRPCError
 from web3_agent_kit.solana.nft import SolanaNFT, SolanaNFTConfig
 
 
@@ -66,6 +67,31 @@ class TestSolanaNFT:
             assert result["total"] == 2
             assert len(result["items"]) == 2
             assert result["items"][0]["id"] == "asset_1"
+
+    @pytest.mark.asyncio
+    async def test_das_errors_are_not_converted_to_empty_results(self, nft):
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {"error": {"message": "Method not found"}}
+        mock_resp.raise_for_status = MagicMock()
+
+        with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):
+            with pytest.raises(SolanaRPCError, match="Method not found"):
+                await nft.get_asset("asset_1")
+
+    @pytest.mark.asyncio
+    async def test_public_rpc_is_rejected_for_das_methods(self):
+        nft = SolanaNFT(
+            SolanaNFTConfig(
+                client_config=SolanaClientConfig(
+                    rpc_url="https://api.mainnet-beta.solana.com"
+                )
+            )
+        )
+
+        with patch("httpx.AsyncClient.post", AsyncMock()) as post:
+            with pytest.raises(SolanaRPCError, match="does not provide DAS"):
+                await nft.get_asset("asset_1")
+        post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_get_all_nfts(self, nft):

@@ -129,6 +129,37 @@ class TestBridgeAgent:
         routes = bridge.get_routes("USDC", 100.0, Chain.ETHEREUM, Chain.BASE)
         assert len(routes) >= 0  # May return empty if mocks don't align
 
+    @patch("web3_agent_kit.bridge.bridge.requests.Session.get")
+    def test_lifi_tags_do_not_change_provider_dispatch(self, mock_get):
+        response = MagicMock()
+        response.json.return_value = {
+            "routes": [
+                {
+                    "toAmount": "99000000",
+                    "gasCostUSD": "3.50",
+                    "duration": 180,
+                    "tags": ["cheapest"],
+                    "steps": [],
+                }
+            ]
+        }
+        response.raise_for_status = MagicMock()
+        mock_get.return_value = response
+        wallet = MagicMock(address="0x1234")
+        bridge = BridgeAgent(MagicMock(), wallet)
+        bridge._resolve_token = MagicMock(return_value="0xToken")
+        bridge._get_decimals = MagicMock(return_value=6)
+
+        [route] = bridge._get_lifi_routes("USDC", 100, Chain.ETHEREUM, Chain.BASE)
+
+        assert route.bridge_name == "Li.Fi"
+        assert route.provider == "Li.Fi"
+        bridge._execute_lifi = MagicMock()
+        bridge._execute_socket = MagicMock()
+        bridge.transfer("USDC", 100, Chain.ETHEREUM, Chain.BASE, route)
+        bridge._execute_lifi.assert_called_once_with(route)
+        bridge._execute_socket.assert_not_called()
+
     def test_repr(self):
         """Test string representation."""
         wallet = MagicMock()

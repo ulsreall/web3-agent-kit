@@ -78,7 +78,7 @@ Building AI agents that interact with blockchains is **hard**. You need to juggl
 | **Price Oracle** | Hardcode prices | Chainlink + DexScreener + CoinGecko aggregator |
 | **TX Simulation** | Hope it works | Tenderly + eth_call pre-flight verification |
 | **Account Abstraction** | Build ERC-4337 from scratch | Bundler, paymaster, factory deployment |
-| **Cross-chain** | Manual bridge + relay | LayerZero + Wormhole + CCIP unified API |
+| **Cross-chain** | Manual bridge + relay | LayerZero submission plus Wormhole/CCIP status and fee APIs |
 | **Governance** | Check manually | Snapshot + Tally + on-chain governor tracking |
 | **Extensibility** | Hard-coded logic | Plugin system — extend anything |
 | **Error Handling** | Manual retry logic | Auto-fallback across LLM providers & RPCs |
@@ -273,12 +273,12 @@ What this guarantees:
 - A wallet with no bound gate **refuses** to sign write-capable calls.
 - A policy that requires confirmation **fails closed** when no confirmation
   handler is configured — unattended execution cannot silently proceed.
-- The authorization fingerprint binds chain, executor, nonce, target, calldata, and native value. It does **not yet bind gas limit or fee fields**; an authorized transaction is not currently a complete commitment to maximum execution cost.
+- The default v2 authorization fingerprint also binds gas limit and fee caps. Legacy v1 compatibility does not bind transaction costs; see the [safety pipeline](docs/safety-and-transaction-pipeline.md).
 - The pre-sign gate applies only where callers use `Wallet.sign_transaction()` with a bound gate. The full write surface is still being migrated; see [`docs/safety-and-transaction-pipeline.md`](docs/safety-and-transaction-pipeline.md).
 
 `tools/check_signing_surface.py` detects signer call sites and keeps a baseline for existing calls. A passing baseline check does not mean every write path has been migrated.
 
-**CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --chain base`
+**CLI?** `wak agent --goal "Swap 0.1 ETH to USDC" --wallet 0x... --chain base` (currently fails closed because the CLI cannot configure the required pre-sign authorization provider).
 
 **More examples:** `wak examples` or browse [`examples/`](examples/) — 21 scripts (DCA bot, sniper, airdrop farmer, multi-wallet, yield optimizer, bridge agent, portfolio tracker, and more). Write-capable examples need an application-configured gate and authorization provider.
 
@@ -384,8 +384,8 @@ The API key authenticates requests but is not transaction authorization. The bui
 
 ### 🌉 Cross-chain Messaging (NEW!)
 - 📡 **LayerZero** — 7 chains, endpoint registry, fee estimation
-- 🐛 **Wormhole** — Multi-chain message relay, delivery tracking
-- ⛓️ **Chainlink CCIP** — Chain selector registry, message verification
+- 🐛 **Wormhole** — Message status and chain registry; message submission is not implemented
+- ⛓️ **Chainlink CCIP** — Chain selector and status metadata; message submission is not implemented
 - 📊 **Status tracking** — Real-time delivery status via protocol APIs
 - 💰 **Fee estimation** — Per-chain cost breakdown
 
@@ -532,7 +532,7 @@ action = llm.parse("Swap 0.1 ETH to USDC on Base")
 
 Analyze tokens before interacting:
 
-```python
+```
 from web3_agent_kit.security import TokenAnalyzer, SecurityConfig
 
 analyzer = TokenAnalyzer(SecurityConfig(chain="base"))
@@ -553,6 +553,15 @@ elif report.safety_score < 50:
 else:
     print("✓ Safe to trade")
 ```
+
+## MCP stdio server
+
+The `mcp_server` package exposes tools over the standard MCP JSON-RPC stdio
+transport. Start it with `python -m mcp_server`; clients can initialize the
+session and use `tools/list` and `tools/call`. The server does not accept a
+custom `{ "tool": ..., "args": ... }` request envelope on stdio. Its state-changing
+tools remain previews unless an application injects the required pre-sign
+authorization pipeline; a confirmation flag alone does not authorize signing.
 
 ---
 
@@ -575,7 +584,7 @@ from web3_agent_kit.airdrop import (
 discovery = CampaignDiscovery()
 campaigns = discovery.discover_all()
 
-# On-chain farming (dry run)
+# On-chain farming plan (preview only; live swap/bridge/lend/stake execution is unsupported)
 farmer = OnChainAirdropFarmer(OnChainConfig(chain="base", dry_run=True))
 farmer.farm_plan("base_activity")
 

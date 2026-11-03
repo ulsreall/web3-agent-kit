@@ -36,7 +36,7 @@ class EventConfig:
     abi: list[dict]
     event_name: str
     callback: Callable[[dict], Any]
-    from_block: int = 0  # 0 = latest
+    from_block: int = 0  # Initial block to scan
     poll_interval: float = 2.0  # seconds
     max_blocks_per_poll: int = 2000
     webhook_url: Optional[str] = None
@@ -53,6 +53,7 @@ class Subscription:
     active: bool = True
     events_processed: int = 0
     errors: int = 0
+    has_polled: bool = False
 
 
 class EventListener:
@@ -204,12 +205,15 @@ class EventListener:
             abi=config.abi,
         )
 
-        from_block = max(
-            sub.last_block or config.from_block, current_block - config.max_blocks_per_poll
+        next_block = (
+            sub.last_block + 1
+            if sub.has_polled or sub.last_block > 0
+            else config.from_block
         )
-        to_block = min(current_block, from_block + config.max_blocks_per_poll)
+        from_block = max(next_block, current_block - config.max_blocks_per_poll + 1)
+        to_block = min(current_block, from_block + config.max_blocks_per_poll - 1)
 
-        if from_block >= to_block:
+        if from_block > to_block:
             return
 
         event_filter = getattr(contract.events, config.event_name)
@@ -238,6 +242,7 @@ class EventListener:
             sub.events_processed += 1
 
         sub.last_block = to_block
+        sub.has_polled = True
 
     def _send_webhook(self, event_data: dict, config: EventConfig):
         """Send event data to webhook URL."""

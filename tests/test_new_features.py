@@ -1,6 +1,6 @@
 """Tests for Gas Optimizer, Wallet Watcher, and Approval Manager."""
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -109,7 +109,7 @@ class TestGasOptimizer:
         txs = [{"to": "0xA", "value": 0.01}, {"to": "0xB", "value": 0.02}]
         result = opt.batch_execute(txs, Chain.ETHEREUM)
         assert result.tx_count == 2
-        assert result.status == "batched"
+        assert result.status == "not_submitted"
 
     def test_priority_fee_defaults(self):
         assert GasPriority.LOW.value == "low"
@@ -326,6 +326,81 @@ class TestApprovalManager:
         mgr = ApprovalManager(wallet, chain_manager)
         tokens = mgr._get_common_tokens(Chain.BASE)
         assert len(tokens) >= 2
+
+    def test_scan_checks_full_history_and_uses_token_decimals(self, wallet, chain_manager):
+        manager = ApprovalManager(wallet, chain_manager)
+        w3 = MagicMock()
+        w3.to_checksum_address.side_effect = lambda address: address
+        spender = "0x" + "12" * 20
+        cleared_spender = "0x" + "34" * 20
+        owner_topic = "0" * 24 + wallet.address[2:].lower()
+
+        def approval_log(log_spender, amount):
+            return {
+                "topics": [
+                    bytes.fromhex("00" * 32),
+                    bytes.fromhex(owner_topic),
+                    bytes.fromhex("00" * 12 + log_spender[2:]),
+                ],
+                "data": amount.to_bytes(32, "big"),
+            }
+
+        w3.eth.contract.return_value.functions.decimals.return_value.call.return_value = 6
+        w3.eth.block_number = 2000
+        w3.eth.get_logs.side_effect = [
+            [
+                approval_log(spender, 1_500_000),
+                approval_log(cleared_spender, 9_000_000),
+                approval_log(cleared_spender, 0),
+            ],
+            [],
+        ]
+
+        with patch.object(chain_manager, "get_web3", return_value=w3):
+            approvals = manager._check_token_approvals(
+                "0x" + "ab" * 20, "USDC", Chain.ETHEREUM
+            )
+
+        assert len(approvals) == 1
+        assert approvals[0].spender.lower() == spender.lower()
+        assert approvals[0].amount == 1.5
+        assert w3.eth.get_logs.call_count == 2
+        assert w3.eth.get_logs.call_args_list[0].args[0]["fromBlock"] == 0
+        assert w3.eth.get_logs.call_args_list[0].args[0]["toBlock"] == 1999
+        assert w3.eth.get_logs.call_args_list[1].args[0]["fromBlock"] == 2000
+        assert w3.eth.get_logs.call_args_list[1].args[0]["toBlock"] == 2000
+
+    def test_scan_rpc_failure_is_reported(self, wallet, chain_manager):
+        manager = ApprovalManager(wallet, chain_manager)
+        with (
+            patch.object(chain_manager, "get_web3", side_effect=RuntimeError("rpc unavailable")),
+            pytest.raises(RuntimeError, match="Failed to scan approvals"),
+        ):
+            manager._check_token_approvals("0xtoken", "TKN", Chain.ETHEREUM)
+
+    def test_revoke_only_reports_success_after_wallet_send(self, wallet, chain_manager):
+        manager = ApprovalManager(wallet, chain_manager)
+        with (
+            patch.object(manager, "_build_revoke_tx", return_value={"to": "0xtoken"}),
+            patch.object(wallet, "send_transaction", return_value="0xsent") as send,
+        ):
+            result = manager.revoke("0xtoken", "0xspender", Chain.ETHEREUM)
+
+        assert result.success is True
+        assert result.tx_hash == "0xsent"
+        send.assert_called_once()
+
+    def test_revoke_send_failure_is_not_reported_as_success(self, wallet, chain_manager):
+        manager = ApprovalManager(wallet, chain_manager)
+        with (
+            patch.object(manager, "_build_revoke_tx", return_value={"to": "0xtoken"}),
+            patch.object(wallet, "send_transaction", side_effect=ValueError("not authorized")),
+        ):
+            result = manager.revoke("0xtoken", "0xspender", Chain.ETHEREUM)
+
+        assert result.success is False
+        assert result.tx_hash is None
+        assert "not authorized" in result.error
 
     def test_approval_risk_levels(self):
         assert ApprovalRisk.SAFE.value == "safe"

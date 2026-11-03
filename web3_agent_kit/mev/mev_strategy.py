@@ -133,17 +133,17 @@ class MEVProtector:
         if not target_block:
             target_block = self._get_current_block() + 1
 
-        bundle_hash = f"0x{hash(str(txs)) & 0xFFFFFFFFFFFFFFFF:016x}"
         result = BundleResult(
-            bundle_hash=bundle_hash,
+            bundle_hash="",
             block_number=target_block,
             tx_count=len(txs),
         )
 
         try:
+            request_id = 1
             payload = {
                 "jsonrpc": "2.0",
-                "id": 1,
+                "id": request_id,
                 "method": "eth_sendBundle",
                 "params": [
                     {
@@ -161,11 +161,21 @@ class MEVProtector:
 
             if resp.status_code == 200:
                 data = resp.json()
-                if "result" in data:
-                    result.success = True
-                    logger.info("Bundle submitted: %s", bundle_hash)
+                if data.get("id") != request_id:
+                    result.error = "Relay response ID did not match request"
                 else:
-                    result.error = data.get("error", {}).get("message", "Unknown error")
+                    relay_result = data.get("result")
+                    bundle_hash = (
+                        relay_result.get("bundleHash")
+                        if isinstance(relay_result, dict)
+                        else relay_result
+                    )
+                    if isinstance(bundle_hash, str) and bundle_hash:
+                        result.bundle_hash = bundle_hash
+                        result.success = True
+                        logger.info("Bundle submitted: %s", result.bundle_hash)
+                    else:
+                        result.error = data.get("error", {}).get("message", "Unknown error")
             else:
                 result.error = f"HTTP {resp.status_code}"
 
@@ -398,5 +408,18 @@ class MEVProtector:
     def _encode_tx(self, tx: dict[str, Any] | str) -> str:
         """Encode transaction to hex string."""
         if isinstance(tx, str):
-            return tx
-        return tx.get("raw", "0x")
+            raw = tx
+        else:
+            raw = tx.get("raw")
+            if not isinstance(raw, (str, bytes)):
+                raise ValueError("Transaction dict must contain a signed raw transaction")
+            if isinstance(raw, bytes):
+                raw = "0x" + raw.hex()
+
+        if not isinstance(raw, str) or not raw.startswith("0x") or len(raw) <= 2:
+            raise ValueError("Raw transaction must be non-empty 0x-prefixed hex")
+        try:
+            bytes.fromhex(raw[2:])
+        except ValueError as exc:
+            raise ValueError("Raw transaction must contain valid hex") from exc
+        return raw

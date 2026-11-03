@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from web3_agent_kit.mev import (
     BundleResult,
     MEVConfig,
@@ -28,7 +30,13 @@ def _make_protector(**overrides):
 
 
 def _simple_tx():
-    return {"to": "0xRouter", "data": "0x", "value": "0x0", "gasPrice": "0x0"}
+    return {
+        "to": "0xRouter",
+        "data": "0x",
+        "value": "0x0",
+        "gasPrice": "0x0",
+        "raw": "0xdead",
+    }
 
 
 def _swap_tx():
@@ -332,19 +340,54 @@ class TestMEVProtectorBundle:
         protector = _make_protector()
         mock_resp = MagicMock()
         mock_resp.status_code = 200
-        mock_resp.json.return_value = {"result": "0xbundlehash"}
+        mock_resp.json.return_value = {"id": 1, "result": "0xbundlehash"}
         protector.session.post = MagicMock(return_value=mock_resp)
 
         with patch.object(protector, "_get_current_block", return_value=1000):
             result = protector.create_bundle([_simple_tx()], target_block=1001)
         assert result.success is True
+        assert result.bundle_hash == "0xbundlehash"
         assert result.tx_count == 1
+
+    def test_bundle_uses_relay_bundle_hash_and_checks_response_id(self):
+        protector = _make_protector()
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "id": 1,
+            "result": {"bundleHash": "0xrelayhash"},
+        }
+        protector.session.post = MagicMock(return_value=response)
+
+        result = protector.create_bundle([_simple_tx()], target_block=1001)
+
+        assert result.success is True
+        assert result.bundle_hash == "0xrelayhash"
+
+        response.json.return_value["id"] = 2
+        mismatch = protector.create_bundle([_simple_tx()], target_block=1001)
+        assert mismatch.success is False
+        assert "response ID" in mismatch.error
+
+    def test_transaction_dict_without_signed_raw_data_is_rejected(self):
+        protector = _make_protector()
+
+        with pytest.raises(ValueError, match="signed raw transaction"):
+            protector._encode_tx({"to": "0xrouter", "data": "0x1234"})
+
+    def test_empty_or_invalid_raw_transactions_are_rejected(self):
+        protector = _make_protector()
+
+        with pytest.raises(ValueError, match="non-empty"):
+            protector._encode_tx({"raw": "0x"})
+        with pytest.raises(ValueError, match="valid hex"):
+            protector._encode_tx("0xzz")
 
     def test_create_bundle_failure(self):
         protector = _make_protector()
         mock_resp = MagicMock()
         mock_resp.status_code = 200
-        mock_resp.json.return_value = {"error": {"message": "rejected"}}
+        mock_resp.json.return_value = {"id": 1, "error": {"message": "rejected"}}
         protector.session.post = MagicMock(return_value=mock_resp)
 
         with patch.object(protector, "_get_current_block", return_value=1000):

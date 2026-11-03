@@ -1,21 +1,22 @@
 # Events Module
 
-On-chain event listener with webhook support.
-
-## Classes
-
-### `EventListener`
-
-Subscribe to smart contract events.
+`EventListener` polls contract events and can deliver them to a callback or
+webhook.
 
 ```python
 from web3_agent_kit.events import EventListener
 
-listener = EventListener(chain_manager=cm)
-listener.subscribe(contract="0x...", event="Transfer", callback=lambda event: print(event))
+listener = EventListener(rpc_url="https://eth.example-rpc.com")
+subscription_id = listener.subscribe(
+    address="0x...",
+    abi=erc20_abi,
+    event="Transfer",
+    callback=lambda event: print(event["args"]),
+)
 listener.start()
 ```
 
-### `WebhookConfig`
-
-Configure webhook delivery: `url`, `headers`, `secret`.
+`subscribe` requires the contract address, ABI, and event name, plus either a
+callback or `webhook_url`. Optional arguments include `webhook_headers`,
+`from_block`, and `poll_interval`. Call `stop()` when monitoring should end.
+Webhook settings are subscription arguments; there is no `WebhookConfig` class.

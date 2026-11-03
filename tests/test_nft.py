@@ -2,6 +2,8 @@
 
 from unittest.mock import MagicMock, patch
 
+import pytest
+
 from web3_agent_kit.nft import (
     MintResult,
     NFTCollection,
@@ -396,6 +398,25 @@ class TestNFTMarketplace:
         assert len(nfts) == 1
         assert nfts[0].name == "Cool NFT"
         assert nfts[0].token_id == "42"
+        assert "eth-mainnet.g.alchemy.com" in mock_get.call_args.args[0]
+
+    @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
+    def test_get_wallet_nfts_uses_configured_chain(self, mock_get):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"ownedNfts": []}
+        mock_get.return_value = mock_resp
+
+        mp = NFTMarketplace(NFTConfig(chain="base", alchemy_api_key="akey"))
+        mp.get_wallet_nfts("0xOwner")
+
+        assert "base-mainnet.g.alchemy.com" in mock_get.call_args.args[0]
+
+    def test_get_wallet_nfts_rejects_unsupported_chain(self):
+        mp = NFTMarketplace(NFTConfig(chain="robinhood", alchemy_api_key="akey"))
+
+        with pytest.raises(ValueError, match="does not support configured chain"):
+            mp.get_wallet_nfts("0xOwner")
 
     @patch("web3_agent_kit.nft.marketplace.requests.Session.get")
     def test_get_wallet_nfts_no_alchemy_key(self, mock_get):

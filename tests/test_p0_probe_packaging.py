@@ -37,6 +37,7 @@ def test_package_include_covers_the_probe_module() -> None:
 
     include = config["tool"]["setuptools"]["packages"]["find"]["include"]
     assert "web3_agent_kit*" in include
+    assert "mcp_server*" in include
 
     # And the probe must actually be under that prefix.
     assert PROBE_MODULE.startswith("web3_agent_kit/")

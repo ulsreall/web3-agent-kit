@@ -235,6 +235,11 @@ class OracleAggregator:
         """Fetch from DexScreener API."""
         import requests
 
+        # DexScreener's priceUsd field is USD-denominated; do not treat it as
+        # an arbitrary requested quote currency.
+        if quote.upper() != "USD":
+            return None
+
         try:
             # DexScreener search for top pair
             resp = requests.get(
@@ -246,9 +251,20 @@ class OracleAggregator:
             pairs = resp.json().get("pairs", [])
             if not pairs:
                 return None
-            # Take the pair with highest liquidity
-            best = max(pairs, key=lambda p: float(p.get("liquidity", {}).get("usd", 0) or 0))
-            price = float(best.get("priceUsd", 0))
+            matching_pairs = [
+                pair
+                for pair in pairs
+                if pair.get("baseToken", {}).get("symbol", "").upper() == base.upper()
+                and pair.get("priceUsd")
+            ]
+            if not matching_pairs:
+                return None
+            # Take the requested token's pair with highest liquidity.
+            best = max(
+                matching_pairs,
+                key=lambda p: float(p.get("liquidity", {}).get("usd", 0) or 0),
+            )
+            price = float(best["priceUsd"])
             return PricePoint(
                 source=OracleSource.DEX_SCREENER,
                 price=price,

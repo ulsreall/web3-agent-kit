@@ -468,6 +468,30 @@ class TestIntegration:
             assert tax.can_sell is None
             assert tax.error is not None
 
+    def test_missing_honeypot_field_remains_unknown(self):
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "result": {"0x123": {"buy_tax": "0", "sell_tax": "0"}}
+        }
+        with patch("web3_agent_kit.security.requests.Session.get", return_value=response):
+            tax = TokenAnalyzer()._check_tax("0x123")
+
+        assert tax.is_honeypot is None
+        assert tax.can_sell is None
+
+    def test_explicit_safe_honeypot_status_is_false(self):
+        response = MagicMock()
+        response.status_code = 200
+        response.json.return_value = {
+            "result": {"0x123": {"is_honeypot": "0"}}
+        }
+        with patch("web3_agent_kit.security.requests.Session.get", return_value=response):
+            tax = TokenAnalyzer()._check_tax("0x123")
+
+        assert tax.is_honeypot is False
+        assert tax.can_sell is True
+
     def test_full_analysis_api_failure_is_not_safe(self):
         """When APIs fail, analysis must return is_safe=False (unknown)."""
         with patch("web3_agent_kit.security.requests.Session.get") as mock_get:

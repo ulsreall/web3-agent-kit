@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Optional
 
 from ..chains.chain import Chain, ChainManager
+from ..execution import ActionType
 from .wallet import Wallet
 
 
@@ -196,12 +197,17 @@ class ApprovalManager:
             RevokeResult with tx details.
         """
         try:
-            # Build revoke transaction (approve to 0)
             tx = self._build_revoke_tx(token_address, spender, chain)
+            tx_hash = self.wallet.send_transaction(
+                tx,
+                chain,
+                action=ActionType.APPROVE_TOKEN,
+                metadata={"token": token_address, "spender": spender, "amount": 0},
+            )
             return RevokeResult(
                 token_address=token_address,
                 spender=spender,
-                tx_hash=tx.get("hash"),
+                tx_hash=tx_hash,
                 success=True,
             )
         except Exception as e:
@@ -286,27 +292,52 @@ class ApprovalManager:
         try:
             w3 = self.chain_manager.get_web3(chain)
 
-            # ERC20 approve function selector
-            approve_topic = "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
+            token = w3.eth.contract(
+                address=w3.to_checksum_address(token_address),
+                abi=[
+                    {
+                        "inputs": [],
+                        "name": "decimals",
+                        "outputs": [{"name": "", "type": "uint8"}],
+                        "stateMutability": "view",
+                        "type": "function",
+                    }
+                ],
+            )
+            decimals = token.functions.decimals().call()
+            if not isinstance(decimals, int) or not 0 <= decimals <= 255:
+                raise ValueError(f"Invalid token decimals: {decimals!r}")
 
-            # Get approval events for this wallet
-            logs = w3.eth.get_logs(
-                {
-                    "fromBlock": "latest",
-                    "toBlock": "latest",
-                    "address": token_address,
-                    "topics": [
-                        approve_topic,
-                        "0x" + "0" * 24 + self.wallet.address[2:].lower(),  # owner
-                    ],
-                }
+            approve_topic = (
+                "0x8c5be1e5ebec7d5bd14f71427d1e84f3dd0314c0f7b2291e5b200ac8c7c3b925"
             )
 
+            # Scan bounded ranges across the full chain, then keep the latest value per spender.
+            latest_block = w3.eth.block_number
             approvals = []
-            for log in logs:
-                spender = "0x" + log["topics"][2].hex()[-40:]
-                amount_raw = int(log["data"].hex(), 16)
-                amount = float("inf") if amount_raw >= 2**255 else amount_raw / 1e18
+            latest_amounts = {}
+            for from_block in range(0, latest_block + 1, 2000):
+                to_block = min(from_block + 1999, latest_block)
+                chunk_logs = w3.eth.get_logs(
+                    {
+                        "fromBlock": from_block,
+                        "toBlock": to_block,
+                        "address": token_address,
+                        "topics": [
+                            approve_topic,
+                            "0x" + "0" * 24 + self.wallet.address[2:].lower(),
+                        ],
+                    }
+                )
+                for log in chunk_logs:
+                    spender = "0x" + log["topics"][2].hex()[-40:]
+                    amount_raw = int(log["data"].hex(), 16)
+                    latest_amounts[spender] = amount_raw
+
+            for spender, amount_raw in latest_amounts.items():
+                if amount_raw == 0:
+                    continue
+                amount = float("inf") if amount_raw >= 2**255 else amount_raw / (10**decimals)
 
                 is_known, label = self.is_known_spender(spender)
                 risk = self._assess_risk(amount, is_known)
@@ -326,8 +357,10 @@ class ApprovalManager:
                 )
 
             return approvals
-        except Exception:
-            return []
+        except Exception as exc:
+            raise RuntimeError(
+                f"Failed to scan approvals for token {token_address}: {exc}"
+            ) from exc
 
     def _build_revoke_tx(
         self,
@@ -336,14 +369,31 @@ class ApprovalManager:
         chain: Chain,
     ) -> dict:
         """Build a revoke approval transaction."""
-        # ERC20 approve(spender, 0)
-        return {
-            "to": token_address,
-            "function": "approve",
-            "args": {"spender": spender, "amount": 0},
-            "chain": chain.value,
-            "status": "built",
-        }
+        w3 = self.chain_manager.get_web3(chain)
+        contract = w3.eth.contract(
+            address=w3.to_checksum_address(token_address),
+            abi=[
+                {
+                    "inputs": [
+                        {"name": "spender", "type": "address"},
+                        {"name": "amount", "type": "uint256"},
+                    ],
+                    "name": "approve",
+                    "outputs": [{"name": "", "type": "bool"}],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                }
+            ],
+        )
+        return contract.functions.approve(
+            w3.to_checksum_address(spender), 0
+        ).build_transaction(
+            {
+                "from": self.wallet.address,
+                "nonce": w3.eth.get_transaction_count(self.wallet.address),
+                "chainId": w3.eth.chain_id,
+            }
+        )
 
     def _assess_risk(self, amount: float, is_known: bool) -> ApprovalRisk:
         """Assess risk level of an approval."""

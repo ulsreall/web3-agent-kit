@@ -65,6 +65,8 @@ class AirdropFarmer:
 
     Integrates with MultiWalletManager to rotate wallets through
     airdrop campaigns with configurable delays and limits.
+    Task execution is not implemented; ``execute=True`` leaves pending tasks
+    unchanged and reports them as errors rather than awarding points.
 
     Example::
 
@@ -278,23 +280,21 @@ class AirdropFarmer:
                 continue
 
             if execute:
-                task.status = TaskStatus.COMPLETED
-                task.completed_at = time.time()
-                progress.tasks_completed += 1
-                progress.total_points += task.points
-                progress.last_active = time.time()
-                self._daily_task_counts[wallet_label] = (
-                    self._daily_task_counts.get(wallet_label, 0) + 1
+                result.errors.append(
+                    f"Task {task.task_id} remains pending: task execution is not implemented"
                 )
-                result.tasks_completed += 1
-                result.points_earned += task.points
+                result.success = False
 
-        if campaign.campaign_id not in progress.campaigns_completed:
+        if (
+            all(task.status == TaskStatus.COMPLETED for task in campaign.tasks)
+            and campaign.campaign_id not in progress.campaigns_completed
+        ):
             progress.campaigns_completed.append(campaign.campaign_id)
 
         logger.info(
             f"Farmer: {wallet_label} completed {result.tasks_completed} tasks "
-            f"in '{campaign.name}' (+{result.points_earned} pts)"
+            f"in '{campaign.name}' (+{result.points_earned} pts); "
+            f"{len(result.errors)} tasks unsupported"
         )
         return result
 

@@ -127,24 +127,14 @@ class TestSolanaLPManager:
             assert pools == []
 
     @pytest.mark.asyncio
-    async def test_get_add_liquidity_quote(self, lp_manager):
-        mock_resp = MagicMock()
-        mock_resp.json.return_value = {
-            "route": {"inAmount": "1000000", "outAmount": "500000"},
-            "priceImpactPct": "0.05",
-        }
-        mock_resp.raise_for_status = MagicMock()
-
-        with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):
-            quote = await lp_manager.get_add_liquidity_quote(
-                "raydium",
-                "pool_raydium_1",
-                1000000,
-                500000,
-                "So11111111111111111111111111111111111111112",
-                "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    async def test_get_add_liquidity_quote_rejects_swap_route_substitution(self, lp_manager):
+        with patch("httpx.AsyncClient.post", AsyncMock()) as post:
+            result = await lp_manager.get_add_liquidity_quote(
+                "raydium", "pool_raydium_1", 1000000, 500000, "mint_a", "mint_b"
             )
-            assert "route" in quote
+
+        assert "protocol-specific API" in result["error"]
+        post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_get_add_liquidity_quote_api_error(self, lp_manager):
@@ -175,20 +165,14 @@ class TestSolanaLPManager:
             assert "error" in result
 
     @pytest.mark.asyncio
-    async def test_get_add_liquidity_tx(self, lp_manager):
-        mock_resp = MagicMock()
-        mock_resp.json.return_value = {
-            "swapTransaction": "base64_encoded_tx_data",
-            "lastValidBlockHeight": 200000,
-        }
-        mock_resp.raise_for_status = MagicMock()
-
-        with patch("httpx.AsyncClient.post", AsyncMock(return_value=mock_resp)):
-            tx = await lp_manager.get_add_liquidity_tx(
+    async def test_get_add_liquidity_tx_does_not_build_swap_transaction(self, lp_manager):
+        with patch("httpx.AsyncClient.post", AsyncMock()) as post:
+            result = await lp_manager.get_add_liquidity_tx(
                 "raydium", "pool1", 1000000, 500000, "mint_a", "mint_b"
             )
-            assert tx["swapTransaction"] == "base64_encoded_tx_data"
-            assert tx["lastValidBlockHeight"] == 200000
+
+        assert "protocol-specific API" in result["error"]
+        post.assert_not_called()
 
     @pytest.mark.asyncio
     async def test_get_add_liquidity_tx_error(self, lp_manager):

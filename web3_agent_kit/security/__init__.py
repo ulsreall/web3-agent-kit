@@ -35,6 +35,15 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def _parse_honeypot_status(value) -> Optional[bool]:
+    """Parse GoPlus honeypot status without treating missing data as safe."""
+    if value in ("1", 1, True):
+        return True
+    if value in ("0", 0, False):
+        return False
+    return None
+
+
 class RiskLevel(Enum):
     """Risk level classification."""
 
@@ -604,8 +613,9 @@ class TokenAnalyzer:
                 data = resp.json()
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
-                    is_hp = token_data.get("is_honeypot")
-                    result["is_honeypot"] = is_hp == "1"
+                    result["is_honeypot"] = _parse_honeypot_status(
+                        token_data.get("is_honeypot")
+                    )
                     result["buy_tax"] = float(token_data.get("buy_tax", "0"))
                     result["sell_tax"] = float(token_data.get("sell_tax", "0"))
                     if result["is_honeypot"]:
@@ -724,8 +734,9 @@ class TokenAnalyzer:
                 if token_data:
                     tax.buy_tax = float(token_data.get("buy_tax", "0")) * 100
                     tax.sell_tax = float(token_data.get("sell_tax", "0")) * 100
-                    is_hp = token_data.get("is_honeypot")
-                    tax.is_honeypot = is_hp == "1"
+                    tax.is_honeypot = _parse_honeypot_status(
+                        token_data.get("is_honeypot")
+                    )
                     tax.can_sell = not tax.is_honeypot if tax.is_honeypot is not None else None
         except Exception as e:
             msg = f"Tax check failed: {e}"

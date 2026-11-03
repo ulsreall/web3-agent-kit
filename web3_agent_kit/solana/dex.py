@@ -30,6 +30,8 @@ class JupiterDEX:
         route = await jup.get_swap_route(wallet_address, quote)
     """
 
+    WRAPPED_SOL_MINT = "So11111111111111111111111111111111111111112"
+
     def __init__(self, config: Optional[JupiterDEXConfig] = None):
         self.config = config or JupiterDEXConfig()
         self._client: Optional[httpx.AsyncClient] = None
@@ -126,13 +128,22 @@ class JupiterDEX:
 
         Returns output amount in UI units (e.g., USDC for SOL).
         """
+        if input_mint != self.WRAPPED_SOL_MINT:
+            raise ValueError("amount_sol requires the wrapped SOL input mint")
+
         amount_lamports = int(amount_sol * 1_000_000_000)
         quote = await self.get_quote(input_mint, output_mint, amount_lamports)
+        if quote.get("inputMint") != input_mint or quote.get("outputMint") != output_mint:
+            raise JupiterAPIError("Jupiter quote does not match the requested token pair")
+
         out_amount = int(quote.get("outAmount", 0))
         if not out_amount:
             return 0.0
-        # Most tokens on Solana use 6 decimals
-        return out_amount / 1_000_000
+        token = await self.get_token_by_mint(output_mint)
+        decimals = token.get("decimals") if token else None
+        if not isinstance(decimals, int) or decimals < 0:
+            raise JupiterAPIError(f"Jupiter token metadata unavailable for mint {output_mint}")
+        return out_amount / (10**decimals)
 
     # ── Swap ─────────────────────────────────────────
 

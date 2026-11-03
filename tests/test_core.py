@@ -138,6 +138,18 @@ class TestGovernor:
         assert decision.allowed is False
         assert "per-tx limit" in decision.reason
 
+    @pytest.mark.parametrize("tx_value", [-0.1, float("nan"), float("inf"), True, "1"])
+    def test_invalid_or_negative_values_do_not_change_spend(self, tx_value):
+        from web3_agent_kit.utils import SpendGovernor
+
+        governor = SpendGovernor(require_confirm=False)
+
+        decision = governor.authorize(tx_value)
+
+        assert decision.allowed is False
+        assert governor.get_stats()["daily_spent"] == 0
+        assert governor.get_stats()["session_spent"] == 0
+
     def test_kill_switch(self):
         """Test kill switch blocks transactions."""
         from web3_agent_kit.utils import SpendGovernor, SpendLimits

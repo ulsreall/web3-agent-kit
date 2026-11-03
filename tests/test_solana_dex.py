@@ -175,6 +175,38 @@ class TestJupiterDEX:
             assert token["symbol"] == "TKN"
 
     @pytest.mark.asyncio
+    async def test_get_quote_price_uses_output_mint_decimals(self, jupiter):
+        with (
+            patch.object(
+                jupiter,
+                "get_quote",
+                AsyncMock(
+                    return_value={
+                        "inputMint": jupiter.WRAPPED_SOL_MINT,
+                        "outputMint": "TOKEN_MINT",
+                        "outAmount": "123456789",
+                    }
+                ),
+            ) as get_quote,
+            patch.object(
+                jupiter,
+                "get_token_by_mint",
+                AsyncMock(return_value={"decimals": 9}),
+            ),
+        ):
+            price = await jupiter.get_quote_price(
+                jupiter.WRAPPED_SOL_MINT, "TOKEN_MINT", amount_sol=1.5
+            )
+
+        assert price == pytest.approx(0.123456789)
+        get_quote.assert_awaited_once_with(jupiter.WRAPPED_SOL_MINT, "TOKEN_MINT", 1_500_000_000)
+
+    @pytest.mark.asyncio
+    async def test_get_quote_price_rejects_non_sol_input(self, jupiter):
+        with pytest.raises(ValueError, match="wrapped SOL"):
+            await jupiter.get_quote_price("TOKEN_A", "TOKEN_B")
+
+    @pytest.mark.asyncio
     async def test_api_error(self, jupiter):
         import httpx
 

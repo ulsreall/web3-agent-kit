@@ -304,8 +304,11 @@ class CampaignDiscovery:
         Returns:
             List of new (unseen) campaigns.
         """
+        seen_before_discovery = self._seen_campaigns.copy()
         all_campaigns = await self.discover_all()
-        return [c for c in all_campaigns if self._campaign_key(c) not in self._seen_campaigns]
+        return [
+            c for c in all_campaigns if self._campaign_key(c) not in seen_before_discovery
+        ]
 
     async def get_high_value_campaigns(self, min_points: int = 100) -> list[DiscoveredCampaign]:
         """Get only high-value campaigns.
@@ -678,10 +681,10 @@ class CampaignDiscovery:
 
     def _save_seen(self, campaigns: list[DiscoveredCampaign]) -> None:
         """Save seen campaign keys to file."""
+        for campaign in campaigns:
+            self._seen_campaigns.add(self._campaign_key(campaign))
         if not self.config.save_path:
             return
-        for c in campaigns:
-            self._seen_campaigns.add(self._campaign_key(c))
         path = Path(self.config.save_path)
         path.parent.mkdir(parents=True, exist_ok=True)
         try:
