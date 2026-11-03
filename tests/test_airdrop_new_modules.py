@@ -142,6 +142,20 @@ class TestCampaignDiscovery:
         assert data["total"] == 1
         assert data["campaigns"][0]["platform"] == "galxe"
 
+    @pytest.mark.asyncio
+    async def test_get_new_campaigns_returns_campaign_before_seen_update(self):
+        discovery = CampaignDiscovery(DiscoveryConfig(platforms=["galxe"], rate_limit_delay=0))
+        campaign = DiscoveredCampaign(
+            platform="galxe",
+            campaign_id="new",
+            title="New campaign",
+            url="https://example.test/campaign",
+        )
+        discovery._scan_galxe = lambda: [campaign]
+
+        assert await discovery.get_new_campaigns() == [campaign]
+        assert await discovery.get_new_campaigns() == []
+
 
 # ─── On-chain Tests ──────────────────────────────────────────────
 
@@ -179,8 +193,10 @@ class TestOnChainAirdropFarmer:
             token_out="USDC",
             amount_in=0.001,
         )
-        assert result.success is True
-        assert result.tx_hash == "0xDRY_RUN"
+        assert result.success is False
+        assert result.status == "preview"
+        assert result.tx_hash == ""
+        assert "no transaction was submitted" in result.error
 
     def test_dry_run_bridge(self):
         config = OnChainConfig(dry_run=True)
@@ -190,7 +206,8 @@ class TestOnChainAirdropFarmer:
             to_chain="ethereum",
             amount_eth=0.001,
         )
-        assert result.success is True
+        assert result.success is False
+        assert result.status == "preview"
 
     def test_dry_run_lend(self):
         config = OnChainConfig(dry_run=True)
@@ -202,7 +219,8 @@ class TestOnChainAirdropFarmer:
             amount=100,
             action="supply",
         )
-        assert result.success is True
+        assert result.success is False
+        assert result.status == "preview"
 
     def test_dry_run_stake(self):
         config = OnChainConfig(dry_run=True)
@@ -212,7 +230,8 @@ class TestOnChainAirdropFarmer:
             protocol="eigenlayer",
             amount_eth=0.01,
         )
-        assert result.success is True
+        assert result.success is False
+        assert result.status == "preview"
 
     def test_get_summary(self):
         config = OnChainConfig(dry_run=True)
@@ -220,7 +239,9 @@ class TestOnChainAirdropFarmer:
         farmer.execute_swap("base", "aerodrome", "ETH", "USDC", 0.001)
         summary = farmer.get_summary()
         assert summary["total_transactions"] == 1
-        assert summary["successful"] == 1
+        assert summary["successful"] == 0
+        assert summary["preview"] == 1
+        assert summary["failed"] == 0
 
     def test_transaction_result_to_dict(self):
         result = TransactionResult(
@@ -624,7 +645,8 @@ class TestIntegration:
         config = OnChainConfig(chain="base", dry_run=True)
         farmer = OnChainAirdropFarmer(config)
         result = farmer.execute_swap("base", "aerodrome", "ETH", "USDC", 0.001)
-        assert result.success
+        assert result.success is False
+        assert result.status == "preview"
 
         # 3. Scheduler
         scheduler = AirdropScheduler()

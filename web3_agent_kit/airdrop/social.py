@@ -50,9 +50,8 @@ class SocialTaskResult:
 class TwitterHelper:
     """Helper for Twitter/X social tasks.
 
-    Note: Direct Twitter API requires OAuth 1.0a or OAuth 2.0.
-    This helper tracks task state; actual API calls would need
-    proper Twitter API credentials.
+    Twitter API actions are not implemented. Calls return unsuccessful results
+    and are not added to the completed-task list.
 
     Example::
 
@@ -66,6 +65,21 @@ class TwitterHelper:
         self.auth_token = auth_token
         self._completed_tasks: list[SocialTaskResult] = []
 
+    def _unsupported(self, task_type: TaskType, target: str) -> SocialTaskResult:
+        message = "Twitter API actions are not implemented; no action was performed"
+        logger.warning(
+            "Twitter task %s for %s was not performed: API integration unavailable",
+            task_type.value,
+            target,
+        )
+        return SocialTaskResult(
+            task_type=task_type,
+            platform=SocialPlatform.TWITTER,
+            target=target,
+            success=False,
+            message=message,
+        )
+
     def follow(self, username: str) -> SocialTaskResult:
         """Follow a Twitter user.
 
@@ -75,16 +89,7 @@ class TwitterHelper:
         Returns:
             SocialTaskResult with success status.
         """
-        logger.info(f"Twitter: following @{username}")
-        result = SocialTaskResult(
-            task_type=TaskType.SOCIAL_TWITTER_FOLLOW,
-            platform=SocialPlatform.TWITTER,
-            target=username,
-            success=True,
-            message=f"Marked as followed @{username}",
-        )
-        self._completed_tasks.append(result)
-        return result
+        return self._unsupported(TaskType.SOCIAL_TWITTER_FOLLOW, username)
 
     def retweet(self, tweet_url: str) -> SocialTaskResult:
         """Retweet a tweet.
@@ -95,16 +100,7 @@ class TwitterHelper:
         Returns:
             SocialTaskResult with success status.
         """
-        logger.info(f"Twitter: retweeting {tweet_url}")
-        result = SocialTaskResult(
-            task_type=TaskType.SOCIAL_TWITTER_RETWEET,
-            platform=SocialPlatform.TWITTER,
-            target=tweet_url,
-            success=True,
-            message=f"Marked as retweeted {tweet_url}",
-        )
-        self._completed_tasks.append(result)
-        return result
+        return self._unsupported(TaskType.SOCIAL_TWITTER_RETWEET, tweet_url)
 
     def like(self, tweet_url: str) -> SocialTaskResult:
         """Like a tweet.
@@ -115,16 +111,7 @@ class TwitterHelper:
         Returns:
             SocialTaskResult with success status.
         """
-        logger.info(f"Twitter: liking {tweet_url}")
-        result = SocialTaskResult(
-            task_type=TaskType.SOCIAL_TWITTER_LIKE,
-            platform=SocialPlatform.TWITTER,
-            target=tweet_url,
-            success=True,
-            message=f"Marked as liked {tweet_url}",
-        )
-        self._completed_tasks.append(result)
-        return result
+        return self._unsupported(TaskType.SOCIAL_TWITTER_LIKE, tweet_url)
 
     def comment(self, tweet_url: str, text: str) -> SocialTaskResult:
         """Comment on a tweet.
@@ -136,16 +123,7 @@ class TwitterHelper:
         Returns:
             SocialTaskResult with success status.
         """
-        logger.info(f"Twitter: commenting on {tweet_url}")
-        result = SocialTaskResult(
-            task_type=TaskType.SOCIAL_TWITTER_COMMENT,
-            platform=SocialPlatform.TWITTER,
-            target=tweet_url,
-            success=True,
-            message=f"Marked as commented on {tweet_url}",
-        )
-        self._completed_tasks.append(result)
-        return result
+        return self._unsupported(TaskType.SOCIAL_TWITTER_COMMENT, tweet_url)
 
     def get_completed(self) -> list[SocialTaskResult]:
         """Get all completed Twitter tasks."""

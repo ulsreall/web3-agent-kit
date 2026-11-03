@@ -266,7 +266,7 @@ class TestBridgeRoutes:
         agent.session.get = MagicMock(return_value=resp)
         routes = agent._get_lifi_routes("ETH", 1.0, Chain.ETHEREUM, Chain.BASE)
         assert len(routes) == 1
-        assert routes[0].bridge_name == "fast"
+        assert routes[0].bridge_name == "Li.Fi"
         assert routes[0].amount_out == 0.99
 
     def test_socket_routes_parsed(self):

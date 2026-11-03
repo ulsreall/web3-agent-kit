@@ -80,10 +80,12 @@ class BridgeRoute:
     time_estimate: int  # seconds
     fee_usd: float
     steps: list[dict]
+    provider: str = ""
 
     def to_dict(self) -> dict:
         return {
             "bridge": self.bridge_name,
+            "provider": self.provider or self.bridge_name,
             "from": self.from_chain.value,
             "to": self.to_chain.value,
             "amount_in": self.amount_in,
@@ -240,9 +242,9 @@ class BridgeAgent:
 
                 routes.append(
                     BridgeRoute(
-                        bridge_name=route.get("tags", ["unknown"])[0]
-                        if route.get("tags")
-                        else "Li.Fi",
+                        # Tags describe route attributes (e.g. "cheapest"), not
+                        # the provider that must execute the selected route.
+                        bridge_name="Li.Fi",
                         from_chain=from_chain,
                         to_chain=to_chain,
                         token_in=token_addr,
@@ -253,6 +255,7 @@ class BridgeAgent:
                         time_estimate=int(route.get("duration", 300)),
                         fee_usd=float(route.get("gasCostUSD", "0")),
                         steps=route.get("steps", []),
+                        provider="Li.Fi",
                     )
                 )
 
@@ -318,6 +321,7 @@ class BridgeAgent:
                     time_estimate=int(route.get("serviceTime", 300)),
                     fee_usd=gas_usd,
                     steps=[],
+                    provider="Socket",
                 )
             )
 
@@ -352,10 +356,19 @@ class BridgeAgent:
             logger.info(f"Using best route: {route.bridge_name} ({route.amount_out:.6f} {token})")
 
         # Execute based on bridge type
-        if route.bridge_name in ("lifuel", "Li.Fi", "li.fi"):
+        provider = route.provider
+        if not provider:
+            # Preserve the legacy convention: non-Li.Fi bridge names use Socket.
+            provider = (
+                route.bridge_name
+                if route.bridge_name.casefold() in ("lifuel", "li.fi")
+                else "Socket"
+            )
+        if provider.casefold() in ("lifuel", "li.fi"):
             return self._execute_lifi(route)
-        else:
+        if provider.casefold() == "socket":
             return self._execute_socket(route)
+        raise ValueError(f"Unsupported bridge provider: {provider}")
 
     def _execute_lifi(self, route: BridgeRoute) -> BridgeResult:
         """Execute a Li.Fi bridge transfer."""

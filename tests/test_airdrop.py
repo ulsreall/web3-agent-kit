@@ -219,24 +219,25 @@ class TestTwitterHelper:
     def test_follow(self):
         helper = TwitterHelper()
         result = helper.follow("test_user")
-        assert result.success is True
+        assert result.success is False
         assert result.target == "test_user"
-        assert len(helper.get_completed()) == 1
+        assert "not implemented" in result.message
+        assert helper.get_completed() == []
 
     def test_retweet(self):
         helper = TwitterHelper()
         result = helper.retweet("https://twitter.com/user/status/123")
-        assert result.success is True
+        assert result.success is False
 
     def test_like(self):
         helper = TwitterHelper()
         result = helper.like("https://twitter.com/user/status/123")
-        assert result.success is True
+        assert result.success is False
 
     def test_comment(self):
         helper = TwitterHelper()
         result = helper.comment("https://twitter.com/user/status/123", "Great!")
-        assert result.success is True
+        assert result.success is False
 
 
 class TestDiscordHelper:
@@ -276,7 +277,7 @@ class TestSocialTaskManager:
     def test_complete_task(self):
         manager = SocialTaskManager()
         result = manager.complete_social_task(TaskType.SOCIAL_TWITTER_FOLLOW, "test_user")
-        assert result.success is True
+        assert result.success is False
         assert len(manager.get_all_results()) == 1
 
     def test_unsupported_task(self):
@@ -295,7 +296,7 @@ class TestSocialTaskManager:
         manager.complete_social_task(TaskType.SOCIAL_TWITTER_FOLLOW, "user1")
         manager.complete_social_task(TaskType.SOCIAL_DISCORD_JOIN, "server1")
         counts = manager.get_completed_count()
-        assert counts.get("twitter", 0) == 1
+        assert counts.get("twitter", 0) == 0
         assert counts.get("discord", 0) == 1
 
 
@@ -479,3 +480,28 @@ class TestAirdropFarmer:
         progress = WalletFarmProgress(wallet_label="w1", wallet_address="0x123")
         assert progress.is_frozen is False
         assert progress.tasks_completed == 0
+
+    def test_execute_keeps_unimplemented_tasks_pending(self):
+        farmer = AirdropFarmer()
+        task = AirdropTask(
+            task_id="follow",
+            platform="test",
+            task_type=TaskType.SOCIAL_TWITTER_FOLLOW,
+            title="Follow account",
+            points=25,
+        )
+        campaign = AirdropCampaign(
+            campaign_id="c1",
+            platform="test",
+            name="Campaign",
+            tasks=[task],
+        )
+
+        result = farmer._farm_with_wallet("w1", campaign, execute=True)
+
+        assert result.success is False
+        assert result.tasks_completed == 0
+        assert result.points_earned == 0
+        assert task.status == TaskStatus.PENDING
+        assert task.completed_at is None
+        assert farmer.get_total_points() == 0

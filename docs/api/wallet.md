@@ -72,7 +72,7 @@ signed = wallet.sign_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT
 tx_hash = wallet.send_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT_CALL)
 ```
 
-The current authorization fingerprint does not include gas-limit or fee fields. Do not treat it as a commitment to maximum transaction cost; see the [safety pipeline](../safety-and-transaction-pipeline.md).
+The current authorization fingerprint binds the transaction's chain, executor, nonce, target, calldata hash, native value, gas limit, and fee caps (`gasPrice` or EIP-1559 fields). Changing these bound fields changes the fingerprint. See the [safety pipeline](../safety-and-transaction-pipeline.md) for authorization requirements and legacy-envelope compatibility details.
 
 ---
 ## Security Notes

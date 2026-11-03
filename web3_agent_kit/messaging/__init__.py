@@ -153,7 +153,9 @@ class CrossChainMessenger:
     """Cross-chain message relayer supporting LayerZero, Wormhole, CCIP.
 
     Provides a unified interface for sending messages across chains.
-    Supports LayerZero, Wormhole, and Chainlink CCIP.
+    Submits LayerZero messages when configured with an authorized signer.
+    Wormhole and CCIP metadata/status helpers are available, but sending via
+    those protocols is not implemented.
 
     Example::
         messenger = CrossChainMessenger(
@@ -356,7 +358,10 @@ class CrossChainMessenger:
             )
             tx_hash = self.w3.eth.send_raw_transaction(signed)
         else:
-            tx_hash = "0x" + "0" * 64  # Read-only mode
+            raise PermissionError(
+                "LayerZero message submission requires a configured private key and "
+                "authorization gate; no message was sent."
+            )
 
         # Estimate delivery time
         estimated_delivery = 120  # ~2 min for LZ
@@ -381,16 +386,8 @@ class CrossChainMessenger:
         if not wormhole_chain:
             raise ValueError(f"Unknown Wormhole chain: {dst_chain}")
 
-        # Wormhole uses a different architecture — publish message on source
-        # and the relayer picks it up automatically
-        logger.info(f"Wormhole message: {dst_chain} (chain_id={wormhole_chain})")
-
-        return MessageResult(
-            tx_hash="0x" + "0" * 64,
-            dst_chain=dst_chain,
-            src_chain=self.src_chain,
-            estimated_delivery=300,  # ~5 min
-            explorer_url="https://wormholescan.io/",
+        raise NotImplementedError(
+            "Wormhole message submission is not implemented; no message was sent."
         )
 
     def _send_ccip(
@@ -405,14 +402,8 @@ class CrossChainMessenger:
         if not dst_selector:
             raise ValueError(f"Unknown CCIP chain: {dst_chain}")
 
-        logger.info(f"CCIP message: {dst_chain} (selector={dst_selector})")
-
-        return MessageResult(
-            tx_hash="0x" + "0" * 64,
-            dst_chain=dst_chain,
-            src_chain=self.src_chain,
-            estimated_delivery=600,  # ~10 min
-            explorer_url="https://ccip.chain.link/",
+        raise NotImplementedError(
+            "CCIP message submission is not implemented; no message was sent."
         )
 
     def track_status(self, tx_hash: str) -> MessageStatus:

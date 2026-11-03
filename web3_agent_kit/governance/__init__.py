@@ -276,7 +276,7 @@ class GovernanceTracker:
             "type": "function",
         },
         {
-            "inputs": [],
+            "inputs": [{"name": "account", "type": "address"}],
             "name": "getCurrentVotes",
             "outputs": [{"name": "", "type": "uint256"}],
             "stateMutability": "view",

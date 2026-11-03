@@ -23,7 +23,17 @@ class NFTMarketplace:
     """
 
     OPENSEA_API: str = "https://api.opensea.io/api/v2"
-    ALCHEMY_API: str = "https://eth-mainnet.g.alchemy.com/nft/v3"
+    ALCHEMY_API: str = "https://{network}.g.alchemy.com/nft/v3"
+    ALCHEMY_NETWORKS: dict[str, str] = {
+        "ethereum": "eth-mainnet",
+        "base": "base-mainnet",
+        "base-sepolia": "base-sepolia",
+        "arbitrum": "arb-mainnet",
+        "optimism": "opt-mainnet",
+        "polygon": "polygon-mainnet",
+        "avalanche": "avax-mainnet",
+        "bsc": "bnb-mainnet",
+    }
 
     def __init__(self, config: Optional[NFTConfig] = None) -> None:
         self.config = config or NFTConfig()
@@ -83,10 +93,18 @@ class NFTMarketplace:
             List of NFTItem objects.
         """
         nfts: list[NFTItem] = []
+        network = None
+        if self.config.alchemy_api_key:
+            network = self.ALCHEMY_NETWORKS.get(self.config.chain.lower())
+            if network is None:
+                raise ValueError(
+                    f"Alchemy NFT API does not support configured chain {self.config.chain!r}"
+                )
         try:
             if self.config.alchemy_api_key:
                 resp = self.session.get(
-                    f"{self.ALCHEMY_API}/{self.config.alchemy_api_key}/getNFTs",
+                    f"{self.ALCHEMY_API.format(network=network)}/"
+                    f"{self.config.alchemy_api_key}/getNFTs",
                     params={"owner": wallet, "pageSize": limit},
                     timeout=15,
                 )

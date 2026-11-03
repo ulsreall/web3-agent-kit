@@ -116,7 +116,7 @@ A write should follow this lifecycle where the module and application have the r
 
 <div class="docs-callout" markdown>
 <span>i</span>
-<p><strong>Beta software.</strong> The wallet gate fails closed, but write-path coverage is not yet uniform. Gated signing requires an application-supplied authorization provider; the current authorization digest does not bind gas limit or fee fields. Review the [safety pipeline](safety-and-transaction-pipeline.md), [maturity policy](project-maturity.md), and [risk disclosure](https://github.com/ulsreall/web3-agent-kit/blob/master/RISKS.md) before using real funds.</p>
+<p><strong>Beta software.</strong> The wallet gate fails closed, but write-path coverage is not yet uniform. Gated signing requires an application-supplied authorization provider; the default v2 authorization digest binds gas limit and fee caps, while legacy v1 compatibility does not bind transaction costs. Review the [safety pipeline](safety-and-transaction-pipeline.md), [maturity policy](project-maturity.md), and [risk disclosure](https://github.com/ulsreall/web3-agent-kit/blob/master/RISKS.md) before using real funds.</p>
 </div>
 
 <div class="docs-rule"></div>

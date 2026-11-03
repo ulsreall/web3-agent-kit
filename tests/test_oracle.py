@@ -162,6 +162,43 @@ class TestFetchChainlink:
             agg.get_price("ETH", "USD")
 
 
+class TestFetchDexScreener:
+    def test_uses_requested_base_token_and_usd_quote(self):
+        response = {
+            "pairs": [
+                {
+                    "baseToken": {"symbol": "ETH"},
+                    "priceUsd": "2500",
+                    "liquidity": {"usd": 1_000_000},
+                },
+                {
+                    "baseToken": {"symbol": "ETH"},
+                    "priceUsd": "2000",
+                    "liquidity": {"usd": 100_000},
+                },
+                {
+                    "baseToken": {"symbol": "OTHER"},
+                    "priceUsd": "1",
+                    "liquidity": {"usd": 10_000_000},
+                },
+            ]
+        }
+        agg = OracleAggregator(rpc_url="https://rpc.test")
+        with patch("requests.get") as request:
+            request.return_value.status_code = 200
+            request.return_value.json.return_value = response
+            result = agg._fetch_dexscreener("ETH", "USD")
+
+        assert result is not None
+        assert result.price == 2500
+
+    def test_rejects_non_usd_quote_without_request(self):
+        agg = OracleAggregator(rpc_url="https://rpc.test")
+        with patch("requests.get") as request:
+            assert agg._fetch_dexscreener("ETH", "EUR") is None
+        request.assert_not_called()
+
+
 class TestPairFormatting:
     def test_uppercase_pair(self):
         ap = AggregatedPrice(pair="eth/usd", price=1.0)

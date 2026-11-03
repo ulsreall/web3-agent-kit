@@ -64,7 +64,7 @@ class SolanaClient:
                 if "error" in data:
                     raise SolanaRPCError(data["error"].get("message", str(data["error"])))
                 return data.get("result", {})
-            except (httpx.TimeoutException, httpx.HTTPStatusError) as e:
+            except (httpx.TransportError, httpx.HTTPStatusError) as e:
                 last_error = e
                 if attempt < self.config.max_retries - 1:
                     await asyncio.sleep(self.config.retry_delay * (attempt + 1))
@@ -143,10 +143,39 @@ class SolanaClient:
 
     async def confirm_transaction(self, signature: str, commitment: str = "finalized") -> dict:
         """Wait for transaction confirmation."""
-        result = await self._rpc_call(
-            "getSignatureStatuses", [[signature], {"searchTransactionHistory": True}]
-        )
-        return result.get("value", [{}])[0] or {}
+        commitment_levels = {"processed": 0, "confirmed": 1, "finalized": 2}
+        if commitment not in commitment_levels:
+            raise ValueError(f"Unsupported commitment level: {commitment}")
+
+        deadline = asyncio.get_running_loop().time() + self.config.timeout
+        while True:
+            result = await self._rpc_call(
+                "getSignatureStatuses", [[signature], {"searchTransactionHistory": True}]
+            )
+            statuses = result.get("value") or []
+            status = statuses[0] if statuses else None
+            if status:
+                if status.get("err") is not None:
+                    raise SolanaRPCError(f"Transaction '{signature}' failed: {status['err']}")
+                confirmation_status = status.get("confirmationStatus")
+                if confirmation_status is None:
+                    confirmations = status.get("confirmations")
+                    confirmation_status = (
+                        "finalized"
+                        if confirmations is None
+                        else "confirmed"
+                        if confirmations > 0
+                        else "processed"
+                    )
+                if commitment_levels.get(confirmation_status, -1) >= commitment_levels[commitment]:
+                    return status
+
+            remaining = deadline - asyncio.get_running_loop().time()
+            if remaining <= 0:
+                raise SolanaRPCError(
+                    f"Timed out waiting for transaction '{signature}' at {commitment} commitment"
+                )
+            await asyncio.sleep(min(0.5, remaining))
 
     # ── Account Info ─────────────────────────────────
 

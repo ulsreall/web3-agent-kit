@@ -1,4 +1,4 @@
-"""Yield Optimizer — Auto-compound, APY comparison, cross-protocol yield farming."""
+"""Yield Optimizer — APY comparison and preparation of yield transactions."""
 
 from __future__ import annotations
 
@@ -105,15 +105,15 @@ class YieldConfig:
 
 
 class YieldOptimizer:
-    """Auto-compound and optimize yield across DeFi protocols.
+    """Compare yield and prepare (but do not submit) protocol transactions.
 
     Example::
 
         optimizer = YieldOptimizer(wallet, chain)
         opportunities = optimizer.scan_opportunities("USDC")
         best = optimizer.find_best("USDC", amount=10000)
-        tx = optimizer.deposit(best, amount=10000)
-        optimizer.auto_compound_all()
+        prepared = optimizer.deposit(best, amount=10000)
+        print(prepared["status"])  # "prepared"; no transaction was submitted
     """
 
     # DeFi protocol endpoints for APY data
@@ -212,14 +212,14 @@ class YieldOptimizer:
         opportunity: YieldOpportunity,
         amount: float,
     ) -> dict:
-        """Deposit into a yield opportunity.
+        """Prepare approval and deposit transactions without submitting them.
 
         Args:
             opportunity: The yield opportunity to deposit into.
             amount: Amount of deposit token.
 
         Returns:
-            Transaction result dict.
+            Dict containing the unsigned transaction data and a proposed position.
         """
         # Approve token spending
         approve_tx = self._build_approve_tx(
@@ -234,7 +234,8 @@ class YieldOptimizer:
             amount=amount,
         )
 
-        # Track position
+        # Return a proposed position only; building transaction data does not
+        # submit it or establish an on-chain position.
         position = YieldPosition(
             opportunity=opportunity,
             deposited_amount=amount,
@@ -244,13 +245,11 @@ class YieldOptimizer:
             entry_timestamp=time.time(),
             last_compound=time.time(),
         )
-        self.positions.append(position)
-
         return {
             "approve_tx": approve_tx,
             "deposit_tx": deposit_tx,
             "position": position,
-            "status": "submitted",
+            "status": "prepared",
         }
 
     def withdraw(
@@ -258,15 +257,17 @@ class YieldOptimizer:
         position: YieldPosition,
         percentage: float = 100,
     ) -> dict:
-        """Withdraw from a yield position.
+        """Prepare a withdrawal transaction without submitting it or changing state.
 
         Args:
             position: The position to withdraw from.
             percentage: Percentage to withdraw (1-100).
 
         Returns:
-            Transaction result dict.
+            Dict containing unsigned transaction data and ``status="prepared"``.
         """
+        if not 0 < percentage <= 100:
+            raise ValueError("percentage must be greater than 0 and at most 100")
         withdraw_amount = position.deposited_amount * (percentage / 100)
 
         withdraw_tx = self._build_withdraw_tx(
@@ -274,19 +275,14 @@ class YieldOptimizer:
             amount=withdraw_amount,
         )
 
-        if percentage >= 100:
-            self.positions.remove(position)
-        else:
-            position.deposited_amount -= withdraw_amount
-
         return {
             "withdraw_tx": withdraw_tx,
             "amount": withdraw_amount,
-            "status": "submitted",
+            "status": "prepared",
         }
 
     def auto_compound_all(self) -> list[dict]:
-        """Auto-compound all positions where rewards exceed threshold.
+        """Prepare claim/deposit transaction data for eligible positions.
 
         Returns:
             List of compound results.
@@ -305,7 +301,6 @@ class YieldOptimizer:
 
             result = self._compound_position(position)
             results.append(result)
-            position.last_compound = now
 
         return results
 
@@ -460,23 +455,18 @@ class YieldOptimizer:
         ]
 
     def _compound_position(self, position: YieldPosition) -> dict:
-        """Compound rewards back into a position."""
+        """Prepare reward claim/deposit transactions without submitting them."""
         claim_tx = self._build_claim_tx(position)
         deposit_tx = self._build_deposit_tx(
             opportunity=position.opportunity,
             amount=position.rewards_earned,
         )
 
-        compounded = position.rewards_earned
-        position.deposited_amount += compounded
-        position.current_value_usd += compounded
-        position.rewards_earned = 0
-
         return {
             "claim_tx": claim_tx,
             "deposit_tx": deposit_tx,
-            "compounded_amount": compounded,
-            "status": "compounded",
+            "compounded_amount": position.rewards_earned,
+            "status": "prepared",
         }
 
     def _build_approve_tx(self, token: str, spender: str, amount: float) -> dict:

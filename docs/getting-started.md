@@ -102,7 +102,7 @@ result = agent.run("Check my balances on Base")
 print(result)
 ```
 
-**Before enabling writes:** `SpendGovernor` limits and an interactive confirmation callback do not replace the pre-sign gate. A wallet write requires a bound `PreSignInterceptor` with an `ExecutionPolicy` and an application-supplied `AuthorizationProvider` that verifies a real, fresh, single-use authorization. Not all write-capable modules share this pipeline yet. The current authorization fingerprint also omits gas-limit and fee fields, so it is not a maximum-cost commitment.
+**Before enabling writes:** `SpendGovernor` limits and an interactive confirmation callback do not replace the pre-sign gate. A wallet write requires a bound `PreSignInterceptor` with an `ExecutionPolicy` and an application-supplied `AuthorizationProvider` that verifies a real, fresh, single-use authorization. Not all write-capable modules share this pipeline yet. The default v2 authorization fingerprint binds gas limit and fee caps; explicit legacy v1 compatibility does not bind transaction costs.
 
 ### 2. Portfolio Tracking
 

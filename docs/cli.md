@@ -1,8 +1,8 @@
 # CLI Tool — `wak`
 
-Web3 Agent Kit ships with a terminal CLI tool called `wak` for quick blockchain operations without writing Python.
-
----
+The `wak` command provides read-only wallet, token-safety, and gas queries plus
+an AI-agent entry point. RPC-backed commands require an RPC URL; they do not
+silently print placeholder results.
 
 ## Installation
 
@@ -10,142 +10,79 @@ Web3 Agent Kit ships with a terminal CLI tool called `wak` for quick blockchain 
 pip install web3-agent-kit
 ```
 
-The `wak` command is automatically available after installation.
-
----
-
 ## Commands
 
-### `wak info`
+### `wak info` and `wak doctor`
 
-Display package information and version.
+`wak info` shows package details. `wak doctor` checks the Python environment,
+core dependencies, `.env` file, and configured environment-variable presence.
 
-```bash
-$ wak info
-╔══════════════════════════════════════════════╗
-║         🤖 Web3 Agent Kit v1.19.0             ║
-║    Open-source AI agent framework for Web3   ║
-╚══════════════════════════════════════════════╝
+### `wak wallet balance`
 
-📦 Version: 1.19.0
-🔗 GitHub: https://github.com/ulsreall/web3-agent-kit
-📦 PyPI: https://pypi.org/project/web3-agent-kit/
-```
-
-### `wak doctor`
-
-Check environment health — validates API keys, RPC endpoints, and dependencies.
+Read a public address's native-token balance without a private key:
 
 ```bash
-$ wak doctor
-🔍 Environment Check
-✅ PRIVATE_KEY: set
-✅ ANTHROPIC_API_KEY: set
-✅ BASE_RPC: set
-⚠️ OPENAI_API_KEY: not set (optional)
-✅ All core dependencies installed
+wak wallet balance --address 0x... --chain base
 ```
 
-### `wak wallet`
-
-Check wallet balance across chains.
-
-```bash
-$ wak wallet
-💰 Wallet: 0x721e...A522
-
-🔗 ETHEREUM: 0.5 ETH ($1,750.00)
-🔗 BASE: 1.2 ETH ($4,200.00)
-🔗 ARBITRUM: 0.05 ETH ($175.00)
-
-Total: $6,125.00
-```
+Set `BASE_RPC_URL` or the fallback `RPC_URL` to query Base. The output reports
+the address, chain, and balance; it does not fetch token balances or USD prices.
 
 ### `wak gas`
 
-Check current gas prices across chains.
+Query the configured chain's gas price and show the selected priority fee and
+an estimated 21,000-gas transfer cost:
 
 ```bash
-$ wak gas
-⛽ Gas Prices
-
-🔗 ETHEREUM: 12 gwei (Low: 8 / Avg: 12 / High: 18)
-🔗 BASE: 0.001 gwei
-🔗 ARBITRUM: 0.1 gwei
-🔗 OPTIMISM: 0.005 gwei
+wak gas --chain ethereum --priority medium
 ```
 
-### `wak token <address>`
+Supported priorities are `low`, `medium`, `high`, and `urgent`.
 
-Check token info and balance.
+### `wak token check`
+
+Run the GoPlus quick honeypot/tax lookup:
 
 ```bash
-$ wak token 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-🪙 USDC (USD Coin)
-📍 Base: 0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
-💰 Balance: 1,456.78 USDC
-💵 Price: $1.00
+wak token check --address 0x... --chain base
 ```
+
+This is not a full contract audit or a token-balance/price query. If the
+provider has no result, the CLI reports the check as `unknown`.
 
 ### `wak examples`
 
-List all available code examples.
+List the Python example files included in the repository.
 
-```bash
-$ wak examples
-📚 Available Examples
+### `wak agent`
 
-  1. basic_agent.py        — Create your first agent
-  2. swap_tokens.py        — Swap tokens on Uniswap
-  3. portfolio.py          — Track portfolio across chains
-  4. bridge.py             — Cross-chain bridging
-  5. sniper.py             — Token sniper bot
-  6. airdrop_hunter.py     — Hunt airdrops automatically
-  7. security_audit.py     — Audit smart contracts
-  8. mev_bot.py            — MEV extraction
-  9. dca_bot.py            — Dollar-cost averaging
-  10. multi_wallet.py      — Multi-wallet management
+The command accepts `--goal`, `--wallet`, and `--chain`; the wallet address
+must match the account from `PRIVATE_KEY`. `--yes` skips the interactive
+transaction prompt only. The CLI currently has no configuration surface for
+the required pre-sign authorization provider, so it fails closed rather than
+running an agent that could attempt to submit a transaction. Use the Python API
+to construct and bind an authorized `PreSignInterceptor` before running an
+agent.
+
+## Environment
+
+Use chain-specific RPC variables when possible; each takes precedence over
+`RPC_URL`:
+
+```text
+BASE_RPC_URL=https://...
+ETHEREUM_RPC_URL=https://...
+RPC_URL=https://...
 ```
 
-### `wak agent --goal <goal> --wallet <address>`
+`PRIVATE_KEY` is required only by `wak agent`, and `OPENAI_API_KEY` or
+`ANTHROPIC_API_KEY` is needed by the LLM client. Do not put keys in command-line
+arguments or commit them to the repository.
 
-Run an agent with a natural language goal directly from terminal.
-
-```bash
-$ wak agent --goal "Check my ETH balance on Base" --wallet 0x721e...A522
-🤖 Agent running...
-📊 Goal: Check my ETH balance on Base
-
-🔗 Base: 1.2000 ETH ($4,200.00)
-
-✅ Goal completed in 2.3s
-```
-
----
-
-## Environment Variables
-
-The CLI reads the same env vars as the Python library:
+## Help
 
 ```bash
-# Required
-export PRIVATE_KEY="0x..."
-
-# At least one LLM provider (for `wak agent`)
-export ANTHROPIC_API_KEY="sk-ant-..."
-export OPENAI_API_KEY="sk-..."
-
-# Optional: custom RPCs
-export BASE_RPC="https://..."
-export ETH_RPC="https://..."
-```
-
----
-
-## Global Options
-
-```bash
-wak --help          # Show help
-wak --version       # Show version
-wak --verbose       # Enable verbose output
+wak --help
+wak --version
+wak wallet --help
 ```

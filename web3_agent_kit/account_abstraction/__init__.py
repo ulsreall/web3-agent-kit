@@ -16,6 +16,7 @@ Usage::
         to="0x...",
         value=0,
         data="0x...",
+        signer=signer_callback,  # Signs the fully prepared operation
     )
     print(f"UserOp hash: {op.user_op_hash}")
 """
@@ -25,7 +26,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -302,6 +303,7 @@ class AAWallet:
         data: str = "0x",
         sender: Optional[str] = None,
         owner: Optional[str] = None,
+        signer: Optional[Callable[[UserOperation, str, int], str]] = None,
     ) -> UserOpResult:
         """Build and send a UserOperation.
 
@@ -311,24 +313,60 @@ class AAWallet:
             data: Calldata
             sender: Smart account address (computed if not provided)
             owner: Owner address
+            signer: Callback that externally signs the fully prepared UserOperation.
 
         Returns:
             UserOpResult with hash and status
         """
 
+        if self.factory_name != "simple_account_v7":
+            raise NotImplementedError(
+                f"Call encoding is not implemented for account factory {self.factory_name!r}"
+            )
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise ValueError("value must be a non-negative integer")
+        if not isinstance(data, str) or not data.startswith("0x") or len(data) % 2:
+            raise ValueError("data must be 0x-prefixed even-length hex")
+        try:
+            bytes.fromhex(data[2:])
+        except ValueError as exc:
+            raise ValueError("data must contain valid hex") from exc
         if not sender and owner:
             sender = self.get_counterfactual_address(owner)
         if not sender:
             raise ValueError("Either sender or owner must be provided")
 
+        if signer is None:
+            raise ValueError(
+                "A UserOperation signer callback is required; no operation was submitted"
+            )
+
+        call_data = self._encode_call_data(sender, to, value, data)
         chain_id = self.w3.eth.chain_id
-        nonce = 0  # Should fetch from entry point
+        from web3 import Web3
+
+        entry_point_contract = self.w3.eth.contract(
+            address=Web3.to_checksum_address(self.entry_point),
+            abi=[
+                {
+                    "inputs": [
+                        {"name": "sender", "type": "address"},
+                        {"name": "key", "type": "uint192"},
+                    ],
+                    "name": "getNonce",
+                    "outputs": [{"name": "nonce", "type": "uint256"}],
+                    "stateMutability": "view",
+                    "type": "function",
+                }
+            ],
+        )
+        nonce = entry_point_contract.functions.getNonce(Web3.to_checksum_address(sender), 0).call()
 
         # Build UserOperation
         user_op = UserOperation(
             sender=sender,
             nonce=nonce,
-            call_data=data,
+            call_data=call_data,
             call_gas_limit=200000,
             verification_gas_limit=500000,
             pre_verification_gas=50000,
@@ -349,12 +387,46 @@ class AAWallet:
                 "verificationGasLimit", user_op.verification_gas_limit
             )
 
+        signature = signer(user_op, self.entry_point, chain_id)
+        if not isinstance(signature, str) or not signature.startswith("0x") or len(signature) <= 2:
+            raise ValueError("Signer callback must return non-empty 0x-prefixed signature data")
+        try:
+            bytes.fromhex(signature[2:])
+        except ValueError as exc:
+            raise ValueError("Signer callback returned invalid signature hex") from exc
+        user_op.signature = signature
+
         # Submit to bundler
         uo_hash = self._submit_to_bundler(user_op)
 
         return UserOpResult(
             user_op_hash=uo_hash,
             status="pending",
+        )
+
+    def _encode_call_data(self, sender: str, to: str, value: int, data: str) -> str:
+        """Encode a SimpleAccount execute(address,uint256,bytes) call."""
+        from web3 import Web3
+
+        account = self.w3.eth.contract(
+            address=Web3.to_checksum_address(sender),
+            abi=[
+                {
+                    "inputs": [
+                        {"name": "dest", "type": "address"},
+                        {"name": "value", "type": "uint256"},
+                        {"name": "func", "type": "bytes"},
+                    ],
+                    "name": "execute",
+                    "outputs": [],
+                    "stateMutability": "nonpayable",
+                    "type": "function",
+                }
+            ],
+        )
+        return account.encode_abi(
+            "execute",
+            args=[Web3.to_checksum_address(to), value, bytes.fromhex(data[2:])],
         )
 
     def _submit_to_bundler(self, user_op: UserOperation) -> str:

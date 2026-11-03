@@ -163,17 +163,13 @@ class SolanaWallet:
         Creates the associated token account if needed.
         """
         from solders.hash import Hash
-        from solders.instruction import Instruction
+        from solders.instruction import AccountMeta, Instruction
         from solders.message import Message
         from solders.pubkey import Pubkey
+        from solders.system_program import ID as SYSTEM_PROGRAM_ID
         from solders.transaction import Transaction
-        from spl.token.constants import TOKEN_PROGRAM_ID
-        from spl.token.instructions import (
-            TransferCheckedParams,
-            create_associated_token_account,
-            get_associated_token_address,
-            transfer_checked,
-        )
+        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
+        from spl.token.instructions import get_associated_token_address
 
         from_pubkey = self._keypair.pubkey()
         to_pubkey = Pubkey.from_string(to_address)
@@ -191,17 +187,27 @@ class SolanaWallet:
         recent_blockhash = Hash.from_string(blockhash_str)
 
         instructions: list[Instruction] = [
-            create_associated_token_account(from_pubkey, to_pubkey, mint_pubkey),
-            transfer_checked(
-                TransferCheckedParams(
-                    amount=amount_raw,
-                    decimals=decimals,
-                    source=from_ata,
-                    mint=mint_pubkey,
-                    dest=to_ata,
-                    owner=from_pubkey,
-                    program_id=TOKEN_PROGRAM_ID,
-                )
+            Instruction(
+                ASSOCIATED_TOKEN_PROGRAM_ID,
+                b"\x01",
+                [
+                    AccountMeta(from_pubkey, True, True),
+                    AccountMeta(to_ata, False, True),
+                    AccountMeta(to_pubkey, False, False),
+                    AccountMeta(mint_pubkey, False, False),
+                    AccountMeta(SYSTEM_PROGRAM_ID, False, False),
+                    AccountMeta(TOKEN_PROGRAM_ID, False, False),
+                ],
+            ),
+            Instruction(
+                TOKEN_PROGRAM_ID,
+                b"\x0c" + amount_raw.to_bytes(8, "little") + bytes([decimals]),
+                [
+                    AccountMeta(from_ata, False, True),
+                    AccountMeta(mint_pubkey, False, False),
+                    AccountMeta(to_ata, False, True),
+                    AccountMeta(from_pubkey, True, False),
+                ],
             ),
         ]
 

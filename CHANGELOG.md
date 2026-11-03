@@ -67,6 +67,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+* **audit fixes:** harden approval scanning and revocation, transaction/event handling,
+  bridge-provider dispatch, Solana quotes, and CLI/MCP reporting; unsupported airdrop,
+  social, and yield actions no longer claim execution.
 * **examples (signer):** `EvmSigner` normalizes the target to a checksummed address —
   `eth_account` rejects all-lowercase `to` values with `Transaction had invalid fields`.
 * **tests:** new `test_rehearsal_full_runner_path` regression covers the full live-runner

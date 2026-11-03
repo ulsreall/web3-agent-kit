@@ -137,9 +137,35 @@ class TestSolanaClient:
 
     @pytest.mark.asyncio
     async def test_rpc_retry_on_timeout(self, solana_client):
-        with patch("httpx.AsyncClient.post", AsyncMock(side_effect=Exception("timeout"))):
-            with pytest.raises(Exception):
+        import httpx
+
+        with patch(
+            "httpx.AsyncClient.post",
+            AsyncMock(side_effect=httpx.ConnectError("connection refused")),
+        ) as post:
+            with pytest.raises(SolanaRPCError, match="failed after 2 retries"):
                 await solana_client.get_balance("11111111111111111111111111111111")
+        assert post.await_count == 2
+
+    @pytest.mark.asyncio
+    async def test_confirm_transaction_waits_for_requested_commitment(self, solana_client):
+        solana_client._rpc_call = AsyncMock(
+            side_effect=[
+                {"value": [{"confirmationStatus": "processed", "confirmations": 1}]},
+                {"value": [{"confirmationStatus": "confirmed", "confirmations": 2}]},
+            ]
+        )
+
+        with patch("asyncio.sleep", AsyncMock()):
+            status = await solana_client.confirm_transaction("signature", commitment="confirmed")
+
+        assert status["confirmationStatus"] == "confirmed"
+        assert solana_client._rpc_call.await_count == 2
+
+    @pytest.mark.asyncio
+    async def test_confirm_transaction_rejects_invalid_commitment(self, solana_client):
+        with pytest.raises(ValueError, match="Unsupported commitment"):
+            await solana_client.confirm_transaction("signature", commitment="unknown")
 
     @pytest.mark.asyncio
     async def test_close(self, solana_client):

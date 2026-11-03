@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import math
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -86,6 +87,17 @@ class SpendGovernor:
         # Kill switch check
         if self._kill_switch:
             return GovernorDecision(allowed=False, reason="Kill switch activated")
+
+        if (
+            not isinstance(tx_value, (int, float))
+            or isinstance(tx_value, bool)
+            or (isinstance(tx_value, float) and not math.isfinite(tx_value))
+            or tx_value < 0
+        ):
+            return GovernorDecision(
+                allowed=False,
+                reason="Transaction value must be a finite, non-negative number",
+            )
 
         # Reset daily counter if needed
         if time.time() - self._daily_reset > 86400:

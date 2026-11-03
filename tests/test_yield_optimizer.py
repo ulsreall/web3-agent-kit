@@ -185,34 +185,37 @@ class TestYieldOptimizer:
         assert best is not None
         assert best.asset.upper() == "USDC"
 
-    def test_deposit_tracks_position(self, optimizer, sample_opportunity):
-        """Test that deposit creates a position."""
+    def test_deposit_only_prepares_position(self, optimizer, sample_opportunity):
+        """Building deposit transactions must not claim an on-chain position."""
         result = optimizer.deposit(sample_opportunity, amount=10000)
-        assert result["status"] == "submitted"
-        assert len(optimizer.positions) == 1
-        assert optimizer.positions[0].deposited_amount == 10000
+        assert result["status"] == "prepared"
+        assert result["position"].deposited_amount == 10000
+        assert optimizer.positions == []
 
-    def test_withdraw_removes_position(self, optimizer, sample_opportunity):
-        """Test that full withdraw removes position."""
-        optimizer.deposit(sample_opportunity, amount=10000)
-        position = optimizer.positions[0]
+    def test_withdraw_does_not_remove_position(self, optimizer, sample_opportunity):
+        """Preparing a withdrawal must not mutate tracked positions."""
+        position = optimizer.deposit(sample_opportunity, amount=10000)["position"]
+        optimizer.positions.append(position)
 
         result = optimizer.withdraw(position, percentage=100)
-        assert result["status"] == "submitted"
-        assert len(optimizer.positions) == 0
+        assert result["status"] == "prepared"
+        assert optimizer.positions == [position]
+        assert position.deposited_amount == 10000
 
     def test_withdraw_partial(self, optimizer, sample_opportunity):
-        """Test partial withdrawal."""
-        optimizer.deposit(sample_opportunity, amount=10000)
-        position = optimizer.positions[0]
+        """A prepared partial withdrawal leaves the tracked position unchanged."""
+        position = optimizer.deposit(sample_opportunity, amount=10000)["position"]
+        optimizer.positions.append(position)
 
-        optimizer.withdraw(position, percentage=50)
-        assert optimizer.positions[0].deposited_amount == 5000
+        result = optimizer.withdraw(position, percentage=50)
+        assert result["status"] == "prepared"
+        assert result["amount"] == 5000
+        assert optimizer.positions[0].deposited_amount == 10000
 
     def test_auto_compound_respects_threshold(self, optimizer, sample_opportunity):
         """Test that auto-compound only compounds when above threshold."""
-        optimizer.deposit(sample_opportunity, amount=10000)
-        position = optimizer.positions[0]
+        position = optimizer.deposit(sample_opportunity, amount=10000)["position"]
+        optimizer.positions.append(position)
         position.rewards_earned = 10  # Below threshold of 50
         position.last_compound = 0  # Force past interval
 
@@ -221,13 +224,26 @@ class TestYieldOptimizer:
 
     def test_auto_compound_respects_interval(self, optimizer, sample_opportunity):
         """Test that auto-compound respects time interval."""
-        optimizer.deposit(sample_opportunity, amount=10000)
-        position = optimizer.positions[0]
+        position = optimizer.deposit(sample_opportunity, amount=10000)["position"]
+        optimizer.positions.append(position)
         position.rewards_earned = 100  # Above threshold
         position.last_compound = time.time()  # Just compounded
 
         results = optimizer.auto_compound_all()
         assert len(results) == 0  # Too soon
+
+    def test_auto_compound_prepares_without_mutating(self, optimizer, sample_opportunity):
+        position = optimizer.deposit(sample_opportunity, amount=10000)["position"]
+        optimizer.positions.append(position)
+        position.rewards_earned = 100
+        position.last_compound = 0
+
+        result = optimizer.auto_compound_all()[0]
+
+        assert result["status"] == "prepared"
+        assert position.deposited_amount == 10000
+        assert position.rewards_earned == 100
+        assert position.last_compound == 0
 
     def test_portfolio_summary_empty(self, optimizer):
         """Test portfolio summary with no positions."""
@@ -237,7 +253,7 @@ class TestYieldOptimizer:
 
     def test_portfolio_summary_with_positions(self, optimizer, sample_opportunity):
         """Test portfolio summary with positions."""
-        optimizer.deposit(sample_opportunity, amount=10000)
+        optimizer.positions.append(optimizer.deposit(sample_opportunity, amount=10000)["position"])
         summary = optimizer.get_portfolio_summary()
 
         assert summary["total_positions"] == 1

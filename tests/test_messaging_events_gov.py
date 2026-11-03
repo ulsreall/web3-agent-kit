@@ -72,21 +72,20 @@ class TestMessaging:
             m = CrossChainMessenger(bridge="layerzero", rpc_url="https://x")
             assert m.w3 is not None
 
-    def test_send_message_wormhole(self):
+    def test_send_message_wormhole_not_implemented(self):
         m = CrossChainMessenger(bridge="wormhole", rpc_url="")
-        res = m.send_message(dst_chain="optimism", dst_address="0xdead", payload="0x")
-        assert res.src_chain == "arbitrum"
-        assert res.estimated_delivery == 300
+        with pytest.raises(NotImplementedError, match="no message was sent"):
+            m.send_message(dst_chain="optimism", dst_address="0xdead", payload="0x")
 
     def test_send_message_wormhole_unknown_chain(self):
         m = CrossChainMessenger(bridge="wormhole", rpc_url="")
         with pytest.raises(ValueError, match="Unknown Wormhole"):
             m.send_message(dst_chain="nope", dst_address="0xdead")
 
-    def test_send_message_ccip(self):
+    def test_send_message_ccip_not_implemented(self):
         m = CrossChainMessenger(bridge="chainlink_ccip", rpc_url="")
-        res = m.send_message(dst_chain="base", dst_address="0xdead")
-        assert res.estimated_delivery == 600
+        with pytest.raises(NotImplementedError, match="no message was sent"):
+            m.send_message(dst_chain="base", dst_address="0xdead")
 
     def test_send_message_ccip_unknown_chain(self):
         m = CrossChainMessenger(bridge="chainlink_ccip", rpc_url="")
@@ -105,7 +104,7 @@ class TestMessaging:
         with pytest.raises(ValueError, match="No LayerZero endpoint"):
             m.send_message(dst_chain="optimism", dst_address="0xdead")
 
-    def test_send_layerzero_read_only(self):
+    def test_send_layerzero_without_signer_fails(self):
         m = CrossChainMessenger(bridge="layerzero", rpc_url="", src_chain="arbitrum")
         w3 = MagicMock()
         w3.eth.default_account = "0x0000000000000000000000000000000000000001"
@@ -114,12 +113,11 @@ class TestMessaging:
         contract.functions.send.return_value.build_transaction.return_value = {}
         w3.eth.contract.return_value = contract
         m.w3 = w3
-        res = m.send_message(
-            dst_chain="optimism",
-            dst_address="0x00000000000000000000000000000000000000ab",
-        )
-        assert res.tx_hash == "0x" + "0" * 64
-        assert res.dst_chain == "optimism"
+        with pytest.raises(PermissionError, match="no message was sent"):
+            m.send_message(
+                dst_chain="optimism",
+                dst_address="0x00000000000000000000000000000000000000ab",
+            )
 
     def test_send_message_unsupported_bridge(self):
         m = CrossChainMessenger(bridge="layerzero", rpc_url="")
@@ -284,7 +282,7 @@ class TestEvents:
         sub.last_block = 100
         w3 = MagicMock()
         w3.to_checksum_address.side_effect = lambda a: a
-        # current_block equal to last_block -> from_block >= to_block -> return
+        # A scan resumes at last_block + 1, so it has no range at this height.
         listener._poll_subscription(w3, sub, 100)
         assert sub.events_processed == 0
 
@@ -316,6 +314,45 @@ class TestEvents:
         listener._poll_subscription(w3, sub, 10)
         assert sub.events_processed == 1
         assert received[0]["args"]["value"] == 100
+        contract.events.Transfer.get_logs.assert_called_once_with(fromBlock=0, toBlock=10)
+
+    def test_poll_subscription_starts_after_last_scanned_block(self):
+        listener = EventListener(rpc_url="https://x")
+        sub_id = listener.subscribe(
+            address="0x00000000000000000000000000000000000000ab",
+            abi=self._abi(),
+            event="Transfer",
+            callback=lambda event: None,
+        )
+        sub = listener._subscriptions[sub_id]
+        sub.last_block = 10
+        contract = MagicMock()
+        w3 = MagicMock()
+        w3.to_checksum_address.side_effect = lambda address: address
+        w3.eth.contract.return_value = contract
+
+        listener._poll_subscription(w3, sub, 20)
+
+        contract.events.Transfer.get_logs.assert_called_once_with(fromBlock=11, toBlock=20)
+
+    def test_poll_subscription_does_not_repeat_block_zero(self):
+        listener = EventListener(rpc_url="https://x")
+        sub_id = listener.subscribe(
+            address="0x00000000000000000000000000000000000000ab",
+            abi=self._abi(),
+            event="Transfer",
+            callback=lambda event: None,
+        )
+        sub = listener._subscriptions[sub_id]
+        sub.has_polled = True
+        contract = MagicMock()
+        w3 = MagicMock()
+        w3.to_checksum_address.side_effect = lambda address: address
+        w3.eth.contract.return_value = contract
+
+        listener._poll_subscription(w3, sub, 0)
+
+        contract.events.Transfer.get_logs.assert_not_called()
 
     def test_poll_subscription_callback_error(self):
         listener = EventListener(rpc_url="https://x")
@@ -651,6 +688,12 @@ class TestGovernance:
         assert len(daos) == len(KNOWN_DAOS)
         assert all("governor" in d for d in daos)
 
+    def test_current_votes_abi_takes_account_address(self):
+        current_votes = next(
+            item for item in GovernanceTracker.TOKEN_ABI if item["name"] == "getCurrentVotes"
+        )
+        assert current_votes["inputs"] == [{"name": "account", "type": "address"}]
+
 
 # ----------------------------------------------------------------------------
 # Account Abstraction
@@ -726,22 +769,60 @@ class TestAccountAbstraction:
         w.w3.eth.chain_id = 8453
         w.w3.eth.gas_price = 1_000_000_000
         w.w3.eth.get_code.return_value = b"\x60\x60"  # deployed
-        with patch.object(w, "_submit_to_bundler", return_value="0xuohash"):
-            res = w.send_user_op(to="0xdest", sender="0xsender", value=0)
+        contract = w.w3.eth.contract.return_value
+        contract.encode_abi.return_value = "0xencoded"
+        contract.functions.getNonce.return_value.call.return_value = 3
+        with (
+            patch("web3.Web3.to_checksum_address", side_effect=lambda value: value),
+            patch.object(w, "_submit_to_bundler", return_value="0xuohash") as submit,
+        ):
+            res = w.send_user_op(
+                to="0xdest",
+                sender="0xsender",
+                value=0,
+                signer=lambda user_op, entry_point, chain_id: "0x01",
+            )
         assert res.user_op_hash == "0xuohash"
         assert res.status == "pending"
+        assert submit.call_args.args[0].call_data == "0xencoded"
+        assert submit.call_args.args[0].nonce == 3
+        assert submit.call_args.args[0].signature == "0x01"
+        contract.encode_abi.assert_called_once_with("execute", args=["0xdest", 0, b""])
+
+    def test_send_user_op_requires_external_signature(self):
+        w = self._wallet()
+        with pytest.raises(ValueError, match="signer callback"):
+            w.send_user_op(to="0xdest", sender="0xsender")
+        w.w3.eth.get_code.assert_not_called()
+
+    def test_send_user_op_rejects_unsupported_account_encoder(self):
+        w = self._wallet()
+        w.factory_name = "safe_v143"
+
+        with pytest.raises(NotImplementedError, match="not implemented"):
+            w.send_user_op(
+                to="0xdest",
+                sender="0xsender",
+                signer=lambda user_op, entry_point, chain_id: "0x01",
+            )
 
     def test_send_user_op_with_owner_needs_deploy(self):
         w = self._wallet()
         w.w3.eth.chain_id = 8453
         w.w3.eth.gas_price = 1_000_000_000
         w.w3.eth.get_code.return_value = b"\x00"  # not deployed
+        w.w3.eth.contract.return_value.encode_abi.return_value = "0xencoded"
         with (
             patch.object(w, "get_counterfactual_address", return_value="0xsender"),
             patch.object(w, "_encode_init_code", return_value="0xinit"),
+            patch("web3.Web3.to_checksum_address", side_effect=lambda value: value),
             patch.object(w, "_submit_to_bundler", return_value="0xuohash"),
         ):
-            res = w.send_user_op(to="0xdest", owner="0xowner")
+            res = w.send_user_op(
+                to="0xdest",
+                owner="0xowner",
+                signer=lambda user_op, entry_point, chain_id: "0x01",
+            )
         assert res.user_op_hash == "0xuohash"
 
     def test_send_user_op_with_paymaster(self):
@@ -755,8 +836,14 @@ class TestAccountAbstraction:
         w.w3.eth.chain_id = 8453
         w.w3.eth.gas_price = 1_000_000_000
         w.w3.eth.get_code.return_value = b"\x60\x60"
+        w.w3.eth.contract.return_value.encode_abi.return_value = "0xencoded"
         with patch.object(w, "_submit_to_bundler", return_value="0xuohash"):
-            res = w.send_user_op(to="0xdest", sender="0xsender")
+            with patch("web3.Web3.to_checksum_address", side_effect=lambda value: value):
+                res = w.send_user_op(
+                    to="0xdest",
+                    sender="0xsender",
+                    signer=lambda user_op, entry_point, chain_id: "0x01",
+                )
         assert res.user_op_hash == "0xuohash"
         pm.get_paymaster_data.assert_called_once()
 

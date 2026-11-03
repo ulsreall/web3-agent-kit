@@ -178,13 +178,35 @@ class TestWalletCommand:
         assert "balance" in result.output
 
     def test_wallet_balance(self):
-        result = runner.invoke(wallet, ["balance", "--address", "0xabc", "--chain", "base"])
+        from web3_agent_kit.chains.chain import Chain
+
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.wallet.chain_manager_for",
+                return_value=(Chain.BASE, object()),
+            ),
+            patch(
+                "web3_agent_kit.cli.commands.wallet.read_native_balance",
+                return_value=1.25,
+            ),
+        ):
+            result = runner.invoke(wallet, ["balance", "--address", "0xabc", "--chain", "base"])
         assert result.exit_code == 0
         assert "0xabc" in result.output
         assert "base" in result.output
+        assert "1.25" in result.output
 
     def test_wallet_balance_short_opts(self):
-        result = runner.invoke(wallet, ["balance", "-a", "0xdef"])
+        from web3_agent_kit.chains.chain import Chain
+
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.wallet.chain_manager_for",
+                return_value=(Chain.ETHEREUM, object()),
+            ),
+            patch("web3_agent_kit.cli.commands.wallet.read_native_balance", return_value=0.5),
+        ):
+            result = runner.invoke(wallet, ["balance", "-a", "0xdef"])
         assert result.exit_code == 0
         assert "0xdef" in result.output
 
@@ -203,10 +225,21 @@ class TestTokenCommand:
         assert "check" in result.output
 
     def test_token_check(self):
-        result = runner.invoke(token, ["check", "--address", "0xtoken", "--chain", "ethereum"])
+        with patch(
+            "web3_agent_kit.security.TokenAnalyzer.quick_check",
+            return_value={
+                "is_honeypot": False,
+                "buy_tax": 0.0,
+                "sell_tax": 0.0,
+                "risk_level": "low",
+                "error": None,
+            },
+        ):
+            result = runner.invoke(token, ["check", "--address", "0xtoken", "--chain", "ethereum"])
         assert result.exit_code == 0
         assert "0xtoken" in result.output
-        assert "Token Safety Check" in result.output
+        assert "Honeypot: False" in result.output
+        assert "GoPlus quick security lookup" in result.output
 
     def test_token_check_requires_address(self):
         result = runner.invoke(token, ["check"])
@@ -218,14 +251,38 @@ class TestTokenCommand:
 
 class TestGasCommand:
     def test_gas_default(self):
-        result = runner.invoke(gas, [])
+        from web3_agent_kit.chains.chain import Chain
+
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.gas.chain_manager_for",
+                return_value=(Chain.ETHEREUM, object()),
+            ),
+            patch(
+                "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
+                return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+            ),
+        ):
+            result = runner.invoke(gas, [])
         assert result.exit_code == 0
-        assert "Gas Price Estimator" in result.output
+        assert "Base fee" in result.output
         assert "ethereum" in result.output
         assert "medium" in result.output
 
     def test_gas_with_options(self):
-        result = runner.invoke(gas, ["-c", "base", "-p", "high"])
+        from web3_agent_kit.chains.chain import Chain
+
+        with (
+            patch(
+                "web3_agent_kit.cli.commands.gas.chain_manager_for",
+                return_value=(Chain.BASE, object()),
+            ),
+            patch(
+                "web3_agent_kit.gas.optimizer.GasOptimizer.get_gas_price",
+                return_value={"gwei": 10.0, "eth": 1e-8, "level": "low"},
+            ),
+        ):
+            result = runner.invoke(gas, ["-c", "base", "-p", "high"])
         assert result.exit_code == 0
         assert "base" in result.output
         assert "high" in result.output
@@ -239,23 +296,66 @@ class TestGasCommand:
 
 
 class TestAgentCommand:
-    def test_agent_runs(self):
-        result = runner.invoke(
-            agent, ["--goal", "swap ETH", "--wallet", "0x1234", "--chain", "base"]
+    def test_agent_runs(self, monkeypatch):
+        from types import SimpleNamespace
+
+        from web3_agent_kit.wallet.wallet import Wallet
+
+        monkeypatch.setenv("PRIVATE_KEY", "not-used")
+        monkeypatch.setenv("BASE_RPC_URL", "https://rpc.example")
+        monkeypatch.setattr(
+            Wallet,
+            "from_env",
+            classmethod(
+                lambda cls, *args, **kwargs: SimpleNamespace(
+                    address="0x1234",
+                    is_enforced=True,
+                )
+            ),
         )
+        with patch("web3_agent_kit.agent.core.Agent.run", return_value="finished"):
+            result = runner.invoke(
+                agent,
+                ["--goal", "swap ETH", "--wallet", "0x1234", "--chain", "base", "--yes"],
+            )
         assert result.exit_code == 0
-        assert "swap ETH" in result.output
-        assert "0x1234" in result.output
-        assert "WAK Agent" in result.output
+        assert "finished" in result.output
 
     def test_agent_requires_goal_and_wallet(self):
         result = runner.invoke(agent, [])
         assert result.exit_code != 0
 
-    def test_agent_short_opts(self):
-        result = runner.invoke(agent, ["-g", "bridge", "-w", "0xabc", "-c", "base"])
-        assert result.exit_code == 0
-        assert "bridge" in result.output
+    def test_agent_short_opts(self, monkeypatch):
+        monkeypatch.delenv("PRIVATE_KEY", raising=False)
+        result = runner.invoke(agent, ["-g", "bridge", "-w", "0xabc", "-c", "base", "--yes"])
+        assert result.exit_code != 0
+        assert "PRIVATE_KEY" in result.output
+
+    def test_agent_refuses_unenforced_wallet(self, monkeypatch):
+        from types import SimpleNamespace
+
+        from web3_agent_kit.wallet.wallet import Wallet
+
+        monkeypatch.setenv("PRIVATE_KEY", "not-used")
+        monkeypatch.setenv("BASE_RPC_URL", "https://rpc.example")
+        monkeypatch.setattr(
+            Wallet,
+            "from_env",
+            classmethod(
+                lambda cls, *args, **kwargs: SimpleNamespace(
+                    address="0xabc",
+                    is_enforced=False,
+                )
+            ),
+        )
+
+        result = runner.invoke(
+            agent,
+            ["-g", "swap ETH", "-w", "0xabc", "-c", "base", "--yes"],
+        )
+
+        assert result.exit_code != 0
+        assert "No pre-sign authorization pipeline" in result.output
 
 
 # === examples command ===

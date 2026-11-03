@@ -51,7 +51,7 @@ class GasRecommendation:
 
 @dataclass
 class BatchResult:
-    """Result of batching multiple transactions."""
+    """Estimate of batch savings; the optimizer does not submit transactions."""
 
     tx_count: int
     total_gas_saved: float  # ETH saved vs individual txs
@@ -79,7 +79,7 @@ class GasOptimizer:
         if rec.recommended_action == "wait":
             logger.info("Wait %.1fh for gas to drop", rec.estimated_wait_hours)
 
-        # Batch multiple transactions
+        # Estimate the savings from batching multiple transactions.
         result = optimizer.batch_execute([
             {"to": "0xA", "value": 0.01},
             {"to": "0xB", "value": 0.02},
@@ -295,7 +295,7 @@ class GasOptimizer:
         chain: Chain = Chain.ETHEREUM,
         priority: GasPriority = GasPriority.MEDIUM,
     ) -> BatchResult:
-        """Execute multiple transactions as a batch.
+        """Estimate batching savings without submitting transactions.
 
         Args:
             transactions: List of tx dicts.
@@ -303,7 +303,7 @@ class GasOptimizer:
             priority: Gas priority level.
 
         Returns:
-            BatchResult with savings and status.
+            BatchResult with estimated savings and ``not_submitted`` status.
         """
         individual = self.batch_estimate(transactions, chain, priority)
         batched_gas = len(transactions) * self.GAS_LIMITS["transfer"] * 0.85  # ~15% savings
@@ -314,7 +314,7 @@ class GasOptimizer:
             tx_count=len(transactions),
             total_gas_saved=saved_eth,
             estimated_time_s=len(transactions) * 12,  # ~12s per block
-            status="batched",
+            status="not_submitted",
         )
 
     def get_gas_price(self, chain: Chain = Chain.ETHEREUM) -> dict[str, Any]:

@@ -218,9 +218,7 @@ class SolanaLPManager:
         token_a_mint: str,
         token_b_mint: str,
     ) -> dict:
-        """Get a quote for adding liquidity to a pool.
-
-        Uses Jupiter's route API to find the optimal pool route.
+        """Return an explicit unsupported result until a protocol LP API is integrated.
 
         Args:
             protocol: DEX protocol name (e.g., "raydium", "orca")
@@ -231,34 +229,13 @@ class SolanaLPManager:
             token_b_mint: Token B mint address
 
         Returns:
-            Quote with expected LP tokens and price impact
+            An error result until a protocol-specific liquidity quote API is configured.
         """
-        # Use Jupiter to find the route for adding liquidity
-        # Jupiter Direct Route API supports addLiquidity operations
-        client = await self._get_client()
-        try:
-            resp = await client.post(
-                f"{self.config.jupiter_api_url}/route",
-                json={
-                    "route": {
-                        "programId": self._get_program_id(protocol),
-                        "ammId": pool_id,
-                        "inputMint": token_a_mint,
-                        "outputMint": token_b_mint,
-                        "inputAmount": str(token_a_amount),
-                    },
-                    "userPublicKey": self.wallet.address if self.wallet else "",
-                    "slippageBps": self.config.slippage_bps,
-                },
-            )
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            return {
-                "error": f"Failed to get add liquidity quote: {e}",
-                "protocol": protocol,
-                "pool_id": pool_id,
-            }
+        return {
+            "error": "Adding liquidity requires a protocol-specific API; Jupiter swap routes are not LP quotes.",
+            "protocol": protocol,
+            "pool_id": pool_id,
+        }
 
     async def get_remove_liquidity_quote(
         self,
@@ -324,33 +301,13 @@ class SolanaLPManager:
             token_b_mint: Token B mint address
 
         Returns:
-            dict with base64-encoded transaction and metadata
+            An error result until a protocol-specific liquidity transaction API is configured.
         """
-        client = await self._get_client()
-        try:
-            resp = await client.post(
-                f"{self.config.jupiter_api_url}/route/swap",
-                json={
-                    "route": {
-                        "programId": self._get_program_id(protocol),
-                        "ammId": pool_id,
-                        "inputMint": token_a_mint,
-                        "outputMint": token_b_mint,
-                        "inputAmount": str(token_a_amount),
-                    },
-                    "userPublicKey": self.wallet.address if self.wallet else "",
-                    "slippageBps": self.config.slippage_bps,
-                    "wrapAndUnwrapSol": True,
-                },
-            )
-            resp.raise_for_status()
-            return resp.json()
-        except Exception as e:
-            return {
-                "error": f"Failed to build add liquidity tx: {e}",
-                "protocol": protocol,
-                "pool_id": pool_id,
-            }
+        return {
+            "error": "Building an LP transaction requires a protocol-specific API; Jupiter swap routes are not LP transactions.",
+            "protocol": protocol,
+            "pool_id": pool_id,
+        }
 
     async def get_remove_liquidity_tx(
         self,

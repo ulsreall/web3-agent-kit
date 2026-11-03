@@ -1,6 +1,6 @@
 """Tests for Solana wallet module."""
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
@@ -136,6 +136,33 @@ class TestSolanaWallet:
 
         with pytest.raises(ValueError, match="Failed to get blockhash"):
             await wallet.send_sol("7EcDhSYGxXyscszYEp35KHN8vvw3svAuLKTzXwCFLtV", 0.01)
+
+    @pytest.mark.asyncio
+    async def test_send_token_uses_idempotent_destination_ata_creation(self):
+        from solders.hash import Hash
+        from solders.message import Message
+        from solders.pubkey import Pubkey
+        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
+
+        wallet = SolanaWallet()
+        mock_client = AsyncMock()
+        mock_client.get_latest_blockhash = AsyncMock(
+            return_value={"blockhash": str(Hash.default())}
+        )
+        mock_client.send_transaction = AsyncMock(return_value="tx_sig_123")
+        wallet._client = mock_client
+        mint = Pubkey.new_unique()
+        with patch.object(
+            Message, "new_with_blockhash", wraps=Message.new_with_blockhash
+        ) as build_message:
+            await wallet.send_token(str(Pubkey.new_unique()), str(mint), 1)
+
+        create_ata, transfer = build_message.call_args.args[0]
+        assert create_ata.program_id == ASSOCIATED_TOKEN_PROGRAM_ID
+        assert create_ata.data == b"\x01"
+        assert transfer.program_id == TOKEN_PROGRAM_ID
+        assert transfer.data == b"\x0c" + (1_000_000).to_bytes(8, "little") + b"\x06"
+        mock_client.send_transaction.assert_awaited_once()
 
     @pytest.mark.asyncio
     async def test_close(self):

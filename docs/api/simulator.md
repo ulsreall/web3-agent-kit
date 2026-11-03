@@ -1,17 +1,21 @@
 # Transaction Simulator
 
-Simulate transactions before broadcasting.
-
-## Classes
-
-### `TransactionSimulator`
+`TxSimulator` simulates a transaction with an RPC endpoint using the configured
+simulation mode. Simulation does not broadcast the transaction.
 
 ```python
-from web3_agent_kit.simulator import TransactionSimulator
+from web3_agent_kit.simulator import TxSimulator
 
-sim = TransactionSimulator(chain_manager=cm)
-result = sim.simulate(to=router_addr, data=calldata, from_addr=wallet.address)
-print(f"Revert: {result.would_revert}, Gas: {result.gas_used}")
+simulator = TxSimulator(rpc_url="https://base.example-rpc.com")
+result = simulator.simulate(
+    from_address="0x...",
+    to="0x...",
+    data="0x...",
+    value=0,
+)
+print(f"Revert: {not result.success}, Gas: {result.gas_used}")
 ```
 
-Supports: `eth_call`, Tenderly API, local fork.
+The `value` argument is in wei. `SimResult` provides `success`, `gas_used`,
+`error`, `revert_reason`, and warning/event details. The simulator class is
+`TxSimulator` and takes `rpc_url`, not a `ChainManager`.

@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
-from .client import SolanaClient, SolanaClientConfig
+from .client import SolanaClient, SolanaClientConfig, SolanaRPCError
 
 
 @dataclass
@@ -25,6 +25,12 @@ class SolanaNFT:
         metadata = await nft.get_asset("AssetId")
     """
 
+    PUBLIC_SOLANA_RPCS = {
+        "https://api.mainnet-beta.solana.com",
+        "https://api.devnet.solana.com",
+        "https://api.testnet.solana.com",
+    }
+
     def __init__(self, config: Optional[SolanaNFTConfig] = None):
         self.config = config or SolanaNFTConfig()
         self._client = SolanaClient(self.config.client_config)
@@ -38,6 +44,14 @@ class SolanaNFT:
         """Make a DAS API RPC call."""
         import httpx
 
+        if (
+            not self.config.helius_api_key
+            and self.config.client_config.rpc_url.rstrip("/") in self.PUBLIC_SOLANA_RPCS
+        ):
+            raise SolanaRPCError(
+                "The public Solana RPC does not provide DAS methods; configure a DAS-capable RPC."
+            )
+
         payload = {
             "jsonrpc": "2.0",
             "id": "nft-1",
@@ -49,7 +63,12 @@ class SolanaNFT:
             resp = await client.post(self._das_url, json=payload)
             resp.raise_for_status()
             data = resp.json()
-            return data.get("result", {})
+            if "error" in data:
+                error = data["error"]
+                raise SolanaRPCError(error.get("message", str(error)))
+            if "result" not in data:
+                raise SolanaRPCError(f"DAS RPC '{method}' returned no result")
+            return data["result"]
 
     # ── Get NFTs by Owner ────────────────────────────
 
