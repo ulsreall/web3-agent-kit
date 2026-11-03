@@ -10,7 +10,7 @@ Where a module and application have the required controls configured, a write sh
 2. **Apply capability and allowlist policy** — reject unsupported chains, contracts, tokens, and actions.
 3. **Run risk checks** — approval exposure, token security signals, liquidity, oracle freshness, and MEV exposure where relevant.
 4. **Simulate** — use `eth_call`, Tenderly, or a local fork before signing.
-5. **Apply spend policy and authorization** — enforce transaction limits, then verify the application's fresh, single-use authorization through the configured pre-sign gate. The current authorization fingerprint omits gas-limit and fee fields.
+5. **Apply spend policy and authorization** — enforce transaction limits, then verify the application's fresh, single-use authorization through the configured pre-sign gate. The default v2 authorization fingerprint commits to the gas limit and legacy or EIP-1559 fee caps, and refuses transactions missing a gas limit or complete fee model. Existing v1 providers can opt into the legacy envelope explicitly; v1 does not bind transaction costs.
 6. **Request explicit confirmation** — where required by the application's policy; confirmation is not a substitute for authorization.
 7. **Sign locally** — only through a bound pre-sign gate; keep private key material inside the caller's signer boundary.
 8. **Broadcast and track** — persist transaction state, receipt, revert reason, and provider response.
@@ -18,7 +18,7 @@ Where a module and application have the required controls configured, a write sh
 
 ## Current state
 
-`SpendGovernor`, approval analysis, simulation, security analysis, and transaction-intent primitives exist. `Wallet.sign_transaction()` requires a bound pre-sign gate; that gate requires both policy and an application-supplied authorization provider. The gate's call fingerprint currently omits gas-limit and fee fields, so authorization does not commit to maximum execution cost. Some write-capable integrations and built-in API routes have not been wired to a configured shared gate; the API's unbound wallet paths therefore fail closed instead of executing writes.
+`SpendGovernor`, approval analysis, simulation, security analysis, and transaction-intent primitives exist. `Wallet.sign_transaction()` requires a bound pre-sign gate; that gate requires both policy and an application-supplied authorization provider. By default, the gate uses the v2 call envelope, which commits to gas limit and fee caps and rejects transactions without a complete cost model. Existing v1 providers can opt into the legacy envelope explicitly, but v1 does not bind transaction costs. Some write-capable integrations and built-in API routes have not been wired to a configured shared gate; the API's unbound wallet paths therefore fail closed instead of executing writes.
 
 ## Implementation order
 

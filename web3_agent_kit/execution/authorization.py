@@ -39,7 +39,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
-from .envelope import CallEnvelopeV1, PolicyDecisionCommitment
+from .envelope import CallEnvelopeV1, CallEnvelopeV2, PolicyDecisionCommitment
 from .errors import ExecutionError
 
 __all__ = [
@@ -74,7 +74,7 @@ class AuthorizationContext:
     canonical envelope exists to remove.
     """
 
-    envelope: CallEnvelopeV1
+    envelope: CallEnvelopeV1 | CallEnvelopeV2
     envelope_digest: str
     policy_commitment: PolicyDecisionCommitment
     action: str

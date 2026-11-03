@@ -46,6 +46,7 @@ def _tx(**overrides) -> dict:
         "nonce": 265,
         "chainId": 8453,
         "gas": 300_000,
+        "gasPrice": 1_000_000_000,
     }
     tx.update(overrides)
     return tx
@@ -142,6 +143,7 @@ def test_allowed_transaction_is_signed_and_audited():
     assert log[0].verdict is AuthorizationVerdict.AUTHORIZED
     assert log[0].reasons == ()
     assert log[0].signature_hash is not None
+    assert log[0].envelope_schema == "agent-call-envelope.v2"
 
 
 def test_denied_policy_never_reaches_the_signer():
@@ -201,6 +203,21 @@ def test_confirmation_handler_approval_allows_signing():
     assert len(signer.calls) == 1
 
 
+def test_legacy_envelope_requires_explicit_opt_in():
+    signer = _RecordingSigner()
+    gate = PreSignInterceptor(
+        policy=_permissive_policy(),
+        signer=signer,
+        authorization_provider=_AllowingProvider(),
+        envelope_version=1,
+    )
+
+    gate.sign(_request())
+
+    assert len(signer.calls) == 1
+    assert gate.audit_log[0].envelope_schema == "agent-call-envelope.v1"
+
+
 def test_confirmation_handler_refusal_blocks_signing():
     signer = _RecordingSigner()
     policy = _permissive_policy(require_confirmation=True)
@@ -250,6 +267,10 @@ def test_call_fingerprint_binds_every_envelope_field():
         _request(value=999),
         _request(nonce=266),
         _request(data=bytes.fromhex("deadbeef")),
+        _request(gas=300_001),
+        _request(gasPrice=2_000_000_000),
+        _request(gasPrice=None, maxFeePerGas=2_000_000_000, maxPriorityFeePerGas=1_000_000_000),
+        _request(gasPrice=None, maxFeePerGas=2_000_000_000, maxPriorityFeePerGas=1_000_000_001),
     ]
 
     for variant in variants:
@@ -269,6 +290,55 @@ def test_call_fingerprint_binds_every_envelope_field():
         ).call_fingerprint
         != base.call_fingerprint
     ), "fingerprint must change when the executor changes"
+
+
+def test_approval_is_checked_against_token_and_allowance_policy():
+    token = "0x" + "44" * 20
+    spender = "0x" + "55" * 20
+    calldata = bytes.fromhex("095ea7b3" + "00" * 12 + spender[2:] + f"{500:064x}")
+    transaction = _tx(to=token, data=calldata)
+    signer = _RecordingSigner()
+    gate = PreSignInterceptor(
+        policy=_permissive_policy(
+            allowed_actions=frozenset({ActionType.APPROVE_TOKEN}),
+            allowed_tokens=frozenset({token}),
+            max_approval_amounts={token: 500},
+        ),
+        signer=signer,
+        authorization_provider=_AllowingProvider(),
+    )
+
+    result = gate.sign(AuthorizationRequest(Chain.BASE, ActionType.APPROVE_TOKEN, transaction))
+
+    assert signer.calls == [transaction]
+    assert result.decision.allowed
+
+
+def test_approval_above_allowance_policy_limit_is_denied():
+    token = "0x" + "44" * 20
+    spender = "0x" + "55" * 20
+    calldata = bytes.fromhex("095ea7b3" + "00" * 12 + spender[2:] + f"{501:064x}")
+    signer = _RecordingSigner()
+    gate = PreSignInterceptor(
+        policy=_permissive_policy(
+            allowed_actions=frozenset({ActionType.APPROVE_TOKEN}),
+            allowed_tokens=frozenset({token}),
+            max_approval_amounts={token: 500},
+        ),
+        signer=signer,
+        authorization_provider=_AllowingProvider(),
+    )
+
+    with pytest.raises(EnforcementDenied, match="approval_amount_exceeded"):
+        gate.sign(
+            AuthorizationRequest(
+                Chain.BASE,
+                ActionType.APPROVE_TOKEN,
+                _tx(to=token, data=calldata),
+            )
+        )
+
+    assert signer.calls == []
 
 
 def test_audit_log_accumulates_in_order():

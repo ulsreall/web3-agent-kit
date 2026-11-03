@@ -234,6 +234,36 @@ class TestEvmConversion:
         assert intent.native_value_wei == 123
         assert intent.calldata == b"\x12\x34"
 
+    def test_from_erc20_approval_transaction(self):
+        spender = "0x" + "55" * 20
+        calldata = bytes.fromhex("095ea7b3" + "00" * 12 + spender[2:] + f"{500:064x}")
+        intent = TransactionIntent.from_evm_transaction(
+            chain=Chain.BASE,
+            action=ActionType.APPROVE_TOKEN,
+            transaction={"from": SENDER, "to": TOKEN, "data": calldata},
+        )
+
+        assert intent.token == TOKEN
+        assert intent.recipient == spender
+        assert intent.amount_base_units == 500
+        assert intent.calldata == calldata
+
+    @pytest.mark.parametrize(
+        "calldata",
+        [
+            b"",
+            bytes.fromhex("095ea7b3" + "00" * 63),
+            bytes.fromhex("095ea7b3" + "01" + "00" * 63),
+        ],
+    )
+    def test_invalid_erc20_approval_calldata_is_rejected(self, calldata):
+        with pytest.raises(InvalidIntentError, match="approval"):
+            TransactionIntent.from_evm_transaction(
+                chain=Chain.BASE,
+                action=ActionType.APPROVE_TOKEN,
+                transaction={"from": SENDER, "to": TOKEN, "data": calldata},
+            )
+
     def test_contract_call_round_trip(self):
         tx = {"from": SENDER, "to": CONTRACT, "value": 7, "data": b"\xab\xcd"}
         intent = TransactionIntent.from_evm_transaction(
@@ -252,12 +282,13 @@ class TestEvmConversion:
                 transaction={"from": SENDER, "to": CONTRACT, "data": data},
             )
 
-    @pytest.mark.parametrize("action", [ActionType.TRANSFER_TOKEN, ActionType.APPROVE_TOKEN])
-    def test_encoded_token_actions_require_semantic_decoding(self, action):
-        with pytest.raises(InvalidIntentError, match="decoded semantic fields"):
+    def test_token_transfer_requires_semantic_decoding(self):
+        with pytest.raises(
+            InvalidIntentError, match="token transfers require decoded semantic fields"
+        ):
             TransactionIntent.from_evm_transaction(
                 chain=Chain.BASE,
-                action=action,
+                action=ActionType.TRANSFER_TOKEN,
                 transaction={"from": SENDER, "to": TOKEN, "data": b"encoded"},
             )
 

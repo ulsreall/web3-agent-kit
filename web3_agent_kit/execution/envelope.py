@@ -3,7 +3,8 @@
 Two different claims are produced about a transaction before it is signed:
 
 1. **What the transaction is** — a canonical, chain-agnostic description of one
-   exact EVM call. This is :class:`CallEnvelopeV1`.
+   exact EVM call. The pre-sign gate uses :class:`CallEnvelopeV2`; the earlier
+   :class:`CallEnvelopeV1` remains available for compatibility.
 2. **What our policy said about it** — the local execution-policy verdict and
    its reasons. This is :class:`PolicyDecisionCommitment`.
 
@@ -33,6 +34,10 @@ field                         canonical rule
 ``calldataHash``              Keccak-256 of the raw calldata bytes, including
                               empty calldata (``keccak256(b"")``)
 ``nativeValue``               unsigned integer wei, decimal string in the payload
+``gasLimit``                  unsigned integer, decimal string in the payload
+``gasPrice``                  unsigned integer, or null for EIP-1559 transactions
+``maxFeePerGas``              unsigned integer, or null for legacy transactions
+``maxPriorityFeePerGas``      unsigned integer, or null for legacy transactions
 ============================  ==================================================
 
 The action label, policy identifiers, verdicts, reason codes, evaluation time
@@ -54,14 +59,17 @@ from ..chains import Chain
 
 __all__ = [
     "CALL_ENVELOPE_SCHEMA",
+    "CALL_ENVELOPE_V1_SCHEMA",
     "POLICY_DECISION_SCHEMA",
     "CallEnvelopeError",
     "CallEnvelopeV1",
+    "CallEnvelopeV2",
     "PolicyDecisionCommitment",
     "keccak256",
 ]
 
-CALL_ENVELOPE_SCHEMA = "agent-call-envelope.v1"
+CALL_ENVELOPE_V1_SCHEMA = "agent-call-envelope.v1"
+CALL_ENVELOPE_SCHEMA = "agent-call-envelope.v2"
 POLICY_DECISION_SCHEMA = "web3-agent-kit.policy-decision.v1"
 
 _ADDRESS_PATTERN = re.compile(r"^0x[0-9a-fA-F]{40}$")
@@ -187,7 +195,7 @@ class CallEnvelopeV1:
 
     @property
     def schema(self) -> str:
-        return CALL_ENVELOPE_SCHEMA
+        return CALL_ENVELOPE_V1_SCHEMA
 
     @property
     def execution_profile(self) -> str:
@@ -206,7 +214,7 @@ class CallEnvelopeV1:
         the serialized bytes cannot be confused with a call to a real address.
         """
         payload: dict[str, Any] = {
-            "schema": CALL_ENVELOPE_SCHEMA,
+            "schema": CALL_ENVELOPE_V1_SCHEMA,
             "chainId": self.chain_id,
             "executionProfile": self.execution_profile,
             "executor": self.executor,
@@ -224,7 +232,7 @@ class CallEnvelopeV1:
         The schema label is inside the hashed payload, so an envelope digest can
         never be mistaken for a digest computed over some other object's fields.
         """
-        return _domain_hash(CALL_ENVELOPE_SCHEMA, self.to_payload())
+        return _domain_hash(CALL_ENVELOPE_V1_SCHEMA, self.to_payload())
 
     # -- construction --------------------------------------------------
 
@@ -281,12 +289,119 @@ class CallEnvelopeV1:
         )
 
 
+def _optional_transaction_int(
+    transaction: Mapping[str, Any], field_names: tuple[str, ...], canonical_name: str
+) -> int | None:
+    """Canonicalize an optional transaction integer, accepting equivalent aliases."""
+    values = [
+        _canonical_int(transaction[name], canonical_name)
+        for name in field_names
+        if transaction.get(name) is not None
+    ]
+    if len(set(values)) > 1:
+        raise CallEnvelopeError(f"conflicting values for {canonical_name}")
+    return values[0] if values else None
+
+
+@dataclass(frozen=True)
+class CallEnvelopeV2(CallEnvelopeV1):
+    """Canonical transaction identity including its gas limit and fee caps."""
+
+    gas_limit: int | None = None
+    gas_price: int | None = None
+    max_fee_per_gas: int | None = None
+    max_priority_fee_per_gas: int | None = None
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        for field_name in (
+            "gas_limit",
+            "gas_price",
+            "max_fee_per_gas",
+            "max_priority_fee_per_gas",
+        ):
+            value = getattr(self, field_name)
+            if value is not None and (
+                isinstance(value, bool) or not isinstance(value, int) or value < 0
+            ):
+                raise CallEnvelopeError(f"{field_name} must be a non-negative integer")
+        if self.gas_limit is None:
+            raise CallEnvelopeError("transaction is missing gas or gasLimit")
+        has_eip1559_fees = (
+            self.max_fee_per_gas is not None or self.max_priority_fee_per_gas is not None
+        )
+        if self.gas_price is not None and has_eip1559_fees:
+            raise CallEnvelopeError("transaction cannot mix gasPrice and EIP-1559 fee fields")
+        if self.gas_price is None and (
+            self.max_fee_per_gas is None or self.max_priority_fee_per_gas is None
+        ):
+            raise CallEnvelopeError("transaction requires gasPrice or both EIP-1559 fee fields")
+
+    @property
+    def schema(self) -> str:
+        return CALL_ENVELOPE_SCHEMA
+
+    def to_payload(self) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "schema": CALL_ENVELOPE_SCHEMA,
+            "chainId": self.chain_id,
+            "executionProfile": self.execution_profile,
+            "executor": self.executor,
+            "nonce": str(self.nonce),
+            "calldataHash": self.calldata_hash,
+            "nativeValue": str(self.native_value),
+            "gasLimit": str(self.gas_limit),
+            "gasPrice": str(self.gas_price) if self.gas_price is not None else None,
+            "maxFeePerGas": (
+                str(self.max_fee_per_gas) if self.max_fee_per_gas is not None else None
+            ),
+            "maxPriorityFeePerGas": (
+                str(self.max_priority_fee_per_gas)
+                if self.max_priority_fee_per_gas is not None
+                else None
+            ),
+        }
+        if self.target is not None:
+            payload["target"] = self.target
+        return payload
+
+    def digest(self) -> str:
+        """Return the domain-separated v2 transaction-envelope digest."""
+        return _domain_hash(CALL_ENVELOPE_SCHEMA, self.to_payload())
+
+    @classmethod
+    def from_transaction(
+        cls,
+        *,
+        transaction: Mapping[str, Any],
+        chain: Chain,
+    ) -> CallEnvelopeV2:
+        """Build a v2 envelope with normalized gas and fee fields."""
+        base = CallEnvelopeV1.from_transaction(transaction=transaction, chain=chain)
+        return cls(
+            chain_id=base.chain_id,
+            executor=base.executor,
+            nonce=base.nonce,
+            calldata=base.calldata,
+            native_value=base.native_value,
+            target=base.target,
+            gas_limit=_optional_transaction_int(transaction, ("gas", "gasLimit"), "gasLimit"),
+            gas_price=_optional_transaction_int(transaction, ("gasPrice",), "gasPrice"),
+            max_fee_per_gas=_optional_transaction_int(
+                transaction, ("maxFeePerGas",), "maxFeePerGas"
+            ),
+            max_priority_fee_per_gas=_optional_transaction_int(
+                transaction, ("maxPriorityFeePerGas",), "maxPriorityFeePerGas"
+            ),
+        )
+
+
 @dataclass(frozen=True)
 class PolicyDecisionCommitment:
     """Domain-separated commitment over a policy verdict.
 
-    Carries what the *policy* concluded. It binds to a :class:`CallEnvelopeV1`
-    digest rather than repeating the transaction fields, so the call identity
+    Carries what the *policy* concluded. It binds to a call-envelope digest
+    rather than repeating the transaction fields, so the call identity
     has exactly one source of truth.
     """
 

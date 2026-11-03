@@ -284,6 +284,8 @@ def _run_gate_attempt(
         policy=_policy(transaction),
         signer=boundaries.signer.sign_transaction,
         authorization_provider=current_provider,
+        # This fixture's signed PriorSeal commitment is pinned to envelope v1.
+        envelope_version=1,
     )
     if gate is not None and gate.authorization_provider is not current_provider:
         raise BoundaryError("gate/provider reconstruction mismatch")
