@@ -356,7 +356,14 @@ class BridgeAgent:
             logger.info(f"Using best route: {route.bridge_name} ({route.amount_out:.6f} {token})")
 
         # Execute based on bridge type
-        provider = route.provider or route.bridge_name
+        provider = route.provider
+        if not provider:
+            # Preserve the legacy convention: non-Li.Fi bridge names use Socket.
+            provider = (
+                route.bridge_name
+                if route.bridge_name.casefold() in ("lifuel", "li.fi")
+                else "Socket"
+            )
         if provider.casefold() in ("lifuel", "li.fi"):
             return self._execute_lifi(route)
         if provider.casefold() == "socket":

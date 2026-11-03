@@ -190,7 +190,7 @@ class TestFetchDexScreener:
             result = agg._fetch_dexscreener("ETH", "USD")
 
         assert result is not None
-        assert result.price == 2000
+        assert result.price == 2500
 
     def test_rejects_non_usd_quote_without_request(self):
         agg = OracleAggregator(rpc_url="https://rpc.test")

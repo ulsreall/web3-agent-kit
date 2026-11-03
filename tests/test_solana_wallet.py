@@ -1,6 +1,6 @@
 """Tests for Solana wallet module."""
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 import pytest
 
