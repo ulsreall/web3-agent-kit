@@ -39,7 +39,7 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
-from typing import Any, Protocol
+from typing import Any, Literal, Protocol
 
 from ..chains import Chain
 from .authorization import (
@@ -50,8 +50,10 @@ from .authorization import (
 )
 from .envelope import (
     CALL_ENVELOPE_SCHEMA,
+    CALL_ENVELOPE_V1_SCHEMA,
     CallEnvelopeError,
     CallEnvelopeV1,
+    CallEnvelopeV2,
     PolicyDecisionCommitment,
 )
 from .errors import ExecutionError, InvalidIntentError
@@ -132,7 +134,7 @@ class AuthorizationRequest:
         object.__setattr__(self, "metadata", MappingProxyType(dict(self.metadata)))
 
     def envelope(self) -> CallEnvelopeV1:
-        """Return the canonical envelope for this request.
+        """Return the legacy v1 envelope for compatibility with existing providers.
 
         Raises:
             CallEnvelopeError: when the transaction cannot be canonicalized, or
@@ -141,17 +143,22 @@ class AuthorizationRequest:
         """
         return CallEnvelopeV1.from_transaction(transaction=self.transaction, chain=self.chain)
 
+    def envelope_v2(self) -> CallEnvelopeV2:
+        """Return the current envelope, including gas limit and fee caps."""
+        return CallEnvelopeV2.from_transaction(transaction=self.transaction, chain=self.chain)
+
     @property
     def call_fingerprint(self) -> str:
         """Deterministic digest over the exact call envelope being authorized.
 
-        This is the canonical :class:`CallEnvelopeV1` identity: chain, executor,
-        nonce, target, calldata hash and native value. It deliberately excludes
-        the action label and every policy fact, because those describe context
-        rather than the raw call. An external authorization layer binds to this
-        value; the policy verdict travels separately.
+        This is the canonical :class:`CallEnvelopeV2` identity: chain, executor,
+        nonce, target, calldata hash, native value, gas limit, and fee caps. It
+        deliberately excludes the action label and every policy fact, because
+        those describe context rather than the raw transaction. An external
+        authorization layer binds to this value; the policy verdict travels
+        separately.
         """
-        return self.envelope().digest()
+        return self.envelope_v2().digest()
 
 
 @dataclass(frozen=True)
@@ -224,6 +231,9 @@ class PreSignInterceptor:
 
     Both ``policy`` and ``authorization_provider`` are required for a signature
     to be produced. Either one missing is a denial.
+
+    The default v2 envelope binds gas limit and fee caps. ``envelope_version=1``
+    is an explicit compatibility opt-in for providers using the older schema.
     """
 
     def __init__(
@@ -233,6 +243,7 @@ class PreSignInterceptor:
         signer: SignerFn,
         authorization_provider: AuthorizationProvider | None = None,
         confirmation_fn: ConfirmationFn | None = None,
+        envelope_version: Literal[1, 2] = 2,
     ) -> None:
         if not callable(signer):
             raise ExecutionError("signer must be callable")
@@ -240,10 +251,17 @@ class PreSignInterceptor:
             raise ExecutionError("policy must be an ExecutionPolicy or None")
         if authorization_provider is not None and not hasattr(authorization_provider, "authorize"):
             raise ExecutionError("authorization_provider must implement authorize(context)")
+        if (
+            isinstance(envelope_version, bool)
+            or not isinstance(envelope_version, int)
+            or envelope_version not in (1, 2)
+        ):
+            raise ExecutionError("envelope_version must be 1 or 2")
         self._policy = policy
         self._signer = signer
         self._authorization_provider = authorization_provider
         self._confirmation_fn = confirmation_fn
+        self._envelope_version = envelope_version
         self._lock = threading.Lock()
         self._audit: list[AuditEntry] = []
         self._sequence = 0
@@ -295,7 +313,9 @@ class PreSignInterceptor:
                 chain=request.chain.value,
                 action=request.action.value,
                 call_fingerprint=call_fingerprint,
-                envelope_schema=CALL_ENVELOPE_SCHEMA,
+                envelope_schema=(
+                    CALL_ENVELOPE_SCHEMA if self._envelope_version == 2 else CALL_ENVELOPE_V1_SCHEMA
+                ),
                 intent_id=intent_id,
                 authorization_id=authorization_id,
                 policy_commitment_digest=policy_commitment_digest,
@@ -324,7 +344,7 @@ class PreSignInterceptor:
         # cannot be built when the policy chain and the transaction chainId
         # disagree, so a cross-chain signature never reaches the signer.
         try:
-            envelope = request.envelope()
+            envelope = request.envelope_v2() if self._envelope_version == 2 else request.envelope()
         except CallEnvelopeError as exc:
             fingerprint = self._fallback_fingerprint(request)
             self._deny(
@@ -448,7 +468,7 @@ class PreSignInterceptor:
         self,
         *,
         request: AuthorizationRequest,
-        envelope: CallEnvelopeV1,
+        envelope: CallEnvelopeV1 | CallEnvelopeV2,
         call_fingerprint: str,
         commitment: PolicyDecisionCommitment,
         intent_id: str,

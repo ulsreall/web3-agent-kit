@@ -109,7 +109,7 @@ def main() -> int:
     _rule("0. Canonical call identity")
 
     request = _request()
-    envelope = request.envelope()
+    envelope = request.envelope_v2()
     print(f"schema        : {CALL_ENVELOPE_SCHEMA}")
     print(f"profile       : {envelope.execution_profile}")
     print(f"chainId       : {envelope.chain_id}")

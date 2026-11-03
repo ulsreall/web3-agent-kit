@@ -10,9 +10,11 @@ from .authorization import (
 )
 from .envelope import (
     CALL_ENVELOPE_SCHEMA,
+    CALL_ENVELOPE_V1_SCHEMA,
     POLICY_DECISION_SCHEMA,
     CallEnvelopeError,
     CallEnvelopeV1,
+    CallEnvelopeV2,
     PolicyDecisionCommitment,
 )
 from .errors import (
@@ -47,6 +49,7 @@ from .policy import (
 
 __all__ = [
     "CALL_ENVELOPE_SCHEMA",
+    "CALL_ENVELOPE_V1_SCHEMA",
     "POLICY_DECISION_SCHEMA",
     "ActionType",
     "AuditEntry",
@@ -58,6 +61,7 @@ __all__ = [
     "AuthorizationVerdict",
     "CallEnvelopeError",
     "CallEnvelopeV1",
+    "CallEnvelopeV2",
     "CallableAuthorizationProvider",
     "EnforcementDenied",
     "ExecutionError",

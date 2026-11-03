@@ -28,6 +28,7 @@ from .errors import (
 )
 
 _EVM_ADDRESS_PATTERN = re.compile(r"^0x[0-9a-fA-F]{40}$")
+_ERC20_APPROVE_SELECTOR = bytes.fromhex("095ea7b3")
 
 
 class ActionType(str, Enum):
@@ -182,10 +183,8 @@ class TransactionIntent:
         """Create an intent from a normalized Web3 transaction mapping."""
         if not isinstance(transaction, Mapping):
             raise InvalidIntentError("transaction must be a mapping")
-        if action in {ActionType.TRANSFER_TOKEN, ActionType.APPROVE_TOKEN}:
-            raise InvalidIntentError(
-                "token transfers and approvals require decoded semantic fields"
-            )
+        if action == ActionType.TRANSFER_TOKEN:
+            raise InvalidIntentError("token transfers require decoded semantic fields")
         calldata = transaction.get("data", b"")
         if isinstance(calldata, str):
             if not calldata.startswith("0x"):
@@ -196,6 +195,26 @@ class TransactionIntent:
                 raise InvalidCalldataError("calldata is not valid hexadecimal") from exc
 
         destination = transaction.get("to")
+        if action == ActionType.APPROVE_TOKEN:
+            if len(calldata) != 68 or calldata[:4] != _ERC20_APPROVE_SELECTOR:
+                raise InvalidIntentError(
+                    "token approval calldata must be a standard ERC-20 approve(address,uint256)"
+                )
+            spender_word = calldata[4:36]
+            if spender_word[:12] != b"\x00" * 12:
+                raise InvalidIntentError("token approval spender is not canonically ABI-encoded")
+            return cls(
+                chain=chain,
+                action=action,
+                sender=transaction.get("from"),
+                token=destination,
+                recipient="0x" + spender_word[12:].hex(),
+                amount_base_units=int.from_bytes(calldata[36:68], "big"),
+                native_value_wei=transaction.get("value", 0),
+                calldata=calldata,
+                metadata=metadata or {},
+            )
+
         contract_actions = {
             ActionType.CONTRACT_CALL,
             ActionType.SWAP,

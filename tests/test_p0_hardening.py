@@ -40,6 +40,7 @@ from web3_agent_kit.execution import (
     AuthorizationRequest,
     AuthorizationVerdict,
     CallEnvelopeV1,
+    CallEnvelopeV2,
     EnforcementDenied,
     ExecutionPolicy,
     NullAuthorizationProvider,
@@ -402,6 +403,68 @@ def test_envelope_treats_equivalent_calldata_identically():
         CallEnvelopeV1.from_transaction(transaction=absent, chain=Chain.BASE).digest()
         == CallEnvelopeV1.from_transaction(transaction=explicit, chain=Chain.BASE).digest()
     )
+
+
+def test_v2_envelope_binds_gas_limit_and_fee_caps():
+    base = _tx()
+    envelope = CallEnvelopeV2.from_transaction(transaction=base, chain=Chain.BASE)
+
+    assert envelope.to_payload()["schema"] == "agent-call-envelope.v2"
+    assert envelope.to_payload()["gasLimit"] == "300000"
+    assert envelope.to_payload()["gasPrice"] == "1000000000"
+    assert (
+        envelope.digest()
+        != CallEnvelopeV2.from_transaction(
+            transaction={**base, "gas": 300_001}, chain=Chain.BASE
+        ).digest()
+    )
+    assert (
+        envelope.digest()
+        != CallEnvelopeV2.from_transaction(
+            transaction={**base, "gasPrice": 1_000_000_001}, chain=Chain.BASE
+        ).digest()
+    )
+    eip1559 = {key: value for key, value in base.items() if key != "gasPrice"}
+    eip1559.update(maxFeePerGas=2_000_000_000, maxPriorityFeePerGas=1_000_000_000)
+    eip1559_envelope = CallEnvelopeV2.from_transaction(transaction=eip1559, chain=Chain.BASE)
+    assert eip1559_envelope.to_payload()["maxFeePerGas"] == "2000000000"
+    assert eip1559_envelope.to_payload()["maxPriorityFeePerGas"] == "1000000000"
+    assert (
+        eip1559_envelope.digest()
+        != CallEnvelopeV2.from_transaction(
+            transaction={**eip1559, "maxFeePerGas": 2_000_000_001}, chain=Chain.BASE
+        ).digest()
+    )
+
+
+def test_v2_envelope_accepts_gas_limit_alias_and_rejects_conflict():
+    from web3_agent_kit.execution import CallEnvelopeError
+
+    base = _tx()
+    without_gas_key = {key: value for key, value in base.items() if key != "gas"}
+    without_gas_key["gasLimit"] = base["gas"]
+    assert (
+        CallEnvelopeV2.from_transaction(transaction=base, chain=Chain.BASE).digest()
+        == CallEnvelopeV2.from_transaction(transaction=without_gas_key, chain=Chain.BASE).digest()
+    )
+
+    with pytest.raises(CallEnvelopeError, match="conflicting values for gasLimit"):
+        CallEnvelopeV2.from_transaction(
+            transaction={**base, "gasLimit": base["gas"] + 1}, chain=Chain.BASE
+        )
+
+    eip1559_without_legacy_fee = {key: value for key, value in base.items() if key != "gasPrice"}
+    incomplete_transactions = (
+        {key: value for key, value in base.items() if key != "gas"},
+        {key: value for key, value in base.items() if key != "gasPrice"},
+        {
+            **eip1559_without_legacy_fee,
+            "maxFeePerGas": 2_000_000_000,
+        },
+    )
+    for incomplete in incomplete_transactions:
+        with pytest.raises(CallEnvelopeError):
+            CallEnvelopeV2.from_transaction(transaction=incomplete, chain=Chain.BASE)
 
 
 def test_envelope_rejects_chain_mismatch_directly():
