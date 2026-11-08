@@ -4,6 +4,29 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [1.19.1] - 2026-11-08
+
+### Fixed
+- **audit:** audit findings integrated across the execution pipeline, wallet approvals and the
+  Solana modules (#118): the authorization digest now binds gas limit and fee fields, so a
+  mutated transaction cannot reuse an approval issued for different parameters.
+- **execution:** the approval policy and transaction authorization binding were tightened (#117)
+  so an intent's authorization cannot be replayed against a different envelope.
+
+### Tooling
+- Dependabot ignores `pycryptodome` and `parsimonious`: the locked upstreams
+  (`eth-hash[pycryptodome]==0.8.0`, `eth-abi==6.0.0`) cannot accept the versions Dependabot
+  kept proposing, which reopened unresolvable PRs weekly (#119).
+- `wak doctor` no longer relies on the deprecated module `__version__` attribute (Click 9.1
+  readiness) and the Python 3.13 trove classifier is now declared on PyPI.
+- The GitHub Actions dependency group was bumped (#113), and master is now protected:
+  required checks, no force pushes, linear history. Secret scanning with push protection and
+  Dependabot vulnerability alerts are enabled on the repository.
+
+### Documentation
+- The headline numbers were synced to the release: v1.19.1, 1,884 passed / 171 skipped at 72%,
+  measured with the same install CI uses.
+
 ## [1.19.0] - 2026-10-25
 
 ### Features
