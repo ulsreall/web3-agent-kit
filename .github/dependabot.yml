@@ -28,6 +28,12 @@ updates:
           - "minor"
           - "patch"
 
+      # Locked to versions the upstream deps cannot accept:
+      # - eth-hash[pycryptodome]==0.8.0 requires pycryptodome<4
+      # - eth-abi==6.0.0 requires parsimonious<0.11.0
+      ignore:
+        - dependency-name: "pycryptodome"
+        - dependency-name: "parsimonious"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:

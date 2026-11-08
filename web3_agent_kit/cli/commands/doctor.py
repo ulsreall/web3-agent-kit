@@ -1,6 +1,7 @@
 """wak doctor — check environment health."""
 
 import importlib
+import importlib.metadata
 import os
 import sys
 
@@ -50,8 +51,11 @@ def doctor():
     ]
     for mod_name, display_name in deps:
         try:
-            mod = importlib.import_module(mod_name)
-            ver = getattr(mod, "__version__", "installed")
+            importlib.import_module(mod_name)
+            try:
+                ver = importlib.metadata.version(mod_name)
+            except importlib.metadata.PackageNotFoundError:
+                ver = "installed"
             all_ok &= _check(display_name, True, str(ver))
         except ImportError:
             all_ok &= _check(display_name, False, "not installed")
