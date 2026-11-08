@@ -1,3 +1,8 @@
+---
+hide:
+  - navigation
+  - toc
+---
 <div class="docs-hero" markdown>
 <div class="docs-hero-copy" markdown>
 
