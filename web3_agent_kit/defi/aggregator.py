@@ -12,23 +12,15 @@ Usage:
 from __future__ import annotations
 
 import asyncio
+import os
 from dataclasses import dataclass
-from enum import Enum
 from typing import Optional
 
 import httpx
 
-
-class Chain(Enum):
-    ETHEREUM = "ethereum"
-    BSC = "bsc"
-    POLYGON = "polygon"
-    ARBITRUM = "arbitrum"
-    OPTIMISM = "optimism"
-    BASE = "base"
-    AVALANCHE = "avalanche"
-    SOLANA = "solana"
-
+# Re-exported: this module used to define its own Chain enum, so callers passing
+# the library's Chain hit a KeyError on every CHAIN_IDS lookup.
+from ..chains import Chain
 
 # Chain IDs for 1inch and Paraswap
 CHAIN_IDS = {
@@ -67,10 +59,20 @@ class AggregatorConfig:
 
     # EVM aggregator API keys (optional but recommended)
     oneinch_api_key: Optional[str] = None
+    zeroex_api_key: Optional[str] = None
     paraswap_partner: Optional[str] = None
 
     # Solana (Jupiter)
     jupiter_api_url: str = "https://quote-api.jup.ag/v6"
+
+    @classmethod
+    def from_env(cls) -> AggregatorConfig:
+        """Build a config from ``ONEINCH_API_KEY`` / ``ZEROEX_API_KEY`` / ``PARASWAP_PARTNER``."""
+        return cls(
+            oneinch_api_key=os.environ.get("ONEINCH_API_KEY") or None,
+            zeroex_api_key=os.environ.get("ZEROEX_API_KEY") or None,
+            paraswap_partner=os.environ.get("PARASWAP_PARTNER") or None,
+        )
 
 
 class ProviderHealth:
@@ -148,7 +150,7 @@ class DEXAggregator:
     """
 
     def __init__(self, config: Optional[AggregatorConfig] = None):
-        self.config = config or AggregatorConfig()
+        self.config = config or AggregatorConfig.from_env()
         self._client: Optional[httpx.AsyncClient] = None
         self._health = ProviderHealth()
 
@@ -266,8 +268,8 @@ class DEXAggregator:
             "srcToken": src,
             "destToken": dst,
             "amount": amount,
-            "srcDecimals": "18",
-            "destDecimals": "18",
+            # Omitted on purpose: Paraswap resolves decimals from the token and
+            # rejects a mismatch, so a hardcoded 18 breaks every 6-decimal token.
             "side": "SELL",
             "network": str(CHAIN_IDS[chain]),
             "userAddress": user_address,
@@ -305,8 +307,8 @@ class DEXAggregator:
             "priceRoute": price_route,
             "userAddress": user_address,
             "slippage": int(slp * 100),  # Paraswap uses bps
-            "srcDecimals": 18,
-            "destDecimals": 18,
+            "srcDecimals": price_route.get("srcDecimals", 18),
+            "destDecimals": price_route.get("destDecimals", 18),
         }
         client = await self._get_client()
         resp = await client.post(url, json=params, timeout=self.config.per_provider_timeout)
@@ -332,7 +334,8 @@ class DEXAggregator:
             "sellAmount": sell_amount,
             "taker": taker_address,
         }
-        headers = {"0x-api-key": self.config.oneinch_api_key or ""}
+        # 0x issues its own key; the 1inch key is only a legacy fallback.
+        headers = {"0x-api-key": self.config.zeroex_api_key or self.config.oneinch_api_key or ""}
         return await self._api_get(url, params, headers, timeout=self.config.per_provider_timeout)
 
     # ── Jupiter (Solana) ────────────────────────────
