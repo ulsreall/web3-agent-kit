@@ -54,11 +54,11 @@ print(chains)  # [Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM]
 ## Supported Chains
 | Chain | Chain ID | Default RPC |
 |-------|----------|-------------|
-| `Chain.ETHEREUM` | 1 | `https://eth.llamarpc.com` |
+| `Chain.ETHEREUM` | 1 | `https://ethereum-rpc.publicnode.com` |
 | `Chain.BASE` | 8453 | `https://mainnet.base.org` |
 | `Chain.ARBITRUM` | 42161 | `https://arb1.arbitrum.io/rpc` |
 | `Chain.OPTIMISM` | 10 | `https://mainnet.optimism.io` |
-| `Chain.POLYGON` | 137 | `https://polygon-rpc.com` |
+| `Chain.POLYGON` | 137 | `https://polygon-bor-rpc.publicnode.com` |
 | `Chain.AVALANCHE` | 43114 | `https://api.avax.network/ext/bc/C/rpc` |
 | `Chain.BSC` | 56 | `https://bsc-dataseed1.binance.org` |
 | `Chain.ROBINHOOD` | 4663 | `https://rpc.mainnet.chain.robinhood.com` |

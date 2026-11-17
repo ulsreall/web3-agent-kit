@@ -7,7 +7,7 @@ polling or WebSocket-based subscription.
 Usage::
     from web3_agent_kit.events import EventListener, EventConfig
 
-    listener = EventListener(rpc_url="https://eth.llamarpc.com")
+    listener = EventListener(rpc_url="https://ethereum-rpc.publicnode.com")
     listener.subscribe(
         address="0x...",
         abi=erc20_abi,
@@ -63,7 +63,7 @@ class EventListener:
     Runs in a background thread with configurable polling.
 
     Example::
-        listener = EventListener(rpc_url="https://eth.llamarpc.com")
+        listener = EventListener(rpc_url="https://ethereum-rpc.publicnode.com")
 
         # Subscribe to USDC Transfer events
         listener.subscribe(

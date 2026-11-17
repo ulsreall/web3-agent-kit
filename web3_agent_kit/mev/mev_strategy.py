@@ -390,7 +390,7 @@ class MEVProtector:
         """Get current block number."""
         try:
             resp = self.session.post(
-                "https://eth.llamarpc.com",
+                "https://ethereum-rpc.publicnode.com",
                 json={
                     "jsonrpc": "2.0",
                     "id": 1,

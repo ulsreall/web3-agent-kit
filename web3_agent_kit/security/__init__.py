@@ -16,7 +16,7 @@ Usage::
 
     from web3_agent_kit.security import TokenAnalyzer, SecurityConfig
 
-    analyzer = SecurityConfig(rpc_url="https://eth.llamarpc.com")
+    analyzer = SecurityConfig(rpc_url="https://ethereum-rpc.publicnode.com")
     report = analyzer.analyze_token("0x...")
     print(f"Safety Score: {report.safety_score}/100")
     print(f"Is Honeypot: {report.is_honeypot}")
@@ -420,7 +420,7 @@ class TokenAnalyzer:
     Example::
 
         analyzer = TokenAnalyzer(SecurityConfig(
-            rpc_url="https://eth.llamarpc.com",
+            rpc_url="https://ethereum-rpc.publicnode.com",
         ))
         report = analyzer.analyze_token("0x...")
         if report.is_honeypot:

@@ -290,11 +290,11 @@ class OnChainAirdropFarmer:
 
     # Chain RPC URLs (defaults, can be overridden)
     DEFAULT_RPCS: dict[str, str] = {
-        "ethereum": "https://eth.llamarpc.com",
+        "ethereum": "https://ethereum-rpc.publicnode.com",
         "base": "https://mainnet.base.org",
         "arbitrum": "https://arb1.arbitrum.io/rpc",
         "optimism": "https://mainnet.optimism.io",
-        "polygon": "https://polygon-rpc.com",
+        "polygon": "https://polygon-bor-rpc.publicnode.com",
         "bnb": "https://bsc-dataseed.binance.org",
         "avalanche": "https://api.avax.network/ext/bc/C/rpc",
         "zksync": "https://mainnet.era.zksync.io",
