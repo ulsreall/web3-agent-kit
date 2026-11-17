@@ -46,6 +46,7 @@ from .policy import (
     PolicyDecision,
     PolicyReason,
 )
+from .replay import InMemoryReplayStore, ReplayStore, SqliteReplayStore
 
 __all__ = [
     "CALL_ENVELOPE_SCHEMA",
@@ -64,6 +65,9 @@ __all__ = [
     "CallEnvelopeV2",
     "CallableAuthorizationProvider",
     "EnforcementDenied",
+    "InMemoryReplayStore",
+    "ReplayStore",
+    "SqliteReplayStore",
     "ExecutionError",
     "ExecutionPolicy",
     "InterceptionResult",

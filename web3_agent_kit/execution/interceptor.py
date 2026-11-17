@@ -60,6 +60,7 @@ from .envelope import (
 from .errors import ExecutionError, InvalidIntentError
 from .intent import ActionType, TransactionIntent
 from .policy import ExecutionPolicy, PolicyDecision
+from .replay import ReplayStore, default_store
 
 __all__ = [
     "AuthorizationRequest",
@@ -246,6 +247,7 @@ class PreSignInterceptor:
         authorization_provider: AuthorizationProvider | None = None,
         confirmation_fn: ConfirmationFn | None = None,
         envelope_version: Literal[1, 2] = 2,
+        replay_store: ReplayStore | None = None,
     ) -> None:
         if not callable(signer):
             raise ExecutionError("signer must be callable")
@@ -268,8 +270,12 @@ class PreSignInterceptor:
         self._audit: list[AuditEntry] = []
         self._sequence = 0
         # Consumed authorization nonces, tracked by this gate so a verifier
-        # without internal replay state cannot be replayed through it.
-        self._consumed: set[tuple[str, str]] = set()
+        # without internal replay state cannot be replayed through it. The
+        # default store is process-wide (or SQLite via WEB3_REPLAY_DB), so a
+        # restart or a second worker does not resurrect a spent authorization.
+        self._replay_store: ReplayStore = (
+            replay_store if replay_store is not None else default_store()
+        )
 
     # -- introspection -------------------------------------------------
 
@@ -579,13 +585,19 @@ class PreSignInterceptor:
                 f"[{evidence.valid_from}, {evidence.valid_until}]"
             )
 
-        replay_key = (evidence.authorization_id, evidence.nonce)
-        with self._lock:
-            if replay_key in self._consumed:
-                replayed = True
-            else:
-                self._consumed.add(replay_key)
-                replayed = False
+        replay_key = f"{evidence.authorization_id}:{evidence.nonce}"
+        try:
+            replayed = not self._replay_store.consume(replay_key, evidence.valid_until)
+        except Exception as exc:  # fail closed: unknown state is not fresh
+            self._deny(
+                request,
+                call_fingerprint,
+                (_DenialReason.AUTHORIZATION_REPLAYED.value,),
+                intent_id=intent_id,
+                authorization_id=evidence.authorization_id,
+                policy_commitment_digest=commitment.digest(),
+            )
+            raise EnforcementDenied(f"replay store unavailable: {exc}") from exc
 
         if replayed:
             self._deny(

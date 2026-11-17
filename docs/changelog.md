@@ -7,6 +7,11 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **execution:** consumed authorizations are tracked by a replay store instead of
+  a per-gate set. The default is process-wide in-memory; `WEB3_REPLAY_DB` selects
+  a durable SQLite store so a restart or a second worker cannot replay an
+  authorization. Expired keys are pruned on consume and a broken store fails
+  closed.
 - **api:** every write route called the library with the wrong shape and could never reach a
   signature. `POST /swap/execute` passed a chain name where a `ChainManager` was expected, a
   float where a `Chain` was expected, and never resolved symbol tokens; `POST /bridge/execute`

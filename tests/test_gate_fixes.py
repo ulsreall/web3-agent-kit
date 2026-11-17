@@ -20,6 +20,7 @@ from web3_agent_kit.execution import (
     ExecutionPolicy,
     PreSignInterceptor,
 )
+from web3_agent_kit.execution.replay import InMemoryReplayStore
 
 SENDER_KEY = "0x" + "11" * 32
 SENDER = Account.from_key(SENDER_KEY).address
@@ -60,6 +61,7 @@ def _gate(policy=None, commitment=None) -> PreSignInterceptor:
         policy=policy or _policy(),
         signer=lambda tx: Account.sign_transaction(tx, SENDER_KEY).raw_transaction,
         authorization_provider=_provider(commitment),
+        replay_store=InMemoryReplayStore(),
     )
 
 
