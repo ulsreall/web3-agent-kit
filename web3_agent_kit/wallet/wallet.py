@@ -20,6 +20,30 @@ class WalletConfig:
     password: Optional[str] = None
 
 
+_ERC20_TRANSFER_ABI = [
+    {
+        "name": "transfer",
+        "type": "function",
+        "inputs": [{"name": "to", "type": "address"}, {"name": "amount", "type": "uint256"}],
+        "outputs": [{"name": "", "type": "bool"}],
+    },
+    {
+        "name": "decimals",
+        "type": "function",
+        "inputs": [],
+        "outputs": [{"name": "", "type": "uint8"}],
+    },
+    {
+        "name": "balanceOf",
+        "type": "function",
+        "inputs": [{"name": "owner", "type": "address"}],
+        "outputs": [{"name": "", "type": "uint256"}],
+    },
+]
+
+TRANSFER_SELECTOR = "a9059cbb"  # transfer(address,uint256)
+
+
 class Wallet:
     """
     Secure wallet management for multi-chain operations.
@@ -269,6 +293,84 @@ class Wallet:
         signed = self.sign_transaction(prepared, chain, action=action, metadata=metadata)
         tx_hash = w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
+
+    def _resolve_chain(self, chain: Optional[Chain]) -> Chain:
+        """Return ``chain``, or the manager's only chain when unambiguous."""
+        if chain is not None:
+            return chain
+        chains = getattr(self.chain_manager, "chains", None)
+        if chains:
+            unique = list(dict.fromkeys(chains))
+            if len(unique) == 1:
+                return unique[0]
+        raise ValueError("chain is required when the wallet is bound to several chains")
+
+    def send(self, to: str, amount: float, chain: Optional[Chain] = None) -> dict:
+        """Send native token. Returns ``{"hash": ...}``.
+
+        Goes through :meth:`send_transaction`, so a bound gate still applies.
+        """
+        if not self.chain_manager:
+            raise ValueError("ChainManager not configured")
+        chain = self._resolve_chain(chain)
+        w3 = self.chain_manager.get_web3(chain)
+        tx = {"to": w3.to_checksum_address(to), "value": w3.to_wei(amount, "ether")}
+        tx_hash = self.send_transaction(tx, chain, action=ActionType.TRANSFER_NATIVE)
+        return {"hash": tx_hash}
+
+    def transfer_token(
+        self,
+        token: str,
+        to: str,
+        amount: float,
+        chain: Optional[Chain] = None,
+    ) -> dict:
+        """Send an ERC20 token. Returns ``{"hash": ...}``."""
+        if not self.chain_manager:
+            raise ValueError("ChainManager not configured")
+        chain = self._resolve_chain(chain)
+        w3 = self.chain_manager.get_web3(chain)
+        contract = w3.eth.contract(address=w3.to_checksum_address(token), abi=_ERC20_TRANSFER_ABI)
+        decimals = contract.functions.decimals().call()
+        # Hand-rolled calldata: encode_abi/encodeABI differ across web3 6 and 8.
+        from eth_abi import encode as abi_encode
+
+        args = abi_encode(
+            ["address", "uint256"],
+            [w3.to_checksum_address(to), int(amount * (10**decimals))],
+        )
+        data = "0x" + TRANSFER_SELECTOR + args.hex()
+        tx = {"to": w3.to_checksum_address(token), "data": data, "value": 0}
+        tx_hash = self.send_transaction(
+            tx,
+            chain,
+            action=ActionType.TRANSFER_TOKEN,
+            metadata={"token": token, "to": to, "amount": amount},
+        )
+        return {"hash": tx_hash}
+
+    def get_balance_summary(
+        self,
+        chain: Optional[Chain] = None,
+        tokens: Optional[list[str]] = None,
+    ) -> dict:
+        """Return ``{"native": float, "tokens": {symbol: float}}`` for ``chain``."""
+        if not self.chain_manager:
+            raise ValueError("ChainManager not configured")
+        chain = self._resolve_chain(chain)
+        summary: dict = {"native": self.get_balance(chain), "tokens": {}}
+        if not tokens:
+            return summary
+
+        w3 = self.chain_manager.get_web3(chain)
+        for token in tokens:
+            contract = w3.eth.contract(
+                address=w3.to_checksum_address(token), abi=_ERC20_TRANSFER_ABI
+            )
+            decimals = contract.functions.decimals().call()
+            raw = contract.functions.balanceOf(self.address).call()
+            summary["tokens"][token] = raw / (10**decimals)
+        return summary
 
     def _prepare_tx(self, tx: dict, chain: Chain, w3) -> dict:
         """Fill the fields a caller may omit, so a bare ``{"to", "value"}`` works.
