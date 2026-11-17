@@ -6,7 +6,7 @@ on-chain proposals, and delegation management.
 Usage::
     from web3_agent_kit.governance import GovernanceTracker, GovConfig
 
-    tracker = GovernanceTracker(rpc_url="https://eth.llamarpc.com")
+    tracker = GovernanceTracker(rpc_url="https://ethereum-rpc.publicnode.com")
 
     # Get active proposals
     proposals = tracker.get_active_proposals(dao="uniswap")
@@ -174,7 +174,7 @@ class GovernanceTracker:
     and supports voting across multiple DAOs.
 
     Example::
-        tracker = GovernanceTracker(rpc_url="https://eth.llamarpc.com")
+        tracker = GovernanceTracker(rpc_url="https://ethereum-rpc.publicnode.com")
 
         # Get active proposals
         proposals = tracker.get_active_proposals(dao="uniswap")

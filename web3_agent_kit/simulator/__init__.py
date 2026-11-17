@@ -7,7 +7,7 @@ unexpected state changes.
 Usage::
     from web3_agent_kit.simulator import TxSimulator
 
-    sim = TxSimulator(rpc_url="https://eth.llamarpc.com")
+    sim = TxSimulator(rpc_url="https://ethereum-rpc.publicnode.com")
     result = sim.simulate(
         from_address="0x...",
         to="0x...",
@@ -92,7 +92,7 @@ class TxSimulator:
     - MEV exposure warnings
 
     Example::
-        sim = TxSimulator(rpc_url="https://eth.llamarpc.com")
+        sim = TxSimulator(rpc_url="https://ethereum-rpc.publicnode.com")
         result = sim.simulate(
             from_address="0x...",
             to="0x...",

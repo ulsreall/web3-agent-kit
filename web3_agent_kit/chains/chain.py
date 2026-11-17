@@ -24,12 +24,12 @@ class Chain(Enum):
 
 # Default RPC endpoints
 DEFAULT_RPCS = {
-    Chain.ETHEREUM: "https://eth.llamarpc.com",
+    Chain.ETHEREUM: "https://ethereum-rpc.publicnode.com",
     Chain.BASE: "https://mainnet.base.org",
     Chain.BASE_SEPOLIA: "https://sepolia.base.org",
     Chain.ARBITRUM: "https://arb1.arbitrum.io/rpc",
     Chain.OPTIMISM: "https://mainnet.optimism.io",
-    Chain.POLYGON: "https://polygon-rpc.com",
+    Chain.POLYGON: "https://polygon-bor-rpc.publicnode.com",
     Chain.AVALANCHE: "https://api.avax.network/ext/bc/C/rpc",
     Chain.BSC: "https://bsc-dataseed1.binance.org",
     Chain.ROBINHOOD: "https://rpc.mainnet.chain.robinhood.com",

@@ -39,6 +39,9 @@ All notable changes to Web3 Agent Kit are documented here.
   them, instead of handing the gate an incomplete transaction.
 - **wallet:** `MultiWalletManager` called `send()`, `transfer_token()` and `get_balance()` (as a
   dict); none existed. They do now, and all of them route through `send_transaction`.
+- **chains:** the default Ethereum RPC (`eth.llamarpc.com`) answers HTTP 525 and the default
+  Polygon RPC (`polygon-rpc.com`) answers "API key disabled", so every read on those chains failed
+  out of the box. Both point at publicnode now, along with the copies in the per-module examples.
 - **bridge:** the Li.Fi path fell back to chain id 1 for any chain missing from `CHAIN_IDS`,
   signing a Base transaction as Ethereum.
 - **execution:** contract creation (`to=None`) is enforced instead of refused. The request

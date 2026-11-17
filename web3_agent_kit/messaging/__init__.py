@@ -8,7 +8,7 @@ Usage::
 
     messenger = CrossChainMessenger(
         bridge="layerzero",
-        rpc_url="https://arb.llamarpc.com",
+        rpc_url="https://arbitrum-rpc.publicnode.com",
     )
     tx = messenger.send_message(
         dst_chain="optimism",
@@ -160,7 +160,7 @@ class CrossChainMessenger:
     Example::
         messenger = CrossChainMessenger(
             bridge="layerzero",
-            rpc_url="https://arb.llamarpc.com",
+            rpc_url="https://arbitrum-rpc.publicnode.com",
         )
         result = messenger.send_message(
             dst_chain="optimism",

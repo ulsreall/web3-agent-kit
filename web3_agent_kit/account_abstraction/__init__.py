@@ -7,7 +7,7 @@ Usage::
     from web3_agent_kit.account_abstraction import AAWallet, AAPaymaster
 
     wallet = AAWallet(
-        rpc_url="https://base.llamarpc.com",
+        rpc_url="https://base-rpc.publicnode.com",
         entry_point="0x5FF137D4b0FDCD49DcA30c7CF57E578a026d2789",
         factory="0x...",
     )
@@ -220,7 +220,7 @@ class AAWallet:
 
     Example::
         wallet = AAWallet(
-            rpc_url="https://base.llamarpc.com",
+            rpc_url="https://base-rpc.publicnode.com",
             chain="base",
             factory="simple_account_v7",
         )
