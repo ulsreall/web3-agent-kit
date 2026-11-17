@@ -4,44 +4,51 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from ..deps import build_wallet, resolve_chain
+
 router = APIRouter()
 
 
-@router.get("/opportunities")
-async def scan_yields(chain: str = "ethereum", min_apy: float = 0.0):
-    """Scan yield opportunities across protocols."""
+def _optimizer(chain_name: str):
     from ...defi.yield_optimizer import YieldOptimizer
 
+    chain = resolve_chain(chain_name)
+    return YieldOptimizer(build_wallet(chain), chain), chain
+
+
+@router.get("/opportunities")
+async def scan_yields(chain: str = "ethereum", asset: str = "", min_apy: float = 0.0):
+    """Scan yield opportunities across protocols."""
     try:
-        optimizer = YieldOptimizer(chain)
-        opportunities = optimizer.scan_opportunities(min_apy=min_apy)
+        optimizer, _ = _optimizer(chain)
+        opportunities = optimizer.scan_opportunities(asset or None)
+        if min_apy:
+            opportunities = [
+                o
+                for o in opportunities
+                if (o.get("apy", 0) if isinstance(o, dict) else o.apy) >= min_apy
+            ]
         return {"opportunities": opportunities, "total": len(opportunities)}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/best")
-async def find_best_yield(chain: str = "ethereum"):
-    """Find the best yield opportunity."""
-    from ...defi.yield_optimizer import YieldOptimizer
-
+async def find_best_yield(chain: str = "ethereum", asset: str = "USDC", amount: float = 1000.0):
+    """Find the best yield opportunity for an asset and amount."""
     try:
-        optimizer = YieldOptimizer(chain)
-        best = optimizer.find_best()
-        return best
+        optimizer, _ = _optimizer(chain)
+        return optimizer.find_best(asset, amount)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/compare")
-async def compare_protocols(chain: str = "ethereum"):
+async def compare_protocols(chain: str = "ethereum", asset: str = "USDC"):
     """Compare yields across supported protocols."""
-    from ...defi.yield_optimizer import YieldOptimizer
-
     try:
-        optimizer = YieldOptimizer(chain)
-        comparison = optimizer.compare_protocols()
-        return comparison
+        optimizer, _ = _optimizer(chain)
+        return optimizer.compare_protocols(asset)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -49,12 +56,9 @@ async def compare_protocols(chain: str = "ethereum"):
 @router.get("/portfolio")
 async def get_yield_portfolio(chain: str = "ethereum"):
     """Get current yield-earning positions."""
-    from ...defi.yield_optimizer import YieldOptimizer
-
     try:
-        optimizer = YieldOptimizer(chain)
-        portfolio = optimizer.get_portfolio_summary()
-        return portfolio
+        optimizer, _ = _optimizer(chain)
+        return optimizer.get_portfolio_summary()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -62,11 +66,8 @@ async def get_yield_portfolio(chain: str = "ethereum"):
 @router.post("/compound")
 async def auto_compound(chain: str = "ethereum"):
     """Auto-compound all yield positions."""
-    from ...defi.yield_optimizer import YieldOptimizer
-
     try:
-        optimizer = YieldOptimizer(chain)
-        result = optimizer.auto_compound_all()
-        return result
+        optimizer, _ = _optimizer(chain)
+        return optimizer.auto_compound_all()
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

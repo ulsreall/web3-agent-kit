@@ -126,7 +126,7 @@ class TestAPIKeyAuth:
         actual swap execution is mocked so no real transaction happens)."""
         with (
             patch("web3_agent_kit.defi.Uniswap") as MockUni,
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
         ):
             mock_uni_instance = MagicMock()
             mock_uni_instance.execute.return_value = {
@@ -149,7 +149,7 @@ class TestAPIKeyAuth:
 @pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not installed")
 class TestWalletEndpoints:
     def test_wallet_info(self, mock_no_api_key):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             mock_instance = MagicMock()
             mock_instance.address = "0x721e885BE237Ef193807d7a912C201c6a53dA522"
             mock_instance.get_balance.return_value = 1.5
@@ -160,7 +160,7 @@ class TestWalletEndpoints:
             assert data["chain"] == "ethereum"
 
     def test_wallet_balance(self, mock_no_api_key):
-        with patch("web3_agent_kit.chains.chain.ChainManager") as MockManager:
+        with patch("web3_agent_kit.api.deps.ChainManager") as MockManager:
             mock_manager_instance = MagicMock()
             mock_w3 = MagicMock()
             mock_w3.eth.get_balance.return_value = 1500000000000000000
@@ -189,7 +189,7 @@ class TestWalletEndpoints:
                 addr_b: 2_000_000_000_000_000_000,  # 2 ETH
             }[addr]
 
-        with patch("web3_agent_kit.chains.chain.ChainManager") as MockManager:
+        with patch("web3_agent_kit.api.deps.ChainManager") as MockManager:
             mock_manager_instance = MagicMock()
             mock_w3 = MagicMock()
             mock_w3.eth.get_balance.side_effect = fake_get_balance
