@@ -23,11 +23,17 @@ def _serialize(order) -> dict:
 
 
 def _bot(chain: str):
-    """Build a bot for ``chain`` with a wallet that is gate-bound when configured."""
+    """Build a bot for ``chain`` with a wallet that is gate-bound when configured.
+
+    The Uniswap tool is wired in so executions are real swaps instead of the
+    bot's simulated demo branch.
+    """
+    from ...defi import Uniswap
     from ...trading.dca import DCABot
 
     chain_enum = resolve_chain(chain)
-    return DCABot(build_wallet(chain_enum), chain_manager(chain_enum)), chain_enum
+    manager = chain_manager(chain_enum)
+    return DCABot(build_wallet(chain_enum), manager, uniswap=Uniswap(manager)), chain_enum
 
 
 @router.get("/orders")
@@ -120,6 +126,16 @@ async def resume_order(order_id: str, chain: str = "ethereum"):
     try:
         bot, _ = _bot(chain)
         return {"resumed": bot.resume_order(order_id)}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/orders/{order_id}/execute")
+async def execute_order(order_id: str, chain: str = "ethereum"):
+    """Execute one buy for an order now."""
+    try:
+        bot, _ = _bot(chain)
+        return asdict(bot.execute_order(order_id))
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
