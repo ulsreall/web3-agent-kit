@@ -2,6 +2,12 @@
 
 Ready-to-use code examples for common Web3 Agent Kit use cases.
 
+!!! note "Writes need a bound gate"
+    `Wallet.sign_transaction()` fails closed without a pre-sign gate. Every write
+    example wraps its wallet with `examples/support/enforced_wallet.py`, which
+    binds a narrow policy and an in-process authorization provider so the example
+    runs. Replace `AutoAuthorizationProvider` with a real verifier in production.
+
 ---
 
 ## 🔄 LLM-Powered Swap Agent

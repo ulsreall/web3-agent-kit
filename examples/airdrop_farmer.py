@@ -4,6 +4,8 @@ import json
 import os
 from datetime import datetime
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Agent, Chain, Wallet
 from web3_agent_kit.defi import Aerodrome, Uniswap
 
@@ -19,7 +21,9 @@ def main():
     - Eligibility monitoring
     """
     # Load wallet
-    wallet = Wallet.from_env("PRIVATE_KEY")
+    wallet = enforce(
+        Wallet.from_env("PRIVATE_KEY"), [Chain.BASE, Chain.ARBITRUM, Chain.OPTIMISM, Chain.LINEA]
+    )
 
     # Define target chains for airdrop farming
     chains = [Chain.BASE, Chain.ARBITRUM, Chain.OPTIMISM, Chain.LINEA]

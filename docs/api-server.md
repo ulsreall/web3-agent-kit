@@ -5,13 +5,24 @@ swap, portfolio, gas, watcher, approval, DCA, yield, and bridge tools over
 HTTP — useful for driving the toolkit from a dashboard, bot, or any
 non-Python client.
 
-!!! warning "Write execution requires an application authorization provider"
+!!! warning "Write execution requires an authorization provider"
     `WEB3_API_KEY` authenticates requests, but it does not authorize a transaction.
-    The built-in `/swap/execute` and `/bridge/execute` routes create an unbound
-    `Wallet`; when they reach `Wallet.sign_transaction()`, signing is refused
-    with `EnforcementDenied`. Treat these routes as unavailable for on-chain
-    writes until a route-level `ExecutionPolicy`, `AuthorizationProvider`, and
-    gate are wired and tested. Read-only endpoints are unaffected.
+    Write routes build a gate-bound wallet only when `WEB3_AUTO_AUTHORIZE=true`;
+    without it they still fail closed with `EnforcementDenied`. The built-in
+    auto-provider authorizes the exact envelope it is handed, so it keeps the
+    gate's structural checks but proves nothing about a principal — wire a real
+    verifier when the deployment has one.
+
+    Gate configuration (all optional, all fail-closed):
+
+    | Variable | Meaning |
+    |---|---|
+    | `WEB3_AUTO_AUTHORIZE` | `true` attaches the in-process provider |
+    | `WEB3_ALLOWED_CHAINS` | comma-separated chain allowlist |
+    | `WEB3_ALLOWED_CONTRACTS` | comma-separated contract allowlist; unset = only the route's own router |
+    | `WEB3_MAX_NATIVE_WEI` | per-transaction native value cap, default `0.05 ETH` |
+
+    Read-only endpoints are unaffected.
 
 ## Quick Start
 

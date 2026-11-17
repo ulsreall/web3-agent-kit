@@ -1,5 +1,7 @@
 """Example: Token sniper — detect and snipe new token launches."""
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Agent, Chain, Wallet
 from web3_agent_kit.defi import Uniswap
 
@@ -14,7 +16,7 @@ def main():
     - Configurable buy amount and slippage
     - Take-profit and stop-loss management
     """
-    wallet = Wallet.from_env("PRIVATE_KEY")
+    wallet = enforce(Wallet.from_env("PRIVATE_KEY"), [Chain.BASE])
 
     # Sniper configuration
     config = {

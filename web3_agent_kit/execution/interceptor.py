@@ -55,6 +55,7 @@ from .envelope import (
     CallEnvelopeV1,
     CallEnvelopeV2,
     PolicyDecisionCommitment,
+    normalize_calldata_key,
 )
 from .errors import ExecutionError, InvalidIntentError
 from .intent import ActionType, TransactionIntent
@@ -102,12 +103,13 @@ class _DenialReason(str, Enum):
     AUTHORIZATION_EXPIRED = "authorization_expired"
     AUTHORIZATION_CALL_MISMATCH = "authorization_call_mismatch"
     AUTHORIZATION_EXECUTOR_MISMATCH = "authorization_executor_mismatch"
+    AUTHORIZATION_POLICY_MISMATCH = "authorization_policy_mismatch"
     AUTHORIZATION_REPLAYED = "authorization_replayed"
     CONFIRMATION_REFUSED = "confirmation_refused"
     CONFIRMATION_HANDLER_MISSING = "confirmation_handler_missing"
 
 
-_REQUIRED_TX_FIELDS = ("to", "from", "nonce", "chainId")
+_REQUIRED_TX_FIELDS = ("from", "nonce", "chainId")
 
 
 @dataclass(frozen=True)
@@ -437,7 +439,7 @@ class PreSignInterceptor:
 
         # Stage 5 -- sign. Only reachable with policy allow AND fresh, matching,
         # single-use authorization evidence in hand.
-        raw = self._signer(request.transaction)
+        raw = self._signer(normalize_calldata_key(request.transaction))
         signature_hash = "0x" + hashlib.sha256(raw).hexdigest()
 
         sequence = self._record(
@@ -547,6 +549,20 @@ class PreSignInterceptor:
                 "authorization names executor "
                 f"{evidence.executor} but the transaction is sent by "
                 f"{envelope.executor}"
+            )
+
+        if evidence.policy_commitment_digest != commitment.digest():
+            self._deny(
+                request,
+                call_fingerprint,
+                (_DenialReason.AUTHORIZATION_POLICY_MISMATCH.value,),
+                intent_id=intent_id,
+                authorization_id=evidence.authorization_id,
+                policy_commitment_digest=commitment.digest(),
+            )
+            raise EnforcementDenied(
+                "authorization was issued against a different policy verdict: "
+                f"authorized {evidence.policy_commitment_digest}, evaluated {commitment.digest()}"
             )
 
         if not evidence.is_fresh():

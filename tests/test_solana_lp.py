@@ -4,6 +4,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+pytest.importorskip("solders")
+
 from web3_agent_kit.solana.lp import DEXProtocol, LPConfig, SolanaLPManager
 from web3_agent_kit.solana.wallet import SolanaWallet
 

@@ -145,7 +145,7 @@ class BridgeAgent:
     def __init__(
         self,
         chain_manager: ChainManager,
-        wallet: Wallet,
+        wallet: Optional[Wallet] = None,
         lifi_api_key: Optional[str] = None,
     ):
         self.chain_manager = chain_manager
@@ -157,6 +157,11 @@ class BridgeAgent:
                 "User-Agent": "web3-agent-kit/0.2.0",
             }
         )
+
+    @property
+    def _address(self) -> str:
+        """Return the sender address, or a placeholder for quote-only use."""
+        return self.wallet.address if self.wallet is not None else "0x" + "0" * 40
 
     def get_routes(
         self,
@@ -223,7 +228,7 @@ class BridgeAgent:
             "fromToken": token_addr,
             "toToken": to_token_addr,
             "fromAmount": amount_wei,
-            "fromAddress": self.wallet.address,
+            "fromAddress": self._address,
         }
 
         if self.lifi_api_key:
@@ -284,7 +289,7 @@ class BridgeAgent:
             "fromTokenAddress": token_addr,
             "toTokenAddress": to_token_addr,
             "fromAmount": amount_wei,
-            "userAddress": self.wallet.address,
+            "userAddress": self._address,
             "sort": "output",
             "singleTxOnly": "true",
         }
@@ -348,6 +353,8 @@ class BridgeAgent:
         Returns:
             BridgeResult with transaction hash
         """
+        if self.wallet is None:
+            raise ValueError("BridgeAgent needs a wallet to execute a transfer")
         if route is None:
             routes = self.get_routes(token, amount, from_chain, to_chain)
             if not routes:
@@ -386,7 +393,7 @@ class BridgeAgent:
             "fromToken": route.token_in,
             "toToken": route.token_out,
             "fromAmount": amount_wei,
-            "fromAddress": self.wallet.address,
+            "fromAddress": self._address,
         }
 
         if self.lifi_api_key:
@@ -405,13 +412,13 @@ class BridgeAgent:
         w3 = self.chain_manager.get_web3(route.from_chain)
 
         tx = {
-            "from": w3.to_checksum_address(self.wallet.address),
+            "from": w3.to_checksum_address(self._address),
             "to": w3.to_checksum_address(tx_request["to"]),
             "data": tx_request["data"],
             "value": int(tx_request.get("value", "0")),
             "gas": int(tx_request.get("gasLimit", "300000")),
             "gasPrice": w3.eth.gas_price,
-            "nonce": w3.eth.get_transaction_count(self.wallet.address),
+            "nonce": w3.eth.get_transaction_count(self._address),
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
@@ -445,7 +452,7 @@ class BridgeAgent:
             "fromTokenAddress": route.token_in,
             "toTokenAddress": route.token_out,
             "fromAmount": amount_wei,
-            "userAddress": self.wallet.address,
+            "userAddress": self._address,
             "route": json.dumps(route.steps) if route.steps else "",
         }
         headers = {"API-KEY": "demo"}
@@ -461,13 +468,13 @@ class BridgeAgent:
         w3 = self.chain_manager.get_web3(route.from_chain)
 
         tx = {
-            "from": w3.to_checksum_address(self.wallet.address),
+            "from": w3.to_checksum_address(self._address),
             "to": w3.to_checksum_address(tx_data["to"]),
             "data": tx_data["data"],
             "value": int(tx_data.get("value", "0")),
             "gas": int(tx_data.get("gasLimit", "300000")),
             "gasPrice": w3.eth.gas_price,
-            "nonce": w3.eth.get_transaction_count(self.wallet.address),
+            "nonce": w3.eth.get_transaction_count(self._address),
             "chainId": CHAIN_IDS.get(route.from_chain, 1),
         }
 
@@ -525,4 +532,4 @@ class BridgeAgent:
             return 18  # Default to 18
 
     def __repr__(self) -> str:
-        return f"BridgeAgent(wallet={self.wallet.address[:10]}...)"
+        return f"BridgeAgent(wallet={self._address[:10]}...)"

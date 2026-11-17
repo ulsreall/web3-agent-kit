@@ -81,6 +81,29 @@ def _freeze_metadata(value: Any) -> Any:
     raise InvalidMetadataError(f"unsupported metadata value type: {type(value).__name__}")
 
 
+def _intent_calldata(transaction: Mapping[str, Any]) -> bytes:
+    """Resolve ``data``/``input`` to bytes, rejecting a disagreement."""
+    resolved = []
+    for key in ("data", "input"):
+        value = transaction.get(key)
+        if value is None:
+            continue
+        if isinstance(value, str):
+            if not value.startswith("0x"):
+                raise InvalidCalldataError("hex calldata must start with 0x")
+            try:
+                resolved.append(bytes.fromhex(value[2:]))
+            except ValueError as exc:
+                raise InvalidCalldataError("calldata is not valid hexadecimal") from exc
+        else:
+            resolved.append(value)
+    if not resolved:
+        return b""
+    if len(set(resolved)) > 1:
+        raise InvalidCalldataError("transaction has conflicting data and input fields")
+    return resolved[0]
+
+
 @dataclass(frozen=True)
 class TransactionIntent:
     """A validated, immutable description of a future EVM transaction.
@@ -98,6 +121,7 @@ class TransactionIntent:
     amount_base_units: int = 0
     native_value_wei: int = 0
     calldata: bytes = b""
+    is_creation: bool = False
     metadata: Mapping[str, Any] = field(default_factory=dict, compare=False, hash=False)
 
     def __post_init__(self) -> None:
@@ -125,7 +149,14 @@ class TransactionIntent:
                 raise InvalidAddressError("recipient must identify the approval spender")
             if token is None:
                 raise InvalidAddressError("token is required for an approval")
-        if (
+        if self.is_creation:
+            if self.action != ActionType.CONTRACT_CALL:
+                raise InvalidIntentError("only a contract call can be a creation")
+            if self.contract is not None:
+                raise InvalidIntentError("a creation has no destination contract")
+            if not self.calldata:
+                raise InvalidIntentError("a creation requires init code")
+        elif (
             self.action
             in {
                 ActionType.CONTRACT_CALL,
@@ -163,6 +194,7 @@ class TransactionIntent:
             "calldata": self.calldata.hex(),
             "chain": self.chain.value,
             "contract": self.contract,
+            "is_creation": self.is_creation,
             "native_value_wei": self.native_value_wei,
             "recipient": self.recipient,
             "sender": self.sender,
@@ -185,16 +217,10 @@ class TransactionIntent:
             raise InvalidIntentError("transaction must be a mapping")
         if action == ActionType.TRANSFER_TOKEN:
             raise InvalidIntentError("token transfers require decoded semantic fields")
-        calldata = transaction.get("data", b"")
-        if isinstance(calldata, str):
-            if not calldata.startswith("0x"):
-                raise InvalidCalldataError("hex calldata must start with 0x")
-            try:
-                calldata = bytes.fromhex(calldata[2:])
-            except ValueError as exc:
-                raise InvalidCalldataError("calldata is not valid hexadecimal") from exc
+        calldata = _intent_calldata(transaction)
 
         destination = transaction.get("to")
+        is_creation = destination is None and action == ActionType.CONTRACT_CALL
         if action == ActionType.APPROVE_TOKEN:
             if len(calldata) != 68 or calldata[:4] != _ERC20_APPROVE_SELECTOR:
                 raise InvalidIntentError(
@@ -228,7 +254,8 @@ class TransactionIntent:
             action=action,
             sender=transaction.get("from"),
             recipient=destination if action == ActionType.TRANSFER_NATIVE else None,
-            contract=destination if action in contract_actions else None,
+            contract=destination if action in contract_actions and not is_creation else None,
+            is_creation=is_creation,
             token=destination
             if action in {ActionType.TRANSFER_TOKEN, ActionType.APPROVE_TOKEN}
             else None,

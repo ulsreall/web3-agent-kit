@@ -18,6 +18,8 @@ import sys
 # Add parent directory to path for local development
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Agent, Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
 
@@ -43,7 +45,10 @@ def main():
     )
 
     # Create wallet
-    wallet = Wallet.from_key(private_key, chain_manager=chain_manager)
+    wallet = enforce(
+        Wallet.from_key(private_key, chain_manager=chain_manager),
+        [Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM],
+    )
     print(f"📍 Wallet: {wallet.address}")
 
     # Check balances

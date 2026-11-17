@@ -149,6 +149,25 @@ class SolanaWallet:
             "amount_sol": amount_sol,
         }
 
+    async def _token_program_for(self, mint: str):
+        """Return the token program that owns ``mint``.
+
+        Token-2022 mints derive different associated accounts than the classic
+        program, so the program is read from the mint account instead of being
+        hardcoded.
+        """
+        from spl.token.constants import TOKEN_2022_PROGRAM_ID, TOKEN_PROGRAM_ID
+
+        try:
+            info = await self._client.get_account_info(mint)
+        except Exception:
+            return TOKEN_PROGRAM_ID
+
+        owner = (info or {}).get("owner")
+        if owner == str(TOKEN_2022_PROGRAM_ID):
+            return TOKEN_2022_PROGRAM_ID
+        return TOKEN_PROGRAM_ID
+
     # ── Send SPL Token ──────────��────────────────────
 
     async def send_token(
@@ -168,7 +187,7 @@ class SolanaWallet:
         from solders.pubkey import Pubkey
         from solders.system_program import ID as SYSTEM_PROGRAM_ID
         from solders.transaction import Transaction
-        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID, TOKEN_PROGRAM_ID
+        from spl.token.constants import ASSOCIATED_TOKEN_PROGRAM_ID
         from spl.token.instructions import get_associated_token_address
 
         from_pubkey = self._keypair.pubkey()
@@ -176,8 +195,9 @@ class SolanaWallet:
         mint_pubkey = Pubkey.from_string(mint)
         amount_raw = int(amount * 10**decimals)
 
-        from_ata = get_associated_token_address(from_pubkey, mint_pubkey)
-        to_ata = get_associated_token_address(to_pubkey, mint_pubkey)
+        token_program = await self._token_program_for(mint)
+        from_ata = get_associated_token_address(from_pubkey, mint_pubkey, token_program)
+        to_ata = get_associated_token_address(to_pubkey, mint_pubkey, token_program)
 
         blockhash_resp = await self._client.get_latest_blockhash()
         blockhash_str = blockhash_resp.get("blockhash", "")
@@ -186,21 +206,28 @@ class SolanaWallet:
 
         recent_blockhash = Hash.from_string(blockhash_str)
 
-        instructions: list[Instruction] = [
-            Instruction(
+        def _create_ata(ata: Pubkey, owner: Pubkey) -> Instruction:
+            """Idempotent ATA creation: a no-op when the account already exists."""
+            return Instruction(
                 ASSOCIATED_TOKEN_PROGRAM_ID,
                 b"\x01",
                 [
                     AccountMeta(from_pubkey, True, True),
-                    AccountMeta(to_ata, False, True),
-                    AccountMeta(to_pubkey, False, False),
+                    AccountMeta(ata, False, True),
+                    AccountMeta(owner, False, False),
                     AccountMeta(mint_pubkey, False, False),
                     AccountMeta(SYSTEM_PROGRAM_ID, False, False),
-                    AccountMeta(TOKEN_PROGRAM_ID, False, False),
+                    AccountMeta(token_program, False, False),
                 ],
-            ),
+            )
+
+        instructions: list[Instruction] = [
+            # The sender's ATA is not guaranteed to exist either; without this
+            # the transfer fails with AccountNotInitialized on a fresh wallet.
+            _create_ata(from_ata, from_pubkey),
+            _create_ata(to_ata, to_pubkey),
             Instruction(
-                TOKEN_PROGRAM_ID,
+                token_program,
                 b"\x0c" + amount_raw.to_bytes(8, "little") + bytes([decimals]),
                 [
                     AccountMeta(from_ata, False, True),

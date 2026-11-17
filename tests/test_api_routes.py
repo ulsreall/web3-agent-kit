@@ -165,7 +165,7 @@ class TestSwapRoutes:
     def test_execute_happy(self):
         with (
             patch("web3_agent_kit.defi.Uniswap") as MockUni,
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
         ):
             inst = MagicMock()
             inst.execute.return_value = {"tx_hash": "0x1", "status": "success"}
@@ -177,19 +177,35 @@ class TestSwapRoutes:
             )
             assert resp.status_code == 200
             assert resp.json()["status"] == "success"
-            MockWallet.from_env.assert_called_once_with("PRIVATE_KEY")
+            # the wallet must be built with a manager, not a bare key
+            _, kwargs = MockWallet.from_env.call_args
+            assert kwargs["chain_manager"] is not None
+            # symbols are resolved before the call, and chain travels as a keyword
+            args, kwargs = inst.execute.call_args
+            assert args[1] == "ETH"
+            assert args[2].startswith("0x") and len(args[2]) == 42
+            assert args[3] == 1.0
+            assert kwargs["chain"].value == "ethereum"
 
     def test_execute_error(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             MockWallet.from_env.side_effect = RuntimeError("no key")
             resp = client.post("/swap/execute", headers=AUTH_HEADERS)
             assert resp.status_code == 400
             assert "no key" in resp.json()["detail"]
 
+    def test_execute_rejects_unknown_token(self):
+        with patch("web3_agent_kit.api.deps.Wallet"):
+            resp = client.post("/swap/execute?token_out=NOTACOIN", headers=AUTH_HEADERS)
+            assert resp.status_code == 400
+            assert "unknown token" in resp.json()["detail"]
+
     def test_tokens_happy(self):
         with patch("web3_agent_kit.defi.Uniswap") as MockUni:
             inst = MagicMock()
-            inst.ROUTERS = {"ethereum": "0xrouter"}
+            from web3_agent_kit.chains import Chain as _Chain
+
+            inst.ROUTERS = {_Chain.ETHEREUM: "0xrouter"}
             inst.supported_chains = ["ethereum", "polygon"]
             MockUni.return_value = inst
             resp = client.get("/swap/tokens", headers=AUTH_HEADERS)
@@ -495,8 +511,17 @@ class TestApprovalRoutes:
 
 
 class TestDCARoutes:
+    """The bot is mocked; the wallet is mocked at the deps boundary.
+
+    ``deps.Wallet`` is patched rather than ``wallet.wallet.Wallet`` because
+    ``deps`` binds the name at import time.
+    """
+
+    def _patched(self):
+        return patch("web3_agent_kit.api.deps.Wallet")
+
     def test_list_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
             inst.list_orders.return_value = [{"order_id": "d1"}]
             MockBot.return_value = inst
@@ -505,13 +530,19 @@ class TestDCARoutes:
             assert resp.json()["orders"][0]["order_id"] == "d1"
 
     def test_list_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.get("/dca/orders", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
+    def test_list_rejects_unknown_status(self):
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot"):
+            resp = client.get("/dca/orders?status=bogus", headers=AUTH_HEADERS)
+            assert resp.status_code == 400
+            assert "unknown status" in resp.json()["detail"]
+
     def test_create_happy_unlimited(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
             inst.create_order.return_value = {"order_id": "d2", "status": "active"}
             MockBot.return_value = inst
@@ -520,32 +551,44 @@ class TestDCARoutes:
                 headers=AUTH_HEADERS,
             )
             assert resp.status_code == 200
-            # total_buys defaults 0 -> None passed to create_order
             _, kwargs = inst.create_order.call_args
-            assert kwargs["total_buys"] is None
+            # total_buys defaults 0 -> max_buys None
+            assert kwargs["max_buys"] is None
+            assert kwargs["from_token"] == "USDC"
+            assert kwargs["to_token"] == "ETH"
+            assert kwargs["amount"] == 100.0
+            assert kwargs["chain"].value == "ethereum"
+            assert kwargs["interval"].name == "DAILY"
 
     def test_create_happy_with_total_buys(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
             inst.create_order.return_value = {"order_id": "d3"}
             MockBot.return_value = inst
             resp = client.post("/dca/orders?amount_per_buy=100&total_buys=5", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             _, kwargs = inst.create_order.call_args
-            assert kwargs["total_buys"] == 5
+            assert kwargs["max_buys"] == 5
+
+    def test_create_rejects_unknown_frequency(self):
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot"):
+            resp = client.post("/dca/orders?frequency=hourlyish", headers=AUTH_HEADERS)
+            assert resp.status_code == 400
+            assert "unknown frequency" in resp.json()["detail"]
 
     def test_create_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.post("/dca/orders", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
     def test_create_validation_error(self):
-        resp = client.post("/dca/orders?total_buys=notanint", headers=AUTH_HEADERS)
-        assert resp.status_code == 422
+        with self._patched():
+            resp = client.post("/dca/orders?total_buys=notanint", headers=AUTH_HEADERS)
+            assert resp.status_code == 422
 
     def test_get_order_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
             inst.get_order.return_value = {"order_id": "d1", "status": "active"}
             MockBot.return_value = inst
@@ -553,57 +596,60 @@ class TestDCARoutes:
             assert resp.status_code == 200
 
     def test_get_order_not_found(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
-            inst.get_order.side_effect = KeyError("missing")
+            inst.get_order.return_value = None
             MockBot.return_value = inst
             resp = client.get("/dca/orders/nope", headers=AUTH_HEADERS)
             assert resp.status_code == 404
 
     def test_cancel_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
-            inst.cancel_order.return_value = {"status": "cancelled"}
+            inst.cancel_order.return_value = True
             MockBot.return_value = inst
             resp = client.delete("/dca/orders/d1", headers=AUTH_HEADERS)
             assert resp.status_code == 200
+            assert resp.json() == {"cancelled": True}
 
     def test_cancel_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.delete("/dca/orders/d1", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
     def test_pause_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
-            inst.pause_order.return_value = {"status": "paused"}
+            inst.pause_order.return_value = True
             MockBot.return_value = inst
             resp = client.post("/dca/orders/d1/pause", headers=AUTH_HEADERS)
             assert resp.status_code == 200
+            assert resp.json() == {"paused": True}
 
     def test_pause_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.post("/dca/orders/d1/pause", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
     def test_resume_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
-            inst.resume_order.return_value = {"status": "active"}
+            inst.resume_order.return_value = True
             MockBot.return_value = inst
             resp = client.post("/dca/orders/d1/resume", headers=AUTH_HEADERS)
             assert resp.status_code == 200
+            assert resp.json() == {"resumed": True}
 
     def test_resume_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.post("/dca/orders/d1/resume", headers=AUTH_HEADERS)
             assert resp.status_code == 400
 
     def test_stats_happy(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             inst = MagicMock()
             inst.get_summary.return_value = {"total_orders": 4}
             MockBot.return_value = inst
@@ -612,7 +658,7 @@ class TestDCARoutes:
             assert resp.json()["total_orders"] == 4
 
     def test_stats_error(self):
-        with patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
+        with self._patched(), patch("web3_agent_kit.trading.dca.DCABot") as MockBot:
             MockBot.side_effect = RuntimeError("fail")
             resp = client.get("/dca/stats", headers=AUTH_HEADERS)
             assert resp.status_code == 400
@@ -704,14 +750,19 @@ class TestBridgeRoutes:
     def test_quote_happy(self):
         with patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockA:
             inst = MagicMock()
-            inst.get_routes.return_value = {"routes": []}
+            inst.get_routes.return_value = []
             MockA.return_value = inst
             resp = client.get(
                 "/bridge/quote?from_chain=ethereum&to_chain=arbitrum&token=USDC&amount=100",
                 headers=AUTH_HEADERS,
             )
             assert resp.status_code == 200
-            assert resp.json() == {"routes": []}
+            assert resp.json() == []
+            args, _ = inst.get_routes.call_args
+            assert args[0] == "USDC"
+            assert args[1] == 100.0
+            assert args[2].value == "ethereum"
+            assert args[3].value == "arbitrum"
 
     def test_quote_error(self):
         with patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockA:
@@ -722,7 +773,7 @@ class TestBridgeRoutes:
     def test_execute_happy(self):
         with (
             patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockA,
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
         ):
             inst = MagicMock()
             inst.transfer.return_value = {"tx_hash": "0xbridge"}
@@ -731,10 +782,18 @@ class TestBridgeRoutes:
             resp = client.post("/bridge/execute", headers=AUTH_HEADERS)
             assert resp.status_code == 200
             assert resp.json()["tx_hash"] == "0xbridge"
-            MockWallet.from_env.assert_called_once_with("PRIVATE_KEY")
+            # agent gets (manager, wallet); transfer gets (token, amount, from, to)
+            agent_args, _ = MockA.call_args
+            assert agent_args[0] is not None
+            assert agent_args[1] is MockWallet.from_env.return_value
+            args, _ = inst.transfer.call_args
+            assert args[0] == "USDC"
+            assert args[1] == 100.0
+            assert args[2].value == "ethereum"
+            assert args[3].value == "arbitrum"
 
     def test_execute_error(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             MockWallet.from_env.side_effect = RuntimeError("no key")
             resp = client.post("/bridge/execute", headers=AUTH_HEADERS)
             assert resp.status_code == 400
