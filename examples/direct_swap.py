@@ -15,6 +15,8 @@ import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.defi import Uniswap
 
@@ -37,7 +39,10 @@ def main():
         },
     )
 
-    wallet = Wallet.from_key(private_key, chain_manager=chain_manager)
+    wallet = enforce(
+        Wallet.from_key(private_key, chain_manager=chain_manager),
+        [Chain.ETHEREUM, Chain.BASE, Chain.ARBITRUM],
+    )
     uniswap = Uniswap(chain_manager=chain_manager, slippage=0.5)
 
     print(f"📍 Wallet: {wallet.address}")

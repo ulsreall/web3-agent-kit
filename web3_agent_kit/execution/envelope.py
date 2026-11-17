@@ -66,6 +66,7 @@ __all__ = [
     "CallEnvelopeV2",
     "PolicyDecisionCommitment",
     "keccak256",
+    "normalize_calldata_key",
 ]
 
 CALL_ENVELOPE_V1_SCHEMA = "agent-call-envelope.v1"
@@ -167,6 +168,37 @@ def _canonical_calldata(value: Any) -> bytes:
     raise CallEnvelopeError(
         f"calldata must be bytes or a 0x-prefixed hex string, got {type(value).__name__}"
     )
+
+
+def _transaction_calldata(transaction: Mapping[str, Any]) -> bytes:
+    """Resolve calldata from ``data`` or its ``input`` alias.
+
+    Both keys describe the same bytes. Accepting either keeps the envelope
+    honest for callers that build transactions from RPC responses, and a
+    disagreement between them is an error rather than a silent pick: the
+    authorized calldata must be the signed calldata.
+    """
+    primary = transaction.get("data")
+    alias = transaction.get("input")
+    if primary is not None and alias is not None:
+        if _canonical_calldata(primary) != _canonical_calldata(alias):
+            raise CallEnvelopeError("transaction has conflicting data and input fields")
+    return _canonical_calldata(primary if primary is not None else alias)
+
+
+def normalize_calldata_key(transaction: Mapping[str, Any]) -> dict[str, Any]:
+    """Return a copy of ``transaction`` with calldata under ``data`` only.
+
+    ``eth_account`` rejects the ``input`` key outright, so the mapping handed to
+    the signer is normalized here — after the envelope has already committed to
+    the same bytes.
+    """
+    normalized = dict(transaction)
+    if "input" in normalized:
+        calldata = _transaction_calldata(normalized)
+        normalized.pop("input")
+        normalized["data"] = calldata
+    return normalized
 
 
 @dataclass(frozen=True)
@@ -274,7 +306,7 @@ class CallEnvelopeV1:
 
         nonce = _canonical_int(transaction.get("nonce", 0), "nonce")
         native_value = _canonical_int(transaction.get("value", 0), "value")
-        calldata = _canonical_calldata(transaction.get("data"))
+        calldata = _transaction_calldata(transaction)
 
         raw_target = transaction.get("to")
         target = None if raw_target is None else _canonical_address(raw_target, "to")

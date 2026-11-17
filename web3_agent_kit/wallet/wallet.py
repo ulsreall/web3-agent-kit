@@ -153,6 +153,15 @@ class Wallet:
             raw = signed.rawTransaction
         return raw
 
+    @property
+    def raw_signer(self):
+        """Return the low-level signing primitive the gate wraps.
+
+        Public so callers can build a :class:`PreSignInterceptor` around this
+        wallet without reaching into a private attribute.
+        """
+        return self._raw_signer
+
     def bind_enforcement(self, gate) -> "Wallet":
         """Attach an enforced pre-sign gate to this wallet.
 

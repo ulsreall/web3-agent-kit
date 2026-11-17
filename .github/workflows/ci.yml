@@ -70,7 +70,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -e ".[dev,solana]"
+        pip install -e ".[dev,solana,api]"
         pip install "tomli>=2.0; python_version < '3.11'"
 
     - name: Import smoke test

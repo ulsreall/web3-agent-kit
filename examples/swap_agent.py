@@ -1,12 +1,14 @@
 """Example: Simple swap agent — swaps tokens on Base."""
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Agent, Chain, Wallet
 from web3_agent_kit.defi import Uniswap
 
 
 def main():
     # Load wallet from environment
-    wallet = Wallet.from_env("PRIVATE_KEY")
+    wallet = enforce(Wallet.from_env("PRIVATE_KEY"), [Chain.BASE])
 
     # Create agent with Uniswap on Base
     agent = Agent(

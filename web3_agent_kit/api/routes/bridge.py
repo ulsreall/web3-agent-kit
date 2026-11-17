@@ -4,7 +4,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from ..deps import build_wallet, chain_manager, resolve_chain
+
 router = APIRouter()
+
+
+def _agent(from_chain, wallet=None):
+    from ...bridge.bridge import BridgeAgent
+
+    return BridgeAgent(chain_manager(from_chain), wallet)
 
 
 @router.get("/quote")
@@ -15,12 +23,11 @@ async def get_bridge_quote(
     amount: str = "100",
 ):
     """Get bridge quote with estimated fees and time."""
-    from ...bridge.bridge import BridgeAgent
-
     try:
-        agent = BridgeAgent(from_chain)
-        routes = agent.get_routes(to_chain, token, amount)
-        return routes
+        source = resolve_chain(from_chain)
+        destination = resolve_chain(to_chain)
+        routes = _agent(source).get_routes(token, float(amount), source, destination)
+        return [route.to_dict() for route in routes]
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -32,14 +39,12 @@ async def execute_bridge(
     token: str = "USDC",
     amount: str = "100",
 ):
-    """Execute a cross-chain bridge."""
-    from ...bridge.bridge import BridgeAgent
-    from ...wallet.wallet import Wallet
-
+    """Execute a cross-chain bridge through the enforced pre-sign gate."""
     try:
-        wallet = Wallet.from_env("PRIVATE_KEY")
-        agent = BridgeAgent(from_chain)
-        result = agent.transfer(wallet, to_chain, token, amount)
+        source = resolve_chain(from_chain)
+        destination = resolve_chain(to_chain)
+        wallet = build_wallet(source)
+        result = _agent(source, wallet).transfer(token, float(amount), source, destination)
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

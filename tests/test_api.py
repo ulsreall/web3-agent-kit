@@ -497,11 +497,7 @@ class TestBridgeEndpoints:
     def test_bridge_quote(self, mock_no_api_key):
         with patch("web3_agent_kit.bridge.bridge.BridgeAgent") as MockAgent:
             mock_instance = MagicMock()
-            mock_instance.get_routes.return_value = {
-                "from_chain": "ethereum",
-                "to_chain": "arbitrum",
-                "routes": [],
-            }
+            mock_instance.get_routes.return_value = []
             MockAgent.return_value = mock_instance
             resp = client.get(
                 "/bridge/quote?from_chain=ethereum&to_chain=arbitrum&token=USDC&amount=100",

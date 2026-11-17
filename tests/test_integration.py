@@ -56,9 +56,76 @@ def test_wallet_no_key_error():
         w._get_account()
 
 
-def test_wallet_sign_transaction():
-    """Verify wallet can sign a transaction."""
+def _bound_wallet(key: str):
+    """Return a wallet with an enforced gate attached.
+
+    Signing fails closed without one, so an integration test that signs through
+    a bare wallet only passes while the gate is unbound.
+    """
+    import time
+
     from web3_agent_kit.chains.chain import Chain
+    from web3_agent_kit.execution import (
+        ActionType,
+        AuthorizationEvidence,
+        CallableAuthorizationProvider,
+        ExecutionPolicy,
+        PreSignInterceptor,
+    )
+    from web3_agent_kit.wallet.wallet import Wallet
+
+    wallet = Wallet.from_key(key)
+
+    def verify(context):
+        now = int(time.time())
+        return AuthorizationEvidence(
+            authorization_id="integration",
+            envelope_digest=context.envelope_digest,
+            executor=context.envelope.executor,
+            authorizer=wallet.address,
+            valid_from=now - 5,
+            valid_until=now + 300,
+            nonce="1",
+            policy_commitment_digest=context.policy_commitment.digest(),
+        )
+
+    gate = PreSignInterceptor(
+        policy=ExecutionPolicy(
+            allowed_chains=frozenset({Chain.ETHEREUM}),
+            allowed_actions=frozenset(ActionType),
+            allowed_contracts=frozenset({"0x" + "00" * 20}),
+            max_native_value_wei=10**18,
+            require_confirmation=False,
+        ),
+        signer=wallet.raw_signer,
+        authorization_provider=CallableAuthorizationProvider(verify),
+    )
+    return wallet.bind_enforcement(gate)
+
+
+def test_wallet_sign_transaction():
+    """Verify a gate-bound wallet can sign a transaction."""
+    from web3_agent_kit.chains.chain import Chain
+
+    key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+    wallet = _bound_wallet(key)
+    tx = {
+        "to": "0x0000000000000000000000000000000000000000",
+        "value": 0,
+        "gas": 21000,
+        "gasPrice": 1,
+        "nonce": 0,
+        "chainId": 1,
+    }
+    signed = wallet.sign_transaction(tx, Chain.ETHEREUM)
+    assert isinstance(signed, bytes)
+    assert len(signed) > 0
+
+
+def test_unbound_wallet_refuses_to_sign():
+    """The fail-closed contract itself, exercised end to end."""
+    from web3_agent_kit.chains.chain import Chain
+    from web3_agent_kit.execution import EnforcementDenied
     from web3_agent_kit.wallet.wallet import Wallet
 
     key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
@@ -71,6 +138,5 @@ def test_wallet_sign_transaction():
         "nonce": 0,
         "chainId": 1,
     }
-    signed = wallet.sign_transaction(tx, Chain.ETHEREUM)
-    assert isinstance(signed, bytes)
-    assert len(signed) > 0
+    with pytest.raises(EnforcementDenied):
+        wallet.sign_transaction(tx, Chain.ETHEREUM)

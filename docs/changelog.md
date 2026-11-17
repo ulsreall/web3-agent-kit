@@ -4,6 +4,38 @@ All notable changes to Web3 Agent Kit are documented here.
 
 ---
 
+## [Unreleased]
+
+### Fixed
+- **api:** every write route called the library with the wrong shape and could never reach a
+  signature. `POST /swap/execute` passed a chain name where a `ChainManager` was expected, a
+  float where a `Chain` was expected, and never resolved symbol tokens; `POST /bridge/execute`
+  built `BridgeAgent` without a wallet and rotated every `transfer()` argument;
+  `POST /dca/create` built `DCABot` without a manager and used five keyword names that do not
+  exist. Routes now share `api/deps.py`, and `tests/test_api_contracts.py` binds each call
+  against the real signature so the drift cannot return silently.
+- **api:** write routes build a gate-bound wallet when `WEB3_AUTO_AUTHORIZE=true`, so they can
+  actually sign. Unset still fails closed.
+- **execution:** contract creation (`to=None`) is enforced instead of refused. The request
+  object no longer requires `to`, and the intent layer carries an explicit creation profile
+  that requires init code and forbids a destination.
+- **execution:** calldata is resolved from `data` or its `input` alias, with a conflict treated
+  as a denial. Previously an `input`-only transaction hashed empty calldata while the signer
+  rejected the key outright.
+- **execution:** the authorization evidence's policy commitment is now compared to the
+  evaluated verdict; a mismatched commitment is a denial.
+- **tests:** the suite no longer depends on ambient environment. `tests/conftest.py` sets a
+  deterministic `PRIVATE_KEY`/`WEB3_API_KEY`, so the integration module runs instead of
+  silently skipping, and `test_solana_lp.py` skips cleanly without the `solana` extra.
+- **solana:** `send_token` creates the sender's associated token account idempotently and reads
+  the mint's owner to pick the token program, so Token-2022 mints derive the right accounts.
+
+### Added
+- `Wallet.raw_signer`, so a gate can be built around a wallet without touching a private
+  attribute.
+
+---
+
 ## [1.19.1] - 2026-11-08
 
 ### Fixed

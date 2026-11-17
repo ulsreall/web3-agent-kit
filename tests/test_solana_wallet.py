@@ -116,6 +116,9 @@ class TestSolanaWallet:
             }
         )
         mock_client.send_transaction = AsyncMock(return_value="tx_sig_123")
+        mock_client.get_account_info = AsyncMock(
+            return_value={"owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"}
+        )
         wallet._client = mock_client
 
         result = await wallet.send_sol(
@@ -150,6 +153,9 @@ class TestSolanaWallet:
             return_value={"blockhash": str(Hash.default())}
         )
         mock_client.send_transaction = AsyncMock(return_value="tx_sig_123")
+        mock_client.get_account_info = AsyncMock(
+            return_value={"owner": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"}
+        )
         wallet._client = mock_client
         mint = Pubkey.new_unique()
         with patch.object(
@@ -157,9 +163,13 @@ class TestSolanaWallet:
         ) as build_message:
             await wallet.send_token(str(Pubkey.new_unique()), str(mint), 1)
 
-        create_ata, transfer = build_message.call_args.args[0]
-        assert create_ata.program_id == ASSOCIATED_TOKEN_PROGRAM_ID
-        assert create_ata.data == b"\x01"
+        source_ata, dest_ata, transfer = build_message.call_args.args[0]
+        # Both accounts are created idempotently: a fresh wallet has no source
+        # ATA either, and the transfer would fail with AccountNotInitialized.
+        for create_ata in (source_ata, dest_ata):
+            assert create_ata.program_id == ASSOCIATED_TOKEN_PROGRAM_ID
+            assert create_ata.data == b"\x01"
+        assert source_ata.accounts[2].pubkey == wallet._keypair.pubkey()
         assert transfer.program_id == TOKEN_PROGRAM_ID
         assert transfer.data == b"\x0c" + (1_000_000).to_bytes(8, "little") + b"\x06"
         mock_client.send_transaction.assert_awaited_once()

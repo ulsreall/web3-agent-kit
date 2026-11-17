@@ -1,11 +1,15 @@
 """Example: DCA Bot — Dollar-Cost Average into tokens automatically."""
 
+from support.enforced_wallet import enforce
+
 from web3_agent_kit import Chain, ChainManager, Wallet
 from web3_agent_kit.trading import DCABot, Interval
 
 # Initialize
 chain_manager = ChainManager(chains=[Chain.ETHEREUM, Chain.BASE])
-wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
+wallet = enforce(
+    Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager), [Chain.ETHEREUM, Chain.BASE]
+)
 bot = DCABot(wallet, chain_manager)
 
 # 1. Create DCA orders
