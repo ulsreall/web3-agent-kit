@@ -2,4 +2,5 @@
 
 from web3_agent_kit.cli.main import main
 
-main()
+if __name__ == "__main__":
+    main()

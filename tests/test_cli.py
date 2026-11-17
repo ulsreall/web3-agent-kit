@@ -395,3 +395,17 @@ class TestExamplesCommand:
         result = runner.invoke(examples, [])
         assert result.exit_code == 0
         assert "Available Examples" in result.output
+
+
+def test_cli_main_module_is_importable_without_running():
+    """``python -m web3_agent_kit.cli`` still works, but importing must not exit."""
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, "-c", "import web3_agent_kit.cli.__main__; print('ok')"],
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert "ok" in completed.stdout
