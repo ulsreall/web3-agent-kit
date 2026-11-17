@@ -11,9 +11,12 @@ import inspect
 from unittest.mock import patch
 
 import pytest
-from fastapi.testclient import TestClient
 
-from web3_agent_kit.api import app
+pytest.importorskip("fastapi")
+
+from fastapi.testclient import TestClient  # noqa: E402
+
+from web3_agent_kit.api import app  # noqa: E402
 
 AUTH = {"X-API-Key": "test-key-123"}
 client = TestClient(app, headers=AUTH)
