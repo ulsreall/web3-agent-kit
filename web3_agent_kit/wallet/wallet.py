@@ -6,7 +6,7 @@ import os
 from dataclasses import dataclass
 from typing import Optional
 
-from ..chains.chain import Chain, ChainManager
+from ..chains.chain import CHAIN_IDS, Chain, ChainManager
 from ..execution import ActionType
 
 
@@ -265,9 +265,33 @@ class Wallet:
             raise ValueError("ChainManager not configured")
 
         w3 = self.chain_manager.get_web3(chain)
-        signed = self.sign_transaction(tx, chain, action=action, metadata=metadata)
+        prepared = self._prepare_tx(tx, chain, w3)
+        signed = self.sign_transaction(prepared, chain, action=action, metadata=metadata)
         tx_hash = w3.eth.send_raw_transaction(signed)
         return tx_hash.hex()
+
+    def _prepare_tx(self, tx: dict, chain: Chain, w3) -> dict:
+        """Fill the fields a caller may omit, so a bare ``{"to", "value"}`` works.
+
+        Only missing keys are filled; anything the caller set is preserved. The
+        gate then sees a complete cost model and can enforce it.
+        """
+        prepared = dict(tx)
+        prepared.setdefault("from", self.address)
+        prepared.setdefault("chainId", CHAIN_IDS[chain])
+        if "nonce" not in prepared:
+            prepared["nonce"] = w3.eth.get_transaction_count(self.address, "pending")
+        if "gas" not in prepared:
+            prepared["gas"] = w3.eth.estimate_gas(prepared)
+        if "gasPrice" not in prepared and "maxFeePerGas" not in prepared:
+            base_fee = w3.eth.get_block("latest").get("baseFeePerGas")
+            if base_fee is None:
+                prepared["gasPrice"] = w3.eth.gas_price
+            else:
+                tip = w3.eth.max_priority_fee
+                prepared["maxPriorityFeePerGas"] = tip
+                prepared["maxFeePerGas"] = base_fee * 2 + tip
+        return prepared
 
     def __repr__(self) -> str:
         return f"Wallet(address={self.address[:10]}...)"

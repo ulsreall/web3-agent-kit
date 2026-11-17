@@ -410,6 +410,9 @@ class BridgeAgent:
 
         # Build and send transaction
         w3 = self.chain_manager.get_web3(route.from_chain)
+        chain_id = CHAIN_IDS.get(route.from_chain)
+        if chain_id is None:
+            raise ValueError(f"no chain id known for {route.from_chain.value}")
 
         tx = {
             "from": w3.to_checksum_address(self._address),
@@ -419,7 +422,7 @@ class BridgeAgent:
             "gas": int(tx_request.get("gasLimit", "300000")),
             "gasPrice": w3.eth.gas_price,
             "nonce": w3.eth.get_transaction_count(self._address),
-            "chainId": CHAIN_IDS.get(route.from_chain, 1),
+            "chainId": chain_id,
         }
 
         signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
@@ -466,6 +469,9 @@ class BridgeAgent:
             raise ValueError("No transaction data from Socket")
 
         w3 = self.chain_manager.get_web3(route.from_chain)
+        chain_id = CHAIN_IDS.get(route.from_chain)
+        if chain_id is None:
+            raise ValueError(f"no chain id known for {route.from_chain.value}")
 
         tx = {
             "from": w3.to_checksum_address(self._address),
@@ -475,7 +481,7 @@ class BridgeAgent:
             "gas": int(tx_data.get("gasLimit", "300000")),
             "gasPrice": w3.eth.gas_price,
             "nonce": w3.eth.get_transaction_count(self._address),
-            "chainId": CHAIN_IDS.get(route.from_chain, 1),
+            "chainId": chain_id,
         }
 
         signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
