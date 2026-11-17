@@ -46,8 +46,8 @@ pytestmark = pytest.mark.skipif(not FASTAPI_AVAILABLE, reason="FastAPI not insta
 class TestWalletRoutes:
     def test_info_happy(self):
         with (
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
-            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.ChainManager") as MockManager,
         ):
             inst = MagicMock()
             inst.address = "0xabc"
@@ -65,7 +65,7 @@ class TestWalletRoutes:
             assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_info_error_path(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             MockWallet.from_env.side_effect = ValueError("no wallet")
             resp = client.get("/wallet/info", headers=AUTH_HEADERS)
             assert resp.status_code == 400
@@ -98,7 +98,7 @@ class TestWalletRoutes:
             assert "boom" in resp.json()["detail"]
 
     def test_balance_happy(self):
-        with patch("web3_agent_kit.chains.chain.ChainManager") as MockManager:
+        with patch("web3_agent_kit.api.deps.ChainManager") as MockManager:
             mgr = MagicMock()
             w3 = MagicMock()
             w3.eth.get_balance.return_value = 3_000_000_000_000_000_000
@@ -119,7 +119,7 @@ class TestWalletRoutes:
         assert "Unsupported chain" in resp.json()["detail"]
 
     def test_balance_solana_path(self):
-        with patch("web3_agent_kit.chains.chain.ChainManager") as MockManager:
+        with patch("web3_agent_kit.api.deps.ChainManager") as MockManager:
             mgr = MagicMock()
             sol = MagicMock()
             resp_obj = MagicMock()
@@ -132,7 +132,7 @@ class TestWalletRoutes:
             assert resp.json()["balance"] == "5.0"
 
     def test_balance_error_path(self):
-        with patch("web3_agent_kit.chains.chain.ChainManager") as MockManager:
+        with patch("web3_agent_kit.api.deps.ChainManager") as MockManager:
             MockManager.side_effect = RuntimeError("rpc down")
             resp = client.get("/wallet/balance/0xdead", headers=AUTH_HEADERS)
             assert resp.status_code == 400
@@ -227,8 +227,8 @@ class TestSwapRoutes:
 class TestPortfolioRoutes:
     def test_portfolio_happy(self):
         with (
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
-            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.ChainManager") as MockManager,
         ):
             inst = MagicMock()
             inst.address = "0xabc"
@@ -245,7 +245,7 @@ class TestPortfolioRoutes:
             assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_portfolio_error(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             MockWallet.from_env.side_effect = RuntimeError("nope")
             resp = client.get("/portfolio/", headers=AUTH_HEADERS)
             assert resp.status_code == 400
@@ -257,8 +257,8 @@ class TestPortfolioRoutes:
 
     def test_portfolio_value_happy(self):
         with (
-            patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet,
-            patch("web3_agent_kit.chains.chain.ChainManager") as MockManager,
+            patch("web3_agent_kit.api.deps.Wallet") as MockWallet,
+            patch("web3_agent_kit.api.deps.ChainManager") as MockManager,
         ):
             inst = MagicMock()
             inst.address = "0xabc"
@@ -273,7 +273,7 @@ class TestPortfolioRoutes:
             assert inst.get_balance.call_args.args[0].value == "ethereum"
 
     def test_portfolio_value_error(self):
-        with patch("web3_agent_kit.wallet.wallet.Wallet") as MockWallet:
+        with patch("web3_agent_kit.api.deps.Wallet") as MockWallet:
             MockWallet.from_env.side_effect = RuntimeError("nope")
             resp = client.get("/portfolio/value", headers=AUTH_HEADERS)
             assert resp.status_code == 400
@@ -671,7 +671,7 @@ class TestYieldRoutes:
     def test_opportunities_happy(self):
         with patch("web3_agent_kit.defi.yield_optimizer.YieldOptimizer") as MockO:
             inst = MagicMock()
-            inst.scan_opportunities.return_value = [{"protocol": "Aave"}]
+            inst.scan_opportunities.return_value = [{"protocol": "Aave", "apy": 5.0}]
             MockO.return_value = inst
             resp = client.get("/yield/opportunities?min_apy=1.5", headers=AUTH_HEADERS)
             assert resp.status_code == 200

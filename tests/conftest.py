@@ -25,6 +25,21 @@ def _isolated_dca_storage(tmp_path, monkeypatch):
 
 
 @pytest.fixture(autouse=True)
+def _fresh_replay_store(monkeypatch):
+    """Give every test its own replay state.
+
+    The gate's default store is process-wide on purpose, so without this a
+    second test reusing a fixture authorization looks like a replay.
+    """
+    from web3_agent_kit.execution import replay
+
+    monkeypatch.delenv("WEB3_REPLAY_DB", raising=False)
+    replay.reset_default_store()
+    yield
+    replay.reset_default_store()
+
+
+@pytest.fixture(autouse=True)
 def _deterministic_env(monkeypatch):
     monkeypatch.setenv("PRIVATE_KEY", TEST_PRIVATE_KEY)
     monkeypatch.setenv("WEB3_API_KEY", TEST_API_KEY)

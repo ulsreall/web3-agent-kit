@@ -271,10 +271,7 @@ class MultiWalletManager:
 
             for recipient in recipients:
                 try:
-                    tx = wallet.send(
-                        to=recipient,
-                        amount=amount,
-                    )
+                    tx = wallet.send(to=recipient, amount=amount, chain=self.chain)
                     results.append(
                         BatchTxResult(
                             wallet_label=wallet_info.label,
@@ -345,6 +342,7 @@ class MultiWalletManager:
                         token=token_address,
                         to=recipient,
                         amount=amount,
+                        chain=self.chain,
                     )
                     results.append(
                         BatchTxResult(
@@ -456,7 +454,7 @@ class MultiWalletManager:
                 continue
 
             try:
-                balance = wallet.get_balance()
+                balance = wallet.get_balance_summary(self.chain)
                 native = balance.get("native", 0)
                 total_native += native
 
@@ -529,7 +527,7 @@ class MultiWalletManager:
                 continue
 
             try:
-                balance = wallet.get_balance().get("native", 0)
+                balance = wallet.get_balance_summary(self.chain).get("native", 0)
                 send_amount = balance - keep_minimum
 
                 if send_amount <= 0:
@@ -544,7 +542,7 @@ class MultiWalletManager:
                     )
                     continue
 
-                tx = wallet.send(to=target.address, amount=send_amount)
+                tx = wallet.send(to=target.address, amount=send_amount, chain=self.chain)
                 results.append(
                     BatchTxResult(
                         wallet_label=wallet_info.label,

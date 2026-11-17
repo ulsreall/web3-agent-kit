@@ -16,6 +16,8 @@ Environment
 ``WEB3_ALLOWED_CONTRACTS``  comma-separated addresses; unset = only the target
                             the route already knows (see ``build_gate``).
 ``WEB3_MAX_NATIVE_WEI``     per-transaction native value cap, default 0.05 ETH.
+``WEB3_REPLAY_DB``          file path for durable, cross-process replay state;
+                            unset = process-wide in-memory store.
 ``WEB3_AUTO_AUTHORIZE``     ``true`` attaches an in-process authorization
                             provider. Without it every write fails closed with
                             an explicit message.

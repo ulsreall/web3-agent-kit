@@ -391,14 +391,14 @@ class TestConsolidation:
 
         main = manager.get_wallet("main")
         main.send = MagicMock()
-        main.get_balance = MagicMock(return_value={"native": 10.0})
+        main.get_balance_summary = MagicMock(return_value={"native": 10.0, "tokens": {}})
 
         sub1 = manager.get_wallet("sub1")
-        sub1.get_balance = MagicMock(return_value={"native": 5.0})
+        sub1.get_balance_summary = MagicMock(return_value={"native": 5.0, "tokens": {}})
         sub1.send = MagicMock(return_value={"hash": "0xsend1", "gas": 21000})
 
         sub2 = manager.get_wallet("sub2")
-        sub2.get_balance = MagicMock(return_value={"native": 3.0})
+        sub2.get_balance_summary = MagicMock(return_value={"native": 3.0, "tokens": {}})
         sub2.send = MagicMock(return_value={"hash": "0xsend2", "gas": 21000})
 
         results = manager.consolidate_to(
@@ -416,10 +416,10 @@ class TestConsolidation:
 
         main = manager.get_wallet("main")
         main.send = MagicMock()
-        main.get_balance = MagicMock(return_value={"native": 10.0})
+        main.get_balance_summary = MagicMock(return_value={"native": 10.0, "tokens": {}})
 
         poor = manager.get_wallet("poor")
-        poor.get_balance = MagicMock(return_value={"native": 0.0005})
+        poor.get_balance_summary = MagicMock(return_value={"native": 0.0005, "tokens": {}})
 
         results = manager.consolidate_to(
             target_label="main",
@@ -436,10 +436,10 @@ class TestConsolidation:
 
         main = manager.get_wallet("main")
         sub = manager.get_wallet("sub")
-        sub.get_balance = MagicMock(return_value={"native": 5.0})
+        sub.get_balance_summary = MagicMock(return_value={"native": 5.0, "tokens": {}})
         sub.send = MagicMock(side_effect=Exception("send failed"))
 
-        main.get_balance = MagicMock(return_value={"native": 10.0})
+        main.get_balance_summary = MagicMock(return_value={"native": 10.0, "tokens": {}})
 
         results = manager.consolidate_to(
             target_label="main",
@@ -453,7 +453,7 @@ class TestConsolidation:
         """consolidate_to should skip wallets without instance."""
         manager.create_wallet("main")
         main = manager.get_wallet("main")
-        main.get_balance = MagicMock(return_value={"native": 10.0})
+        main.get_balance_summary = MagicMock(return_value={"native": 10.0, "tokens": {}})
 
         from web3_agent_kit.wallet.multi_wallet import WalletInfo
 
@@ -472,14 +472,14 @@ class TestGetConsolidatedBalance:
         manager.create_wallet("w2")
 
         w1 = manager.get_wallet("w1")
-        w1.get_balance = MagicMock(
+        w1.get_balance_summary = MagicMock(
             return_value={
                 "native": 1.5,
                 "tokens": {"USDC": 500, "WETH": 0.5},
             }
         )
         w2 = manager.get_wallet("w2")
-        w2.get_balance = MagicMock(
+        w2.get_balance_summary = MagicMock(
             return_value={
                 "native": 2.5,
                 "tokens": {"USDC": 300, "DAI": 1000},
@@ -502,7 +502,7 @@ class TestGetConsolidatedBalance:
         manager.wallets["orphan"] = info
 
         w1 = manager.get_wallet("w1")
-        w1.get_balance = MagicMock(return_value={"native": 1.0, "tokens": {}})
+        w1.get_balance_summary = MagicMock(return_value={"native": 1.0, "tokens": {}})
 
         balance = manager.get_consolidated_balance()
         assert balance.wallet_count == 2  # Both wallet infos counted
@@ -512,7 +512,7 @@ class TestGetConsolidatedBalance:
     def test_handles_balance_failure(self, manager):
         manager.create_wallet("w1")
         w1 = manager.get_wallet("w1")
-        w1.get_balance = MagicMock(side_effect=Exception("RPC error"))
+        w1.get_balance_summary = MagicMock(side_effect=Exception("RPC error"))
 
         balance = manager.get_consolidated_balance()
         assert len(balance.wallets) == 1
@@ -525,9 +525,9 @@ class TestGetConsolidatedBalance:
         manager.create_wallet("w2", group="airdrop")
 
         w1 = manager.get_wallet("w1")
-        w1.get_balance = MagicMock(return_value={"native": 5.0, "tokens": {}})
+        w1.get_balance_summary = MagicMock(return_value={"native": 5.0, "tokens": {}})
         w2 = manager.get_wallet("w2")
-        w2.get_balance = MagicMock(return_value={"native": 3.0, "tokens": {}})
+        w2.get_balance_summary = MagicMock(return_value={"native": 3.0, "tokens": {}})
 
         balance = manager.get_consolidated_balance(group_filter="trading")
         assert balance.total_native == 5.0

@@ -4,26 +4,27 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from ..deps import build_wallet, resolve_chain
+
 router = APIRouter()
+
+
+def _summary(chain_name: str, note: str) -> dict:
+    chain = resolve_chain(chain_name)
+    wallet = build_wallet(chain)
+    return {
+        "address": wallet.address,
+        "chain": chain.value,
+        "native_balance": str(wallet.get_balance(chain)),
+        "note": note,
+    }
 
 
 @router.get("/")
 async def get_portfolio(chain: str = "ethereum"):
     """Get full portfolio with token balances and USD values."""
-    from ...chains.chain import Chain, ChainManager
-    from ...wallet.wallet import Wallet
-
     try:
-        chain_enum = Chain(chain)
-        manager = ChainManager([chain_enum])
-        wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=manager)
-        balance = wallet.get_balance(chain_enum)
-        return {
-            "address": wallet.address,
-            "chain": chain,
-            "native_balance": str(balance),
-            "note": "Full portfolio tracking requires token list configuration",
-        }
+        return _summary(chain, "Full portfolio tracking requires token list configuration")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -31,19 +32,7 @@ async def get_portfolio(chain: str = "ethereum"):
 @router.get("/value")
 async def get_portfolio_value(chain: str = "ethereum"):
     """Get total portfolio value in USD."""
-    from ...chains.chain import Chain, ChainManager
-    from ...wallet.wallet import Wallet
-
     try:
-        chain_enum = Chain(chain)
-        manager = ChainManager([chain_enum])
-        wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=manager)
-        balance = wallet.get_balance(chain_enum)
-        return {
-            "address": wallet.address,
-            "chain": chain,
-            "native_balance": str(balance),
-            "note": "USD value requires price feed integration",
-        }
+        return _summary(chain, "USD value requires price feed integration")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

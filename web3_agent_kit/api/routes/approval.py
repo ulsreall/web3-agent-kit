@@ -4,18 +4,18 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
+from ..deps import build_wallet, chain_manager, resolve_chain
+
 router = APIRouter()
 
 
 def _approval_manager(chain_name: str):
-    from ...chains.chain import Chain, ChainManager
     from ...wallet.approval import ApprovalManager
-    from ...wallet.wallet import Wallet
 
-    chain = Chain(chain_name)
-    chain_manager = ChainManager([chain])
-    wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=chain_manager)
-    return ApprovalManager(wallet, chain_manager), chain
+    chain = resolve_chain(chain_name)
+    manager = chain_manager(chain)
+    wallet = build_wallet(chain)
+    return ApprovalManager(wallet, manager), chain
 
 
 @router.get("/scan")
@@ -55,9 +55,10 @@ async def revoke_approval(
 ):
     """Revoke a token approval."""
     try:
+        if not token or not spender:
+            raise ValueError("token and spender are required")
         manager, chain_enum = _approval_manager(chain)
-        result = manager.revoke(token, spender, chain_enum)
-        return result
+        return manager.revoke(token, spender, chain_enum)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
@@ -68,8 +69,7 @@ async def revoke_all_unlimited(chain: str = "ethereum"):
     try:
         manager, chain_enum = _approval_manager(chain)
         manager.scan(chain_enum)
-        result = manager.revoke_all_unlimited(chain_enum)
-        return result
+        return manager.revoke_all_unlimited(chain_enum)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

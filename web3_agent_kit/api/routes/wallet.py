@@ -6,19 +6,17 @@ import os
 
 from fastapi import APIRouter, HTTPException
 
+from ..deps import build_wallet, chain_manager, resolve_chain
+
 router = APIRouter()
 
 
 @router.get("/info")
 async def get_wallet_info(chain: str = "ethereum"):
     """Get current wallet info and balance."""
-    from ...chains.chain import Chain, ChainManager
-    from ...wallet.wallet import Wallet
-
     try:
-        chain_enum = Chain(chain)
-        manager = ChainManager([chain_enum])
-        wallet = Wallet.from_env("PRIVATE_KEY", chain_manager=manager)
+        chain_enum = resolve_chain(chain)
+        wallet = build_wallet(chain_enum)
         balance = wallet.get_balance(chain_enum)
         return {
             "address": wallet.address,
@@ -95,17 +93,15 @@ async def create_wallet(chain: str = "ethereum"):
 @router.get("/balance/{address}")
 async def get_balance(address: str, chain: str = "ethereum"):
     """Get ETH/native balance for the given on-chain address (read-only)."""
-    from ...chains.chain import Chain, ChainManager
-
     try:
-        chain_enum = Chain(chain)
+        chain_enum = resolve_chain(chain)
     except ValueError:
         raise HTTPException(status_code=400, detail=f"Unsupported chain: {chain}")
 
     try:
-        manager = ChainManager([chain_enum])
+        manager = chain_manager(chain_enum)
 
-        if chain_enum == Chain.SOLANA:
+        if chain_enum.value == "solana":
             sol = manager.get_solana()
             resp = sol.get_balance(address)
             balance = resp.value / 1e9

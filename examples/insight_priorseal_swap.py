@@ -23,6 +23,7 @@ from web3_agent_kit.execution import (
     AuthorizationRequest,
     EnforcementDenied,
     ExecutionPolicy,
+    InMemoryReplayStore,
     PreSignInterceptor,
 )
 
@@ -286,6 +287,9 @@ def _run_gate_attempt(
         authorization_provider=current_provider,
         # This fixture's signed PriorSeal commitment is pinned to envelope v1.
         envelope_version=1,
+        # Each case owns its gate, so replay state is scoped to the case. N5b is
+        # about the provider's persisted acceptance store, not the gate's memory.
+        replay_store=InMemoryReplayStore(),
     )
     if gate is not None and gate.authorization_provider is not current_provider:
         raise BoundaryError("gate/provider reconstruction mismatch")

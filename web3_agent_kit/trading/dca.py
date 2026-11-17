@@ -402,19 +402,25 @@ class DCABot:
         """Execute a swap for a DCA order."""
         if self.uniswap:
             try:
-                result = self.uniswap.swap(
-                    from_token=order.from_token,
-                    to_token=order.to_token,
-                    amount=order.amount_per_buy,
-                    slippage=order.slippage,
+                # Uniswap.execute(wallet, token_in, token_out, amount, chain).
+                # Slippage lives on the instance, so an order override is applied
+                # there rather than passed through.
+                self.uniswap.slippage = order.slippage
+                result = self.uniswap.execute(
+                    self.wallet,
+                    order.from_token,
+                    order.to_token,
+                    order.amount_per_buy,
+                    chain=order.chain,
                 )
+                received = result.amount_out or 0
                 return DCAResult(
                     order_id=order.id,
                     success=True,
                     amount_spent=order.amount_per_buy,
-                    amount_received=result.get("amount_out", 0),
-                    price=order.amount_per_buy / result.get("amount_out", 1),
-                    tx_hash=result.get("tx_hash"),
+                    amount_received=received,
+                    price=(order.amount_per_buy / received) if received else 0,
+                    tx_hash=result.tx_hash,
                 )
             except Exception as e:
                 return DCAResult(
