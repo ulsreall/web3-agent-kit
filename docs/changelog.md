@@ -21,6 +21,26 @@ All notable changes to Web3 Agent Kit are documented here.
   against the real signature so the drift cannot return silently.
 - **api:** write routes build a gate-bound wallet when `WEB3_AUTO_AUTHORIZE=true`, so they can
   actually sign. Unset still fails closed.
+- **api:** the read routes had the same drift. Approval scan/revoke, gas estimate, the watcher,
+  the yield optimizer and `/wallet/info` all passed a chain name where a `ChainManager` was
+  expected and 400'd on the first call; `gas.estimate()` also needs a target address and
+  `yield.find_best()` needs an asset and an amount. All of them now go through `deps`.
+- **defi:** the aggregator defined its own `Chain` enum, so passing the library's `Chain` raised
+  `KeyError` on every chain-id lookup. It re-exports the real enum now.
+- **defi:** Paraswap decimals were hardcoded to 18, which the API rejects with "Source Decimals
+  Mismatch" for every 6-decimal token. Decimals are resolved by the quote and carried through.
+- **defi:** 0x sent the 1inch key in its `0x-api-key` header; `zeroex_api_key` and
+  `AggregatorConfig.from_env()` replace the guesswork.
+- **dca:** `_execute_swap` called `uniswap.swap()`, which does not exist (it is `execute()`), and
+  read the result as a dict although it is a `SwapResult`. Every DCA buy failed silently. The API
+  also wires a Uniswap instance in, so executions are real instead of the demo branch, and
+  `POST /dca/orders/{id}/execute` runs one buy now.
+- **wallet:** `send_transaction` fills `from`/`nonce`/`chainId`/gas/fees when the caller omits
+  them, instead of handing the gate an incomplete transaction.
+- **wallet:** `MultiWalletManager` called `send()`, `transfer_token()` and `get_balance()` (as a
+  dict); none existed. They do now, and all of them route through `send_transaction`.
+- **bridge:** the Li.Fi path fell back to chain id 1 for any chain missing from `CHAIN_IDS`,
+  signing a Base transaction as Ethereum.
 - **execution:** contract creation (`to=None`) is enforced instead of refused. The request
   object no longer requires `to`, and the intent layer carries an explicit creation profile
   that requires init code and forbids a destination.
@@ -38,6 +58,9 @@ All notable changes to Web3 Agent Kit are documented here.
 ### Added
 - `Wallet.raw_signer`, so a gate can be built around a wallet without touching a private
   attribute.
+- `Wallet.send`, `Wallet.transfer_token`, `Wallet.get_balance_summary`.
+- `web3_agent_kit.execution.replay` with `InMemoryReplayStore` / `SqliteReplayStore`.
+- `POST /dca/orders/{id}/execute`.
 
 ---
 

@@ -13,6 +13,9 @@ and balance queries across multiple chains.
         - address
         - private_key
         - get_balance
+        - get_balance_summary
+        - send
+        - transfer_token
         - sign_transaction
         - send_transaction
       show_root_heading: true
@@ -70,6 +73,14 @@ wallet.bind_enforcement(
 # The transaction must be fully built (including from, nonce, and chainId).
 signed = wallet.sign_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT_CALL)
 tx_hash = wallet.send_transaction(tx_dict, Chain.BASE, action=ActionType.CONTRACT_CALL)
+
+# send_transaction fills from/nonce/chainId/gas/fees when they are missing.
+tx_hash = wallet.send_transaction({"to": recipient, "value": 10**15}, Chain.BASE)
+
+# Convenience wrappers, also gated:
+wallet.send(recipient, 0.001, chain=Chain.BASE)
+wallet.transfer_token(usdc, recipient, 25, chain=Chain.BASE)
+wallet.get_balance_summary(chain=Chain.BASE, tokens=[usdc])
 ```
 
 The current authorization fingerprint binds the transaction's chain, executor, nonce, target, calldata hash, native value, gas limit, and fee caps (`gasPrice` or EIP-1559 fields). Changing these bound fields changes the fingerprint. See the [safety pipeline](../safety-and-transaction-pipeline.md) for authorization requirements and legacy-envelope compatibility details.
