@@ -11,7 +11,7 @@ import os
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import requests
 
@@ -318,7 +318,7 @@ class CaptchaSolver:
         try:
             response = self.session.post(
                 f"{self.ANTICAPTCHA_API}/createTask",
-                json=create_payload,
+                json=cast(Any, create_payload),
                 timeout=self.config.timeout,
             )
             response.raise_for_status()
@@ -361,10 +361,13 @@ class CaptchaSolver:
             try:
                 response = self.session.post(
                     f"{self.ANTICAPTCHA_API}/getTaskResult",
-                    json={
-                        "clientKey": self.config.api_key,
-                        "taskId": task_id,
-                    },
+                    json=cast(
+                        Any,
+                        {
+                            "clientKey": self.config.api_key,
+                            "taskId": task_id,
+                        },
+                    ),
                     timeout=30,
                 )
                 response.raise_for_status()
@@ -407,7 +410,7 @@ class CaptchaSolver:
         try:
             response = self.session.post(
                 f"{self.ANTICAPTCHA_API}/getBalance",
-                json={"clientKey": self.config.api_key},
+                json=cast(Any, {"clientKey": self.config.api_key}),
                 timeout=30,
             )
             response.raise_for_status()
@@ -574,12 +577,15 @@ class CaptchaSolver:
             try:
                 response = self.session.get(
                     f"{self.TWOCAPTCHA_API}/res.php",
-                    params={
-                        "key": self.config.api_key,
-                        "action": "get",
-                        "id": task_id,
-                        "json": 1,
-                    },
+                    params=cast(
+                        Any,
+                        {
+                            "key": self.config.api_key,
+                            "action": "get",
+                            "id": task_id,
+                            "json": 1,
+                        },
+                    ),
                     timeout=30,
                 )
                 response.raise_for_status()
@@ -611,11 +617,14 @@ class CaptchaSolver:
         try:
             response = self.session.get(
                 f"{self.TWOCAPTCHA_API}/res.php",
-                params={
-                    "key": self.config.api_key,
-                    "action": "getbalance",
-                    "json": 1,
-                },
+                params=cast(
+                    Any,
+                    {
+                        "key": self.config.api_key,
+                        "action": "getbalance",
+                        "json": 1,
+                    },
+                ),
                 timeout=30,
             )
             response.raise_for_status()

@@ -232,7 +232,7 @@ class TransactionIntent:
             return cls(
                 chain=chain,
                 action=action,
-                sender=transaction.get("from"),
+                sender=str(transaction.get("from") or ""),
                 token=destination,
                 recipient="0x" + spender_word[12:].hex(),
                 amount_base_units=int.from_bytes(calldata[36:68], "big"),
@@ -252,7 +252,7 @@ class TransactionIntent:
         return cls(
             chain=chain,
             action=action,
-            sender=transaction.get("from"),
+            sender=str(transaction.get("from") or ""),
             recipient=destination if action == ActionType.TRANSFER_NATIVE else None,
             contract=destination if action in contract_actions and not is_creation else None,
             is_creation=is_creation,

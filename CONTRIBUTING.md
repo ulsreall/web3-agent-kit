@@ -61,11 +61,10 @@ pytest tests/ -v
 - Keep functions focused and small
 - `ruff check .`, `ruff format --check .` and `mypy` must pass; CI runs all three
 
-`mypy` disables `arg-type` in `pyproject.toml`. The `requests` and `web3` stubs
-reject valid runtime calls (`Session.get(params=...)`, `Eth.call(tx_dict)`),
-so that one code is off to keep the rest a hard gate. Run `mypy
---disable-error-code=""` to see them, and prefer a real annotation over a
-`type: ignore` when you do fix one.
+The `requests` and `web3` stubs are narrower than the libraries: they reject
+`Session.get(params=dict)` and `Eth.call(tx_dict)`. Annotate the dict
+(`dict[str, Any]`), checksum the address, or `cast` at the call boundary rather
+than reaching for `type: ignore`.
 
 ### Commit Messages
 

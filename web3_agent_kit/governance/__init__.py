@@ -502,7 +502,7 @@ class GovernanceTracker:
             abi=self.TOKEN_ABI,
         )
 
-        block = block_number or "latest"
+        block: Any = block_number or "latest"
 
         balance = token_contract.functions.balanceOf(
             self.w3.to_checksum_address(address),

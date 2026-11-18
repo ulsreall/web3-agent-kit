@@ -23,7 +23,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import requests
 
@@ -378,7 +378,7 @@ class CampaignDiscovery:
 
                 resp = self.session.post(
                     self.GALXE_API,
-                    json={"query": self.GALXE_CAMPAIGNS_QUERY, "variables": variables},
+                    json=cast(Any, {"query": self.GALXE_CAMPAIGNS_QUERY, "variables": variables}),
                     timeout=15,
                 )
                 resp.raise_for_status()
@@ -411,7 +411,7 @@ class CampaignDiscovery:
             # Zealy public community listing
             resp = self.session.get(
                 f"{self.ZEALY_API}/communities",
-                params={"limit": self.config.max_per_platform, "sort": "popular"},
+                params=cast(Any, {"limit": self.config.max_per_platform, "sort": "popular"}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -442,7 +442,7 @@ class CampaignDiscovery:
         try:
             resp = self.session.get(
                 f"{self.LAYER3_API}/quests",
-                params={"status": "active", "limit": self.config.max_per_platform},
+                params=cast(Any, {"status": "active", "limit": self.config.max_per_platform}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -474,7 +474,9 @@ class CampaignDiscovery:
         try:
             resp = self.session.get(
                 f"{self.QUESTN_API}/v2/campaigns",
-                params={"status": "active", "page": 1, "size": self.config.max_per_platform},
+                params=cast(
+                    Any, {"status": "active", "page": 1, "size": self.config.max_per_platform}
+                ),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -503,7 +505,7 @@ class CampaignDiscovery:
         try:
             resp = self.session.get(
                 f"{self.TASKON_API}/v1/campaigns",
-                params={"status": "ongoing", "pageSize": self.config.max_per_platform},
+                params=cast(Any, {"status": "ongoing", "pageSize": self.config.max_per_platform}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -533,7 +535,7 @@ class CampaignDiscovery:
         try:
             resp = self.session.get(
                 f"{self.INTRACT_API}/campaigns",
-                params={"status": "active", "limit": self.config.max_per_platform},
+                params=cast(Any, {"status": "active", "limit": self.config.max_per_platform}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -562,7 +564,7 @@ class CampaignDiscovery:
         try:
             resp = self.session.get(
                 f"{self.PORT3_API}/quests",
-                params={"status": "active", "limit": self.config.max_per_platform},
+                params=cast(Any, {"status": "active", "limit": self.config.max_per_platform}),
                 timeout=15,
             )
             if resp.status_code == 200:

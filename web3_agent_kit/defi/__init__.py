@@ -245,6 +245,8 @@ class Uniswap(DeFiTool):
 
         # Resolve token addresses
         weth_addr = WETH.get(chain)
+        if weth_addr is None:
+            raise ValueError(f"No WETH address configured for chain {chain}")
         is_eth_in = token_in.upper() in ("ETH", "NATIVE", weth_addr)
         is_eth_out = token_out.upper() in ("ETH", "NATIVE", weth_addr)
 
@@ -393,10 +395,12 @@ class Uniswap(DeFiTool):
         )
 
         weth_addr = WETH.get(chain)
+        if weth_addr is None:
+            raise ValueError(f"No WETH address configured for chain {chain}")
         is_eth_in = token_in.upper() in ("ETH", "NATIVE", weth_addr)
         is_eth_out = token_out.upper() in ("ETH", "NATIVE", weth_addr)
 
-        token_in_addr = weth_addr if is_eth_in else w3.to_checksum_address(token_in)
+        token_in_addr: str = weth_addr if is_eth_in else w3.to_checksum_address(token_in)
         token_out_addr = weth_addr if is_eth_out else w3.to_checksum_address(token_out)
 
         path = [w3.to_checksum_address(token_in_addr), w3.to_checksum_address(token_out_addr)]

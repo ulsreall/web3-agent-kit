@@ -435,7 +435,7 @@ def get_sqrt_ratio_at_tick(tick: int) -> int:
         ratio = (ratio * 0x48A170391F7DC42444E8FA2) >> 128
 
     if tick > 0:
-        ratio = (2**256 - 1) // ratio  # type: ignore[assignment]
+        ratio = (2**256 - 1) // ratio
 
     # Shift to Q96
     sqrt_price_x96 = (ratio >> 32) + (1 if ratio % (1 << 32) != 0 else 0)

@@ -26,7 +26,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Optional
+from typing import Any, Callable, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -160,7 +160,7 @@ class AAPaymaster:
 
         import requests
 
-        payload = {
+        payload: dict[str, Any] = {
             "jsonrpc": "2.0",
             "method": "pm_sponsorUserOperation",
             "params": [
@@ -184,7 +184,7 @@ class AAPaymaster:
         }
 
         if self.policy_id:
-            payload["params"][0]["sponsorshipPolicyId"] = self.policy_id  # type: ignore[index]
+            payload["params"][0]["sponsorshipPolicyId"] = self.policy_id
 
         resp = requests.post(
             self.url,
@@ -253,13 +253,14 @@ class AAWallet:
     def get_counterfactual_address(self, owner: str, salt: int = 0) -> str:
         """Compute the counterfactual address of the smart account before deployment."""
         from web3 import Web3
+        from web3.types import HexStr
 
         # Simplified: using create2 address computation
         # In production, this should call the factory's getAddress()
         init_code = self._encode_init_code(owner, salt)
         address = Web3.keccak(
             bytes.fromhex("ff")
-            + Web3.to_bytes(hexstr=self.factory_address)
+            + Web3.to_bytes(hexstr=cast(HexStr, self.factory_address))
             + Web3.to_bytes(salt).rjust(32, b"\x00")
             + Web3.keccak(hexstr=init_code)
         )[12:].hex()
@@ -278,7 +279,7 @@ class AAWallet:
         address = self.get_counterfactual_address(owner, salt)
 
         # Check if already deployed
-        code = self.w3.eth.get_code(address)
+        code = self.w3.eth.get_code(self.w3.to_checksum_address(address))
         deployed = len(code) > 2
 
         if not deployed:
@@ -375,7 +376,7 @@ class AAWallet:
         )
 
         # Check if account needs deployment
-        code = self.w3.eth.get_code(sender)
+        code = self.w3.eth.get_code(self.w3.to_checksum_address(sender))
         if len(code) <= 2 and owner:
             user_op.init_code = self._encode_init_code(owner, 0)
 
@@ -434,7 +435,7 @@ class AAWallet:
 
         import requests
 
-        payload = {
+        payload: dict[str, Any] = {
             "jsonrpc": "2.0",
             "method": "eth_sendUserOperation",
             "params": [
@@ -485,8 +486,8 @@ class AAWallet:
 
     def get_account_info(self, address: str) -> AAWalletInfo:
         """Get smart account information."""
-        code = self.w3.eth.get_code(address)
-        balance = self.w3.eth.get_balance(address)
+        code = self.w3.eth.get_code(self.w3.to_checksum_address(address))
+        balance = self.w3.eth.get_balance(self.w3.to_checksum_address(address))
         return AAWalletInfo(
             address=address,
             owner="",  # Read from account storage

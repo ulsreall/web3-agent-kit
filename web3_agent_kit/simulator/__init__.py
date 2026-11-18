@@ -25,7 +25,9 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, cast
+
+from web3.types import TxParams
 
 logger = logging.getLogger(__name__)
 
@@ -156,10 +158,10 @@ class TxSimulator:
     ) -> SimResult:
         """Simulate using eth_call."""
 
-        block = block_number or self.config.block_number or "latest"
+        block: Any = block_number or self.config.block_number or "latest"
 
         # Build transaction
-        tx = {
+        tx: dict[str, Any] = {
             "from": self.w3.to_checksum_address(from_address),
             "to": self.w3.to_checksum_address(to) if to else None,
             "data": data,
@@ -171,12 +173,12 @@ class TxSimulator:
 
         try:
             # First, simulate the call
-            result = self.w3.eth.call(tx, block_identifier=block)
+            result = self.w3.eth.call(cast(TxParams, tx), block_identifier=block)
             return_value = result.hex() if isinstance(result, bytes) else str(result)
 
             # Estimate gas
             try:
-                estimated_gas = self.w3.eth.estimate_gas(tx, block_identifier=block)
+                estimated_gas = self.w3.eth.estimate_gas(cast(TxParams, tx), block_identifier=block)
                 safe_gas = int(estimated_gas * self.config.gas_multiplier)
             except Exception:
                 estimated_gas = 0
@@ -351,8 +353,8 @@ class TxSimulator:
             except Exception:
                 pass
 
-            result = fork_w3.eth.call(tx)
-            gas = fork_w3.eth.estimate_gas(tx)
+            result = fork_w3.eth.call(cast(TxParams, tx))
+            gas = fork_w3.eth.estimate_gas(cast(TxParams, tx))
 
             return SimResult(
                 success=True,

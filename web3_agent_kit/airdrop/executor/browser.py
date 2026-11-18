@@ -31,10 +31,10 @@ try:
 except ImportError:
     HAS_PLAYWRIGHT = False
     # Type stubs for when playwright isn't installed
-    Browser = Any  # type: ignore[misc,assignment]
-    BrowserContext = Any  # type: ignore[misc,assignment]
-    Page = Any  # type: ignore[misc,assignment]
-    Playwright = Any  # type: ignore[misc,assignment]
+    Browser = Any
+    BrowserContext = Any
+    Page = Any
+    Playwright = Any
 
 SESSIONS_DIR = Path.home() / ".web3-agent-kit" / "sessions"
 

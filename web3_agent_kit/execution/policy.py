@@ -7,6 +7,7 @@ from collections.abc import Iterable, Mapping
 from dataclasses import dataclass, field
 from enum import Enum
 from types import MappingProxyType
+from typing import Any
 
 from ..chains import Chain
 from .errors import ExecutionError
@@ -123,7 +124,7 @@ def _validate_limit(value: object, field_name: str) -> int:
     return value
 
 
-def _copy_limit_mapping(values: Mapping[object, object], field_name: str) -> Mapping[str, int]:
+def _copy_limit_mapping(values: Mapping[Any, Any], field_name: str) -> Mapping[str, int]:
     if not isinstance(values, Mapping):
         raise InvalidPolicyLimitError(f"{field_name} must be a mapping")
     copied: dict[str, int] = {}
@@ -204,14 +205,14 @@ class ExecutionPolicy:
             reasons.append(PolicyReason.NATIVE_VALUE_EXCEEDED)
 
         if intent.action == ActionType.TRANSFER_TOKEN:
-            token_limit = self.max_token_amounts.get(intent.token)
+            token_limit = self.max_token_amounts.get(intent.token or "")
             if token_limit is None:
                 reasons.append(PolicyReason.TOKEN_LIMIT_NOT_CONFIGURED)
             elif intent.amount_base_units > token_limit:
                 reasons.append(PolicyReason.TOKEN_AMOUNT_EXCEEDED)
 
         if intent.action == ActionType.APPROVE_TOKEN:
-            approval_limit = self.max_approval_amounts.get(intent.token)
+            approval_limit = self.max_approval_amounts.get(intent.token or "")
             if approval_limit is None:
                 reasons.append(PolicyReason.APPROVAL_LIMIT_NOT_CONFIGURED)
             elif intent.amount_base_units > approval_limit:
