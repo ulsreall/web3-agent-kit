@@ -40,7 +40,7 @@ class QuestNResult(ExecutorResult):
     level_up: bool = False
 
 
-class QuestNExecutor(BasePlatformExecutor):
+class QuestNExecutor(BasePlatformExecutor[QuestNTask]):
     """QuestN quest automation.
 
     Navigates QuestN quest pages, parses available quests, and completes

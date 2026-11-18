@@ -194,7 +194,7 @@ class AirdropTracker:
         Args:
             path: File path to write JSON.
         """
-        data = {
+        data: dict = {
             "exported_at": time.time(),
             "campaigns": {},
             "rewards": [],

@@ -9,6 +9,7 @@ from __future__ import annotations
 import sys
 import time
 from pathlib import Path
+from typing import Any
 
 import click
 
@@ -254,6 +255,7 @@ def browser_login(platform: str):
     click.echo("   A browser window will open. Log in manually, then press Enter here.")
     click.echo()
 
+    executor: Any
     if platform == "twitter":
         from .social_exec import TwitterExecutor
 

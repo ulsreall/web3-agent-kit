@@ -40,7 +40,7 @@ class Port3Result(ExecutorResult):
     reputation_score: int = 0
 
 
-class Port3Executor(BasePlatformExecutor):
+class Port3Executor(BasePlatformExecutor[Port3Task]):
     """Port3 quest automation.
 
     Navigates Port3 quest pages, parses available quests, and completes

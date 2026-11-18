@@ -315,7 +315,7 @@ class YieldOptimizer:
         total_rewards = sum(p.rewards_earned for p in self.positions)
         total_pnl = sum(p.pnl for p in self.positions)
 
-        avg_apy = 0
+        avg_apy: float = 0
         if self.positions:
             weighted_apy = sum(p.opportunity.apy * p.deposited_value_usd for p in self.positions)
             avg_apy = weighted_apy / total_deposited if total_deposited > 0 else 0

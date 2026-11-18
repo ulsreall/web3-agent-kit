@@ -11,7 +11,7 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Generic, Optional, TypeVar
 
 import requests
 
@@ -78,8 +78,11 @@ class PlatformTask:
         )
 
 
+TaskT = TypeVar("TaskT", bound=PlatformTask)
+
+
 @dataclass
-class ExecutorResult:
+class ExecutorResult(Generic[TaskT]):
     """Result of running an executor."""
 
     platform: str
@@ -89,7 +92,7 @@ class ExecutorResult:
     failed_tasks: int = 0
     skipped_tasks: int = 0
     points_earned: int = 0
-    tasks: list[PlatformTask] = field(default_factory=list)
+    tasks: list[TaskT] = field(default_factory=list)
     errors: list[str] = field(default_factory=list)
     elapsed_seconds: float = 0.0
 
@@ -125,7 +128,7 @@ class ExecutorConfig:
     verbose: bool = False
 
 
-class BasePlatformExecutor(ABC):
+class BasePlatformExecutor(ABC, Generic[TaskT]):
     """Abstract base class for all platform executors.
 
     Provides common functionality: session management, rate limiting,
@@ -178,8 +181,8 @@ class BasePlatformExecutor(ABC):
             }
         self._last_request_time: float = 0
         self._current_url: str = ""
-        self._tasks: list[PlatformTask] = []
-        self._results: ExecutorResult = ExecutorResult(platform=self.platform_name, url="")
+        self._tasks: list[TaskT] = []
+        self._results: ExecutorResult[TaskT] = ExecutorResult(platform=self.platform_name, url="")
         self._progress_callback: Optional[Any] = None
         logger.info(f"Initialized {self.platform_name} executor")
 
@@ -196,7 +199,7 @@ class BasePlatformExecutor(ABC):
         ...
 
     @abstractmethod
-    def get_tasks(self) -> list[PlatformTask]:
+    def get_tasks(self) -> list[TaskT]:
         """Discover available tasks on the platform.
 
         Returns:
@@ -205,7 +208,7 @@ class BasePlatformExecutor(ABC):
         ...
 
     @abstractmethod
-    def complete_task(self, task: PlatformTask) -> bool:
+    def complete_task(self, task: TaskT) -> bool:
         """Execute a single task.
 
         Args:

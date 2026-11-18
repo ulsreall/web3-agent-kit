@@ -464,7 +464,7 @@ class RestakingMonitor:
                 }
             )
 
-        summaries.sort(key=lambda x: x["total_value_usd"], reverse=True)
+        summaries.sort(key=lambda x: float(x["total_value_usd"]), reverse=True)
         return summaries
 
     def get_slashing_history(self) -> list[SlashingEvent]:

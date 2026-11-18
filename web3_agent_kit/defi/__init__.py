@@ -180,8 +180,13 @@ class DeFiTool(ABC):
     supported_chains: list[Chain] = []
 
     @abstractmethod
-    def execute(self, wallet: Wallet, **kwargs) -> Any:
-        """Execute a DeFi operation."""
+    def execute(self, wallet: Wallet, *args, **kwargs) -> Any:
+        """Execute a DeFi operation.
+
+        ``*args`` is part of the contract: subclasses take protocol-specific
+        positional parameters, and a caller typed against ``DeFiTool`` must be
+        able to pass them.
+        """
         pass
 
 
@@ -683,7 +688,7 @@ class Aave(DeFiTool):
         Returns:
             Action-specific result dict
         """
-        actions = {
+        actions: dict[str, Any] = {
             "supply": self.supply,
             "withdraw": self.withdraw,
             "borrow": self.borrow,

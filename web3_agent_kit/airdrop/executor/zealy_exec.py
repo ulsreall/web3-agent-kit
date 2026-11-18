@@ -351,7 +351,7 @@ class ZealyExecutor:
 
     def _parse_quests_from_links(self) -> list[ZealyQuestEntry]:
         """Fallback: parse quests from page links."""
-        quests = []
+        quests: list[ZealyQuestEntry] = []
         if not self._page:
             return quests
         try:

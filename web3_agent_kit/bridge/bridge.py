@@ -142,6 +142,13 @@ class BridgeAgent:
         print(f"TX: {result.tx_hash}")
     """
 
+    @property
+    def wallet_required(self) -> Wallet:
+        """Return the wallet, raising if the bridge was built without one."""
+        if self.wallet is None:
+            raise ValueError("BridgeAgent needs a wallet to execute a transfer")
+        return self.wallet
+
     def __init__(
         self,
         chain_manager: ChainManager,
@@ -425,7 +432,9 @@ class BridgeAgent:
             "chainId": chain_id,
         }
 
-        signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
+        signed = self.wallet_required.sign_transaction(
+            tx, route.from_chain, action=ActionType.BRIDGE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 
@@ -484,7 +493,9 @@ class BridgeAgent:
             "chainId": chain_id,
         }
 
-        signed = self.wallet.sign_transaction(tx, route.from_chain, action=ActionType.BRIDGE)
+        signed = self.wallet_required.sign_transaction(
+            tx, route.from_chain, action=ActionType.BRIDGE
+        )
         tx_hash = w3.eth.send_raw_transaction(signed)
         w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
 

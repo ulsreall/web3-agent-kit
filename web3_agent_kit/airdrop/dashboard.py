@@ -270,7 +270,7 @@ class PointsDashboard:
         if not self._current:
             return []
 
-        positions = []
+        positions: list[dict] = []
         for platform, points in self._current.platforms.items():
             positions.append(
                 {
@@ -281,7 +281,7 @@ class PointsDashboard:
                 }
             )
 
-        positions.sort(key=lambda x: x["points"], reverse=True)
+        positions.sort(key=lambda x: int(x["points"]), reverse=True)
         return positions
 
     def print_summary(self) -> str:

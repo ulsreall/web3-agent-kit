@@ -216,6 +216,13 @@ class CrossChainMessenger:
 
         self.w3 = Web3(Web3.HTTPProvider(rpc_url)) if rpc_url else None
 
+    @property
+    def w3_required(self):
+        """Return the Web3 client, raising if no ``rpc_url`` was configured."""
+        if self.w3 is None:
+            raise ValueError("Web3 not configured")
+        return self.w3
+
     def _gate(self):
         """Return the enforced pre-sign gate for this messenger.
 
@@ -236,7 +243,7 @@ class CrossChainMessenger:
 
     def _raw_signer(self, tx) -> bytes:
         """Underlying signer wrapped by the gate. Not for direct use."""
-        signed = self.w3.eth.account.sign_transaction(dict(tx), self.private_key)
+        signed = self.w3_required.eth.account.sign_transaction(dict(tx), self.private_key)
         raw = getattr(signed, "raw_transaction", None)
         if raw is None:
             raw = signed.rawTransaction
@@ -297,7 +304,7 @@ class CrossChainMessenger:
 
         refund = (
             refund_address
-            or self.w3.eth.default_account
+            or self.w3_required.eth.default_account
             or "0x0000000000000000000000000000000000000000"
         )
 
@@ -310,8 +317,8 @@ class CrossChainMessenger:
             [2, gas_limit],
         ).hex()
 
-        endpoint = self.w3.eth.contract(
-            address=self.w3.to_checksum_address(endpoint_addr),
+        endpoint = self.w3_required.eth.contract(
+            address=self.w3_required.to_checksum_address(endpoint_addr),
             abi=self.LZ_ENDPOINT_ABI,
         )
 
@@ -328,16 +335,16 @@ class CrossChainMessenger:
             dst_chain_id,
             dst_bytes,
             Web3.to_bytes(hexstr=payload),
-            self.w3.to_checksum_address(refund),
+            self.w3_required.to_checksum_address(refund),
             "0x0000000000000000000000000000000000000000",  # zro payment address
             Web3.to_bytes(hexstr=adapter_params),
         ).build_transaction(
             {
-                "from": self.w3.eth.default_account or self.w3.eth.accounts[0],
+                "from": self.w3_required.eth.default_account or self.w3_required.eth.accounts[0],
                 "value": value,
                 "gas": gas_limit,
-                "nonce": self.w3.eth.get_transaction_count(
-                    self.w3.eth.default_account or self.w3.eth.accounts[0]
+                "nonce": self.w3_required.eth.get_transaction_count(
+                    self.w3_required.eth.default_account or self.w3_required.eth.accounts[0]
                 ),
             }
         )
@@ -356,7 +363,7 @@ class CrossChainMessenger:
                 )
                 .raw_transaction
             )
-            tx_hash = self.w3.eth.send_raw_transaction(signed)
+            tx_hash = self.w3_required.eth.send_raw_transaction(signed)
         else:
             raise PermissionError(
                 "LayerZero message submission requires a configured private key and "

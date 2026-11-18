@@ -241,8 +241,8 @@ class AutoCompound:
 
         Balances compound frequency vs gas costs to maximize net returns.
         """
-        best_interval = 1440  # Default: daily
-        best_net_return = 0
+        best_interval: float = 1440  # Default: daily
+        best_net_return: float = 0
 
         # Test intervals from 1 hour to 7 days
         intervals = [60, 120, 240, 360, 720, 1440, 2880, 4320, 5760, 10080]
@@ -262,7 +262,7 @@ class AutoCompound:
                 best_net_return = net_return
                 best_interval = interval
 
-        return best_interval
+        return int(best_interval)
 
     # ── Position Management ─────────────────────────
 

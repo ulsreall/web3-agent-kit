@@ -49,6 +49,7 @@ dev = [
     "pytest-timeout>=2.0",
     "hypothesis>=6.0",
     "ruff>=0.1.0",
+    "mypy>=1.10",
     # tomllib is stdlib from 3.11. Packaging tests parse pyproject.toml.
     "tomli>=2.0; python_version < '3.11'",
 ]
@@ -100,6 +101,18 @@ directory = "htmlcov"
 
 [tool.coverage.xml]
 output = "coverage.xml"
+
+[tool.mypy]
+python_version = "3.10"
+files = ["web3_agent_kit"]
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = false
+# The third-party stubs (requests, web3) reject perfectly valid runtime calls:
+# Session.get(params=dict) and Eth.call(dict) are both flagged 46 times. They
+# are disabled in CI so the remaining checks stay a hard gate; run mypy without
+# the override to see them.
+disable_error_code = ["arg-type"]
 
 [tool.ruff]
 line-length = 100
