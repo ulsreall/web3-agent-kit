@@ -538,7 +538,7 @@ class FaucetClaimer:
                         or data.get("status", "") == "success"
                         or faucet.success_indicator in str(data)
                     )
-                    result.tx_hash = data.get("txHash", data.get("tx_hash", ""))
+                    result.tx_hash = data.get("txHash") or data.get("tx_hash") or ""
                     result.amount = str(data.get("amount", faucet.amount))
                 else:
                     result.success = True

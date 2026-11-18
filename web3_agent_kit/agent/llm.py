@@ -148,7 +148,7 @@ class LLM:
             messages.append({"role": "user", "content": prompt})
 
         last_error = None
-        for provider in self.config.providers:
+        for provider in self.config.providers or []:
             try:
                 return self._call_provider(provider, messages, response_format)
             except Exception as e:
@@ -271,5 +271,5 @@ class LLM:
         return data["content"][0]["text"]
 
     def __repr__(self) -> str:
-        names = [p["name"] for p in self.config.providers]
+        names = [p["name"] for p in self.config.providers or []]
         return f"LLM(providers={names})"

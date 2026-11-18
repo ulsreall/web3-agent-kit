@@ -287,9 +287,10 @@ class TxSimulator:
         if resp.status_code != 200:
             return SimResult(success=False, error=f"Tenderly API error: {resp.status_code}")
 
-        data = resp.json()
-        sim = data.get("simulation", data)
-        tx_data = sim.get("transaction", sim)
+        body = resp.json()
+        # Some deployments answer with a string id under "simulation".
+        sim = body["simulation"] if isinstance(body.get("simulation"), dict) else body
+        tx_data = sim["transaction"] if isinstance(sim.get("transaction"), dict) else sim
 
         success = not tx_data.get("error_info") and tx_data.get("status", False)
         gas_used = int(tx_data.get("gas_used", 0))
