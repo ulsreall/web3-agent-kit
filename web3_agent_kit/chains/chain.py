@@ -114,10 +114,20 @@ class ChainManager:
         return Web3(Web3.HTTPProvider(config.rpc_url))
 
     def get_solana(self):
-        """Get Solana client."""
-        from solana.rpc.api import Client
+        """Get a Solana RPC client.
 
+        solana-py 0.42 dropped the synchronous ``Client`` and is async-only, so
+        the async client is returned when that is what the installed version
+        provides. Both answer the same RPC; the difference is whether the
+        methods are awaitable.
+        """
         config = self.get_config(Chain.SOLANA)
+        try:
+            from solana.rpc.api import Client
+        except ModuleNotFoundError:
+            from solana.rpc.async_api import AsyncClient
+
+            return AsyncClient(config.rpc_url)
         return Client(config.rpc_url)
 
     def list_chains(self) -> list[Chain]:
