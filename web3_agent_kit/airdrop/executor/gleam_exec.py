@@ -595,12 +595,15 @@ class GleamExecutor:
             GleamTaskType classification.
         """
         text = f"{title} {method} {url}".lower()
+        # "Follow on X" is the common wording now; without this the task falls
+        # through to the generic handler and never opens the right tab.
+        on_twitter = "twitter" in text or "x.com" in text
 
-        if "follow" in text and "twitter" in text:
+        if "follow" in text and on_twitter:
             return GleamTaskType.TWITTER_FOLLOW
         if "retweet" in text:
             return GleamTaskType.TWITTER_RETWEET
-        if ("like" in text or "fav" in text) and "twitter" in text:
+        if ("like" in text or "fav" in text) and on_twitter:
             return GleamTaskType.TWITTER_LIKE
         if "tweet" in text and "follow" not in text:
             return GleamTaskType.TWITTER_TWEET

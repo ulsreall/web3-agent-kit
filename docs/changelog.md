@@ -7,6 +7,11 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** Zealy quest classification returns the empty community slug for a
+  bare `https://zealy.io` URL (`parts[-1]` was `""`, which is not falsy enough);
+  and Gleam only recognised a Twitter follow when the word "twitter" appeared,
+  so the current "Follow on X" wording fell through to the generic handler and
+  never opened the tab.
 - **airdrop:** all three form fillers returned early on the most common failure
   ("no form fields detected") without calling `browser.close()`, leaving a
   chromium process (and its profile lock) behind on every attempt. The body is
