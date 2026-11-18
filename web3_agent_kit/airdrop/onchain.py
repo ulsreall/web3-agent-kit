@@ -481,21 +481,16 @@ class OnChainAirdropFarmer:
     async def farm_all(self) -> list[TransactionResult]:
         """Execute all farming plans for the configured chain.
 
+        Kept as the familiar name; it delegates so the two entry points cannot
+        drift apart.
+
         Returns:
             List of transaction results.
         """
-        plans = self.get_plans_for_chain(self.config.chain)
-        logger.info(f"Found {len(plans)} farming plans for {self.config.chain}")
-
-        for plan in plans:
-            logger.info(f"Executing plan: {plan.name}")
-            await self._execute_plan(plan)
-            await asyncio.sleep(self.config.delay_between_txs)
-
-        return self._results
+        return await self.async_farm_all()
 
     async def async_farm_all(self) -> list[TransactionResult]:
-        """Async version of farm_all — non-blocking sleep between plans.
+        """Execute every plan for the chain, sleeping without blocking the loop.
 
         Returns:
             List of transaction results.
@@ -863,12 +858,29 @@ class OnChainAirdropFarmer:
             raw = signed.rawTransaction
         return raw
 
+    #: Names used by this module's own :class:`Chain` enum that differ from the
+    #: canonical EIP-155 names, plus chains the gate has no envelope for.
+    _EVM_CHAIN_ALIASES = {"bnb": EvmChain.BSC, "avalanche": EvmChain.AVALANCHE}
+
     def _resolve_chain(self) -> EvmChain:
-        """Resolve the configured chain name into a Chain member."""
+        """Resolve the configured chain name into an EIP-155 chain member.
+
+        The gate compares the chain it was handed against the transaction's
+        ``chainId``, so resolving to the wrong member refuses every signature.
+        Names the gate knows no envelope for (``zksync``, ``scroll``…) are
+        rejected here rather than being guessed as Ethereum, which is what the
+        old fallback did.
+        """
+        name = str(self.config.chain).lower()
+        if name in self._EVM_CHAIN_ALIASES:
+            return self._EVM_CHAIN_ALIASES[name]
         try:
-            return EvmChain(str(self.config.chain).lower())
-        except ValueError:
-            return EvmChain.ETHEREUM
+            return EvmChain(name)
+        except ValueError as exc:
+            raise ValueError(
+                f"chain {self.config.chain!r} has no EIP-155 envelope; "
+                "configure one the gate can describe"
+            ) from exc
 
     def _send_transaction(self, tx: dict) -> Optional[str]:
         """Send a transaction through the enforced pre-sign gate."""
