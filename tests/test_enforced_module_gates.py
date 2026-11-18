@@ -263,4 +263,7 @@ def test_airdrop_resolves_chain_name():
     assert f._resolve_chain() is Chain.BASE
 
     f.config = MagicMock(chain="definitely-not-a-chain")
-    assert f._resolve_chain() is Chain.ETHEREUM
+    # No silent Ethereum fallback: the gate compares the chain against the
+    # transaction's chainId, so guessing here refuses every write.
+    with pytest.raises(ValueError, match="no EIP-155 envelope"):
+        f._resolve_chain()

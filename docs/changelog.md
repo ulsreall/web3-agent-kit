@@ -7,6 +7,13 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the on-chain farmer's own `Chain` enum says `bnb` (and offers
+  `zksync`, `scroll`, `linea`, `blast`), while the gate's says `bsc` and knows no
+  envelope for the rest. `_resolve_chain` looked the name up directly and fell
+  back to Ethereum on `ValueError`, so a `chain="bnb"` farm sent a 56-chainId
+  transaction to a gate told to expect Mainnet and every write was refused.
+  Aliases are mapped and an unknown chain now raises instead of being guessed.
+  `farm_all` delegates to `async_farm_all`, which it duplicated.
 - **security:** the token parsers fed API strings straight into `float()`/`int()`.
   GoPlus fills an unmeasured field with `""`, so one empty `buy_tax` aborted the
   whole quick check and threw away the honeypot verdict that had already been
