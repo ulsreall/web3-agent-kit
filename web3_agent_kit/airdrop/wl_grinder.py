@@ -198,6 +198,27 @@ class WLGrinder:
     ) -> WLJob:
         """Apply for multiple WL spots.
 
+        Kept as the familiar name; it delegates so the two entry points cannot
+        drift apart.
+
+        Args:
+            urls: List of WL URLs.
+            delay: Delay between applications (seconds).
+            skip_existing: Skip already-applied URLs.
+
+        Returns:
+            WLJob with results.
+        """
+        return await self.async_apply_bulk(urls, delay=delay, skip_existing=skip_existing)
+
+    async def async_apply_bulk(
+        self,
+        urls: list[str],
+        delay: float = 10.0,
+        skip_existing: bool = True,
+    ) -> WLJob:
+        """Apply for multiple WL spots, sleeping without blocking the loop.
+
         Args:
             urls: List of WL URLs.
             delay: Delay between applications (seconds).
@@ -225,45 +246,6 @@ class WLGrinder:
                 job.failed += 1
 
             # Delay between applications
-            if i < len(urls) - 1:
-                await asyncio.sleep(delay)
-
-        logger.info(f"Bulk apply complete: {job.success}/{job.total} success")
-        return job
-
-    async def async_apply_bulk(
-        self,
-        urls: list[str],
-        delay: float = 10.0,
-        skip_existing: bool = True,
-    ) -> WLJob:
-        """Async version of apply_bulk — non-blocking sleep between applications.
-
-        Args:
-            urls: List of WL URLs.
-            delay: Delay between applications (seconds).
-            skip_existing: Skip already-applied URLs.
-
-        Returns:
-            WLJob with results.
-        """
-        job = WLJob(urls=urls, total=len(urls))
-
-        for i, url in enumerate(urls):
-            if skip_existing and url in self._applied_urls:
-                job.skipped += 1
-                job.results.append(WLResult(url=url, success=False, error="Already applied"))
-                continue
-
-            logger.info(f"[{i + 1}/{len(urls)}] Applying: {url}")
-            result = await self.apply(url)
-            job.results.append(result)
-
-            if result.success:
-                job.success += 1
-            else:
-                job.failed += 1
-
             if i < len(urls) - 1:
                 await asyncio.sleep(delay)
 
