@@ -51,6 +51,35 @@ jobs:
     - name: Type check
       run: mypy
 
+  gate-coverage:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+    - name: Set up Python
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.11'
+
+    - name: Install
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev,solana,api]"
+
+    # The gate is the reason this library exists; its modules are held at a much
+    # higher bar than the package-wide 70%.
+    - name: Run the suite with coverage
+      run: pytest -q -p no:cacheprovider
+
+    # Scoped report: the package-wide total is held at 70%, these modules at 95%.
+    - name: Cover the gate
+      run: |
+        coverage report \
+          --include="web3_agent_kit/execution/envelope.py,web3_agent_kit/execution/interceptor.py,web3_agent_kit/execution/policy.py,web3_agent_kit/execution/authorization.py,web3_agent_kit/execution/intent.py,web3_agent_kit/execution/replay.py" \
+          --fail-under=95
+
   audit:
     runs-on: ubuntu-latest
     timeout-minutes: 10
