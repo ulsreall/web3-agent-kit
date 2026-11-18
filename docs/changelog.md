@@ -7,6 +7,8 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the CAPTCHA solver posted to 2captcha over plain `http://` while
+  the API key travels in the request body; now `https://`.
 - **airdrop:** `WLGrinder.apply_bulk` and `async_apply_bulk` were byte-identical
   copies (both async, both awaiting the sleep); `apply_bulk` now delegates so
   the two cannot drift.
