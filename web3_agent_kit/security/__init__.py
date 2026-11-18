@@ -35,6 +35,31 @@ import requests
 logger = logging.getLogger(__name__)
 
 
+def _parse_float(value, *, default: float = 0.0) -> float:
+    """Parse an API tax field, tolerating "" and None.
+
+    GoPlus fills an unmeasured tax with an empty string. ``float("")`` raises,
+    which used to abort the whole quick check and throw away the honeypot
+    verdict that had already been read.
+    """
+    if value in (None, ""):
+        return default
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _parse_int(value, *, default: int = 0) -> int:
+    """Parse an API count field, tolerating "" and None."""
+    if value in (None, ""):
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
+
+
 def _parse_honeypot_status(value) -> Optional[bool]:
     """Parse GoPlus honeypot status without treating missing data as safe."""
     if value in ("1", 1, True):
@@ -614,8 +639,8 @@ class TokenAnalyzer:
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
                     result["is_honeypot"] = _parse_honeypot_status(token_data.get("is_honeypot"))
-                    result["buy_tax"] = float(token_data.get("buy_tax", "0"))
-                    result["sell_tax"] = float(token_data.get("sell_tax", "0"))
+                    result["buy_tax"] = _parse_float(token_data.get("buy_tax"))
+                    result["sell_tax"] = _parse_float(token_data.get("sell_tax"))
                     if result["is_honeypot"]:
                         result["risk_level"] = "high"
                     elif result["is_honeypot"] is False:
@@ -730,8 +755,8 @@ class TokenAnalyzer:
                 data = resp.json()
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
-                    tax.buy_tax = float(token_data.get("buy_tax", "0")) * 100
-                    tax.sell_tax = float(token_data.get("sell_tax", "0")) * 100
+                    tax.buy_tax = _parse_float(token_data.get("buy_tax")) * 100
+                    tax.sell_tax = _parse_float(token_data.get("sell_tax")) * 100
                     tax.is_honeypot = _parse_honeypot_status(token_data.get("is_honeypot"))
                     tax.can_sell = not tax.is_honeypot if tax.is_honeypot is not None else None
         except Exception as e:
@@ -757,7 +782,9 @@ class TokenAnalyzer:
                 pairs = data.get("pairs", [])
                 if pairs:
                     pair = pairs[0]
-                    liquidity.total_liquidity_usd = float(pair.get("liquidity", {}).get("usd", 0))
+                    liquidity.total_liquidity_usd = _parse_float(
+                        pair.get("liquidity", {}).get("usd")
+                    )
                     liquidity.dex = pair.get("dexId", "")
                     liquidity.pair_address = pair.get("pairAddress", "")
         except Exception as e:
@@ -780,17 +807,17 @@ class TokenAnalyzer:
                 data = resp.json()
                 token_data = data.get("result", {}).get(address.lower(), {})
                 if token_data:
-                    holders.total_holders = int(token_data.get("holder_count", 0))
+                    holders.total_holders = _parse_int(token_data.get("holder_count"))
                     # Top holder percentage from GoPlus
                     top_holders = token_data.get("holders", [])
                     if top_holders:
                         top10 = sorted(
                             top_holders,
-                            key=lambda x: float(x.get("percent", "0")),
+                            key=lambda x: _parse_float(x.get("percent")),
                             reverse=True,
                         )[:10]
                         holders.top10_percent = sum(
-                            float(h.get("percent", "0")) * 100 for h in top10
+                            _parse_float(h.get("percent")) * 100 for h in top10
                         )
                         holders.is_concentrated = holders.top10_percent > 50
         except Exception as e:

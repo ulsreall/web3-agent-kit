@@ -7,6 +7,13 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **security:** the token parsers fed API strings straight into `float()`/`int()`.
+  GoPlus fills an unmeasured field with `""`, so one empty `buy_tax` aborted the
+  whole quick check and threw away the honeypot verdict that had already been
+  read; the same happened to liquidity, holder count and holder percentages.
+  A shared `_parse_float`/`_parse_int` treats `""` and `None` as unknown-and-zero
+  so the rest of the record survives, and `quick_check` no longer reports a
+  honeypot with an empty tax as `unknown` plus an error.
 - **chains:** `ChainManager.get_solana()` imported `solana.rpc.api.Client`, which
   solana-py 0.42 removed when it went async-only — under the declared
   `solana>=0.35` range a fresh install raised `ModuleNotFoundError`. It now uses
