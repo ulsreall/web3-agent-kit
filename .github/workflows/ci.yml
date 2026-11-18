@@ -77,7 +77,7 @@ jobs:
     - name: Cover the gate
       run: |
         coverage report \
-          --include="web3_agent_kit/execution/envelope.py,web3_agent_kit/execution/interceptor.py,web3_agent_kit/execution/policy.py,web3_agent_kit/execution/authorization.py,web3_agent_kit/execution/intent.py,web3_agent_kit/execution/replay.py" \
+          --include="web3_agent_kit/execution/envelope.py,web3_agent_kit/execution/interceptor.py,web3_agent_kit/execution/policy.py,web3_agent_kit/execution/authorization.py,web3_agent_kit/execution/intent.py,web3_agent_kit/execution/replay.py,web3_agent_kit/wallet/approval.py" \
           --fail-under=95
 
   audit:
