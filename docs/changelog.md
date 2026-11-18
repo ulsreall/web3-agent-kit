@@ -7,6 +7,12 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **chains:** `ChainManager.get_solana()` imported `solana.rpc.api.Client`, which
+  solana-py 0.42 removed when it went async-only — under the declared
+  `solana>=0.35` range a fresh install raised `ModuleNotFoundError`. It now uses
+  the sync client when present and the async client otherwise. The module also
+  gained tests: default RPC schemes, chain-id coverage, unconfigured-chain and
+  non-EVM errors, and the client fallback.
 - **execution:** consumed authorizations are tracked by a replay store instead of
   a per-gate set. The default is process-wide in-memory; `WEB3_REPLAY_DB` selects
   a durable SQLite store so a restart or a second worker cannot replay an
