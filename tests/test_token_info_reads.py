@@ -39,7 +39,9 @@ class _Functions:
 
 class _W3:
     def __init__(self, functions):
-        self.eth = SimpleNamespace(contract=lambda address, abi: SimpleNamespace(functions=functions))
+        self.eth = SimpleNamespace(
+            contract=lambda address, abi: SimpleNamespace(functions=functions)
+        )
 
     @staticmethod
     def to_checksum_address(address):
