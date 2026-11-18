@@ -65,7 +65,8 @@ class CaptchaSolver:
 
     # Provider API endpoints
     ANTICAPTCHA_API = "https://api.anti-captcha.com"
-    TWOCAPTCHA_API = "http://2captcha.com"
+    # https: the API key travels in the request body and plain http exposes it.
+    TWOCAPTCHA_API = "https://2captcha.com"
 
     def __init__(self, config: Optional[CaptchaConfig] = None):
         """Initialize the CAPTCHA solver.
