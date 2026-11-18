@@ -44,7 +44,7 @@ try:
     )
 except ImportError:
     # Fallback: when imported as top-level package (sys.path includes src/)
-    from web3_agent_kit.plugins.restaking.eigenlayer import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.eigenlayer import (
         EIGEN_TOKEN,
         EIGENLAYER_ABI,
         EIGENLAYER_DELEGATION_MANAGER,
@@ -56,7 +56,7 @@ except ImportError:
         RestakeResult,
         RestakingStrategy,
     )
-    from web3_agent_kit.plugins.restaking.monitor import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.monitor import (
         Alert,
         AlertType,
         MonitoredPosition,
@@ -64,14 +64,14 @@ except ImportError:
         RestakingMonitor,
         SlashingEvent,
     )
-    from web3_agent_kit.plugins.restaking.optimizer import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.optimizer import (
         OptimizationResult,
         OptimizationStrategy,
         RestakingOpportunity,
         RestakingOptimizer,
         RiskAdjustedYield,
     )
-    from web3_agent_kit.plugins.restaking.protocols import (  # type: ignore[no-redef]
+    from web3_agent_kit.plugins.restaking.protocols import (
         BABYLON_STAKING_ABI,
         BABYLON_VAULT_ADDRESS,
         SOLAYER_RESTAKING_ABI,

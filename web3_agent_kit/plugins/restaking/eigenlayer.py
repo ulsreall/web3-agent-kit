@@ -16,9 +16,9 @@ try:
     from ...execution import ActionType
     from ...wallet.wallet import Wallet
 except ImportError:
-    from web3_agent_kit.chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
-    from web3_agent_kit.execution import ActionType  # type: ignore[no-redef]
-    from web3_agent_kit.wallet.wallet import Wallet  # type: ignore[no-redef]
+    from web3_agent_kit.chains.chain import CHAIN_IDS, Chain, ChainManager
+    from web3_agent_kit.execution import ActionType
+    from web3_agent_kit.wallet.wallet import Wallet
 
 logger = logging.getLogger(__name__)
 

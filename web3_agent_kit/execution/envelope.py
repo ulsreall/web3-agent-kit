@@ -96,7 +96,7 @@ def keccak256(data: bytes) -> bytes:
     try:
         from eth_hash.auto import keccak
     except ImportError:  # pragma: no cover - eth-hash ships with eth-account
-        from eth_utils import keccak  # type: ignore[assignment,no-redef]
+        from eth_utils import keccak  # type: ignore[assignment]
 
     return keccak(data)
 

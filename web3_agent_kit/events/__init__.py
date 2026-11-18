@@ -23,7 +23,7 @@ import logging
 import threading
 import time
 from dataclasses import dataclass, field
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -249,7 +249,7 @@ class EventListener:
 
         try:
             requests.post(
-                config.webhook_url,
+                cast(str, config.webhook_url),
                 json=event_data,
                 headers={"Content-Type": "application/json", **config.webhook_headers},
                 timeout=10,

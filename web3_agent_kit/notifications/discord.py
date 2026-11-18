@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from typing import Any, cast
 
 import requests
 
@@ -60,7 +61,7 @@ class DiscordNotifier:
 
             resp = self.session.post(
                 self.config.discord_webhook_url,
-                json=payload,
+                json=cast(Any, payload),
                 timeout=10,
             )
             return resp.status_code in (200, 204)

@@ -14,7 +14,7 @@ try:
 except ImportError:
     from chains.chain import CHAIN_IDS, Chain, ChainManager  # type: ignore[no-redef]
 
-    from web3_agent_kit.execution import ActionType  # type: ignore[no-redef]
+    from web3_agent_kit.execution import ActionType
 
 logger = logging.getLogger(__name__)
 

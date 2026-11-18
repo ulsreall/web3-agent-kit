@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional, cast
 
 import requests
 
@@ -304,7 +304,7 @@ class BridgeAgent:
             "API-KEY": "demo",  # Free tier
         }
 
-        resp = self.session.get(url, params=params, headers=headers, timeout=15)
+        resp = self.session.get(url, params=cast(Any, params), headers=headers, timeout=15)
         resp.raise_for_status()
         data = resp.json()
 
@@ -469,7 +469,7 @@ class BridgeAgent:
         }
         headers = {"API-KEY": "demo"}
 
-        resp = self.session.get(url, params=params, headers=headers, timeout=15)
+        resp = self.session.get(url, params=cast(Any, params), headers=headers, timeout=15)
         resp.raise_for_status()
         data = resp.json()
 

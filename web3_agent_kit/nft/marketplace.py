@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional, cast
 
 import requests
 
@@ -105,7 +105,7 @@ class NFTMarketplace:
                 resp = self.session.get(
                     f"{self.ALCHEMY_API.format(network=network)}/"
                     f"{self.config.alchemy_api_key}/getNFTs",
-                    params={"owner": wallet, "pageSize": limit},
+                    params=cast(Any, {"owner": wallet, "pageSize": limit}),
                     timeout=15,
                 )
                 if resp.status_code == 200:
@@ -160,7 +160,7 @@ class NFTMarketplace:
         try:
             resp = self.session.get(
                 f"{self.OPENSEA_API}/listings/collection/{address}",
-                params={"limit": limit},
+                params=cast(Any, {"limit": limit}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -201,7 +201,7 @@ class NFTMarketplace:
         try:
             resp = self.session.get(
                 f"{self.OPENSEA_API}/collections/trending",
-                params={"limit": limit},
+                params=cast(Any, {"limit": limit}),
                 timeout=15,
             )
             if resp.status_code == 200:
@@ -241,7 +241,7 @@ class NFTMarketplace:
         try:
             resp = self.session.get(
                 f"{self.OPENSEA_API}/collections/search",
-                params={"q": query, "limit": limit},
+                params=cast(Any, {"q": query, "limit": limit}),
                 timeout=15,
             )
             if resp.status_code == 200:

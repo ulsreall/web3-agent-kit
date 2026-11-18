@@ -523,7 +523,7 @@ class TokenAnalyzer:
             from web3 import Web3
 
             self._web3 = Web3(Web3.HTTPProvider(self.config.rpc_url))
-            if self._web3.is_connected():  # type: ignore[attr-defined]
+            if self._web3.is_connected():
                 logger.info(f"Connected to {self.config.rpc_url}")
         except ImportError:
             logger.warning("web3 not installed")

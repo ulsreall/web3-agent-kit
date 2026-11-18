@@ -23,7 +23,9 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional
+from typing import Optional, cast
+
+from web3.types import HexStr
 
 from ..chains import Chain
 from ..execution import (
@@ -309,7 +311,7 @@ class CrossChainMessenger:
         )
 
         # Encode destination address as bytes
-        dst_bytes = Web3.to_bytes(hexstr=dst_address).rjust(32, b"\x00")
+        dst_bytes = Web3.to_bytes(hexstr=cast(HexStr, dst_address)).rjust(32, b"\x00")
 
         # Build adapter params (v2 format)
         adapter_params = Web3.solidity_keccak(
@@ -334,10 +336,10 @@ class CrossChainMessenger:
         tx = endpoint.functions.send(
             dst_chain_id,
             dst_bytes,
-            Web3.to_bytes(hexstr=payload),
+            Web3.to_bytes(hexstr=cast(HexStr, payload)),
             self.w3_required.to_checksum_address(refund),
             "0x0000000000000000000000000000000000000000",  # zro payment address
-            Web3.to_bytes(hexstr=adapter_params),
+            Web3.to_bytes(hexstr=cast(HexStr, adapter_params)),
         ).build_transaction(
             {
                 "from": self.w3_required.eth.default_account or self.w3_required.eth.accounts[0],

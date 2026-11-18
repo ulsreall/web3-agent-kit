@@ -7,7 +7,7 @@ protect trades from MEV (Maximal Extractable Value) attacks.
 from __future__ import annotations
 
 import logging
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import requests
 
@@ -141,7 +141,7 @@ class MEVProtector:
 
         try:
             request_id = 1
-            payload = {
+            payload: dict[str, Any] = {
                 "jsonrpc": "2.0",
                 "id": request_id,
                 "method": "eth_sendBundle",
@@ -200,7 +200,7 @@ class MEVProtector:
             block_number = self._get_current_block() + 1
 
         try:
-            payload = {
+            payload: dict[str, Any] = {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "eth_callBundle",
@@ -307,7 +307,7 @@ class MEVProtector:
     def _send_flashbots(self, protected: ProtectedTx) -> Optional[str]:
         """Send via Flashbots Protect."""
         try:
-            payload = {
+            payload: dict[str, Any] = {
                 "jsonrpc": "2.0",
                 "id": 1,
                 "method": "eth_sendRawTransaction",
@@ -341,7 +341,7 @@ class MEVProtector:
         """Send via private RPC."""
         for rpc in self.config.private_rpcs:
             try:
-                payload = {
+                payload: dict[str, Any] = {
                     "jsonrpc": "2.0",
                     "id": 1,
                     "method": "eth_sendRawTransaction",
@@ -391,12 +391,15 @@ class MEVProtector:
         try:
             resp = self.session.post(
                 "https://ethereum-rpc.publicnode.com",
-                json={
-                    "jsonrpc": "2.0",
-                    "id": 1,
-                    "method": "eth_blockNumber",
-                    "params": [],
-                },
+                json=cast(
+                    Any,
+                    {
+                        "jsonrpc": "2.0",
+                        "id": 1,
+                        "method": "eth_blockNumber",
+                        "params": [],
+                    },
+                ),
                 timeout=10,
             )
             if resp.status_code == 200:

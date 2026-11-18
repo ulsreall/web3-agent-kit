@@ -6,7 +6,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional, cast
 
 logger = logging.getLogger(__name__)
 
@@ -464,7 +464,7 @@ class RestakingMonitor:
                 }
             )
 
-        summaries.sort(key=lambda x: float(x["total_value_usd"]), reverse=True)
+        summaries.sort(key=lambda x: float(cast(Any, x["total_value_usd"])), reverse=True)
         return summaries
 
     def get_slashing_history(self) -> list[SlashingEvent]:
