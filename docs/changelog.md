@@ -59,6 +59,12 @@ All notable changes to Web3 Agent Kit are documented here.
   the mint's owner to pick the token program, so Token-2022 mints derive the right accounts.
 
 ### Added
+- Tests for the parts of the gate nothing exercised: every envelope
+  canonicalizer branch (bool/negative/garbage integers, malformed and
+  non-string addresses, calldata aliases, creation profiles, fee-field
+  mixing), `AuthorizationEvidence` validation and freshness, gate and request
+  construction failures, and a provider that returns the wrong type.
+  `execution/envelope.py` is at 100% line coverage, `interceptor.py` 99%.
 - `Wallet.raw_signer`, so a gate can be built around a wallet without touching a private
   attribute.
 - `Wallet.send`, `Wallet.transfer_token`, `Wallet.get_balance_summary`.
