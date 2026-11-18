@@ -86,7 +86,7 @@ class TwitterExecutor:
         Returns:
             True if login verified.
         """
-        self._page = self.browser.new_page()
+        page = self._require_page()
         session_path = self.browser.get_session_path(platform_session)
         cookie_file = session_path / "cookies.json"
 
@@ -101,13 +101,13 @@ class TwitterExecutor:
                     if "twitter.com" in c.get("domain", "") or "x.com" in c.get("domain", "")
                 ]
                 if twitter_cookies:
-                    self.browser._context.add_cookies(twitter_cookies)
+                    self.browser.add_cookies(twitter_cookies)
                     logger.info(f"Twitter: loaded {len(twitter_cookies)} cookies")
             except Exception as e:
                 logger.warning(f"Twitter: cookie load failed: {e}")
 
         # Navigate and check login
-        if self.browser.navigate_with_retry(self._page, self.BASE_URL):
+        if self.browser.navigate_with_retry(page, self.BASE_URL):
             time.sleep(3)
             # Check if logged in by looking for compose tweet button or home timeline
             logged_in = self._check_login_status()
@@ -404,7 +404,7 @@ class TwitterExecutor:
                 'a[href="/home"]',
             ]
             for selector in indicators:
-                if self._page.query_selector(selector):
+                if self._page and self._page.query_selector(selector):
                     return True
             return False
         except Exception:
@@ -450,6 +450,14 @@ class DiscordExecutor:
         self._page = None
         self._logged_in = False
 
+    def _require_page(self):
+        """Return the working page, creating it once."""
+        if self._page is None:
+            self._page = self.browser.new_page()
+        if self._page is None:
+            raise RuntimeError("browser did not create a page")
+        return self._page
+
     def login_with_cookies(self, platform_session: str = "discord") -> bool:
         """Load saved Discord cookies and verify login.
 
@@ -459,7 +467,7 @@ class DiscordExecutor:
         Returns:
             True if login verified.
         """
-        self._page = self.browser.new_page()
+        page = self._require_page()
         session_path = self.browser.get_session_path(platform_session)
         cookie_file = session_path / "cookies.json"
 
@@ -469,11 +477,11 @@ class DiscordExecutor:
                     cookies = json.load(f)
                 discord_cookies = [c for c in cookies if "discord.com" in c.get("domain", "")]
                 if discord_cookies:
-                    self.browser._context.add_cookies(discord_cookies)
+                    self.browser.add_cookies(discord_cookies)
             except Exception as e:
                 logger.warning(f"Discord: cookie load failed: {e}")
 
-        if self.browser.navigate_with_retry(self._page, f"{self.BASE_URL}/channels/@me"):
+        if self.browser.navigate_with_retry(page, f"{self.BASE_URL}/channels/@me"):
             time.sleep(3)
             logged_in = self._check_login_status()
             self._logged_in = logged_in
@@ -605,7 +613,7 @@ class DiscordExecutor:
                 'nav[class*="guilds"]',
             ]
             for selector in indicators:
-                if self._page.query_selector(selector):
+                if self._page and self._page.query_selector(selector):
                     return True
             return False
         except Exception:
@@ -648,6 +656,14 @@ class TelegramExecutor:
         self.config = config or SocialExecutorConfig()
         self._page = None
 
+    def _require_page(self):
+        """Return the working page, creating it once."""
+        if self._page is None:
+            self._page = self.browser.new_page()
+        if self._page is None:
+            raise RuntimeError("browser did not create a page")
+        return self._page
+
     def login_with_cookies(self, platform_session: str = "telegram") -> bool:
         """Load saved Telegram session.
 
@@ -657,7 +673,7 @@ class TelegramExecutor:
         Returns:
             True if session loaded.
         """
-        self._page = self.browser.new_page()
+        self._require_page()
         session_path = self.browser.get_session_path(platform_session)
         cookie_file = session_path / "cookies.json"
 
@@ -667,7 +683,7 @@ class TelegramExecutor:
                     cookies = json.load(f)
                 tg_cookies = [c for c in cookies if "telegram.org" in c.get("domain", "")]
                 if tg_cookies:
-                    self.browser._context.add_cookies(tg_cookies)
+                    self.browser.add_cookies(tg_cookies)
                     return True
             except Exception as e:
                 logger.warning(f"Telegram: cookie load failed: {e}")
