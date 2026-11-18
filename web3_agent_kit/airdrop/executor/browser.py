@@ -410,6 +410,12 @@ class BrowserManager:
 
     # --- Private helpers ---
 
+    def add_cookies(self, cookies: list[dict]) -> None:
+        """Add cookies to the live context."""
+        if not self._context:
+            raise RuntimeError("browser context is not open")
+        self._context.add_cookies(cookies)
+
     def _create_stealth_context(self) -> BrowserContext:
         """Create a browser context with stealth settings."""
         ua = self.config.user_agent or random.choice(USER_AGENTS)
