@@ -62,7 +62,7 @@ pytest tests/ -v
 - `ruff check .`, `ruff format --check .` and `mypy` must pass; CI runs all three
 
 The gate modules (`execution/envelope.py`, `interceptor.py`, `policy.py`,
-`authorization.py`, `intent.py`, `replay.py`) are held at 95% line coverage in
+`authorization.py`, `intent.py`, `replay.py`, `wallet/approval.py`) are held at 95% line coverage in
 CI, and the package at 70%. A branch in a canonicalizer is worth a test even
 when it looks unreachable: an untested branch there signs something nobody
 authorized.
