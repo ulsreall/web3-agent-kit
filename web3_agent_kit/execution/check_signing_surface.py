@@ -99,7 +99,7 @@ def _is_gate_mediated(func: ast.AST) -> bool:
         return False
     receiver = func.value
     name = receiver.attr if isinstance(receiver, ast.Attribute) else getattr(receiver, "id", "")
-    return str(name).lower().endswith("wallet")
+    return "wallet" in str(name).lower()
 
 
 # Known, not-yet-migrated call sites.

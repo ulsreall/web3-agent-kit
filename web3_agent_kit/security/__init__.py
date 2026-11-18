@@ -28,7 +28,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 import requests
 
@@ -512,7 +512,7 @@ class TokenAnalyzer:
                 "http": self.config.proxy,
                 "https": self.config.proxy,
             }
-        self._web3 = None
+        self._web3: Optional[Any] = None
         if self.config.rpc_url:
             self._init_web3()
         logger.info("TokenAnalyzer initialized")
@@ -523,7 +523,7 @@ class TokenAnalyzer:
             from web3 import Web3
 
             self._web3 = Web3(Web3.HTTPProvider(self.config.rpc_url))
-            if self._web3.is_connected():
+            if self._web3.is_connected():  # type: ignore[attr-defined]
                 logger.info(f"Connected to {self.config.rpc_url}")
         except ImportError:
             logger.warning("web3 not installed")

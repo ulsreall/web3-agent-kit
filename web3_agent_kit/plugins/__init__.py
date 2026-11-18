@@ -236,7 +236,7 @@ class PluginRegistry:
         Returns:
             List of plugin names that were loaded.
         """
-        loaded = []
+        loaded: list[str] = []
         plugin_dir = Path(directory)
 
         if not plugin_dir.exists():

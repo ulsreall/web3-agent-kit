@@ -316,7 +316,7 @@ class ReferralManager:
         Returns:
             List of chained ReferralLinks.
         """
-        chain = []
+        chain: list = []
         for platform_name in platforms:
             plat = self._platforms.get(platform_name)
             if not plat:

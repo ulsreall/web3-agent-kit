@@ -39,7 +39,7 @@ class TaskOnResult(ExecutorResult):
     rewards_claimed: int = 0
 
 
-class TaskOnExecutor(BasePlatformExecutor):
+class TaskOnExecutor(BasePlatformExecutor[TaskOnTask]):
     """TaskOn campaign automation.
 
     Navigates TaskOn campaigns, parses available tasks, and completes

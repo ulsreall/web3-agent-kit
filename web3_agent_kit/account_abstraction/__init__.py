@@ -184,7 +184,7 @@ class AAPaymaster:
         }
 
         if self.policy_id:
-            payload["params"][0]["sponsorshipPolicyId"] = self.policy_id
+            payload["params"][0]["sponsorshipPolicyId"] = self.policy_id  # type: ignore[index]
 
         resp = requests.post(
             self.url,
@@ -474,7 +474,7 @@ class AAWallet:
 
         # SimpleAccount factory: createAccount(owner, salt)
         factory_abi = ["function createAccount(address owner,uint256 salt)"]
-        contract = self.w3.eth.contract(address=self.factory_address, abi=factory_abi)
+        contract = self.w3.eth.contract(address=self.factory_address, abi=factory_abi)  # type: ignore[call-overload]
         return (
             self.factory_address
             + contract.encode_abi(

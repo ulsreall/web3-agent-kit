@@ -30,7 +30,7 @@ import asyncio
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 from ..chains import Chain as EvmChain
 from ..execution import (
@@ -437,8 +437,8 @@ class OnChainAirdropFarmer:
         self.config = config
         self._results: list[TransactionResult] = []
         self._tx_count = 0
-        self._web3 = None
-        self._account = None
+        self._web3: Optional[Any] = None
+        self._account: Optional[Any] = None
         self._policy = policy
         self._authorization_provider = authorization_provider
         self._gate_instance = gate
@@ -855,6 +855,8 @@ class OnChainAirdropFarmer:
 
     def _raw_signer(self, tx) -> bytes:
         """Underlying signer wrapped by the gate. Not for direct use."""
+        if self._account is None:
+            raise RuntimeError("wallet is not initialized")
         signed = self._account.sign_transaction(dict(tx))
         raw = getattr(signed, "raw_transaction", None)
         if raw is None:

@@ -45,7 +45,7 @@ class Layer3Result(ExecutorResult):
     chains_interacted: list[str] = field(default_factory=list)
 
 
-class Layer3Executor(BasePlatformExecutor):
+class Layer3Executor(BasePlatformExecutor[Layer3Task]):
     """Layer3 quest automation.
 
     Navigates Layer3 quest pages, parses quest steps, and completes

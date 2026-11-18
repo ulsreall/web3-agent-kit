@@ -11,7 +11,7 @@ from __future__ import annotations
 import json
 import logging
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from .base_executor import (
@@ -131,7 +131,7 @@ mutation ClaimReward($campaignId: ID!, $address: String!) {
 """
 
 
-class GalxeExecutor(BasePlatformExecutor):
+class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
     """Galxe campaign automation.
 
     The most important airdrop platform. Navigates Galxe campaigns via
@@ -299,7 +299,7 @@ class GalxeExecutor(BasePlatformExecutor):
             # Handle GeeTest CAPTCHA if needed
             captcha_data = self._handle_geetest_if_needed()
 
-            payload = {
+            payload: dict[str, Any] = {
                 "campaignId": self._campaign_id,
                 "taskId": task.task_id_galxe,
                 "type": task.task_type,
@@ -379,7 +379,7 @@ class GalxeExecutor(BasePlatformExecutor):
             # Handle GeeTest CAPTCHA for claim
             captcha_data = self._handle_geetest_if_needed()
 
-            payload = {
+            payload: dict[str, Any] = {
                 "campaignId": self._campaign_id,
                 "address": self._wallet_address,
             }

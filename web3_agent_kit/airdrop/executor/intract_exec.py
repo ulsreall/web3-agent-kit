@@ -41,7 +41,7 @@ class IntractResult(ExecutorResult):
     badges_earned: int = 0
 
 
-class IntractExecutor(BasePlatformExecutor):
+class IntractExecutor(BasePlatformExecutor[IntractTask]):
     """Intract quest automation.
 
     Navigates Intract quest pages, parses available quests, and completes

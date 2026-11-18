@@ -407,6 +407,7 @@ class MEVProtector:
 
     def _encode_tx(self, tx: dict[str, Any] | str) -> str:
         """Encode transaction to hex string."""
+        raw: Any
         if isinstance(tx, str):
             raw = tx
         else:

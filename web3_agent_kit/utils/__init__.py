@@ -5,7 +5,7 @@ from __future__ import annotations
 import math
 import time
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable, Optional
 
 # Re-export notifications (canonical module: web3_agent_kit.notifications)
 from ..notifications import AlertLevel, Notification, Notifier, NotifierConfig
@@ -55,7 +55,7 @@ class SpendGovernor:
         self,
         limits: Optional[SpendLimits] = None,
         require_confirm: bool = True,
-        confirm_fn: Optional[callable] = None,
+        confirm_fn: Optional[Callable] = None,
     ):
         if require_confirm and confirm_fn is None:
             raise ValueError(

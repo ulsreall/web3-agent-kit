@@ -25,7 +25,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +260,7 @@ class TxSimulator:
         chain_id = self.w3.eth.chain_id
         url = f"https://api.tenderly.co/api/v1/account/{self.config.tenderly_user}/project/{self.config.tenderly_project}/simulate"
 
-        payload = {
+        payload: dict[str, Any] = {
             "network_id": str(chain_id),
             "from": self.w3.to_checksum_address(from_address),
             "to": self.w3.to_checksum_address(to) if to else None,

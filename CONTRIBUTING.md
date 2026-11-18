@@ -59,6 +59,13 @@ pytest tests/ -v
 - Use type hints where possible
 - Write docstrings for all public methods
 - Keep functions focused and small
+- `ruff check .`, `ruff format --check .` and `mypy` must pass; CI runs all three
+
+`mypy` disables `arg-type` in `pyproject.toml`. The `requests` and `web3` stubs
+reject valid runtime calls (`Session.get(params=...)`, `Eth.call(tx_dict)`),
+so that one code is off to keep the rest a hard gate. Run `mypy
+--disable-error-code=""` to see them, and prefer a real annotation over a
+`type: ignore` when you do fix one.
 
 ### Commit Messages
 
