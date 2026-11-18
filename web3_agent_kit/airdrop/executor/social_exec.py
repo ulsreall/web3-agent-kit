@@ -720,7 +720,9 @@ class TelegramExecutor:
             channel_url: Telegram URL (https://t.me/...).
 
         Returns:
-            True if join succeeded.
+            True when the channel was joined, or when the page was only opened
+            and no join button was visible. The two are not distinguished; a
+            preview page counts as reached.
         """
         try:
             page = self._require_page()

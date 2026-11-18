@@ -7,6 +7,9 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** `TelegramExecutor.join_channel` returns `True` for a page it only
+  opened, so "joined" and "merely visited" are indistinguishable to a caller.
+  The docstring now says so instead of claiming a join.
 - **airdrop:** Zealy quest classification returns the empty community slug for a
   bare `https://zealy.io` URL (`parts[-1]` was `""`, which is not falsy enough);
   and Gleam only recognised a Twitter follow when the word "twitter" appeared,
