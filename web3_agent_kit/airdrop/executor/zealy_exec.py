@@ -536,7 +536,7 @@ class ZealyExecutor:
         # URL format: /c/community-slug or /community/...
         if len(parts) >= 2 and parts[0] == "c":
             return parts[1]
-        return parts[-1] if parts else "unknown"
+        return parts[-1] if parts and parts[-1] else "unknown"
 
     def _random_delay(self) -> None:
         """Sleep a random human-like delay."""
