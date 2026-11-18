@@ -292,56 +292,58 @@ class FormFiller:
 
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
-                context = browser.new_context(
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                try:
+                    context = browser.new_context(
+                        user_agent=(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                            "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                        )
                     )
-                )
-                page = context.new_page()
+                    page = context.new_page()
 
-                # Navigate to form
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(2000)  # Async-compatible wait
+                    # Navigate to form
+                    page.goto(url, wait_until="networkidle", timeout=30000)
+                    page.wait_for_timeout(2000)  # Async-compatible wait
 
-                # Detect fields
-                fields = self._detect_fields(page)
-                result.fields_found = len(fields)
+                    # Detect fields
+                    fields = self._detect_fields(page)
+                    result.fields_found = len(fields)
 
-                if not fields:
-                    result.error = "No form fields detected"
-                    return result
+                    if not fields:
+                        result.error = "No form fields detected"
+                        return result
 
-                # Fill each field
-                for field in fields:
-                    value = self._match_field(field)
-                    if value:
-                        success = self._fill_field(page, field, value)
-                        if success:
-                            result.fields_filled += 1
-                            result.details.append(f"✓ {field.label}: {value[:20]}...")
+                    # Fill each field
+                    for field in fields:
+                        value = self._match_field(field)
+                        if value:
+                            success = self._fill_field(page, field, value)
+                            if success:
+                                result.fields_filled += 1
+                                result.details.append(f"✓ {field.label}: {value[:20]}...")
+                            else:
+                                result.fields_skipped += 1
+                                result.details.append(f"✗ {field.label}: fill failed")
                         else:
                             result.fields_skipped += 1
-                            result.details.append(f"✗ {field.label}: fill failed")
-                    else:
-                        result.fields_skipped += 1
-                        result.details.append(f"- {field.label}: no match")
+                            result.details.append(f"- {field.label}: no match")
 
-                # Screenshot before submit
-                if screenshot:
-                    path = f"/tmp/form_filled_{int(time.time())}.png"
-                    page.screenshot(path=path)
-                    result.screenshot_path = path
+                    # Screenshot before submit
+                    if screenshot:
+                        path = f"/tmp/form_filled_{int(time.time())}.png"
+                        page.screenshot(path=path)
+                        result.screenshot_path = path
 
-                # Submit
-                if submit:
-                    submitted = self._submit_form(page)
-                    result.submitted = submitted
-                    if submitted:
-                        page.wait_for_timeout(3000)  # Async-compatible wait
-                        result.success = True
+                    # Submit
+                    if submit:
+                        submitted = self._submit_form(page)
+                        result.submitted = submitted
+                        if submitted:
+                            page.wait_for_timeout(3000)  # Async-compatible wait
+                            result.success = True
 
-                browser.close()
+                finally:
+                    browser.close()
 
         except ImportError:
             result.error = "Playwright not installed. Run: pip install playwright"
@@ -371,52 +373,54 @@ class FormFiller:
 
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
-                context = browser.new_context(
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                try:
+                    context = browser.new_context(
+                        user_agent=(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                            "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                        )
                     )
-                )
-                page = context.new_page()
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(3000)  # Async-compatible wait
+                    page = context.new_page()
+                    page.goto(url, wait_until="networkidle", timeout=30000)
+                    page.wait_for_timeout(3000)  # Async-compatible wait
 
-                # Typeform uses a wizard-style form
-                # Each question is on a separate screen
-                steps = 0
-                max_steps = 20
+                    # Typeform uses a wizard-style form
+                    # Each question is on a separate screen
+                    steps = 0
+                    max_steps = 20
 
-                while steps < max_steps:
-                    steps += 1
+                    while steps < max_steps:
+                        steps += 1
 
-                    # Detect current question
-                    question = self._detect_typeform_question(page)
-                    if not question:
-                        break
+                        # Detect current question
+                        question = self._detect_typeform_question(page)
+                        if not question:
+                            break
 
-                    # Match and fill
-                    value = self._match_typeform_field(question)
-                    if value:
-                        self._fill_typeform_field(page, value)
-                        result.fields_filled += 1
-                        result.details.append(f"✓ Step {steps}: {value[:20]}...")
-                    else:
-                        result.fields_skipped += 1
-                        result.details.append(f"- Step {steps}: no match")
+                        # Match and fill
+                        value = self._match_typeform_field(question)
+                        if value:
+                            self._fill_typeform_field(page, value)
+                            result.fields_filled += 1
+                            result.details.append(f"✓ Step {steps}: {value[:20]}...")
+                        else:
+                            result.fields_skipped += 1
+                            result.details.append(f"- Step {steps}: no match")
 
-                    result.fields_found += 1
+                        result.fields_found += 1
 
-                    # Click next
-                    self._typeform_next(page)
-                    page.wait_for_timeout(1000)  # Async-compatible wait
+                        # Click next
+                        self._typeform_next(page)
+                        page.wait_for_timeout(1000)  # Async-compatible wait
 
-                # Submit if on final screen
-                if submit:
-                    submitted = self._typeform_submit(page)
-                    result.submitted = submitted
-                    result.success = submitted
+                    # Submit if on final screen
+                    if submit:
+                        submitted = self._typeform_submit(page)
+                        result.submitted = submitted
+                        result.success = submitted
 
-                browser.close()
+                finally:
+                    browser.close()
 
         except ImportError:
             result.error = "Playwright not installed"
@@ -446,61 +450,65 @@ class FormFiller:
 
             with sync_playwright() as p:
                 browser = p.chromium.launch(headless=True)
-                context = browser.new_context(
-                    user_agent=(
-                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                        "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                try:
+                    context = browser.new_context(
+                        user_agent=(
+                            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                            "AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+                        )
                     )
-                )
-                page = context.new_page()
-                page.goto(url, wait_until="networkidle", timeout=30000)
-                page.wait_for_timeout(3000)  # Async-compatible wait
+                    page = context.new_page()
+                    page.goto(url, wait_until="networkidle", timeout=30000)
+                    page.wait_for_timeout(3000)  # Async-compatible wait
 
-                # Google Forms uses a specific structure
-                # Each question is a div with role="listitem"
-                questions = page.query_selector_all('div[role="listitem"]')
-                result.fields_found = len(questions)
+                    # Google Forms uses a specific structure
+                    # Each question is a div with role="listitem"
+                    questions = page.query_selector_all('div[role="listitem"]')
+                    result.fields_found = len(questions)
 
-                for q in questions:
-                    # Get question text
-                    label_el = q.query_selector('div[role="heading"]')
-                    label = label_el.inner_text() if label_el else ""
+                    for q in questions:
+                        # Get question text
+                        label_el = q.query_selector('div[role="heading"]')
+                        label = label_el.inner_text() if label_el else ""
 
-                    # Detect field type
-                    input_el = q.query_selector('input[type="text"], input[type="email"], textarea')
-                    select_el = q.query_selector('div[role="listbox"]')
+                        # Detect field type
+                        input_el = q.query_selector(
+                            'input[type="text"], input[type="email"], textarea'
+                        )
+                        select_el = q.query_selector('div[role="listbox"]')
 
-                    if input_el:
-                        # Text/email input
-                        field_name = self._detect_field_name(label)
-                        value = self.profile.get(field_name)
-                        if value:
-                            input_el.fill(value)
-                            result.fields_filled += 1
-                            result.details.append(f"✓ {label}: {value[:20]}...")
-                        else:
-                            result.fields_skipped += 1
+                        if input_el:
+                            # Text/email input
+                            field_name = self._detect_field_name(label)
+                            value = self.profile.get(field_name)
+                            if value:
+                                input_el.fill(value)
+                                result.fields_filled += 1
+                                result.details.append(f"✓ {label}: {value[:20]}...")
+                            else:
+                                result.fields_skipped += 1
 
-                    elif select_el:
-                        # Dropdown
-                        field_name = self._detect_field_name(label)
-                        value = self.profile.get(field_name)
-                        if value:
-                            self._fill_google_dropdown(page, select_el, value)
-                            result.fields_filled += 1
-                        else:
-                            result.fields_skipped += 1
+                        elif select_el:
+                            # Dropdown
+                            field_name = self._detect_field_name(label)
+                            value = self.profile.get(field_name)
+                            if value:
+                                self._fill_google_dropdown(page, select_el, value)
+                                result.fields_filled += 1
+                            else:
+                                result.fields_skipped += 1
 
-                # Submit
-                if submit:
-                    submit_btn = page.query_selector('div[role="button"]:has-text("Submit")')
-                    if submit_btn:
-                        submit_btn.click()
-                        page.wait_for_timeout(3000)  # Async-compatible wait
-                        result.submitted = True
-                        result.success = True
+                    # Submit
+                    if submit:
+                        submit_btn = page.query_selector('div[role="button"]:has-text("Submit")')
+                        if submit_btn:
+                            submit_btn.click()
+                            page.wait_for_timeout(3000)  # Async-compatible wait
+                            result.submitted = True
+                            result.success = True
 
-                browser.close()
+                finally:
+                    browser.close()
 
         except ImportError:
             result.error = "Playwright not installed"

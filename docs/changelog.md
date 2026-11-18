@@ -7,6 +7,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** all three form fillers returned early on the most common failure
+  ("no form fields detected") without calling `browser.close()`, leaving a
+  chromium process (and its profile lock) behind on every attempt. The body is
+  now wrapped in `try/finally`.
 - **airdrop:** the on-chain farmer's own `Chain` enum says `bnb` (and offers
   `zksync`, `scroll`, `linea`, `blast`), while the gate's says `bsc` and knows no
   envelope for the rest. `_resolve_chain` looked the name up directly and fell
