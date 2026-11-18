@@ -64,6 +64,19 @@ class TwitterExecutor:
         self._page = None
         self._logged_in = False
 
+    def _require_page(self):
+        """Return the working page, creating it once.
+
+        Raises instead of handing ``None`` to a selector call, so a failed
+        browser launch surfaces as one clear error rather than N swallowed
+        AttributeErrors.
+        """
+        if self._page is None:
+            self._page = self.browser.new_page()
+        if self._page is None:
+            raise RuntimeError("browser did not create a page")
+        return self._page
+
     def login_with_cookies(self, platform_session: str = "twitter") -> bool:
         """Load saved Twitter cookies and verify login.
 
@@ -147,8 +160,7 @@ class TwitterExecutor:
         """
         url = f"{self.BASE_URL}/{username}"
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, url):
                 return False
@@ -164,7 +176,7 @@ class TwitterExecutor:
 
             for selector in follow_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn_text = btn.inner_text().strip().lower()
                         if "follow" in btn_text and "unfollow" not in btn_text:
@@ -192,8 +204,7 @@ class TwitterExecutor:
             True if retweet succeeded.
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, tweet_url):
                 return False
@@ -209,12 +220,12 @@ class TwitterExecutor:
 
             for selector in rt_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn.click()
                         time.sleep(1)
                         # Confirm retweet in dropdown
-                        confirm = self._page.query_selector(
+                        confirm = page.query_selector(
                             '[data-testid="retweetConfirm"], [role="menuitem"]'
                         )
                         if confirm:
@@ -241,8 +252,7 @@ class TwitterExecutor:
             True if like succeeded.
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, tweet_url):
                 return False
@@ -256,7 +266,7 @@ class TwitterExecutor:
 
             for selector in like_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn.click()
                         time.sleep(1)
@@ -282,8 +292,7 @@ class TwitterExecutor:
             True if tweet was posted.
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, self.BASE_URL):
                 return False
@@ -299,14 +308,14 @@ class TwitterExecutor:
 
             for selector in compose_selectors:
                 try:
-                    textarea = self._page.query_selector(selector)
+                    textarea = page.query_selector(selector)
                     if textarea:
                         textarea.click()
                         textarea.fill(text)
                         time.sleep(1)
 
                         # Click tweet/post button
-                        post_btn = self._page.query_selector(
+                        post_btn = page.query_selector(
                             '[data-testid="tweetButton"], button[data-testid="tweetButtonInline"]'
                         )
                         if post_btn:
@@ -335,8 +344,7 @@ class TwitterExecutor:
             True if reply was posted.
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, tweet_url):
                 return False
@@ -351,14 +359,14 @@ class TwitterExecutor:
 
             for selector in reply_selectors:
                 try:
-                    textarea = self._page.query_selector(selector)
+                    textarea = page.query_selector(selector)
                     if textarea:
                         textarea.click()
                         textarea.fill(text)
                         time.sleep(1)
 
                         # Click reply button
-                        reply_btn = self._page.query_selector('[data-testid="tweetButton"]')
+                        reply_btn = page.query_selector('[data-testid="tweetButton"]')
                         if reply_btn:
                             reply_btn.click()
                             time.sleep(2)
@@ -512,8 +520,7 @@ class DiscordExecutor:
                 code = invite_url.split("discord.gg/")[-1].split("?")[0]
                 invite_url = f"https://discord.com/invite/{code}"
 
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             if not self.browser.navigate_with_retry(self._page, invite_url):
                 return False
@@ -530,7 +537,7 @@ class DiscordExecutor:
 
             for selector in accept_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn.click()
                         time.sleep(3)
@@ -557,8 +564,7 @@ class DiscordExecutor:
             True if member (and has role if specified).
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             url = f"{self.BASE_URL}/channels/{server_id}"
             if not self.browser.navigate_with_retry(self._page, url):
@@ -567,7 +573,7 @@ class DiscordExecutor:
             time.sleep(3)
 
             # Check if we can access the server (not redirected to login)
-            current_url = self._page.url
+            current_url = page.url
             if "login" in current_url.lower():
                 return False
 
@@ -701,8 +707,7 @@ class TelegramExecutor:
             True if join succeeded.
         """
         try:
-            if not self._page:
-                self._page = self.browser.new_page()
+            page = self._require_page()
 
             # Normalize URL
             if not channel_url.startswith("http"):
@@ -724,7 +729,7 @@ class TelegramExecutor:
 
             for selector in join_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn_text = btn.inner_text().strip().lower()
                         if "join" in btn_text or "subscribe" in btn_text:
@@ -742,7 +747,7 @@ class TelegramExecutor:
             ]
             for selector in open_selectors:
                 try:
-                    btn = self._page.query_selector(selector)
+                    btn = page.query_selector(selector)
                     if btn:
                         btn.click()
                         time.sleep(3)

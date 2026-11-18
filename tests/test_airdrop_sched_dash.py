@@ -462,3 +462,18 @@ class TestDashboardPersistence:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+def test_async_loop_is_defined_once_and_uses_the_async_executor():
+    """A duplicate _async_run_loop silently shadowed the non-blocking version."""
+    import inspect
+
+    from web3_agent_kit.airdrop import scheduler as module
+    from web3_agent_kit.airdrop.scheduler import AirdropScheduler
+
+    source = inspect.getsource(module)
+    assert source.count("async def _async_run_loop") == 1
+
+    loop = inspect.getsource(AirdropScheduler._async_run_loop)
+    assert "_async_execute_task" in loop
+    assert "asyncio.sleep" in loop

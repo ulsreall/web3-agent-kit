@@ -562,21 +562,6 @@ class AirdropScheduler:
 
     # ─── Private Methods ─────────────────────────────────────────
 
-    async def _async_run_loop(self) -> None:
-        """Async scheduler loop — uses non-blocking sleep."""
-        logger.info("Async scheduler loop started")
-        while self._running:
-            try:
-                due_tasks = self.get_due_tasks()
-                for task in due_tasks:
-                    if not self._running:
-                        break
-                    await self._execute_task(task)
-                self._save_state()
-            except Exception as e:
-                logger.error(f"Scheduler loop error: {e}")
-            await asyncio.sleep(self.config.check_interval)
-
     async def _execute_task(self, task: ScheduledTask) -> ExecutionLog:
         """Execute a single task."""
         log = ExecutionLog(

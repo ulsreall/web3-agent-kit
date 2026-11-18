@@ -243,10 +243,50 @@ def test_repo_baseline_is_accurate():
 
     by_file: dict[str, int] = {}
     for call in tool.find_signer_calls(package):
-        if call.is_test or call.path in tool.APPROVED_FILES:
+        if call.is_test or call.mediated or call.path in tool.APPROVED_FILES:
             continue
         by_file[call.path] = by_file.get(call.path, 0) + 1
 
     assert by_file == tool.LEGACY_BASELINE, (
         f"LEGACY_BASELINE is out of date. Migrated a call? Remove its entry. Actual: {by_file}"
     )
+
+
+def test_wallet_receivers_are_classified_as_gated(tmp_path: Path):
+    package = tmp_path / "pkg"
+    _write(
+        package,
+        "a.py",
+        """
+        def swap(wallet, tx):
+            return wallet.sign_transaction(tx, chain)
+
+        def stake(self, tx):
+            return self.wallet.sign_transaction(tx, chain)
+        """,
+    )
+
+    calls = tool.find_signer_calls(package)
+    assert len(calls) == 2
+    assert all(call.mediated for call in calls)
+
+
+def test_raw_account_receiver_is_not_gated(tmp_path: Path):
+    package = tmp_path / "pkg"
+    _write(package, "a.py", "self._account.sign_transaction(tx)")
+
+    calls = tool.find_signer_calls(package)
+    assert len(calls) == 1
+    assert calls[0].mediated is False
+
+
+def test_gated_calls_alone_exit_zero(tmp_path: Path):
+    package = tmp_path / "pkg"
+    _write(package, "a.py", "wallet.sign_transaction(tx)")
+
+    completed = subprocess.run(
+        [sys.executable, str(TOOL_PATH), "--root", str(package)],
+        capture_output=True,
+        text=True,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr

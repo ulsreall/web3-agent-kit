@@ -87,21 +87,30 @@ EXCLUDED_DIR_PARTS: frozenset[str] = frozenset(
 
 SIGNER_ATTRIBUTE = "sign_transaction"
 
+
+def _is_gate_mediated(func: ast.AST) -> bool:
+    """True when the receiver of ``.sign_transaction`` is a Wallet instance.
+
+    ``Wallet.sign_transaction`` routes through the bound gate, so those calls
+    are not bypasses and do not belong on the baseline. Only a raw account
+    signer (``account``, ``w3.eth.account``) signs without policy evaluation.
+    """
+    if not isinstance(func, ast.Attribute):
+        return False
+    receiver = func.value
+    name = receiver.attr if isinstance(receiver, ast.Attribute) else getattr(receiver, "id", "")
+    return str(name).lower().endswith("wallet")
+
+
 # Known, not-yet-migrated call sites.
 #
-# These still reach signing without passing through the gate. They are listed
-# rather than silently tolerated so the remaining surface is visible and the
-# count only moves down. Removing an entry requires the call to be migrated.
-#
-# Keyed by path with the expected number of unapproved calls in that file, so
-# adding a new call to an already-listed file still fails the check.
-LEGACY_BASELINE: dict[str, int] = {
-    "web3_agent_kit/bridge/bridge.py": 2,
-    "web3_agent_kit/defi/__init__.py": 6,
-    "web3_agent_kit/defi/uniswap_v3.py": 2,
-    "web3_agent_kit/plugins/restaking/eigenlayer.py": 5,
-    "web3_agent_kit/plugins/restaking/protocols.py": 4,
-}
+# These reach signing without passing through the gate. Calls through a Wallet
+# instance are already gated and are classified separately, so this list is now
+# empty: everything in the package either goes through the interceptor or
+# through ``Wallet.sign_transaction``. Add an entry only for a genuinely raw
+# signer, keyed by path with the expected number of calls in that file, so a
+# second call in the same file still fails the check.
+LEGACY_BASELINE: dict[str, int] = {}
 
 
 @dataclass(frozen=True)
@@ -113,6 +122,7 @@ class SignerCall:
     column: int
     expression: str
     is_test: bool
+    mediated: bool = False
 
     def describe(self) -> str:
         kind = "test" if self.is_test else "production"
@@ -208,6 +218,7 @@ def find_signer_calls(root: Path) -> list[SignerCall]:
                         column=node.col_offset,
                         expression=_unparse(func),
                         is_test=_is_test_path(relative),
+                        mediated=_is_gate_mediated(func),
                     )
                 )
                 continue
@@ -303,7 +314,9 @@ def main(argv: list[str] | None = None) -> int:
     violations = [
         call
         for call in calls
-        if call.path not in APPROVED_FILES and (args.include_tests or not call.is_test)
+        if call.path not in APPROVED_FILES
+        and not call.mediated
+        and (args.include_tests or not call.is_test)
     ]
 
     # Group by file so an already-known file growing a new call is still caught.
@@ -313,6 +326,7 @@ def main(argv: list[str] | None = None) -> int:
 
     print(f"scanned: {root}")
     print(f"signer call expressions found: {len(calls)}")
+    print(f"  of which wallet-mediated (gated): {sum(1 for c in calls if c.mediated)}")
     print(f"approved files: {sorted(APPROVED_FILES) or '(none)'}")
     print()
 
