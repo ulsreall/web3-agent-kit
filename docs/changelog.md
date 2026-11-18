@@ -7,6 +7,9 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** `WLGrinder.apply_bulk` and `async_apply_bulk` were byte-identical
+  copies (both async, both awaiting the sleep); `apply_bulk` now delegates so
+  the two cannot drift.
 - **airdrop:** `TelegramExecutor.join_channel` returns `True` for a page it only
   opened, so "joined" and "merely visited" are indistinguishable to a caller.
   The docstring now says so instead of claiming a join.
