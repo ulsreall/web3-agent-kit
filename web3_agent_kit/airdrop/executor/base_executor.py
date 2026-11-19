@@ -22,7 +22,6 @@ from ..base import AirdropTask, TaskStatus, TaskType
 logger = logging.getLogger(__name__)
 
 
-
 class TaskDifficulty(Enum):
     """Difficulty level of a platform task."""
 
