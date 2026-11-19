@@ -194,7 +194,11 @@ class PlatformPluginRegistry:
                 and issubclass(attr, BasePlatformExecutor)
                 and attr is not BasePlatformExecutor
             ):
-                name = getattr(attr, "platform_name", attr_name.lower())
+                # `platform_name` is inherited from the base class, so a plugin
+                # that forgets to set it would otherwise register as "unknown"
+                # and clobber the previous one.
+                declared = getattr(attr, "platform_name", "")
+                name = declared if declared and declared != "unknown" else attr_name.lower()
                 cls._registry[name] = attr
                 logger.info(f"Discovered user plugin: {name} from {plugin_path}")
 
@@ -213,15 +217,22 @@ class PlatformPluginRegistry:
         Returns:
             The executor class, or None.
         """
-        # Look for classes that extend BasePlatformExecutor
-        for attr_name in dir(module):
-            attr = getattr(module, attr_name)
-            if (
-                isinstance(attr, type)
-                and issubclass(attr, BasePlatformExecutor)
-                and attr is not BasePlatformExecutor
-            ):
-                return attr
+        candidates = [
+            attr
+            for attr_name in dir(module)
+            if isinstance(attr := getattr(module, attr_name), type)
+            and issubclass(attr, BasePlatformExecutor)
+            and attr is not BasePlatformExecutor
+        ]
+
+        # `dir()` is alphabetical and also yields imported classes, so the first
+        # subclass can be a helper or a re-export. Prefer the one that names
+        # itself after the module we were asked about.
+        for candidate in candidates:
+            if getattr(candidate, "platform_name", "") == fallback_name:
+                return candidate
+        if candidates:
+            return candidates[0]
 
         # Fallback: look for common naming patterns
         for class_name in [

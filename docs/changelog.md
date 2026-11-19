@@ -11,6 +11,13 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the plugin registry picked "the first `BasePlatformExecutor`
+  subclass in the module", but `dir()` is alphabetical and includes names the
+  module only imported — so a helper class or a re-export could be registered
+  under a platform name. The class whose `platform_name` matches the module is
+  preferred now. Separately, a user plugin that forgot `platform_name` inherited
+  `"unknown"` from the base class and overwrote the previous plugin; it falls
+  back to its class name.
 - **tests:** the rehearsal runner test failed intermittently on a loaded CI shard.
   The sheet pins a per-second `evaluatedAt` that the policy commitment binds, but
   the gate was evaluated with a fresh clock, so a second rolling over mid-attempt
