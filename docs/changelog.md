@@ -11,6 +11,12 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the multi-wallet farmer never recorded what it had done. Completed
+  tasks were skipped without being counted, so a finished campaign logged "0
+  tasks, 0 points" and `get_total_points()` stayed at zero; the per-wallet
+  progress it built was never persisted. The daily task counter was also never
+  incremented, so `max_tasks_per_wallet_per_day` could never bite. All fixed, and
+  `farm_campaign` now delegates to its identical twin `async_farm_campaign`.
 - **airdrop:** the legacy Zealy client lost the whole quest list when one quest
   had a null `type` (`.lower()` raised inside the wrapper) and crashed the sum on
   a string `xp`; a null leaderboard `rank`/`username` came through raw. All are

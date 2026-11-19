@@ -50,7 +50,12 @@ class SybilAvoidanceConfig:
 
 @dataclass
 class FarmResult:
-    """Result of a farming operation."""
+    """Result of a farming operation.
+
+    ``success`` means every task in the campaign was already complete. In plan
+    mode (``execute=False``) that is all the caller can learn, since nothing is
+    submitted.
+    """
 
     wallet_label: str
     campaign_id: str
@@ -137,31 +142,12 @@ class AirdropFarmer:
 
         Returns:
             List of FarmResult per wallet.
+
+        Note:
+            This was a byte-identical copy of :meth:`async_farm_campaign`; it
+            delegates now so the two cannot drift apart.
         """
-        self._reset_daily_counts_if_needed()
-        wallets = self.get_wallets()
-        results: list[FarmResult] = []
-
-        logger.info(f"Farmer: farming '{campaign.name}' across {len(wallets)} wallets")
-
-        for wallet_label in wallets:
-            if not self._can_wallet_act(wallet_label):
-                logger.debug(f"Farmer: skipping {wallet_label} (daily limit reached)")
-                continue
-
-            result = self._farm_with_wallet(wallet_label, campaign, execute)
-            results.append(result)
-
-            # Sybil avoidance delay
-            if execute:
-                delay = random.uniform(
-                    self.config.min_delay_between_wallets,
-                    self.config.max_delay_between_wallets,
-                )
-                logger.debug(f"Farmer: waiting {delay:.0f}s before next wallet")
-                await asyncio.sleep(delay)
-
-        return results
+        return await self.async_farm_campaign(campaign, execute)
 
     async def async_farm_campaign(
         self,
@@ -190,6 +176,11 @@ class AirdropFarmer:
 
             result = self._farm_with_wallet(wallet_label, campaign, execute)
             results.append(result)
+            if execute:
+                # The per-day cap was never fed, so it never bit.
+                self._daily_task_counts[wallet_label] = (
+                    self._daily_task_counts.get(wallet_label, 0) + 1
+                )
 
             # Sybil avoidance delay
             if execute:
@@ -277,6 +268,10 @@ class AirdropFarmer:
 
         for task in campaign.tasks:
             if task.status == TaskStatus.COMPLETED:
+                # These used to be skipped without being counted, so a fully
+                # completed campaign reported 0 tasks and 0 points.
+                result.tasks_completed += 1
+                result.points_earned += task.points
                 continue
 
             if execute:
@@ -284,6 +279,14 @@ class AirdropFarmer:
                     f"Task {task.task_id} remains pending: task execution is not implemented"
                 )
                 result.success = False
+
+        # A plant-mode run reports success only when there is nothing left to do.
+        if not execute:
+            result.success = all(task.status == TaskStatus.COMPLETED for task in campaign.tasks)
+
+        progress.tasks_completed = result.tasks_completed
+        progress.total_points += result.points_earned
+        progress.last_active = time.time()
 
         if (
             all(task.status == TaskStatus.COMPLETED for task in campaign.tasks)
