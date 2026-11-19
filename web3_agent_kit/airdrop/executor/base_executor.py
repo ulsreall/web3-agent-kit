@@ -11,26 +11,14 @@ import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Generic, Optional, TypeVar, cast
+from typing import Any, Generic, Optional, TypeVar
 
 import requests
 
+from ...coerce import coerce_int  # noqa: F401  (re-exported for the parsers)
 from ..base import AirdropTask, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
-
-
-def coerce_int(value: object, default: int = 0) -> int:
-    """Coerce a numeric API field that may be absent, ``""`` or a string.
-
-    Points and XP arrive in all three shapes, and ``int("")``/``int(None)``
-    raise — inside a parse wrapped by a bare ``except`` that drops the whole
-    task.
-    """
-    try:
-        return int(cast(Any, value))
-    except (TypeError, ValueError):
-        return default
 
 
 class TaskDifficulty(Enum):

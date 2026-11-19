@@ -173,3 +173,71 @@ class TestBridgeAgent:
 
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])
+
+
+class TestRouteParsingRobustness:
+    """A single null fee field used to discard every route from a provider."""
+
+    def _bridge(self, monkeypatch):
+        monkeypatch.setattr("web3_agent_kit.bridge.bridge.CHAIN_IDS", {})
+        bridge = BridgeAgent(MagicMock(), MagicMock(address="0x1234"))
+        bridge._resolve_token = MagicMock(return_value="0xToken")
+        bridge._get_decimals = MagicMock(return_value=6)
+        return bridge
+
+    def _lifi(self, payload):
+        resp = MagicMock()
+        resp.json.return_value = payload
+        resp.raise_for_status = MagicMock()
+        return resp
+
+    def test_a_null_gas_cost_does_not_lose_the_route(self, monkeypatch):
+        from web3_agent_kit.chains.chain import CHAIN_IDS
+
+        CHAIN_IDS[Chain.ETHEREUM] = 1
+        CHAIN_IDS[Chain.BASE] = 8453
+        bridge = self._bridge(monkeypatch)
+        payload = {
+            "routes": [
+                {"toAmount": "99000000", "gasCostUSD": None, "duration": None, "steps": []},
+                {"toAmount": "98000000", "gasCostUSD": "2.5", "duration": 120, "steps": []},
+            ]
+        }
+        monkeypatch.setattr(
+            "web3_agent_kit.bridge.bridge.requests.Session.get",
+            lambda *a, **k: self._lifi(payload),
+        )
+        routes = bridge._get_lifi_routes("USDC", 100.0, Chain.ETHEREUM, Chain.BASE)
+        assert len(routes) == 2
+        assert routes[0].gas_estimate == 0.0
+        assert routes[0].time_estimate == 300
+        assert routes[1].fee_usd == 2.5
+
+    def test_a_null_to_amount_does_not_lose_the_route(self, monkeypatch):
+        from web3_agent_kit.chains.chain import CHAIN_IDS
+
+        CHAIN_IDS[Chain.ETHEREUM] = 1
+        CHAIN_IDS[Chain.BASE] = 8453
+        bridge = self._bridge(monkeypatch)
+        payload = {"routes": [{"toAmount": None, "gasCostUSD": "1", "steps": []}]}
+        monkeypatch.setattr(
+            "web3_agent_kit.bridge.bridge.requests.Session.get",
+            lambda *a, **k: self._lifi(payload),
+        )
+        assert bridge._get_lifi_routes("USDC", 1.0, Chain.ETHEREUM, Chain.BASE)[0].amount_out == 0.0
+
+    def test_a_socket_route_without_gas_fees(self, monkeypatch):
+        from web3_agent_kit.chains.chain import CHAIN_IDS
+
+        CHAIN_IDS[Chain.ETHEREUM] = 1
+        CHAIN_IDS[Chain.BASE] = 8453
+        bridge = self._bridge(monkeypatch)
+        resp = MagicMock()
+        resp.json.return_value = {"result": {"routes": [{"toAmount": "5000000"}]}}
+        resp.raise_for_status = MagicMock()
+        monkeypatch.setattr(
+            "web3_agent_kit.bridge.bridge.requests.Session.get", lambda *a, **k: resp
+        )
+        routes = bridge._get_socket_routes("USDC", 5.0, Chain.ETHEREUM, Chain.BASE)
+        assert len(routes) == 1
+        assert routes[0].fee_usd == 0.0
