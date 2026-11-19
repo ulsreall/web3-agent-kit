@@ -11,6 +11,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **api:** `resolve_token` accepted any `0x`-prefixed 42-character string, so a
+  typo (`0x` + 40 `z`) was taken as an address and only failed inside web3 once
+  the request had been accepted. It must match 20 hex bytes now, and an
+  address-shaped non-hex value gets its own message.
 - **oracle:** the "weighted median" was the upper-middle element, so with two
   sources a single high outlier always set the price (100/300 returned 300). It
   averages the two middles now. `get_prices_batch` also dropped the whole batch
