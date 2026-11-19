@@ -16,6 +16,7 @@ from .base_executor import (
     ExecutorResult,
     PlatformTask,
     TaskDifficulty,
+    coerce_int,
 )
 
 logger = logging.getLogger(__name__)
@@ -194,11 +195,12 @@ class TaskOnExecutor(BasePlatformExecutor[TaskOnTask]):
     def _parse_task(self, data: dict, index: int) -> Optional[TaskOnTask]:
         """Parse a task from API response."""
         try:
-            task_id = str(data.get("id", data.get("taskId", index)))
+            raw_id = data.get("id", data.get("taskId"))
+            task_id = str(raw_id) if raw_id not in (None, "") else str(index)
             title = data.get("title", data.get("name", f"Task {index}"))
             task_type = data.get("type", data.get("taskType", "custom"))
             description = data.get("description", "")
-            points = int(data.get("points", data.get("reward", 0)))
+            points = coerce_int(data.get("points", data.get("reward")))
             is_completed = data.get("completed", data.get("isCompleted", False))
             action_url = data.get("actionUrl", data.get("url", ""))
 
