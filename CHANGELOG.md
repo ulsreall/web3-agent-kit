@@ -11,6 +11,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.2](https://github.com/ulsreall/web3-agent-kit/compare/v1.19.1...v1.19.2) (2026-11-19)
+
+
+### Bug Fixes
+
+* **airdrop:** close the browser on every form-fill exit path ([#143](https://github.com/ulsreall/web3-agent-kit/issues/143)) ([2943f41](https://github.com/ulsreall/web3-agent-kit/commit/2943f41a3281d2216e556c38c651d01c66077eb4))
+* **airdrop:** close the visit tab on every path, cover the Gleam handlers ([#160](https://github.com/ulsreall/web3-agent-kit/issues/160)) ([b646b58](https://github.com/ulsreall/web3-agent-kit/commit/b646b5886800fdc4f82a1ca5b15c7a73d56c3c9d))
+* **airdrop:** close the Zealy visit tab on every path, cover the handlers ([#161](https://github.com/ulsreall/web3-agent-kit/issues/161)) ([33cf962](https://github.com/ulsreall/web3-agent-kit/commit/33cf962dbb2a8aa1c7ef0f240bb748462e043ef7))
+* **airdrop:** count unsupported Google Form questions, cover both fillers ([#174](https://github.com/ulsreall/web3-agent-kit/issues/174)) ([2fddb7e](https://github.com/ulsreall/web3-agent-kit/commit/2fddb7e1dae151030bf3500d7e7f07d7c6647064))
+* **airdrop:** fix discovery dedupe and null campaign ids ([#148](https://github.com/ulsreall/web3-agent-kit/issues/148)) ([6976601](https://github.com/ulsreall/web3-agent-kit/commit/6976601787ac997814577ceb64925b56abbddc11))
+* **airdrop:** guard every page and context access in the social executors ([#134](https://github.com/ulsreall/web3-agent-kit/issues/134)) ([04fc6ed](https://github.com/ulsreall/web3-agent-kit/commit/04fc6ed60f1ba7a2fef77c5f6479d7638e501cac))
+* **airdrop:** keep Intract tasks with null fields, cover the flow ([#166](https://github.com/ulsreall/web3-agent-kit/issues/166)) ([9c8d308](https://github.com/ulsreall/web3-agent-kit/commit/9c8d30825104c5827627aeeb2c6186d2521bac05))
+* **airdrop:** keep Zealy quests with null fields, cover both legacy clients ([#175](https://github.com/ulsreall/web3-agent-kit/issues/175)) ([33652b2](https://github.com/ulsreall/web3-agent-kit/commit/33652b22b5172d6524296a54410a49802f41871a))
+* **airdrop:** make the farmer count what it did and honour its daily cap ([#176](https://github.com/ulsreall/web3-agent-kit/issues/176)) ([a4ba285](https://github.com/ulsreall/web3-agent-kit/commit/a4ba2855bf1f3124c8cd5d6c1eefb638f769e130))
+* **airdrop:** make the Galxe CAPTCHA hook real, cover the executor ([#165](https://github.com/ulsreall/web3-agent-kit/issues/165)) ([70442d3](https://github.com/ulsreall/web3-agent-kit/commit/70442d338c25f70c637876bbf21b1c0223c2bd44))
+* **airdrop:** normalise scanner output through one builder ([#154](https://github.com/ulsreall/web3-agent-kit/issues/154)) ([38501ae](https://github.com/ulsreall/web3-agent-kit/commit/38501ae4112fa6fb6f2578bc93588dd4437f4f36))
+* **airdrop:** pick the right class when registering a platform ([#172](https://github.com/ulsreall/web3-agent-kit/issues/172)) ([c911c22](https://github.com/ulsreall/web3-agent-kit/commit/c911c222aeb7ebdfd35c4d3dca55109f8c970e59))
+* **airdrop:** recognise X follows, stop returning an empty community slug ([#144](https://github.com/ulsreall/web3-agent-kit/issues/144)) ([986a953](https://github.com/ulsreall/web3-agent-kit/commit/986a953a638ff6939fc523b2bc92e4a0e196b864))
+* **airdrop:** stop dropping tasks over an empty points field ([#151](https://github.com/ulsreall/web3-agent-kit/issues/151)) ([749125f](https://github.com/ulsreall/web3-agent-kit/commit/749125f34bf0487925bd9ead58d9b5be8242ea99))
+* **airdrop:** stop Layer3 dropping and crashing on null fields ([#167](https://github.com/ulsreall/web3-agent-kit/issues/167)) ([2d14e03](https://github.com/ulsreall/web3-agent-kit/commit/2d14e03dd48131c0f9a74f6a70704498d73d6e24))
+* **airdrop:** stop Port3 dropping tasks on null fields, cover the flow ([#170](https://github.com/ulsreall/web3-agent-kit/issues/170)) ([94c6999](https://github.com/ulsreall/web3-agent-kit/commit/94c6999e168f41635dc23a42c79746760672d8fd))
+* **airdrop:** stop QuestN dropping tasks on null fields, cover the flow ([#168](https://github.com/ulsreall/web3-agent-kit/issues/168)) ([493fcc6](https://github.com/ulsreall/web3-agent-kit/commit/493fcc6596486f91902390a0436b63a60ff7707a))
+* **airdrop:** stop reading a failed faucet claim as a success ([#149](https://github.com/ulsreall/web3-agent-kit/issues/149)) ([d147cd3](https://github.com/ulsreall/web3-agent-kit/commit/d147cd32c8f948c372ca8ba812076ced521da431))
+* **airdrop:** stop resolving bnb to Ethereum in the on-chain farmer ([#142](https://github.com/ulsreall/web3-agent-kit/issues/142)) ([36c11d5](https://github.com/ulsreall/web3-agent-kit/commit/36c11d5728d0933e09f65811bb75387ac54c7016))
+* **airdrop:** stop TaskOn dropping tasks on null fields, cover the flow ([#169](https://github.com/ulsreall/web3-agent-kit/issues/169)) ([5bc993c](https://github.com/ulsreall/web3-agent-kit/commit/5bc993caf94ecf0e0ff3b74609f468fe3c3d6b07))
+* **airdrop:** stop the retry helper exploding on a rate limit ([#164](https://github.com/ulsreall/web3-agent-kit/issues/164)) ([b31b8ab](https://github.com/ulsreall/web3-agent-kit/commit/b31b8aba404058d33fb68238f7192f26c6e99b1f))
+* **airdrop:** write session cookies atomically, cover the account paths ([#171](https://github.com/ulsreall/web3-agent-kit/issues/171)) ([dfc1178](https://github.com/ulsreall/web3-agent-kit/commit/dfc1178fcfa05229f38c6ba434b47e9e30519161))
+* **api:** validate the address shape in resolve_token ([#178](https://github.com/ulsreall/web3-agent-kit/issues/178)) ([df7fc3b](https://github.com/ulsreall/web3-agent-kit/commit/df7fc3b1421e610aeccde27cf679c87018a2352f))
+* **bridge:** keep routes whose fee fields are null ([#153](https://github.com/ulsreall/web3-agent-kit/issues/153)) ([2d34764](https://github.com/ulsreall/web3-agent-kit/commit/2d34764c41586e912b7b12c15b3ceaef428e7eb2))
+* **captcha:** use https for the 2captcha API, cover the solver ([#147](https://github.com/ulsreall/web3-agent-kit/issues/147)) ([8c0773a](https://github.com/ulsreall/web3-agent-kit/commit/8c0773a244e7734b2d18ede2148b2deea1f85456))
+* **chains:** replace the two dead default RPCs ([#130](https://github.com/ulsreall/web3-agent-kit/issues/130)) ([1d8e6cc](https://github.com/ulsreall/web3-agent-kit/commit/1d8e6ccf81c11cdc804fdb7a8425f5a871ad7ef5))
+* **chains:** stop importing the client solana-py 0.42 removed ([#140](https://github.com/ulsreall/web3-agent-kit/issues/140)) ([cd27d06](https://github.com/ulsreall/web3-agent-kit/commit/cd27d069a9e2dd6d15833fb043e91f55ad032470))
+* **cli:** stop __main__ from running on import ([#131](https://github.com/ulsreall/web3-agent-kit/issues/131)) ([78d4a83](https://github.com/ulsreall/web3-agent-kit/commit/78d4a83090dae56561a6ccc384b1596564d3c3b5))
+* **oracle:** average the median pair, keep a batch alive ([#177](https://github.com/ulsreall/web3-agent-kit/issues/177)) ([4d94995](https://github.com/ulsreall/web3-agent-kit/commit/4d94995dad89f725cddcb8515f1e1171d5555672))
+* repair the API write paths and close the gate gaps found in review ([#127](https://github.com/ulsreall/web3-agent-kit/issues/127)) ([a867518](https://github.com/ulsreall/web3-agent-kit/commit/a867518de01ab8bc8d31e520fe261e48e100b0df))
+* **security:** stop losing verdicts to empty API fields ([ff99602](https://github.com/ulsreall/web3-agent-kit/commit/ff9960248afad1b08040fcf1a8f951801d3e7a8a))
+* serve stale prices on failure; fix both legacy retry loops ([#173](https://github.com/ulsreall/web3-agent-kit/issues/173)) ([ee44db3](https://github.com/ulsreall/web3-agent-kit/commit/ee44db3800a4e9903d071c9da134837967eb7a95))
+* take over the remaining breakage — read routes, aggregator, DCA, wallet, replay ([#129](https://github.com/ulsreall/web3-agent-kit/issues/129)) ([42ffd30](https://github.com/ulsreall/web3-agent-kit/commit/42ffd30a7151e06a04e9a787cdf21d8212fca35c))
+* tolerate response shapes the parsers assumed away ([#133](https://github.com/ulsreall/web3-agent-kit/issues/133)) ([7e55171](https://github.com/ulsreall/web3-agent-kit/commit/7e5517161a75cc57c2fce3ec1ba9df9e96e26200))
+
+
+### Documentation
+
+* **airdrop:** document what the reports actually mean ([#162](https://github.com/ulsreall/web3-agent-kit/issues/162)) ([7f9235d](https://github.com/ulsreall/web3-agent-kit/commit/7f9235dcf6c9633e4cf8d00772f2cd1ccda46c2c))
+* fix landing page layout ([55c6a0a](https://github.com/ulsreall/web3-agent-kit/commit/55c6a0ad340c084649f0d9d65ea9992102498b7f))
+* publish the review record and separate the changelogs ([#163](https://github.com/ulsreall/web3-agent-kit/issues/163)) ([09b4b1c](https://github.com/ulsreall/web3-agent-kit/commit/09b4b1cb1d30fddb2cb83889c55705d2bda74c3e))
+* sync the 1.19.1 release across the README, banner and site ([#120](https://github.com/ulsreall/web3-agent-kit/issues/120)) ([11cc1ae](https://github.com/ulsreall/web3-agent-kit/commit/11cc1ae4521da3427ae71ccf9ebc8f1df10517a0))
+
 ## [1.19.1](https://github.com/ulsreall/web3-agent-kit/compare/v1.19.0...v1.19.1) (2026-11-08)
 
 
