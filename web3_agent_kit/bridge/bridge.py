@@ -24,6 +24,7 @@ from typing import Any, Optional, cast
 import requests
 
 from ..chains.chain import CHAIN_IDS, Chain, ChainManager
+from ..coerce import coerce_float, coerce_int
 from ..execution import ActionType
 from ..wallet.wallet import Wallet
 
@@ -248,7 +249,7 @@ class BridgeAgent:
         routes = []
         if "routes" in data:
             for route in data["routes"][:3]:  # Top 3 routes
-                to_amount = int(route.get("toAmount", "0"))
+                to_amount = coerce_int(route.get("toAmount"))
                 to_decimals = self._get_decimals(to_token_addr, to_chain)
                 amount_out = to_amount / (10**to_decimals)
 
@@ -263,9 +264,9 @@ class BridgeAgent:
                         token_out=to_token_addr,
                         amount_in=amount,
                         amount_out=amount_out,
-                        gas_estimate=float(route.get("gasCostUSD", "0")),
-                        time_estimate=int(route.get("duration", 300)),
-                        fee_usd=float(route.get("gasCostUSD", "0")),
+                        gas_estimate=coerce_float(route.get("gasCostUSD")),
+                        time_estimate=coerce_int(route.get("duration"), 300),
+                        fee_usd=coerce_float(route.get("gasCostUSD")),
                         steps=route.get("steps", []),
                         provider="Li.Fi",
                     )
@@ -313,12 +314,12 @@ class BridgeAgent:
         routes_data = result.get("routes", [])
 
         for route in routes_data[:3]:
-            to_amount = int(route.get("toAmount", "0"))
+            to_amount = coerce_int(route.get("toAmount"))
             to_decimals = self._get_decimals(to_token_addr, to_chain)
             amount_out = to_amount / (10**to_decimals)
 
             bridge_name = route.get("bridgeName", "Socket")
-            gas_usd = float(route.get("gasFees", {}).get("gasAmountUSD", "0"))
+            gas_usd = coerce_float((route.get("gasFees") or {}).get("gasAmountUSD"))
 
             routes.append(
                 BridgeRoute(

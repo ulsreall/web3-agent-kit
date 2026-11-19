@@ -7,6 +7,11 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **bridge:** a route whose `toAmount`, `gasCostUSD` or `duration` came back
+  `null` raised on `int()`/`float()` and discarded **every** route from that
+  provider, not just the bad one — Li.Fi being one API call, the whole batch
+  went with it. Numbers now go through `coerce_int`/`coerce_float` in a shared
+  `web3_agent_kit.coerce` module.
 - **airdrop:** a task whose `points` field arrives as `""` or `null` was dropped
   entirely by the Galxe and Layer3 parsers — `int("")` raises and the bare
   `except` returned `None`, losing the whole task. Shared `coerce_int` helper
