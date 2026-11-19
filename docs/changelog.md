@@ -11,6 +11,8 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** Port3 had the same null `type`/`title`/task-list holes as its
+  siblings, so a task the API sent with a null type disappeared.
 - **airdrop:** TaskOn had the same null `type`/`title`/task-list holes, plus a
   null campaign name that raised inside `visit`.
 - **airdrop:** QuestN dropped any task with a null `type` or `title`, and a null
