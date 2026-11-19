@@ -7,6 +7,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
+from ..coerce import coerce_float, coerce_int
 from .base import (
     AirdropCampaign,
     AirdropTask,
@@ -109,18 +110,21 @@ class ZealyPlatform(BaseAirdropPlatform):
             resp = self._get(url)
             data = resp.json()
 
-            for i, quest in enumerate(data.get("quests", [])):
+            for i, quest in enumerate(data.get("quests") or []):
+                # `type`/`xp` can arrive as null or as strings; a null type used to
+                # raise on .lower() and take the whole listing down with it.
+                quest_type = quest.get("type") or ""
                 task = AirdropTask(
                     task_id=f"zealy_{campaign_id}_{quest.get('id', i)}",
                     platform=self.platform_name,
-                    task_type=self._map_quest_type(quest.get("type", "")),
-                    title=quest.get("title", f"Quest {i}"),
-                    description=quest.get("description", ""),
-                    url=quest.get("url", ""),
-                    points=quest.get("xp", 0),
+                    task_type=self._map_quest_type(str(quest_type)),
+                    title=quest.get("title") or f"Quest {i}",
+                    description=quest.get("description") or "",
+                    url=quest.get("url") or "",
+                    points=coerce_float(quest.get("xp")),
                     metadata={
                         "community": campaign_id,
-                        "quest_type": quest.get("type", ""),
+                        "quest_type": quest_type,
                         "requirements": quest.get("requirements", []),
                     },
                 )
@@ -146,6 +150,9 @@ class ZealyPlatform(BaseAirdropPlatform):
     def complete_task(self, task: AirdropTask) -> bool:
         """Complete a Zealy quest.
 
+        This legacy client marks the quest locally and adds its XP; it does not
+        post anything. ``ZealyExecutor`` is the one that talks to the platform.
+
         Args:
             task: The quest to complete.
 
@@ -160,7 +167,7 @@ class ZealyPlatform(BaseAirdropPlatform):
             task.status = TaskStatus.COMPLETED
             task.completed_at = time.time()
             self._completed_quests.add(task.task_id)
-            self._total_xp += int(task.points)
+            self._total_xp += int(task.points or 0)
 
             logger.info(f"Zealy: completed quest '{task.title}' (+{task.points} XP)")
             return True
@@ -201,12 +208,12 @@ class ZealyPlatform(BaseAirdropPlatform):
             resp = self._get(url, params={"limit": limit})
             data = resp.json()
 
-            for i, entry in enumerate(data.get("leaderboard", [])):
+            for i, entry in enumerate(data.get("leaderboard") or []):
                 entries.append(
                     ZealyLeaderboardEntry(
-                        rank=entry.get("rank", i + 1),
-                        username=entry.get("username", "unknown"),
-                        xp=entry.get("xp", 0),
+                        rank=coerce_int(entry.get("rank")) or i + 1,
+                        username=entry.get("username") or "unknown",
+                        xp=coerce_int(entry.get("xp")),
                         address=entry.get("address", ""),
                     )
                 )
