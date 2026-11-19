@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 from .base_executor import (
     BasePlatformExecutor,
@@ -92,6 +92,7 @@ class IntractExecutor(BasePlatformExecutor[IntractTask]):
         self._campaign_id: Optional[str] = None
         self._quest_id: Optional[str] = None
         self._auth_token: Optional[str] = None
+        self._captcha_solver: Optional[Any] = None
 
     def visit(self, url: str) -> bool:
         """Load an Intract quest page.
@@ -249,6 +250,7 @@ class IntractExecutor(BasePlatformExecutor[IntractTask]):
         """Clean up resources."""
         super().close()
         self._auth_token = None
+        self._captcha_solver = None
 
     # ─── Private Helpers ─────────────────────────────────────────
 
@@ -257,8 +259,10 @@ class IntractExecutor(BasePlatformExecutor[IntractTask]):
         try:
             raw_id = data.get("id", data.get("taskId"))
             task_id = str(raw_id) if raw_id not in (None, "") else str(index)
-            title = data.get("title", data.get("name", f"Task {index}"))
-            task_type = data.get("type", data.get("taskType", "custom"))
+            title = data.get("title") or data.get("name") or f"Task {index}"
+            # `type` may be present but null, which used to raise on .lower()
+            # and drop the whole task.
+            task_type = data.get("type") or data.get("taskType") or "custom"
             description = data.get("description", "")
             points = coerce_int(data.get("points", data.get("reward")))
             is_completed = data.get("completed", data.get("isCompleted", False))
@@ -313,12 +317,14 @@ class IntractExecutor(BasePlatformExecutor[IntractTask]):
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            solver = CaptchaSolver(
-                CaptchaConfig(
-                    provider=CaptchaProvider(self.config.captcha_provider),
-                    api_key=self.config.captcha_api_key,
+            if self._captcha_solver is None:
+                self._captcha_solver = CaptchaSolver(
+                    CaptchaConfig(
+                        provider=CaptchaProvider(self.config.captcha_provider),
+                        api_key=self.config.captcha_api_key,
+                    )
                 )
-            )
+            solver = self._captcha_solver
 
             # Intract typically uses reCAPTCHA v2
             site_key = task.metadata.get("recaptcha_site_key", "")

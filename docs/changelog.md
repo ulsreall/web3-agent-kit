@@ -11,6 +11,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** an Intract task whose `type` or `title` was `null` (present, not
+  absent) threw on `.lower()` and was dropped from the campaign entirely — the
+  same class of hole fixed across the other parsers. Both fall back now, and the
+  CAPTCHA solver is cached per instance instead of rebuilt for every task.
 - **airdrop:** Galxe's CAPTCHA hook built a solver, discarded it and always
   returned `None` — so `captcha` was never attached to a task completion or a
   claim, and an unknown `captcha_provider` was swallowed at debug level, which
