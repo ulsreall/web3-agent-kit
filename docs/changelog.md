@@ -7,6 +7,18 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the faucet claimer reported `{"success": false, "error": "quota"}`
+  as a success — the fallback was a substring match on `str(data)` and the word
+  "success" is in the payload. An explicit `success` flag now wins; the
+  substring match only applies when there is no flag and no JSON body.
+- **airdrop:** a failed claim still carried the faucet's nominal amount, and a
+  plain-text 200 was unconditionally counted as a success. The amount is now
+  only set once the faucet confirms, and a text body is matched against its
+  configured success indicator.
+- **airdrop:** a cooldown file written without a timezone offset crashed the
+  comparison (`naive` vs `aware`); a naive timestamp is now read as UTC.
+- **airdrop:** `claim_all` and `async_claim_all` were byte-identical copies;
+  `claim_all` delegates.
 - **airdrop:** campaign discovery wrote its seen list to `save_path` but read it
   back from a separate `seen_path`, so configuring only a save path meant the
   file was rewritten every run and never loaded — nothing was deduplicated
