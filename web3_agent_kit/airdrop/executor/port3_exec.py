@@ -144,7 +144,7 @@ class Port3Executor(BasePlatformExecutor[Port3Task]):
             )
             data = response.json()
 
-            task_list = data.get("tasks") or data.get("data", {}).get("tasks", [])
+            task_list = data.get("tasks") or (data.get("data") or {}).get("tasks") or []
             logger.info(f"Port3: found {len(task_list)} tasks")
 
             for i, task_data in enumerate(task_list):
@@ -228,8 +228,9 @@ class Port3Executor(BasePlatformExecutor[Port3Task]):
         try:
             raw_id = data.get("id", data.get("taskId"))
             task_id = str(raw_id) if raw_id not in (None, "") else str(index)
-            title = data.get("title", data.get("name", f"Task {index}"))
-            task_type = data.get("type", data.get("taskType", "custom"))
+            title = data.get("title") or data.get("name") or f"Task {index}"
+            # Present-but-null used to raise on .lower() and drop the task.
+            task_type = data.get("type") or data.get("taskType") or "custom"
             description = data.get("description", "")
             points = coerce_int(data.get("points", data.get("reward")))
             is_completed = data.get("completed", data.get("isCompleted", False))
