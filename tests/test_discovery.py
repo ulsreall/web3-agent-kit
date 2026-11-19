@@ -256,3 +256,70 @@ class TestGalxeScan:
 
         discovery.session.post = post
         assert discovery._scan_galxe() == []
+
+
+class _Resp:
+    def __init__(self, payload, status=200):
+        self._payload = payload
+        self.status_code = status
+
+    def json(self):
+        return self._payload
+
+
+def _scan(discovery, monkeypatch, payload, status=200):
+    monkeypatch.setattr(discovery.session, "get", lambda *a, **k: _Resp(payload, status))
+    return discovery
+
+
+class TestScanners:
+    """All seven scanners share one builder; a bad entry must not poison it."""
+
+    @pytest.mark.parametrize(
+        ("platform", "payload"),
+        [
+            ("zealy", [{"slug": "s1", "name": "Community", "memberCount": "5"}]),
+            ("layer3", {"data": [{"id": "q1", "title": "Q", "xp": "9"}]}),
+            ("questn", {"data": {"list": [{"id": 1, "title": "Q", "points": None}]}}),
+            ("taskon", {"data": {"list": [{"id": 2, "title": "Q"}]}}),
+            ("intract", {"data": [{"id": "i1", "title": "Q", "participants": "3"}]}),
+            ("port3", {"data": [{"id": "p1", "title": "Q", "points": ""}]}),
+        ],
+    )
+    def test_a_scan_returns_a_campaign(self, platform, payload, monkeypatch):
+        discovery = _scan(CampaignDiscovery(DiscoveryConfig()), monkeypatch, payload)
+        campaigns = discovery.discover_platform(platform)
+        assert len(campaigns) == 1
+        assert campaigns[0].platform == platform
+
+    @pytest.mark.parametrize(
+        ("platform", "payload"),
+        [
+            ("zealy", [{"name": "no slug"}, {"slug": "ok"}]),
+            ("layer3", {"data": [{"title": "no id"}, {"id": "ok"}]}),
+            ("port3", {"data": [{"id": None}, {"id": "ok"}]}),
+        ],
+    )
+    def test_an_entry_without_an_id_is_skipped(self, platform, payload, monkeypatch):
+        discovery = _scan(CampaignDiscovery(DiscoveryConfig()), monkeypatch, payload)
+        assert [c.campaign_id for c in discovery.discover_platform(platform)] == ["ok"]
+
+    def test_string_points_do_not_break_the_filters(self, monkeypatch):
+        # A string "50" compared against an int threshold raises TypeError.
+        discovery = DiscoveryConfig(min_points=10)
+        discovery = _scan(CampaignDiscovery(discovery), monkeypatch, [{"id": "a", "points": "50"}])
+        assert len(discovery.discover_platform("port3")) == 1
+
+    def test_non_200_is_empty(self, monkeypatch):
+        discovery = _scan(CampaignDiscovery(DiscoveryConfig()), monkeypatch, {}, status=503)
+        assert discovery.discover_platform("questn") == []
+
+    def test_a_null_title_becomes_untitled(self, monkeypatch):
+        discovery = _scan(CampaignDiscovery(DiscoveryConfig()), monkeypatch, [{"id": "a"}])
+        assert discovery.discover_platform("port3")[0].title == "Untitled"
+
+    def test_tags_null_becomes_a_list(self, monkeypatch):
+        discovery = _scan(
+            CampaignDiscovery(DiscoveryConfig()), monkeypatch, [{"id": "a", "tags": None}]
+        )
+        assert discovery.discover_platform("intract")[0].tags == []

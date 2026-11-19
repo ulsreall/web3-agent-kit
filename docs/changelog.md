@@ -7,6 +7,14 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** every platform scanner built its campaign id with
+  `str(item.get("id", ""))`, so a missing id produced `""` (all such entries
+  collided in the dedupe index) and a `null` id produced `"None"`. Entries
+  without a usable id are skipped now.
+- **airdrop:** scanner `points` and `participant_count` were passed through
+  raw, so a string `"50"` raised `TypeError` in the numeric filters
+  (`"50" < 10`); both are coerced. A `null` title becomes "Untitled" and
+  `null` tags become an empty list.
 - **bridge:** a route whose `toAmount`, `gasCostUSD` or `duration` came back
   `null` raised on `int()`/`float()` and discarded **every** route from that
   provider, not just the bad one — Li.Fi being one API call, the whole batch
