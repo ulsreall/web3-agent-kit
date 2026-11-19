@@ -591,9 +591,11 @@ class CampaignDiscovery:
     def _parse_galxe_campaign(self, node: dict) -> Optional[DiscoveredCampaign]:
         """Parse a Galxe campaign from GraphQL response."""
         try:
-            campaign_id = str(node.get("id", ""))
-            if not campaign_id:
+            # str(None) is "None", which is truthy — check the raw value.
+            raw_id = node.get("id")
+            if not raw_id:
                 return None
+            campaign_id = str(raw_id)
 
             tasks = node.get("tasks", [])
             start_time = node.get("startTime")
@@ -667,10 +669,16 @@ class CampaignDiscovery:
         return f"{campaign.platform}:{campaign.campaign_id}"
 
     def _load_seen(self) -> None:
-        """Load previously seen campaigns from file."""
-        if not self.config.seen_path:
+        """Load previously seen campaigns from file.
+
+        Falls back to ``save_path`` when ``seen_path`` is not set — otherwise a
+        user who only configured a save path would write the file every run and
+        never read it back, so nothing was ever deduplicated across runs.
+        """
+        path_str = self.config.seen_path or self.config.save_path
+        if not path_str:
             return
-        path = Path(self.config.seen_path)
+        path = Path(path_str)
         if path.exists():
             try:
                 data = json.loads(path.read_text())
