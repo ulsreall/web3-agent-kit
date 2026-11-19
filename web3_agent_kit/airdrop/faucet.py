@@ -271,6 +271,9 @@ class FaucetClaimer:
     ) -> list[ClaimResult]:
         """Claim from all available faucets.
 
+        Kept as the familiar name; it delegates so the two entry points cannot
+        drift apart.
+
         Args:
             wallet: Wallet address to receive tokens.
             chains: Specific chains to claim (None = all).
@@ -279,39 +282,7 @@ class FaucetClaimer:
         Returns:
             List of claim results.
         """
-        self._results = []
-        faucets = (
-            {k: v for k, v in self._faucets.items() if k in chains} if chains else self._faucets
-        )
-
-        for key, faucet in faucets.items():
-            # Check cooldown
-            if not skip_cooldown and self._in_cooldown(key):
-                logger.info(f"Skipping {key}: in cooldown")
-                self._results.append(
-                    ClaimResult(
-                        faucet=faucet.name,
-                        chain=faucet.chain,
-                        token=faucet.token,
-                        success=False,
-                        error="In cooldown",
-                    )
-                )
-                continue
-
-            logger.info(f"Claiming from {faucet.name}...")
-            result = await self._claim_faucet(faucet, wallet)
-            self._results.append(result)
-
-            if result.success:
-                self._set_cooldown(key, faucet.cooldown_hours)
-                logger.info(f"✓ {faucet.name}: {result.amount} {result.token}")
-            else:
-                logger.warning(f"✗ {faucet.name}: {result.error}")
-
-            await asyncio.sleep(2)  # Rate limiting
-
-        return self._results
+        return await self.async_claim_all(wallet, chains=chains, skip_cooldown=skip_cooldown)
 
     async def async_claim_all(
         self,
@@ -488,11 +459,12 @@ class FaucetClaimer:
 
     async def _claim_faucet(self, faucet: FaucetConfig, wallet: str) -> ClaimResult:
         """Claim tokens from a single faucet."""
+        # No amount until the faucet actually confirms one; a failed claim was
+        # otherwise reported with the nominal amount.
         result = ClaimResult(
             faucet=faucet.name,
             chain=faucet.chain,
             token=faucet.token,
-            amount=faucet.amount,
         )
 
         try:
@@ -527,21 +499,34 @@ class FaucetClaimer:
 
             # Check response
             if resp.status_code in (200, 201):
-                data = (
-                    resp.json()
-                    if resp.headers.get("content-type", "").startswith("application/json")
-                    else {}
-                )
-                if isinstance(data, dict):
-                    result.success = (
-                        data.get("success", False)
-                        or data.get("status", "") == "success"
-                        or faucet.success_indicator in str(data)
-                    )
-                    result.tx_hash = data.get("txHash") or data.get("tx_hash") or ""
-                    result.amount = str(data.get("amount", faucet.amount))
+                if resp.headers.get("content-type", "").startswith("application/json"):
+                    data = resp.json()
+                else:
+                    data = None
+
+                if data is None:
+                    # A plain-text 200: the only signal is the body itself.
+                    result.success = faucet.success_indicator.lower() in resp.text.lower()
+                elif isinstance(data, dict):
+                    # An explicit flag wins. The substring fallback alone read
+                    # {"success": false, "error": "quota"} as a success,
+                    # because "success" appears in the serialised payload.
+                    if "success" in data:
+                        raw = data["success"]
+                        result.success = (
+                            raw if isinstance(raw, bool) else str(raw).lower() in ("true", "1")
+                        )
+                    elif data.get("status", "") == "success":
+                        result.success = True
+                    else:
+                        result.success = faucet.success_indicator in str(data)
+
+                    if result.success:
+                        result.tx_hash = data.get("txHash") or data.get("tx_hash") or ""
+                        result.amount = str(data.get("amount", faucet.amount))
                 else:
                     result.success = True
+
             else:
                 result.error = f"HTTP {resp.status_code}: {resp.text[:200]}"
 
@@ -647,6 +632,8 @@ class FaucetClaimer:
         cooldown_end = self._cooldowns.get(key)
         if not cooldown_end:
             return False
+        if cooldown_end.tzinfo is None:
+            cooldown_end = cooldown_end.replace(tzinfo=timezone.utc)
         return datetime.now(timezone.utc) < cooldown_end
 
     def _set_cooldown(self, key: str, hours: int) -> None:
@@ -661,7 +648,12 @@ class FaucetClaimer:
             try:
                 data = json.loads(path.read_text())
                 for k, v in data.items():
-                    self._cooldowns[k] = datetime.fromisoformat(v)
+                    parsed = datetime.fromisoformat(v)
+                    # A hand-edited file may omit the offset; comparing a naive
+                    # and an aware datetime raises, so assume UTC.
+                    self._cooldowns[k] = (
+                        parsed if parsed.tzinfo else parsed.replace(tzinfo=timezone.utc)
+                    )
                 logger.info(f"Loaded {len(self._cooldowns)} cooldowns")
             except Exception as e:
                 logger.debug(f"Failed to load cooldowns: {e}")
