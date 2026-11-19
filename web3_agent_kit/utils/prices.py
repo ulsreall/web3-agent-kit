@@ -84,6 +84,19 @@ def get_price_usd(asset: str, fallback: Optional[float] = None) -> float:
         _price_cache[coin_id] = (price, time.time())
         return price
     except Exception as e:
+        # An expired price is still a real observation, and worth more than a
+        # caller-supplied guess: a CoinGecko blip used to zero out every position.
+        cached = _price_cache.get(coin_id)
+        if cached is not None:
+            logger.warning(
+                "Failed to fetch price for %s (coin_id=%s): %s. Serving the %ds-old price.",
+                asset,
+                coin_id,
+                e,
+                int(time.time() - cached[1]),
+            )
+            return cached[0]
+
         logger.warning(
             "Failed to fetch price for %s (coin_id=%s): %s. Using fallback.",
             asset,

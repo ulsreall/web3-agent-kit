@@ -11,6 +11,15 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **prices:** a failed lookup discarded an expired-but-real price and returned the
+  caller's fallback, so a feed blip zeroed positions that had a known value
+  seconds earlier. The stale price is served with a warning now, and an unknown
+  asset falls through to the fallback as before.
+- **airdrop (legacy base):** the sync *and* async request helpers had the two
+  defects already fixed in the executor helper — a persistent 429 ended in
+  `raise None` (a `TypeError`), and `Retry-After` went straight into `int()`.
+  `parse_retry_after` moved to `web3_agent_kit/utils/retry.py` so both helpers
+  share one implementation instead of drifting apart.
 - **airdrop:** the plugin registry picked "the first `BasePlatformExecutor`
   subclass in the module", but `dir()` is alphabetical and includes names the
   module only imported — so a helper class or a re-export could be registered

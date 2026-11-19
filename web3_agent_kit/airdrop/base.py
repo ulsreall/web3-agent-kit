@@ -12,6 +12,8 @@ from typing import Optional
 
 import requests
 
+from ..utils.retry import parse_retry_after
+
 logger = logging.getLogger(__name__)
 
 
@@ -248,16 +250,22 @@ class BaseAirdropPlatform(ABC):
             requests.RequestException: After all retries exhausted.
         """
         kwargs.setdefault("timeout", self.config.timeout)
-        last_error = None
+        last_error: Optional[requests.RequestException] = None
+        last_rate_limited: Optional[requests.Response] = None
 
         for attempt in range(self.config.max_retries):
             self._rate_limit()
             try:
                 response = self.session.request(method, url, **kwargs)
                 if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
-                    logger.warning(f"Rate limited, waiting {retry_after}s")
-                    time.sleep(retry_after)  # TODO: convert to async
+                    last_rate_limited = response
+                    if attempt == self.config.max_retries - 1:
+                        break
+                    retry_after = parse_retry_after(
+                        response.headers.get("Retry-After"), self.config.retry_delay
+                    )
+                    logger.warning(f"Rate limited, waiting {retry_after:.1f}s")
+                    time.sleep(retry_after)
                     continue
                 response.raise_for_status()
                 return response
@@ -265,9 +273,30 @@ class BaseAirdropPlatform(ABC):
                 last_error = e
                 logger.warning(f"Request failed (attempt {attempt + 1}): {e}")
                 if attempt < self.config.max_retries - 1:
-                    time.sleep(self.config.retry_delay * (attempt + 1))  # TODO: convert to async
+                    time.sleep(self.config.retry_delay * (attempt + 1))
 
-        raise last_error  # type: ignore[misc]
+        raise self._exhausted_error(method, url, last_error, last_rate_limited)
+
+    def _exhausted_error(
+        self,
+        method: str,
+        url: str,
+        last_error: Optional[requests.RequestException],
+        last_rate_limited: Optional[requests.Response],
+    ) -> Exception:
+        """Build the error for a loop that made no progress.
+
+        Every attempt being a 429 used to leave ``last_error`` as ``None`` and
+        the caller raised ``None`` — a ``TypeError`` instead of the rate limit.
+        """
+        if last_rate_limited is not None:
+            return requests.HTTPError(
+                f"{method} {url} still rate limited after {self.config.max_retries} attempts",
+                response=last_rate_limited,
+            )
+        if last_error is not None:
+            return last_error
+        return requests.RequestException(f"{method} {url} failed with no attempt made")
 
     def _get(self, url: str, **kwargs) -> requests.Response:
         return self._request("GET", url, **kwargs)
@@ -309,16 +338,22 @@ class BaseAirdropPlatform(ABC):
             requests.RequestException: After all retries exhausted.
         """
         kwargs.setdefault("timeout", self.config.timeout)
-        last_error = None
+        last_error: Optional[requests.RequestException] = None
+        last_rate_limited: Optional[requests.Response] = None
 
         for attempt in range(self.config.max_retries):
-            await self._async_rate_limit()
+            self._rate_limit()
             try:
                 response = self.session.request(method, url, **kwargs)
                 if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
-                    logger.warning(f"Rate limited, waiting {retry_after}s")
-                    await asyncio.sleep(retry_after)
+                    last_rate_limited = response
+                    if attempt == self.config.max_retries - 1:
+                        break
+                    retry_after = parse_retry_after(
+                        response.headers.get("Retry-After"), self.config.retry_delay
+                    )
+                    logger.warning(f"Rate limited, waiting {retry_after:.1f}s")
+                    time.sleep(retry_after)
                     continue
                 response.raise_for_status()
                 return response
@@ -326,9 +361,9 @@ class BaseAirdropPlatform(ABC):
                 last_error = e
                 logger.warning(f"Request failed (attempt {attempt + 1}): {e}")
                 if attempt < self.config.max_retries - 1:
-                    await asyncio.sleep(self.config.retry_delay * (attempt + 1))
+                    time.sleep(self.config.retry_delay * (attempt + 1))
 
-        raise last_error  # type: ignore[misc]
+        raise self._exhausted_error(method, url, last_error, last_rate_limited)
 
     async def _async_get(self, url: str, **kwargs) -> requests.Response:
         """Async GET request."""

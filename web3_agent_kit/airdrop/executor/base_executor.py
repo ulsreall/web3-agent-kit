@@ -16,39 +16,10 @@ from typing import Any, Generic, Optional, TypeVar
 import requests
 
 from ...coerce import coerce_int  # noqa: F401  (re-exported for the parsers)
+from ...utils.retry import MAX_RETRY_AFTER, parse_retry_after  # noqa: F401  (re-exported for the parsers and tests)
 from ..base import AirdropTask, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
-
-#: Cap on a server-provided ``Retry-After``. A platform answering "3600" would
-#: otherwise stall the whole run for an hour between two tasks.
-MAX_RETRY_AFTER = 300.0
-
-
-def parse_retry_after(value: Optional[str], fallback: float) -> float:
-    """Turn a ``Retry-After`` header into a sleep length.
-
-    RFC 9110 allows both delta-seconds and an HTTP-date, and platforms send
-    letters and empty strings in practice. Anything unparsable, negative or
-    above :data:`MAX_RETRY_AFTER` falls back to ``fallback``.
-    """
-    if value is None:
-        return fallback
-    text = value.strip()
-    if not text:
-        return fallback
-    try:
-        seconds = float(text)
-    except ValueError:
-        try:
-            from email.utils import parsedate_to_datetime
-
-            seconds = parsedate_to_datetime(text).timestamp() - time.time()
-        except (TypeError, ValueError):
-            return fallback
-    if seconds <= 0 or seconds > MAX_RETRY_AFTER:
-        return fallback
-    return seconds
 
 
 class TaskDifficulty(Enum):
