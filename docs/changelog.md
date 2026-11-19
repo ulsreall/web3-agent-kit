@@ -11,6 +11,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** Layer3 lost every step whose `type` or `title` was null, and while
+  `steps`/`tasks` with a null value crashed `get_tasks` with a `TypeError` on
+  `len()` (a null `data` envelope did the same to `get_quests`). All fall back
+  now; the CAPTCHA solver is cached instead of rebuilt per step.
 - **airdrop:** an Intract task whose `type` or `title` was `null` (present, not
   absent) threw on `.lower()` and was dropped from the campaign entirely — the
   same class of hole fixed across the other parsers. Both fall back now, and the

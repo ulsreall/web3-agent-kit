@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
-from typing import Optional
+from typing import Any, Optional
 from urllib.parse import urlparse
 
 from .base_executor import (
@@ -101,6 +101,7 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
         self._quest_id: Optional[str] = None
         self._quest_data: Optional[dict] = None
         self._auth_token: Optional[str] = None
+        self._captcha_solver: Optional[Any] = None
         self._wallet_address: Optional[str] = None
 
     def visit(self, url: str) -> bool:
@@ -160,7 +161,7 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
             )
 
             data = response.json()
-            quests = data.get("quests") or data.get("data", {}).get("quests", [])
+            quests = data.get("quests") or (data.get("data") or {}).get("quests") or []
             logger.info(f"Layer3: found {len(quests)} quests")
             return quests
 
@@ -179,7 +180,7 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
             return []
 
         tasks: list[Layer3Task] = []
-        steps = self._quest_data.get("steps", self._quest_data.get("tasks", []))
+        steps = self._quest_data.get("steps") or self._quest_data.get("tasks") or []
 
         logger.info(f"Layer3: parsing {len(steps)} quest steps")
 
@@ -313,6 +314,7 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
         super().close()
         self._quest_data = None
         self._auth_token = None
+        self._captcha_solver = None
 
     # ─── Private Helpers ─────────────────────────────────────────
 
@@ -333,8 +335,9 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
         try:
             raw_id = data.get("id", data.get("stepId"))
             step_id = str(raw_id) if raw_id not in (None, "") else str(index)
-            title = data.get("title", data.get("name", f"Step {index}"))
-            task_type = data.get("type", data.get("taskType", "custom"))
+            title = data.get("title") or data.get("name") or f"Step {index}"
+            # A present-but-null type used to raise on .lower() and drop the step.
+            task_type = data.get("type") or data.get("taskType") or "custom"
             description = data.get("description", "")
             points = coerce_int(data.get("points", data.get("xp")))
             is_completed = data.get("completed", data.get("isCompleted", False))
@@ -408,12 +411,13 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            CaptchaSolver(
-                CaptchaConfig(
-                    provider=CaptchaProvider(self.config.captcha_provider),
-                    api_key=self.config.captcha_api_key,
+            if self._captcha_solver is None:
+                self._captcha_solver = CaptchaSolver(
+                    CaptchaConfig(
+                        provider=CaptchaProvider(self.config.captcha_provider),
+                        api_key=self.config.captcha_api_key,
+                    )
                 )
-            )
 
             # Layer3 may use custom CAPTCHA or reCAPTCHA
             # This would be detected from the response in a real implementation
