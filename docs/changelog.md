@@ -7,6 +7,8 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the Zealy visit-quest handler had the same orphaned tab as the
+  Gleam one — the close now runs in a `finally`.
 - **airdrop:** the Gleam visit handler opened a tab, navigated and closed it,
   but the close was not in a `finally` — a navigation that raised left the tab
   open on every retry-exhausted visit.

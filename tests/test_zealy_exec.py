@@ -247,6 +247,7 @@ class _Drv:
     def __init__(self, navigate=True, page=None):
         self._page = page or SimpleNamespace(wait_for_selector=lambda *a, **k: None)
         self._navigate = navigate
+        self._context = None
         self.clicks = []
 
     def new_page(self):
@@ -424,3 +425,193 @@ class TestCompleteQuest:
 
         monkeypatch.setattr(executor, "_handle_generic_quest", boom)
         assert executor.complete_quest(self._quest()) is False
+
+
+class _Btn:
+    def __init__(self, fail=False):
+        self.clicks = 0
+        self._fail = fail
+
+    def click(self):
+        if self._fail:
+            raise RuntimeError("detached")
+        self.clicks += 1
+
+
+class _QPage:
+    def __init__(self, buttons=None):
+        self.buttons = buttons or {}
+
+    def query_selector(self, selector):
+        return self.buttons.get(selector)
+
+
+def _hquest(**kwargs):
+    from web3_agent_kit.airdrop.executor.zealy_exec import ZealyQuestEntry
+
+    return ZealyQuestEntry(quest_id="q", title="t", xp_reward=5, **kwargs)
+
+
+class TestVisitQuest:
+    def test_a_url_opens_and_closes_a_tab(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _Drv(page=_QPage())  # placeholder, replaced below
+        driver.new_page = lambda: page
+        executor = ZealyExecutor(driver)
+        executor._page = object()
+        assert executor._handle_visit_quest(_hquest(url="https://x.example")) is True
+        assert closed == [1]
+
+    def test_a_failed_navigation_closes_and_reports_false(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _Drv(navigate=False)
+        driver.new_page = lambda: page
+        executor = ZealyExecutor(driver)
+        executor._page = object()
+        assert executor._handle_visit_quest(_hquest(url="https://x.example")) is False
+        assert closed == [1]
+
+    def test_a_throwing_navigation_still_closes_the_tab(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _Drv()
+
+        def boom(*a, **k):
+            raise RuntimeError("crash")
+
+        driver.navigate_with_retry = boom
+        driver.new_page = lambda: page
+        executor = ZealyExecutor(driver)
+        executor._page = object()
+        assert executor._handle_visit_quest(_hquest(url="https://x.example")) is False
+        assert closed == [1]
+
+    def test_without_a_url_the_generic_path_runs(self, monkeypatch):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        used = []
+        monkeypatch.setattr(executor, "_handle_generic_quest", lambda q: used.append(1) or True)
+        assert executor._handle_visit_quest(_hquest()) is True
+        assert used == [1]
+
+
+class TestSocialQuest:
+    def test_no_page_is_false(self):
+        assert ZealyExecutor(_Drv())._handle_social_quest(_hquest()) is False
+
+    def test_a_missing_button_is_false(self):
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage()
+        assert executor._handle_social_quest(_hquest()) is False
+
+    def test_a_click_without_a_new_tab_still_counts(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        btn = _Btn()
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage({executor.SELECTORS["quest_button"]: btn})
+        assert executor._handle_social_quest(_hquest()) is True
+        assert btn.clicks == 1
+
+    def test_a_redirect_tab_is_closed(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        popup = SimpleNamespace(
+            wait_for_load_state=lambda *a, **k: None,
+            url="https://x.com/team",
+            close=lambda: closed.append(1),
+        )
+        context = SimpleNamespace(pages=[object()])
+        driver = _Drv()
+        driver._context = context
+        executor = ZealyExecutor(driver)
+        executor._page = _QPage({executor.SELECTORS["quest_button"]: _Btn()})
+
+        def click_and_open():
+            context.pages.append(popup)
+
+        executor._page.buttons[executor.SELECTORS["quest_button"]].click = click_and_open
+        assert executor._handle_social_quest(_hquest()) is True
+        assert closed == [1]
+
+    def test_a_redirect_tab_that_never_loads_is_closed(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        popup = SimpleNamespace(
+            wait_for_load_state=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("stuck")),
+            url="",
+            close=lambda: closed.append(1),
+        )
+        context = SimpleNamespace(pages=[object()])
+        driver = _Drv()
+        driver._context = context
+        executor = ZealyExecutor(driver)
+        executor._page = _QPage({executor.SELECTORS["quest_button"]: _Btn()})
+        executor._page.buttons[executor.SELECTORS["quest_button"]].click = lambda: (
+            context.pages.append(popup)
+        )
+        assert executor._handle_social_quest(_hquest()) is True
+        assert closed == [1]
+
+
+class TestGenericAndVerify:
+    def test_generic_clicks_the_first_available_button(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        btn = _Btn()
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage({executor.SELECTORS["quest_button"]: btn})
+        assert executor._handle_generic_quest(_hquest()) is True
+        assert btn.clicks == 1
+
+    def test_generic_without_a_button_is_false(self):
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage()
+        assert executor._handle_generic_quest(_hquest()) is False
+
+    def test_a_verify_button_is_preferred(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        verify, claim = _Btn(), _Btn()
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage({executor.SELECTORS["verify_button"]: verify})
+        assert executor._verify_quest(_hquest()) is True
+        assert (verify.clicks, claim.clicks) == (1, 0)
+
+    def test_a_claim_button_is_used_when_there_is_no_verify(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        claim = _Btn()
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage({executor.SELECTORS["claim_button"]: claim})
+        assert executor._verify_quest(_hquest()) is True
+        assert claim.clicks == 1
+
+    def test_no_button_at_all_is_treated_as_verified(self):
+        # The source of the optimistic completion: nothing to click means the
+        # quest is assumed fine.
+        executor = ZealyExecutor(_Drv())
+        executor._page = _QPage()
+        assert executor._verify_quest(_hquest()) is True
+
+    def test_no_page_is_not_verified(self):
+        assert ZealyExecutor(_Drv())._verify_quest(_hquest()) is False

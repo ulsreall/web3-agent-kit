@@ -420,11 +420,17 @@ class ZealyExecutor:
         """Handle a visit URL quest."""
         try:
             if quest.url and self._page:
+                # finally: a raising navigation used to leave the tab open.
                 new_page = self.browser.new_page()
-                success = self.browser.navigate_with_retry(new_page, quest.url)
-                time.sleep(3)
-                new_page.close()
-                return success
+                try:
+                    success = self.browser.navigate_with_retry(new_page, quest.url)
+                    time.sleep(3)
+                    return success
+                finally:
+                    try:
+                        new_page.close()
+                    except Exception:
+                        pass
             return self._handle_generic_quest(quest)
         except Exception as e:
             logger.debug(f"Visit quest failed: {e}")
