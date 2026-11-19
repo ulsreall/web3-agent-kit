@@ -20,6 +20,36 @@ from ..base import AirdropTask, TaskStatus, TaskType
 
 logger = logging.getLogger(__name__)
 
+#: Cap on a server-provided ``Retry-After``. A platform answering "3600" would
+#: otherwise stall the whole run for an hour between two tasks.
+MAX_RETRY_AFTER = 300.0
+
+
+def parse_retry_after(value: Optional[str], fallback: float) -> float:
+    """Turn a ``Retry-After`` header into a sleep length.
+
+    RFC 9110 allows both delta-seconds and an HTTP-date, and platforms send
+    letters and empty strings in practice. Anything unparsable, negative or
+    above :data:`MAX_RETRY_AFTER` falls back to ``fallback``.
+    """
+    if value is None:
+        return fallback
+    text = value.strip()
+    if not text:
+        return fallback
+    try:
+        seconds = float(text)
+    except ValueError:
+        try:
+            from email.utils import parsedate_to_datetime
+
+            seconds = parsedate_to_datetime(text).timestamp() - time.time()
+        except (TypeError, ValueError):
+            return fallback
+    if seconds <= 0 or seconds > MAX_RETRY_AFTER:
+        return fallback
+    return seconds
+
 
 class TaskDifficulty(Enum):
     """Difficulty level of a platform task."""
@@ -368,15 +398,21 @@ class BasePlatformExecutor(ABC, Generic[TaskT]):
             requests.RequestException: After all retries exhausted.
         """
         kwargs.setdefault("timeout", self.config.timeout)
-        last_error = None
+        last_error: Optional[requests.RequestException] = None
+        last_rate_limited: Optional[requests.Response] = None
 
         for attempt in range(self.config.max_retries):
             self._rate_limit()
             try:
                 response = self.session.request(method, url, **kwargs)
                 if response.status_code == 429:
-                    retry_after = int(response.headers.get("Retry-After", self.config.retry_delay))
-                    logger.warning(f"Rate limited, waiting {retry_after}s")
+                    last_rate_limited = response
+                    if attempt == self.config.max_retries - 1:
+                        break
+                    retry_after = parse_retry_after(
+                        response.headers.get("Retry-After"), self.config.retry_delay
+                    )
+                    logger.warning(f"Rate limited, waiting {retry_after:.1f}s")
                     time.sleep(retry_after)
                     continue
                 response.raise_for_status()
@@ -387,7 +423,16 @@ class BasePlatformExecutor(ABC, Generic[TaskT]):
                 if attempt < self.config.max_retries - 1:
                     time.sleep(self.config.retry_delay * (attempt + 1))
 
-        raise last_error  # type: ignore[misc]
+        # Every attempt was a 429: there is no exception to re-raise, and
+        # `raise None` would surface as a TypeError.
+        if last_rate_limited is not None:
+            raise requests.HTTPError(
+                f"{method} {url} still rate limited after {self.config.max_retries} attempts",
+                response=last_rate_limited,
+            )
+        if last_error is not None:
+            raise last_error
+        raise requests.RequestException(f"{method} {url} failed with no attempt made")
 
     def _get(self, url: str, **kwargs) -> requests.Response:
         """Make a GET request."""
