@@ -11,6 +11,8 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** TaskOn had the same null `type`/`title`/task-list holes, plus a
+  null campaign name that raised inside `visit`.
 - **airdrop:** QuestN dropped any task with a null `type` or `title`, and a null
   `tasks` list crashed `get_tasks`; a null quiz `questions` value did the same to
   quiz handling. All fall back now.
