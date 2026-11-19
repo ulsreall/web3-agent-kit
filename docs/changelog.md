@@ -11,6 +11,9 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** QuestN dropped any task with a null `type` or `title`, and a null
+  `tasks` list crashed `get_tasks`; a null quiz `questions` value did the same to
+  quiz handling. All fall back now.
 - **airdrop:** Layer3 lost every step whose `type` or `title` was null, and while
   `steps`/`tasks` with a null value crashed `get_tasks` with a `TypeError` on
   `len()` (a null `data` envelope did the same to `get_quests`). All fall back
