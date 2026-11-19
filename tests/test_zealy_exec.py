@@ -241,3 +241,186 @@ class TestCompleteAll:
         result = executor.complete_all("https://zealy.io/c/c")
         assert "x" in result.errors[0]
         assert result.elapsed_seconds is not None
+
+
+class _Drv:
+    def __init__(self, navigate=True, page=None):
+        self._page = page or SimpleNamespace(wait_for_selector=lambda *a, **k: None)
+        self._navigate = navigate
+        self.clicks = []
+
+    def new_page(self):
+        return self._page
+
+    def navigate_with_retry(self, page, url, **kwargs):
+        return self._navigate
+
+    def click_with_retry(self, page, selector, **kwargs):
+        self.clicks.append(selector)
+        return True
+
+
+class _DrvCard:
+    def __init__(self, title="Quest", xp=None, completed=False, href=None, ident="q1"):
+        self._title, self._xp, self._completed, self._href, self._id = (
+            title,
+            xp,
+            completed,
+            href,
+            ident,
+        )
+
+    def query_selector(self, sel):
+        if "title" in sel:
+            return SimpleNamespace(inner_text=lambda: self._title) if self._title else None
+        if "xp" in sel or "reward" in sel:
+            return SimpleNamespace(inner_text=lambda: self._xp) if self._xp else None
+        if "completed" in sel or "done" in sel:
+            return object() if self._completed else None
+        if "href" in sel or sel.startswith("a"):
+            return SimpleNamespace(get_attribute=lambda n: self._href) if self._href else None
+        return None
+
+    def get_attribute(self, name):
+        return self._id if name == "data-id" else ""
+
+    def inner_text(self):
+        return self._title
+
+
+class TestVisit:
+    def test_success_sleeps_and_logs(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        driver = _Drv()
+        assert ZealyExecutor(driver).visit("https://zealy.io/c/c") is True
+
+    def test_failure_returns_false(self):
+        assert ZealyExecutor(_Drv(navigate=False)).visit("https://zealy.io/c/c") is False
+
+
+class TestGetQuests:
+    def test_no_page_is_empty(self):
+        assert ZealyExecutor(_Drv()).get_quests() == []
+
+    def test_cards_are_parsed(self):
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: None,
+            query_selector_all=lambda sel: [_Card(title="Like on X", xp="15 XP")],
+        )
+        executor = ZealyExecutor(_Drv(page=page))
+        executor._page = page
+        assert [q.title for q in executor.get_quests()] == ["Like on X"]
+
+    def test_a_selector_failure_falls_back_to_link_parsing(self, monkeypatch):
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("timeout")),
+            query_selector_all=lambda sel: [],
+        )
+        executor = ZealyExecutor(_Drv(page=page))
+        executor._page = page
+        monkeypatch.setattr(
+            executor, "_parse_quests_from_links", lambda: [SimpleNamespace(title="from links")]
+        )
+        assert [q.title for q in executor.get_quests()] == ["from links"]
+
+    def test_a_broken_card_is_skipped(self):
+        class Broken:
+            def query_selector(self, sel):
+                raise RuntimeError("detached")
+
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: None,
+            query_selector_all=lambda sel: [Broken(), _DrvCard(title="Ok")],
+        )
+        executor = ZealyExecutor(_Drv(page=page))
+        executor._page = page
+        assert [q.title for q in executor.get_quests()] == ["Ok"]
+
+
+class TestCompleteQuest:
+    def _quest(self, **kwargs):
+        from web3_agent_kit.airdrop.executor.zealy_exec import ZealyQuestEntry
+
+        data = {"quest_id": "q", "title": "t", "xp_reward": 10, **kwargs}
+        return ZealyQuestEntry(**data)
+
+    def test_no_page_is_false(self):
+        assert ZealyExecutor(_Drv()).complete_quest(self._quest()) is False
+
+    def test_a_completed_quest_short_circuits(self):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        assert executor.complete_quest(self._quest(is_completed=True)) is True
+
+    def test_a_social_quest_takes_the_social_path(self, monkeypatch):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        used = []
+        monkeypatch.setattr(executor, "_is_social_quest", lambda q: True)
+        monkeypatch.setattr(
+            executor, "_handle_social_quest", lambda q: used.append("social") or True
+        )
+        monkeypatch.setattr(executor, "_verify_quest", lambda q: True)
+        quest = self._quest(quest_type="twitter_follow")
+        assert executor.complete_quest(quest) is True
+        assert used == ["social"]
+
+    def test_a_visit_quest_takes_the_visit_path(self, monkeypatch):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        used = []
+        monkeypatch.setattr(executor, "_is_social_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_is_visit_quest", lambda q: True)
+        monkeypatch.setattr(executor, "_handle_visit_quest", lambda q: used.append("visit") or True)
+        monkeypatch.setattr(executor, "_verify_quest", lambda q: True)
+        assert executor.complete_quest(self._quest(quest_type="visit_url")) is True
+        assert used == ["visit"]
+
+    def test_an_unverified_quest_is_still_reported_as_done(self, monkeypatch):
+        # Documented behaviour: submitted-but-unverified is marked completed on
+        # the optimistic path, so the XP is credited.
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        monkeypatch.setattr(executor, "_is_social_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_is_visit_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_handle_generic_quest", lambda q: True)
+        monkeypatch.setattr(executor, "_verify_quest", lambda q: False)
+        quest = self._quest()
+        assert executor.complete_quest(quest) is True
+        assert quest.is_completed is True
+
+    def test_a_failed_handler_leaves_the_quest_open(self, monkeypatch):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.zealy_exec.time.sleep", lambda _s: None
+        )
+        monkeypatch.setattr(executor, "_is_social_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_is_visit_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_handle_generic_quest", lambda q: False)
+        quest = self._quest()
+        assert executor.complete_quest(quest) is False
+        assert quest.is_completed is False
+
+    def test_a_throwing_handler_is_false(self, monkeypatch):
+        executor = ZealyExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(executor, "_is_social_quest", lambda q: False)
+        monkeypatch.setattr(executor, "_is_visit_quest", lambda q: False)
+
+        def boom(q):
+            raise RuntimeError("nope")
+
+        monkeypatch.setattr(executor, "_handle_generic_quest", boom)
+        assert executor.complete_quest(self._quest()) is False
