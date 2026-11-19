@@ -497,6 +497,12 @@ class FormFiller:
                                 result.fields_filled += 1
                             else:
                                 result.fields_skipped += 1
+                        else:
+                            # A question with neither an input nor a listbox (a
+                            # text-only or grid item) used to count for nothing,
+                            # so filled + skipped never added up to fields_found.
+                            result.fields_skipped += 1
+                            result.details.append(f"- {label}: unsupported question type")
 
                     # Submit
                     if submit:
