@@ -26,6 +26,7 @@ Environment
 from __future__ import annotations
 
 import os
+import re
 import time
 import uuid
 
@@ -40,6 +41,9 @@ from ..wallet.wallet import Wallet
 
 DEFAULT_MAX_NATIVE_WEI = 5 * 10**16
 AUTHORIZATION_TTL_SECONDS = 300
+
+
+_ADDRESS_RE = re.compile(r"^0[xX][0-9a-fA-F]{40}$")
 
 
 def _csv(name: str) -> list[str]:
@@ -71,8 +75,12 @@ def resolve_token(chain: Chain, token: str) -> str:
     text = str(token).strip()
     if text.upper() in {"ETH", "NATIVE"}:
         return text.upper()
-    if text.startswith("0x") and len(text) == 42:
+    if _ADDRESS_RE.match(text):
         return text
+    # An address-shaped string that is not hex used to pass this check and only
+    # fail deep inside web3, after the request had been accepted.
+    if text[:2].lower() == "0x":
+        raise ValueError(f"token {token!r} starts with 0x but is not a 20-byte hex address")
 
     address = KNOWN_TOKENS.get(chain, {}).get(text.upper())
     if address is None:
