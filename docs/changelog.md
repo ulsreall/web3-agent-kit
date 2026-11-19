@@ -11,6 +11,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **oracle:** the "weighted median" was the upper-middle element, so with two
+  sources a single high outlier always set the price (100/300 returned 300). It
+  averages the two middles now. `get_prices_batch` also dropped the whole batch
+  when one token had no quote; that token is left out instead.
 - **airdrop:** the multi-wallet farmer never recorded what it had done. Completed
   tasks were skipped without being counted, so a finished campaign logged "0
   tasks, 0 points" and `get_total_points()` stayed at zero; the per-wallet

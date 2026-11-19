@@ -181,16 +181,21 @@ class OracleAggregator:
         if not points:
             raise ValueError(f"No oracle sources returned a price for {pair}")
 
-        # Weighted median: sort by price, pick middle (median)
-        sorted_pts = sorted(points, key=lambda p: p.price)
-        median = sorted_pts[len(sorted_pts) // 2]
-        deviation = max(p.price for p in points) - min(p.price for p in points)
-        if median.price > 0:
-            deviation /= median.price
+        # Median of the reported prices. With an even count the two middle values
+        # are averaged: taking only the upper one let a single high outlier
+        # decide the price whenever there were two sources.
+        prices = sorted(p.price for p in points)
+        middle = len(prices) // 2
+        median_price = (
+            prices[middle] if len(prices) % 2 else (prices[middle - 1] + prices[middle]) / 2
+        )
+        deviation = prices[-1] - prices[0]
+        if median_price > 0:
+            deviation /= median_price
 
         result = AggregatedPrice(
             pair=pair,
-            price=median.price,
+            price=median_price,
             sources=points,
             num_sources=len(points),
             deviation=deviation,
@@ -317,8 +322,17 @@ class OracleAggregator:
             return None
 
     def get_prices_batch(self, tokens: list[str], quote: str = "USD") -> dict[str, AggregatedPrice]:
-        """Get prices for multiple tokens at once."""
-        return {token: self.get_price(token, quote) for token in tokens}
+        """Get prices for multiple tokens at once.
+
+        A token nobody quotes is left out rather than raising for the whole batch.
+        """
+        prices: dict[str, AggregatedPrice] = {}
+        for token in tokens:
+            try:
+                prices[token] = self.get_price(token, quote)
+            except Exception as e:
+                logger.debug(f"Oracle: no price for {token}: {e}")
+        return prices
 
     def clear_cache(self):
         """Clear the price cache."""
