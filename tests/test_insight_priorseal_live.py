@@ -323,7 +323,7 @@ def test_rehearsal_full_runner_path(tmp_path):
         cutoff_check_seconds=60,
         call_events=out / "call-events.json",
     )
-    assert evidence["outcome"] == "REHEARSAL_LEG_COMPLETED"
+    assert evidence["outcome"] == "REHEARSAL_LEG_COMPLETED", evidence.get("error")
     assert evidence["counts"] == {
         "authorizationProvider": 1,
         "signer": 1,

@@ -986,10 +986,16 @@ def run_live_p1(
         target = int(time.time()) + 1
         while int(time.time()) < target:
             time.sleep(0.01)
+        # The sheet pins this second as its `evaluatedAt`, and the commitment binds
+        # it. Evaluating with a fresh clock let a slow second roll over between
+        # generating the sheet and running the gate, which surfaced as a spurious
+        # "covers another policy decision" — or, once the retries were spent, a bare
+        # ERROR. Pin one second per attempt and use it on both sides.
+        pinned_now = int(time.time())
         rehearsal_materials = generate_rehearsal_materials(
             fixture_root=fixture_root,
             output_dir=rehearsal_output_dir,
-            now=int(time.time()),
+            now=pinned_now,
             go_message_id=int(go_message_id),
         )
         go = dict(rehearsal_materials.go_file)
@@ -1132,10 +1138,11 @@ def run_live_p1(
         for attempt_index in range(max_attempts):
             recorder = CallEventRecorder()
             if rehearsal and attempt_index > 0:
+                pinned_now = int(time.time())
                 rehearsal_materials = generate_rehearsal_materials(
                     fixture_root=fixture_root,
                     output_dir=rehearsal_output_dir,
-                    now=int(time.time()),
+                    now=pinned_now,
                     go_message_id=int(go_message_id),
                 )
                 go = dict(rehearsal_materials.go_file)
@@ -1318,7 +1325,7 @@ def run_live_p1(
                         response=response,
                         trust_roots=trust_roots,
                         counters=recorder,
-                        now=int(time.time()),
+                        now=pinned_now if rehearsal else int(time.time()),
                         acceptance_store=store,
                         boundaries=boundaries,
                         live=True,
