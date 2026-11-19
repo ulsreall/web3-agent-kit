@@ -179,3 +179,65 @@ class TestResultSummary:
     def test_success_rate_counts_completed_against_total(self):
         result = ZealyResult(community="c", community_url="u", total_quests=4, completed_quests=1)
         assert result.success_rate == 0.25
+
+
+class TestCompleteAll:
+    def _executor(self, monkeypatch, quests, complete=True, visit=True):
+        executor = ZealyExecutor(SimpleNamespace())
+        monkeypatch.setattr(executor, "visit", lambda url: visit)
+        monkeypatch.setattr(executor, "get_quests", lambda: quests)
+        monkeypatch.setattr(executor, "complete_quest", lambda quest: complete)
+        monkeypatch.setattr(executor, "_random_delay", lambda: None)
+        return executor
+
+    def _quest(self, title, xp=10, completed=False):
+        from web3_agent_kit.airdrop.executor.zealy_exec import ZealyQuestEntry
+
+        return ZealyQuestEntry(quest_id=title, title=title, xp_reward=xp, is_completed=completed)
+
+    def test_a_failed_visit_stops_before_parsing(self, monkeypatch):
+        result = self._executor(monkeypatch, [], visit=False).complete_all("https://zealy.io/c/c")
+        assert "Failed to load" in result.errors[0]
+        assert result.total_quests == 0
+
+    def test_no_quests_is_reported(self, monkeypatch):
+        result = self._executor(monkeypatch, []).complete_all("https://zealy.io/c/c")
+        assert result.errors == ["No quests found"]
+
+    def test_completed_quests_are_skipped(self, monkeypatch):
+        quests = [self._quest("done", completed=True), self._quest("todo")]
+        result = self._executor(monkeypatch, quests).complete_all("https://zealy.io/c/c")
+        assert result.skipped_quests == 1
+
+    def test_xp_is_only_credited_on_success(self, monkeypatch):
+        quests = [self._quest("bad", xp=50), self._quest("ok", xp=7)]
+        executor = ZealyExecutor(SimpleNamespace())
+        monkeypatch.setattr(executor, "visit", lambda url: True)
+        monkeypatch.setattr(executor, "get_quests", lambda: quests)
+        monkeypatch.setattr(executor, "complete_quest", lambda quest: quest.title == "ok")
+        monkeypatch.setattr(executor, "_random_delay", lambda: None)
+        result = executor.complete_all("https://zealy.io/c/c")
+        assert result.xp_earned == 7
+        assert result.failed_quests == 1
+
+    def test_the_tracker_hears_only_about_successes(self, monkeypatch):
+        marked = []
+
+        class Tracker:
+            def mark_task_completed(self, task):
+                marked.append(task.title)
+
+        executor = ZealyExecutor(SimpleNamespace())
+        monkeypatch.setattr(executor, "visit", lambda url: True)
+        monkeypatch.setattr(executor, "get_quests", lambda: [self._quest("ok"), self._quest("no")])
+        monkeypatch.setattr(executor, "complete_quest", lambda quest: quest.title == "ok")
+        monkeypatch.setattr(executor, "_random_delay", lambda: None)
+        executor.complete_all("https://zealy.io/c/c", tracker=Tracker())
+        assert marked == ["ok"]
+
+    def test_an_unexpected_error_is_captured(self, monkeypatch):
+        executor = self._executor(monkeypatch, [])
+        monkeypatch.setattr(executor, "visit", lambda url: (_ for _ in ()).throw(RuntimeError("x")))
+        result = executor.complete_all("https://zealy.io/c/c")
+        assert "x" in result.errors[0]
+        assert result.elapsed_seconds is not None
