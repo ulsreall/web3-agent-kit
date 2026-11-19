@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -16,6 +17,18 @@ from typing import Optional
 from .browser import BrowserConfig, BrowserManager
 
 logger = logging.getLogger(__name__)
+
+
+def write_cookies(cookie_file, cookies) -> None:
+    """Write a cookie jar without ever leaving a half-written file.
+
+    Every platform saves to the same ``cookies.json`` on close and after an
+    interactive login. A crash mid-dump used to leave a truncated file, which
+    the next run could only report as an unreadable session.
+    """
+    tmp = cookie_file.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(cookies, indent=2), encoding="utf-8")
+    os.replace(tmp, cookie_file)
 
 
 @dataclass
@@ -92,8 +105,7 @@ class TwitterExecutor:
 
         if cookie_file.exists():
             try:
-                with open(cookie_file) as f:
-                    cookies = json.load(f)
+                cookies = json.loads(cookie_file.read_text(encoding="utf-8"))
                 # Filter for twitter/x.com cookies
                 twitter_cookies = [
                     c
@@ -141,9 +153,7 @@ class TwitterExecutor:
             # Save cookies
             session_path = bm.get_session_path("twitter")
             cookies = page.context.cookies()
-            cookie_file = session_path / "cookies.json"
-            with open(cookie_file, "w") as f:
-                json.dump(cookies, f, indent=2)
+            write_cookies(session_path / "cookies.json", cookies)
 
             logger.info(f"Twitter: saved {len(cookies)} cookies")
             self._logged_in = True
@@ -387,9 +397,7 @@ class TwitterExecutor:
             session_path = self.browser.get_session_path("twitter")
             try:
                 cookies = self._page.context.cookies()
-                cookie_file = session_path / "cookies.json"
-                with open(cookie_file, "w") as f:
-                    json.dump(cookies, f, indent=2)
+                write_cookies(session_path / "cookies.json", cookies)
                 logger.info(f"Twitter: saved {len(cookies)} cookies")
             except Exception as e:
                 logger.warning(f"Twitter: cookie save failed: {e}")
@@ -473,8 +481,7 @@ class DiscordExecutor:
 
         if cookie_file.exists():
             try:
-                with open(cookie_file) as f:
-                    cookies = json.load(f)
+                cookies = json.loads(cookie_file.read_text(encoding="utf-8"))
                 discord_cookies = [c for c in cookies if "discord.com" in c.get("domain", "")]
                 if discord_cookies:
                     self.browser.add_cookies(discord_cookies)
@@ -506,9 +513,7 @@ class DiscordExecutor:
 
             session_path = bm.get_session_path("discord")
             cookies = page.context.cookies()
-            cookie_file = session_path / "cookies.json"
-            with open(cookie_file, "w") as f:
-                json.dump(cookies, f, indent=2)
+            write_cookies(session_path / "cookies.json", cookies)
 
             self._logged_in = True
             return True
@@ -598,9 +603,7 @@ class DiscordExecutor:
             session_path = self.browser.get_session_path("discord")
             try:
                 cookies = self._page.context.cookies()
-                cookie_file = session_path / "cookies.json"
-                with open(cookie_file, "w") as f:
-                    json.dump(cookies, f, indent=2)
+                write_cookies(session_path / "cookies.json", cookies)
             except Exception as e:
                 logger.warning(f"Discord: cookie save failed: {e}")
 
@@ -679,8 +682,7 @@ class TelegramExecutor:
 
         if cookie_file.exists():
             try:
-                with open(cookie_file) as f:
-                    cookies = json.load(f)
+                cookies = json.loads(cookie_file.read_text(encoding="utf-8"))
                 tg_cookies = [c for c in cookies if "telegram.org" in c.get("domain", "")]
                 if tg_cookies:
                     self.browser.add_cookies(tg_cookies)
@@ -707,9 +709,7 @@ class TelegramExecutor:
 
             session_path = bm.get_session_path("telegram")
             cookies = page.context.cookies()
-            cookie_file = session_path / "cookies.json"
-            with open(cookie_file, "w") as f:
-                json.dump(cookies, f, indent=2)
+            write_cookies(session_path / "cookies.json", cookies)
 
             return True
 
@@ -786,9 +786,7 @@ class TelegramExecutor:
             session_path = self.browser.get_session_path("telegram")
             try:
                 cookies = self._page.context.cookies()
-                cookie_file = session_path / "cookies.json"
-                with open(cookie_file, "w") as f:
-                    json.dump(cookies, f, indent=2)
+                write_cookies(session_path / "cookies.json", cookies)
             except Exception as e:
                 logger.warning(f"Telegram: cookie save failed: {e}")
 

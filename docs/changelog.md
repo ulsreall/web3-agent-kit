@@ -11,6 +11,18 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **tests:** the rehearsal runner test failed intermittently on a loaded CI shard.
+  The sheet pins a per-second `evaluatedAt` that the policy commitment binds, but
+  the gate was evaluated with a fresh clock, so a second rolling over mid-attempt
+  produced a spurious "covers another policy decision" and, once the retries were
+  spent, a bare `ERROR`. One second is pinned per attempt now and used on both
+  sides; the assertion also prints the runner's error detail instead of only the
+  outcome.
+- **airdrop:** session cookies were written with a plain `open()` in six places
+  across the three social executors, so a crash mid-write left a truncated
+  `cookies.json` and the next run could only report the session as unreadable.
+  One shared writer now writes to a temp file and `os.replace`s it, and the
+  readers use `read_text` with an explicit encoding.
 - **airdrop:** Port3 had the same null `type`/`title`/task-list holes as its
   siblings, so a task the API sent with a null type disappeared.
 - **airdrop:** TaskOn had the same null `type`/`title`/task-list holes, plus a
