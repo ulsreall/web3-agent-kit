@@ -1,6 +1,6 @@
 # Risk Disclosure
 
-> **Last updated:** v1.16.3 (2026-09-08)
+> **Last updated:** v1.19.1 (2026-11-19)
 
 This document describes known risks of using Web3 Agent Kit. **By using this software, you accept these risks.**
 
@@ -50,6 +50,24 @@ Web3 Agent Kit executes real financial transactions on blockchains. Risks includ
 - **Solana-py:** Solana support depends on third-party library maintenance.
 - **GoPlus API:** Honeypot checks rely on an external API that may be unavailable or return incorrect data.
 
+## 7. Airdrop Reporting Accuracy
+
+Airdrop automation reports on a best-effort basis, and some results are
+optimistic by design:
+
+- **Optimistic completion:** a quest submitted but not verified is still marked
+  completed and its XP credited. Summaries mean submitted, not confirmed.
+- **Visit counted as a join:** `join_channel` returns success for a page it only
+  opened when no join button is visible.
+- **Parsed fields default to zero:** points/XP that arrive as `""` or `null` are
+  coerced to `0` instead of dropping the task, so zero can mean "not reported".
+- **Per-faucet cooldowns:** switching wallets does not reset a cooldown.
+- **Deduplication is opt-in:** campaign discovery only deduplicates across runs
+  with a configured save path.
+
+**Mitigation:** treat airdrop summaries as intent, verify balances and quest
+state on the platform, and run discovery with a save path if it is scheduled.
+
 ## Summary
 
 | Risk | Severity | Mitigation |
@@ -60,6 +78,7 @@ Web3 Agent Kit executes real financial transactions on blockchains. Risks includ
 | Prompt injection | **Medium** | Limit external data sources |
 | RPC / API downtime | **Medium** | Configure fallback providers |
 | Dependency vulnerabilities | **Low-Medium** | Dependabot, pip-audit in CI |
+| Airdrop over-reporting | **Low** | Verify on-platform; treat XP as intent |
 
 ---
 

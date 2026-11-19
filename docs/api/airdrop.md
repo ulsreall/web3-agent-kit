@@ -127,3 +127,45 @@ summary = dashboard.get_summary()
 print(f"Total claimed: ${summary['total_claimed']}")
 print(f"Pending: {summary['pending_count']} airdrops")
 ```
+
+## Reading the reports honestly
+
+Several airdrop results are deliberately optimistic, and a summary that is taken
+at face value will overstate what happened.
+
+### Quest completion is optimistic
+
+`ZealyExecutor.complete_quest` and `GleamExecutor.complete_task` mark a quest
+done as soon as the action was submitted. If verification then fails — or there
+is nothing to click, since `_verify_quest` returns `True` when no verify or claim
+button exists — the quest is still marked completed and the XP is credited.
+`xp_earned` / `completed_tasks` therefore mean *submitted*, not *confirmed*.
+
+### A Telegram join counts a visit
+
+`TelegramExecutor.join_channel` returns `True` when the page was merely opened
+and no join button was visible. Joined and visited are not distinguished.
+
+### Faucet claims
+
+A claim is only successful on an explicit `success: true` (or the configured
+`success_indicator` in a text body). `HTTP 200` with `{"success": false}` is a
+failure, and a failed result carries no amount. Only a success sets the cooldown.
+
+### Cooldowns are per faucet, not per wallet
+
+`FaucetClaimer` stores cooldowns by faucet key in
+`~/.hermes/cache/faucet_cooldowns.json`. Switching wallets does not reset them;
+pass `skip_cooldown=True` when you know the faucet is ready.
+
+### Discovery deduplication needs a path
+
+`CampaignDiscovery.get_new_campaigns` only deduplicates across runs when a
+`save_path` (or `seen_path`) is configured. Without one, every run reports the
+same campaigns.
+
+### Parsed numbers default to zero
+
+Platform payloads send points/XP as `""`, `null` or a string. Those are coerced
+to `0` rather than dropping the task, so a campaign that reports zero points may
+be a campaign whose points the API did not send.

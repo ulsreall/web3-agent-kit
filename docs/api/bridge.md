@@ -39,6 +39,12 @@ for route in routes:
     print(f"  Fee: ${route.fee_usd:.2f}")
     print(f"  Time: ~{route.time_estimate // 60} min")
 ```
+Providers omit fee fields on routes they cannot price, and send `null` rather than
+omitting the key. `toAmount`, `gasCostUSD` and `duration` are coerced, so such a
+route is still returned with `0.0` gas / the default 300s estimate instead of
+discarding every route from that provider. Check `fee_usd` before picking a route:
+a zero fee usually means "not priced", not "free".
+
 ### Execute Transfer
 ```python
 # Use best route automatically
