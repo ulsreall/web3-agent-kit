@@ -7,6 +7,14 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** campaign discovery wrote its seen list to `save_path` but read it
+  back from a separate `seen_path`, so configuring only a save path meant the
+  file was rewritten every run and never loaded — nothing was deduplicated
+  across runs. `seen_path` now falls back to `save_path`.
+- **airdrop:** a Galxe campaign with `"id": null` was stored under the campaign
+  id `"None"`, because `str(None)` is truthy; the raw value is checked first.
+  A campaign without an id is also skipped when discovering, instead of raising
+  `KeyError` and losing the whole batch.
 - **airdrop:** the CAPTCHA solver posted to 2captcha over plain `http://` while
   the API key travels in the request body; now `https://`.
 - **airdrop:** `WLGrinder.apply_bulk` and `async_apply_bulk` were byte-identical

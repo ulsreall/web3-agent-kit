@@ -228,15 +228,21 @@ class GalxePlatform(BaseAirdropPlatform):
 
             campaigns = []
             for c in data.get("data", {}).get("campaigns", []):
+                # One entry without an id used to raise KeyError and lose the
+                # whole batch, keeping only what was cached.
+                campaign_id = c.get("id")
+                if not campaign_id:
+                    logger.debug("Galxe: skipping a campaign without an id")
+                    continue
                 campaign = AirdropCampaign(
-                    campaign_id=c["id"],
+                    campaign_id=campaign_id,
                     platform=self.platform_name,
                     name=c.get("name", ""),
                     description=c.get("description", ""),
-                    url=f"https://galxe.com/campaign/{c['id']}",
+                    url=f"https://galxe.com/campaign/{campaign_id}",
                 )
                 campaigns.append(campaign)
-                self._campaigns[c["id"]] = campaign
+                self._campaigns[campaign_id] = campaign
 
             logger.info(f"Galxe: discovered {len(campaigns)} campaigns")
             return campaigns
