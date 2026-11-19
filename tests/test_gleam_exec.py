@@ -247,3 +247,149 @@ class _Text:
 
     def inner_text(self):
         return self._text
+
+
+class _Drv:
+    """Minimal browser: new_page/navigate/wait."""
+
+    def __init__(self, navigate=True, wait=True, page=None):
+        self._page = page or SimpleNamespace(wait_for_selector=lambda *a, **k: None)
+        self._navigate = navigate
+        self._wait = wait
+        self.waits = []
+
+    def new_page(self):
+        return self._page
+
+    def navigate_with_retry(self, page, url, timeout=None):
+        return self._navigate
+
+    def wait_for_element(self, page, selector, timeout=None):
+        self.waits.append(selector)
+        return self._wait
+
+    def click_with_retry(self, page, selector, timeout=None):
+        return True
+
+
+class TestVisit:
+    def test_a_loaded_page_waits_for_the_widget(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        driver = _Drv()
+        executor = GleamExecutor(driver)
+        assert executor.visit("https://gleam.io/a") is True
+        assert driver.waits == [executor.SELECTORS["widget_container"]]
+
+    def test_a_failed_navigation_returns_false(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        driver = _Drv(navigate=False)
+        assert GleamExecutor(driver).visit("https://gleam.io/a") is False
+        assert driver.waits == []
+
+
+class TestGetTasks:
+    def test_no_page_gives_an_empty_list(self):
+        assert GleamExecutor(_Drv()).get_tasks() == []
+
+    def test_entries_are_parsed(self):
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: None,
+            query_selector_all=lambda sel: [_Entry(title="Follow on Twitter")],
+        )
+        executor = GleamExecutor(_Drv(page=page))
+        executor._page = page
+        tasks = executor.get_tasks()
+        assert [t.title for t in tasks] == ["Follow on Twitter"]
+
+    def test_a_broken_entry_is_skipped_not_fatal(self):
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: None,
+            query_selector_all=lambda sel: [_Broken(), _Entry(title="Ok")],
+        )
+        executor = GleamExecutor(_Drv(page=page))
+        executor._page = page
+        assert [t.title for t in executor.get_tasks()] == ["Ok"]
+
+    def test_a_selector_timeout_gives_an_empty_list(self):
+        page = SimpleNamespace(
+            wait_for_selector=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("timeout")),
+            query_selector_all=lambda sel: [],
+        )
+        executor = GleamExecutor(_Drv(page=page))
+        executor._page = page
+        assert executor.get_tasks() == []
+
+
+class _Broken:
+    def query_selector(self, selector):
+        raise RuntimeError("detached")
+
+
+class TestCompleteTask:
+    def test_no_page_is_false(self):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        task = GleamTaskEntry(entry_id="1", task_type=GleamTaskType.VISIT_URL, title="t")
+        assert GleamExecutor(_Drv()).complete_task(task) is False
+
+    def test_an_already_completed_task_is_true_without_work(self, monkeypatch):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        executor = GleamExecutor(_Drv())
+        executor._page = object()
+        called = []
+        monkeypatch.setattr(executor, "_handle_visit_url", lambda t: called.append(1))
+        task = GleamTaskEntry(
+            entry_id="1", task_type=GleamTaskType.VISIT_URL, title="t", is_completed=True
+        )
+        assert executor.complete_task(task) is True
+        assert called == []
+
+    def test_the_matching_handler_runs_and_marks_the_task(self, monkeypatch):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        executor = GleamExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(executor, "_handle_visit_url", lambda t: True)
+        task = GleamTaskEntry(entry_id="1", task_type=GleamTaskType.VISIT_URL, title="t")
+        assert executor.complete_task(task) is True
+        assert task.is_completed is True
+
+    def test_a_handler_failure_leaves_the_task_open(self, monkeypatch):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        executor = GleamExecutor(_Drv())
+        executor._page = object()
+        monkeypatch.setattr(executor, "_handle_visit_url", lambda t: False)
+        task = GleamTaskEntry(entry_id="1", task_type=GleamTaskType.VISIT_URL, title="t")
+        assert executor.complete_task(task) is False
+        assert task.is_completed is False
+
+    def test_a_throwing_handler_is_false(self, monkeypatch):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        executor = GleamExecutor(_Drv())
+        executor._page = object()
+
+        def boom(t):
+            raise RuntimeError("nope")
+
+        monkeypatch.setattr(executor, "_handle_visit_url", boom)
+        task = GleamTaskEntry(entry_id="1", task_type=GleamTaskType.VISIT_URL, title="t")
+        assert executor.complete_task(task) is False
+
+
+class TestDelay:
+    def test_delay_sits_inside_the_configured_window(self, monkeypatch):
+        slept = []
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda s: slept.append(s)
+        )
+        GleamExecutor(_Drv())._random_delay()
+        assert len(slept) == 1
+        lo, hi = GleamExecutor.TASK_DELAY_MIN, GleamExecutor.TASK_DELAY_MAX
+        assert lo <= slept[0] <= hi
