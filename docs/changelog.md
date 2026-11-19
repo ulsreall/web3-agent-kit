@@ -11,6 +11,14 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the shared request helper raised `TypeError` when a platform kept
+  answering 429. Every attempt was a rate-limit response, `last_error` was never
+  assigned, and the loop ended in `raise None`. It now raises an `HTTPError`
+  carrying the last response. The same helper also fed `Retry-After` straight to
+  `int()`, so the RFC's HTTP-date form (and any non-numeric header) escaped the
+  retry loop as a `ValueError`; headers are parsed defensively and a huge or past
+  value falls back to the configured delay, capped at 300s. A 429 on the final
+  attempt no longer sleeps before giving up.
 - **docs:** the root `REVIEW.md` is now `docs/review-findings.md` and is published
   with a closed-item table; the PoCs moved next to it and both print zero GAPs
   again (case C re-submitted a rebuilt request and C2 forgot the store it consumed
