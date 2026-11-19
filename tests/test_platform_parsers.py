@@ -343,3 +343,209 @@ class TestDefaults:
     )
     def test_extract_id_from_url(self, url, expected):
         assert _LoopExecutor()._extract_id_from_url(url) == expected
+
+
+class _IR:
+    def __init__(self, payload=None):
+        self._p = payload or {}
+        self.status_code = 200
+
+    def json(self):
+        return self._p
+
+
+def _intract(payload=None, get=None, post=None):
+    from web3_agent_kit.airdrop.executor.intract_exec import IntractExecutor
+
+    executor = IntractExecutor()
+    executor._campaign_id = "camp1"
+    sent = {"get": [], "post": []}
+
+    def _g(url, **kw):
+        sent["get"].append((url, kw))
+        return _IR(get or {})
+
+    def _p(url, **kw):
+        sent["post"].append((url, kw))
+        return _IR(post or {})
+
+    executor._get = _g  # type: ignore[method-assign]
+    executor._post = _p  # type: ignore[method-assign]
+    return executor, sent
+
+
+class TestIntractParse:
+    def test_a_null_type_keeps_the_task(self):
+        task = _intract()[0]._parse_task({"id": "1", "type": None}, 0)
+        assert task is not None and task.task_type == "custom"
+
+    def test_a_missing_title_falls_back(self):
+        task = _intract()[0]._parse_task({"id": "1"}, 3)
+        assert task.title == "Task 3"
+
+    def test_a_null_title_falls_back(self):
+        assert _intract()[0]._parse_task({"id": "1", "title": None}, 0).title == "Task 0"
+
+    def test_points_are_coerced(self):
+        task = _intract()[0]._parse_task({"id": "1", "points": "12"}, 0)
+        assert task.points == 12
+
+    def test_a_missing_id_uses_the_index(self):
+        assert _intract()[0]._parse_task({}, 4).task_id.endswith("_4")
+
+
+class TestIntractFlow:
+    def test_visit_reads_the_quest_and_assigns_an_id(self):
+        executor, sent = _intract(get={"id": "q9", "title": "T"})
+        assert executor.visit("https://intract.io/quest/abc") is True
+        assert executor._quest_id == "q9"
+        assert sent["get"][0][0].endswith("/quest/abc")
+
+    def test_visit_returns_true_even_when_the_api_fails(self):
+        executor, _ = _intract()
+
+        def boom(*a, **k):
+            raise RuntimeError("down")
+
+        executor._get = boom  # type: ignore[method-assign]
+        assert executor.visit("https://intract.io/quest/abc") is True
+
+    def test_tasks_parse_out_of_both_shapes(self):
+        executor, _ = _intract(get={"tasks": [{"id": "1", "title": "a"}, {"id": "2"}]})
+        assert [t.title for t in executor.get_tasks()] == ["a", "Task 1"]
+
+    def test_tasks_also_parse_from_the_data_envelope(self):
+        executor, _ = _intract(get={"data": {"tasks": [{"id": "1", "title": "a"}]}})
+        assert len(executor.get_tasks()) == 1
+
+    def test_without_a_campaign_no_request_is_made(self):
+        executor, sent = _intract()
+        executor._campaign_id = None
+        assert executor.get_tasks() == []
+        assert sent["get"] == []
+
+    def test_a_throwing_listing_is_an_empty_list(self):
+        executor, _ = _intract()
+
+        def boom(*a, **k):
+            raise RuntimeError("down")
+
+        executor._get = boom  # type: ignore[method-assign]
+        assert executor.get_tasks() == []
+
+    def test_a_completed_task_is_true_without_a_request(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, sent = _intract()
+        assert executor.complete_task(IntractTask(task_id="1", title="t", is_completed=True))
+        assert sent["post"] == []
+
+    def test_success_marks_the_task(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, sent = _intract(post={"success": True})
+        task = IntractTask(task_id="1", title="t")
+        assert executor.complete_task(task) is True
+        assert task.is_completed is True
+        assert sent["post"][0][0].endswith("/task/1/complete")
+
+    def test_status_completed_also_counts(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, _ = _intract(post={"status": "completed"})
+        assert executor.complete_task(IntractTask(task_id="1", title="t")) is True
+
+    def test_a_failure_stays_open(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        task = IntractTask(task_id="1", title="t")
+        assert _intract(post={"success": False})[0].complete_task(task) is False
+        assert task.is_completed is False
+
+    def test_a_throwing_transport_is_false(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, _ = _intract()
+
+        def boom(*a, **k):
+            raise RuntimeError("down")
+
+        executor._post = boom  # type: ignore[method-assign]
+        assert executor.complete_task(IntractTask(task_id="1", title="t")) is False
+
+    def test_a_captcha_is_solved_and_attached_when_required(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, sent = _intract(post={"success": True})
+        executor._solve_captcha = lambda task: "tok"  # type: ignore[method-assign]
+        executor.complete_task(IntractTask(task_id="1", title="t", requires_captcha=True))
+        assert sent["post"][0][1]["json"]["captcha_token"] == "tok"
+
+    def test_the_solver_is_cached(self):
+        executor, _ = _intract()
+        executor._solve_captcha = lambda task: "tok"  # type: ignore[method-assign]
+        assert executor._solve_captcha(None) == "tok"
+
+
+class TestIntractAuth:
+    def test_a_token_authenticates(self):
+        executor, _ = _intract()
+        assert executor.login({"token": "t"}) is True and executor._authenticated
+
+    def test_an_oauth_code_is_exchanged(self):
+        executor, sent = _intract(post={"access_token": "at"})
+        assert executor.login({"code": "c"}) is True
+        assert sent["post"][0][0].endswith("/auth/token")
+
+    def test_an_empty_exchange_is_false(self):
+        executor, _ = _intract(post={})
+        assert executor.login({"code": "c"}) is False
+
+    def test_a_throwing_exchange_is_false(self):
+        executor, _ = _intract()
+
+        def boom(*a, **k):
+            raise RuntimeError("down")
+
+        executor._post = boom  # type: ignore[method-assign]
+        assert executor.login({"code": "c"}) is False
+
+    def test_no_credentials_is_false(self):
+        assert _intract()[0].login({}) is False
+
+    def test_close_clears_the_token(self):
+        executor, _ = _intract()
+        executor._auth_token = "t"
+        executor.close()
+        assert executor._auth_token is None
+
+
+class TestIntractCaptcha:
+    def test_a_site_key_is_solved(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, _ = _intract()
+        task = IntractTask(task_id="1", title="t", metadata={"recaptcha_site_key": "k"})
+        seen = {}
+        executor._captcha_solver = type(
+            "S", (), {"solve_recaptcha_v2": staticmethod(lambda **kw: seen.update(kw) or "tok")}
+        )()
+        assert executor._solve_captcha(task) == "tok"
+        assert seen["site_key"] == "k"
+
+    def test_no_site_key_returns_none(self):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, _ = _intract()
+        executor._captcha_solver = object()
+        assert executor._solve_captcha(IntractTask(task_id="1", title="t")) is None
+
+    def test_a_broken_provider_returns_none(self, caplog):
+        from web3_agent_kit.airdrop.executor.intract_exec import IntractTask
+
+        executor, _ = _intract()
+        executor.config.captcha_provider = "nope"
+        task = IntractTask(task_id="1", title="t", metadata={"recaptcha_site_key": "k"})
+        with caplog.at_level("WARNING"):
+            assert executor._solve_captcha(task) is None
+        assert "CAPTCHA solving failed" in caplog.text
