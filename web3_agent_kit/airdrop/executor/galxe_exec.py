@@ -20,6 +20,7 @@ from .base_executor import (
     ExecutorResult,
     PlatformTask,
     TaskDifficulty,
+    coerce_int,
 )
 
 logger = logging.getLogger(__name__)
@@ -476,7 +477,9 @@ class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
     def _parse_task(self, data: dict, index: int) -> Optional[GalxeTask]:
         """Parse a task from GraphQL response."""
         try:
-            task_id = str(data.get("id", index))
+            # str(None) is "None"; Galxe sends a null id for some tasks.
+            raw_id = data.get("id")
+            task_id = str(raw_id) if raw_id not in (None, "") else str(index)
             title = data.get("name", f"Task {index}")
             task_type = data.get("type", "custom")
             description = data.get("description", "")
@@ -497,18 +500,20 @@ class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
 
             mapped_type = self._map_task_type(task_type)
 
+            # The bridge branch was unreachable: on_chain_bridge starts with
+            # "on_chain", so the elif was never reached.
             difficulty = TaskDifficulty.EASY
-            if mapped_type.startswith("on_chain"):
-                difficulty = TaskDifficulty.MEDIUM
-            elif mapped_type in ("nft_mint", "on_chain_bridge"):
+            if mapped_type in ("nft_mint", "on_chain_bridge"):
                 difficulty = TaskDifficulty.HARD
+            elif mapped_type.startswith("on_chain"):
+                difficulty = TaskDifficulty.MEDIUM
 
             return GalxeTask(
                 task_id=f"galxe_{self._campaign_id}_{task_id}",
                 title=title,
                 description=description,
                 task_type=mapped_type,
-                points=int(attribute.get("points", 0)),
+                points=coerce_int(attribute.get("points")),
                 is_completed=is_completed,
                 campaign_id=self._campaign_id or "",
                 credential_id=credential_id,

@@ -7,6 +7,12 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** a task whose `points` field arrives as `""` or `null` was dropped
+  entirely by the Galxe and Layer3 parsers — `int("")` raises and the bare
+  `except` returned `None`, losing the whole task. Shared `coerce_int` helper
+  defaults to 0. A `null` task id no longer becomes the string `"None"`.
+- **airdrop:** the Galxe HARD difficulty branch was unreachable, because
+  `on_chain_bridge` starts with `on_chain` and the `elif` never ran.
 - **airdrop:** the faucet claimer reported `{"success": false, "error": "quota"}`
   as a success — the fallback was a substring match on `str(data)` and the word
   "success" is in the payload. An explicit `success` flag now wins; the
