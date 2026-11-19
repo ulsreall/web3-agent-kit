@@ -19,6 +19,7 @@ from .base_executor import (
     ExecutorResult,
     PlatformTask,
     TaskDifficulty,
+    coerce_int,
 )
 
 logger = logging.getLogger(__name__)
@@ -330,11 +331,12 @@ class Layer3Executor(BasePlatformExecutor[Layer3Task]):
     def _parse_step(self, data: dict, index: int) -> Optional[Layer3Task]:
         """Parse a quest step from API response."""
         try:
-            step_id = str(data.get("id", data.get("stepId", index)))
+            raw_id = data.get("id", data.get("stepId"))
+            step_id = str(raw_id) if raw_id not in (None, "") else str(index)
             title = data.get("title", data.get("name", f"Step {index}"))
             task_type = data.get("type", data.get("taskType", "custom"))
             description = data.get("description", "")
-            points = int(data.get("points", data.get("xp", 0)))
+            points = coerce_int(data.get("points", data.get("xp")))
             is_completed = data.get("completed", data.get("isCompleted", False))
             action_url = data.get("actionUrl", data.get("url", ""))
 
