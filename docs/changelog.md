@@ -11,6 +11,12 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the legacy Zealy client lost the whole quest list when one quest
+  had a null `type` (`.lower()` raised inside the wrapper) and crashed the sum on
+  a string `xp`; a null leaderboard `rank`/`username` came through raw. All are
+  coerced or defaulted. The legacy Gleam and Zealy `complete_task` docstrings now
+  say they mark the task locally instead of submitting — `GleamExecutor` and
+  `ZealyExecutor` are the ones that post.
 - **airdrop:** a Google Form question with neither an input nor a listbox (a
   text-only prompt or a grid item) counted for nothing, so `fields_filled +
   fields_skipped` never added up to `fields_found` and the skipped items were

@@ -142,6 +142,10 @@ class GleamCampaign(BaseAirdropPlatform):
     def complete_task(self, task: AirdropTask) -> bool:
         """Complete a Gleam.io task.
 
+        This legacy client marks the entry completed locally and records it; it
+        does not post anything. ``GleamExecutor`` is the one that drives a browser
+        and submits to the platform.
+
         Args:
             task: The AirdropTask to complete.
 
