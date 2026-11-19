@@ -11,6 +11,11 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** Galxe's CAPTCHA hook built a solver, discarded it and always
+  returned `None` — so `captcha` was never attached to a task completion or a
+  claim, and an unknown `captcha_provider` was swallowed at debug level, which
+  looks exactly like a campaign that needs no CAPTCHA. The solver is now built
+  once and cached, an unusable provider logs a warning, and `close()` drops it.
 - **airdrop:** the shared request helper raised `TypeError` when a platform kept
   answering 429. Every attempt was a rate-limit response, `last_error` was never
   assigned, and the loop ended in `raise None`. It now raises an `HTTPError`

@@ -195,6 +195,7 @@ class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
         self._campaign_data: Optional[dict] = None
         self._wallet_address: Optional[str] = None
         self._auth_token: Optional[str] = None
+        self._captcha_solver: Optional[Any] = None
         self._galxe_results: GalxeResult = GalxeResult(platform=self.platform_name, url="")
 
     def visit(self, url: str) -> bool:
@@ -435,6 +436,7 @@ class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
         """Clean up resources."""
         super().close()
         self._campaign_data = None
+        self._captcha_solver = None
 
     # ─── Private Helpers ─────────────────────────────────────────
 
@@ -556,21 +558,30 @@ class GalxeExecutor(BasePlatformExecutor[GalxeTask]):
         return type_map.get(raw_lower, "custom")
 
     def _handle_geetest_if_needed(self) -> Optional[dict]:
-        """Handle GeeTest CAPTCHA if triggered."""
+        """Prepare the CAPTCHA solver for Galxe's GeeTest challenge.
+
+        Galxe only reveals the challenge in the response body, so nothing is
+        solved up front: this builds and caches the solver, and returns the
+        payload to attach when a challenge has been detected. Returns ``None``
+        either way, so callers can attach the result unconditionally.
+
+        An unusable provider is logged once rather than swallowed, because a
+        silently disabled solver looks identical to a campaign without one.
+        """
+        if self._captcha_solver is not None:
+            return None
+
         try:
             from .captcha_solver import CaptchaConfig, CaptchaProvider, CaptchaSolver
 
-            CaptchaSolver(
+            self._captcha_solver = CaptchaSolver(
                 CaptchaConfig(
                     provider=CaptchaProvider(self.config.captcha_provider),
                     api_key=self.config.captcha_api_key,
                 )
             )
-
-            # Check if GeeTest is required (Galxe uses GeeTest)
-            # This would be detected from the response in a real implementation
-            return None
-
         except Exception as e:
-            logger.debug(f"Galxe: GeeTest handling skipped: {e}")
+            logger.warning(f"Galxe: CAPTCHA solver unavailable ({e}); continuing without it")
             return None
+
+        return None
