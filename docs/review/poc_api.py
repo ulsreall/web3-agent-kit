@@ -1,9 +1,10 @@
 """PoC — POST /swap/execute end to end.
 
-    python3 poc_api.py
+    python3 docs/review/poc_api.py
 
 1. gate unconfigured -> fail-closed with an explicit message
-2. WEB3_AUTO_AUTHORIZE=true -> the route reaches the signer
+2. WEB3_AUTO_AUTHORIZE=true -> the route reaches the signer (a 400 about funds is
+   still proof: the guard, policy and construction all passed and it signed)
 """
 
 import os

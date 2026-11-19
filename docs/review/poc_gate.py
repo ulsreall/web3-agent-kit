@@ -3,9 +3,11 @@
     python3 poc_gate.py
 
 Each case prints OK when the branch behaves correctly and GAP when it does not.
-C is the known remaining gap: replay protection is per-process.
+Each case is a finding that was fixed; all should print OK.
 """
 
+import os
+import tempfile
 import time
 
 from eth_account import Account
@@ -20,6 +22,7 @@ from web3_agent_kit.execution import (
     ExecutionPolicy,
     PreSignInterceptor,
 )
+from web3_agent_kit.execution.replay import reset_default_store
 
 acct = Account.create()
 SENDER = acct.address
@@ -38,7 +41,9 @@ def provider(commitment_override=None):
     def verify(ctx):
         now = int(time.time())
         return AuthorizationEvidence(
-            authorization_id=f"auth-{now}-{id(ctx)}",
+            # Tied to the envelope, as an issuing service would be: re-submitting
+            # the same authorization must reproduce the same identifier.
+            authorization_id=f"auth-{ctx.envelope_digest[:16]}",
             envelope_digest=ctx.envelope_digest,
             executor=ctx.envelope.executor,
             authorizer=SENDER,
@@ -98,15 +103,32 @@ except Exception as exc:
     print(f"   GAP {type(exc).__name__}: {exc}")
 
 print("\nC. replay against a fresh gate instance")
-shared = tx(nonce=7)
+shared = req(tx(nonce=7))
 first = gate()
-first.sign(req(shared))
+first.sign(shared)
 print("   gate 1 signed, authorization:", first.audit_log[-1].authorization_id)
 try:
-    gate().sign(req(shared))
-    print("   GAP gate 2 accepted the same authorization (process-local replay set)")
+    gate().sign(shared)
+    print("   GAP gate 2 accepted the same authorization again")
 except Exception as exc:
-    print("   OK  gate 2 denied:", str(exc)[:70])
+    print("   OK  gate 2 denied:", str(exc)[:60])
+
+print("\nC2. after a restart, with WEB3_REPLAY_DB set")
+db = tempfile.NamedTemporaryFile(suffix=".db", delete=False).name
+os.environ["WEB3_REPLAY_DB"] = db
+reset_default_store()  # the store is cached per process; re-select after the env change
+try:
+    durable = req(tx(nonce=8))
+    gate().sign(durable)
+    reset_default_store()  # what a process restart does to the cached store
+    try:
+        gate().sign(durable)
+        print("   GAP the durable store forgot a consumed authorization")
+    except Exception as exc:
+        print("   OK  still denied after the reset:", str(exc)[:55])
+finally:
+    os.environ.pop("WEB3_REPLAY_DB")
+    reset_default_store()
 
 print("\nD. bogus policy commitment in the evidence")
 try:

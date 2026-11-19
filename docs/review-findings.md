@@ -1,12 +1,34 @@
-# Review — web3-agent-kit @ 55c6a0a (v1.19.1)
+# Findings — web3-agent-kit @ 55c6a0a (v1.19.1)
 
-> **Status:** P1, P2 and the P3 commitment check are fixed on branch `fix/api-write-paths`
-> (see `docs/changelog.md` → Unreleased). Remaining: cross-process replay store (P3),
-> `_consumed` pruning (P3). PoCs below now print OK/GAP against the branch.
+**Status: all findings closed.** This is the record of an execution-first review of commit
+`55c6a0a`; it is kept as the audit trail, not as an open work list. Every item below was
+reproduced by running code, then fixed, and each fix carries a regression test. Closed in
+PRs #127–#141 and the direct `master` commits after them — see `docs/changelog.md` for the
+per-item entry.
 
-Scope: full read of `web3_agent_kit/execution/*`, `wallet/wallet.py`, `api/*`, the Nov 3 security commits (#117, #118), plus the Solana ATA/instruction rewrite. Everything below was reproduced locally on Python 3.11 with the project's own venv, not inferred from reading.
+| Item | Severity | State |
+|---|---|---|
+| API write surface dead (signature drift) | P1 | fixed, signature-contract tests |
+| Contract creation cannot pass the gate | P2 | fixed, creation profile |
+| `input` ignored, wrong calldata authorizable | P2 | fixed, alias + conflict detection |
+| Integration test fails when actually run | P2 | fixed, deterministic key in CI |
+| Replay protection per-process only | P3 | fixed, SQLite store, deny on store error |
+| Policy commitment never checked | P3 | fixed, digest compared |
+| Solana sender ATA never created | P3 | fixed |
+| Every example except one is stale | P3 | fixed, `enforce()` helper |
+| Solana LP fixture ignores the extra | P4 | fixed, `importorskip` |
 
-Baseline: `pytest` → 2047 passed, 7 skipped, **1 failed** (`tests/test_integration.py::test_wallet_sign_transaction`).
+The PoCs are in this directory (`poc_gate.py`, `poc_api.py`); run them from the repo root
+with the project venv, e.g. `python docs/review/poc_gate.py`.
+
+Scope of the original pass: full read of `web3_agent_kit/execution/*`, `wallet/wallet.py`,
+`api/*`, the Nov 3 security commits (#117, #118), plus the Solana ATA/instruction rewrite.
+Everything was reproduced locally on Python 3.11 with the project's own venv, not inferred
+from reading.
+
+Baseline at the time: `pytest` → 2047 passed, 7 skipped, **1 failed**
+(`tests/test_integration.py::test_wallet_sign_transaction`). Current baseline: 2830 passed,
+7 skipped, 0 failed.
 
 ---
 
@@ -218,7 +240,7 @@ Worth saying because it is the part that should not regress:
 - **API key handling**: `secrets.compare_digest`, 401 when unconfigured, startup refusal, CORS `*`+credentials rejection.
 - **`tools/check_signing_surface.py` in CI** — a real structural guard against new bypasses, with an explicit legacy baseline.
 
-## Suggested order
+## Order the work would take (all done)
 
 1. API routes (P1) + a non-mocked contract test — the endpoints are the product's front door.
 2. Creation through the gate (P2) — unblocks deploys and makes the changelog claim true.
@@ -231,8 +253,10 @@ Worth saying because it is the part that should not regress:
 ## Reproduction
 
 ```bash
-python3 -m venv .venv && .venv/bin/pip install -e ".[dev,solana]"
-.venv/bin/python poc_gate.py     # creation, input, replay, commitment
-.venv/bin/python poc_api.py      # POST /swap/execute
-.venv/bin/python -m pytest tests/test_integration.py -q   # with PRIVATE_KEY set
+python3 -m venv .venv && .venv/bin/pip install -e ".[dev,solana,api]"
+.venv/bin/python docs/review/poc_gate.py     # creation, input, replay, commitment
+.venv/bin/python docs/review/poc_api.py      # POST /swap/execute
+.venv/bin/python -m pytest tests/test_integration.py -q   # PRIVATE_KEY is set by conftest
 ```
+
+All three print OK today; before the fixes they printed GAP / a 400.
