@@ -359,14 +359,20 @@ class GleamExecutor:
         """Handle visit URL tasks — navigate and verify."""
         try:
             if task.url:
-                # Open link in new tab, then close
+                # Open link in new tab, then close. The close belongs in a
+                # finally: a navigation that raises used to leave the tab open.
                 new_page = self.browser.new_page()
-                success = self.browser.navigate_with_retry(
-                    new_page, task.url, timeout=self.PAGE_LOAD_TIMEOUT
-                )
-                time.sleep(2)
-                new_page.close()
-                return success
+                try:
+                    success = self.browser.navigate_with_retry(
+                        new_page, task.url, timeout=self.PAGE_LOAD_TIMEOUT
+                    )
+                    time.sleep(2)
+                    return success
+                finally:
+                    try:
+                        new_page.close()
+                    except Exception:
+                        pass
             else:
                 # Click the visit button on the widget
                 return self._click_entry_action(task)

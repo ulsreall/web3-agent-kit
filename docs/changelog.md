@@ -7,6 +7,9 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** the Gleam visit handler opened a tab, navigated and closed it,
+  but the close was not in a `finally` — a navigation that raised left the tab
+  open on every retry-exhausted visit.
 - **airdrop:** every platform scanner built its campaign id with
   `str(item.get("id", ""))`, so a missing id produced `""` (all such entries
   collided in the dedupe index) and a `null` id produced `"None"`. Entries

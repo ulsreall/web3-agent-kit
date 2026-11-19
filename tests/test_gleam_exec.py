@@ -393,3 +393,189 @@ class TestDelay:
         assert len(slept) == 1
         lo, hi = GleamExecutor.TASK_DELAY_MIN, GleamExecutor.TASK_DELAY_MAX
         assert lo <= slept[0] <= hi
+
+
+class _ClickDrv:
+    """Browser whose click result is scriptable per selector."""
+
+    def __init__(self, results=None, context=None, navigate=True, new_page=None):
+        self.results = results or {}
+        self._context = context
+        self._navigate = navigate
+        self._new_page = new_page or SimpleNamespace(close=lambda: None)
+        self.clicks = []
+        self.pages_created = 0
+
+    def new_page(self):
+        self.pages_created += 1
+        return self._new_page
+
+    def navigate_with_retry(self, page, url, timeout=None):
+        return self._navigate
+
+    def click_with_retry(self, page, selector, timeout=None):
+        self.clicks.append(selector)
+        return self.results.get(selector, False)
+
+
+def _entry(**kwargs):
+    from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+    data = {"entry_id": "1", "task_type": GleamTaskType.VISIT_URL, "title": "t", **kwargs}
+    return GleamTaskEntry(**data)
+
+
+class TestVisitHandler:
+    def test_a_url_opens_and_closes_a_tab(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _ClickDrv(new_page=page)
+        executor = GleamExecutor(driver)
+        assert executor._handle_visit_url(_entry(url="https://example.com")) is True
+        assert closed == [1]
+
+    def test_a_failed_navigation_still_closes_the_tab(self, monkeypatch):
+        # The close lives in a finally: a raising navigation used to orphan it.
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _ClickDrv(new_page=page, navigate=False)
+        executor = GleamExecutor(driver)
+        assert executor._handle_visit_url(_entry(url="https://example.com")) is False
+        assert closed == [1]
+
+    def test_a_throwing_navigation_still_closes_the_tab(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        page = SimpleNamespace(close=lambda: closed.append(1))
+        driver = _ClickDrv(new_page=page)
+
+        def boom(*a, **k):
+            raise RuntimeError("crash")
+
+        driver.navigate_with_retry = boom
+        executor = GleamExecutor(driver)
+        assert executor._handle_visit_url(_entry(url="https://example.com")) is False
+        assert closed == [1]
+
+    def test_without_a_url_the_widget_action_is_clicked(self, monkeypatch):
+        driver = _ClickDrv(results={"[data-entry-index='0'] a": True})
+        executor = GleamExecutor(driver)
+        executor._page = object()
+        assert executor._handle_visit_url(_entry()) is True
+        assert driver.pages_created == 0
+
+
+class TestSocialPopup:
+    def test_without_a_context_it_is_false(self):
+        assert GleamExecutor(_ClickDrv())._handle_social_popup(_entry(), "twitter.com") is False
+
+    def test_a_click_without_a_popup_still_counts(self, monkeypatch):
+        # Documented optimism: the widget may track the click itself.
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        context = SimpleNamespace(pages=[object()])
+        executor = GleamExecutor(_ClickDrv(results={"#go": True}, context=context))
+        executor._page = object()
+        assert executor._handle_social_popup(_entry(selector="#go"), "twitter.com") is True
+
+    def test_a_failed_click_is_false(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        context = SimpleNamespace(pages=[object()])
+        executor = GleamExecutor(_ClickDrv(context=context))
+        executor._page = object()
+        assert executor._handle_social_popup(_entry(selector="#go"), "twitter.com") is False
+
+    def test_a_matching_popup_is_closed_and_counted(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        popup = SimpleNamespace(
+            wait_for_load_state=lambda *a, **k: None,
+            url="https://twitter.com/intent/follow",
+            close=lambda: closed.append(1),
+        )
+        context = SimpleNamespace(pages=[object(), popup])
+        executor = GleamExecutor(_ClickDrv(results={"#go": True}, context=context))
+        executor._page = object()
+        assert executor._handle_social_popup(_entry(selector="#go"), "twitter.com") is True
+        assert closed == [1]
+
+    def test_an_unrelated_popup_is_closed_and_the_click_still_counts(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        popup = SimpleNamespace(
+            wait_for_load_state=lambda *a, **k: None,
+            url="https://elsewhere.example",
+            close=lambda: closed.append(1),
+        )
+        context = SimpleNamespace(pages=[object(), popup])
+        executor = GleamExecutor(_ClickDrv(results={"#go": True}, context=context))
+        executor._page = object()
+        assert executor._handle_social_popup(_entry(selector="#go"), "twitter.com") is True
+        assert closed == [1]
+
+    def test_a_popup_that_never_loads_is_closed_anyway(self, monkeypatch):
+        monkeypatch.setattr(
+            "web3_agent_kit.airdrop.executor.gleam_exec.time.sleep", lambda _s: None
+        )
+        closed = []
+        popup = SimpleNamespace(
+            wait_for_load_state=lambda *a, **k: (_ for _ in ()).throw(RuntimeError("stuck")),
+            url="",
+            close=lambda: closed.append(1),
+        )
+        context = SimpleNamespace(pages=[object(), popup])
+        executor = GleamExecutor(_ClickDrv(results={"#go": True}, context=context))
+        executor._page = object()
+        assert executor._handle_social_popup(_entry(selector="#go"), "twitter.com") is True
+        assert closed == [1]
+
+
+class TestClickEntryAction:
+    def test_no_page_is_false(self):
+        assert GleamExecutor(_ClickDrv())._click_entry_action(_entry(selector="#a")) is False
+
+    def test_the_task_selector_is_tried_first(self):
+        driver = _ClickDrv(results={"#a": True})
+        executor = GleamExecutor(driver)
+        executor._page = object()
+        assert executor._click_entry_action(_entry(selector="#a")) is True
+        assert driver.clicks == ["#a"]
+
+    def test_the_indexed_selectors_are_tried_next(self):
+        driver = _ClickDrv(results={"[data-entry-index='0'] a": True})
+        executor = GleamExecutor(driver)
+        executor._page = object()
+        assert executor._click_entry_action(_entry()) is True
+
+    def test_the_link_scan_is_the_last_resort(self):
+        link = SimpleNamespace(get_attribute=lambda n: "https://x.example", click=lambda: None)
+        entry_el = SimpleNamespace(query_selector_all=lambda sel: [link])
+        page = SimpleNamespace(query_selector_all=lambda sel: [entry_el])
+        executor = GleamExecutor(_ClickDrv())
+        executor._page = page
+        assert executor._click_entry_action(_entry()) is True
+
+    def test_a_first_element_is_clicked_when_it_has_no_real_href(self):
+        clicked = []
+        link = SimpleNamespace(get_attribute=lambda n: "#", click=lambda: clicked.append(1))
+        entry_el = SimpleNamespace(query_selector_all=lambda sel: [link])
+        page = SimpleNamespace(query_selector_all=lambda sel: [entry_el])
+        executor = GleamExecutor(_ClickDrv())
+        executor._page = page
+        assert executor._click_entry_action(_entry()) is True
+        assert clicked == [1]
