@@ -139,3 +139,111 @@ class TestResultSummary:
     def test_all_done_is_fully_completed(self):
         result = GleamResult(campaign_url="u", campaign_id="c", total_tasks=2, completed_tasks=2)
         assert result.is_fully_completed is True
+
+
+class TestCompleteAll:
+    """The campaign loop: what it counts, skips and reports."""
+
+    def _executor(self, monkeypatch, tasks, complete=True, visit=True):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry
+
+        executor = GleamExecutor(SimpleNamespace())
+        monkeypatch.setattr(executor, "visit", lambda url: visit)
+        monkeypatch.setattr(executor, "get_tasks", lambda: tasks)
+        monkeypatch.setattr(executor, "complete_task", lambda task: complete)
+        monkeypatch.setattr(executor, "_random_delay", lambda: None)
+        monkeypatch.setattr(executor, "_verify_entries", lambda tasks: None)
+        assert GleamTaskEntry  # imported for the type used below
+        return executor
+
+    def _task(self, title, completed=False):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamTaskEntry, GleamTaskType
+
+        return GleamTaskEntry(
+            entry_id=title,
+            task_type=GleamTaskType.VISIT_URL,
+            title=title,
+            is_completed=completed,
+        )
+
+    def test_a_failed_visit_stops_before_parsing(self, monkeypatch):
+        result = self._executor(monkeypatch, [], visit=False).complete_all("https://gleam.io/a")
+        assert result.total_tasks == 0
+        assert "Failed to load" in result.errors[0]
+
+    def test_a_page_without_tasks_is_reported(self, monkeypatch):
+        result = self._executor(monkeypatch, []).complete_all("https://gleam.io/a")
+        assert result.errors == ["No tasks found on page"]
+
+    def test_completed_entries_are_skipped(self, monkeypatch):
+        tasks = [self._task("done", completed=True), self._task("todo")]
+        result = self._executor(monkeypatch, tasks).complete_all("https://gleam.io/a")
+        assert result.skipped_tasks == 1
+        assert result.completed_tasks == 1
+        assert result.total_tasks == 2
+
+    def test_a_failure_is_counted_and_named(self, monkeypatch):
+        result = self._executor(monkeypatch, [self._task("x")], complete=False).complete_all(
+            "https://gleam.io/a"
+        )
+        assert result.failed_tasks == 1
+        assert result.errors == ["Failed: x"]
+
+    def test_a_tracker_is_notified_only_on_success(self, monkeypatch):
+        marked = []
+
+        class Tracker:
+            def mark_task_completed(self, task):
+                marked.append(task.title)
+
+        tasks = [self._task("ok"), self._task("bad")]
+        executor = GleamExecutor(SimpleNamespace())
+        monkeypatch.setattr(executor, "visit", lambda url: True)
+        monkeypatch.setattr(executor, "get_tasks", lambda: tasks)
+        monkeypatch.setattr(executor, "complete_task", lambda task: task.title == "ok")
+        monkeypatch.setattr(executor, "_random_delay", lambda: None)
+        monkeypatch.setattr(executor, "_verify_entries", lambda tasks: None)
+        executor.complete_all("https://gleam.io/a", tracker=Tracker())
+        assert marked == ["ok"]
+
+    def test_an_unexpected_error_is_captured(self, monkeypatch):
+        executor = self._executor(monkeypatch, [])
+        monkeypatch.setattr(
+            executor, "visit", lambda url: (_ for _ in ()).throw(RuntimeError("boom"))
+        )
+        result = executor.complete_all("https://gleam.io/a")
+        assert "boom" in result.errors[0]
+        assert result.elapsed_seconds is not None
+
+
+class TestVerifyEntries:
+    def test_no_page_gives_an_empty_map(self):
+        assert GleamExecutor(SimpleNamespace()).verify_entry_status() == {}
+
+    def test_titles_map_to_completion(self):
+        from web3_agent_kit.airdrop.executor.gleam_exec import GleamExecutor as G
+
+        done = SimpleNamespace(
+            query_selector=lambda sel: (
+                object() if "completed" in sel or "done" in sel else _Text("A")
+            )
+        )
+        todo = SimpleNamespace(query_selector=lambda sel: _Text("B") if "title" in sel else None)
+        executor = G(SimpleNamespace())
+        executor._page = SimpleNamespace(query_selector_all=lambda sel: [done, todo])
+        assert executor.verify_entry_status() == {"A": True, "B": False}
+
+    def test_a_broken_page_gives_an_empty_map(self):
+        executor = GleamExecutor(SimpleNamespace())
+        executor._page = SimpleNamespace(
+            query_selector_all=lambda sel: (_ for _ in ()).throw(RuntimeError("detached"))
+        )
+        assert executor.verify_entry_status() == {}
+
+
+class _Text:
+    def __init__(self, text):
+        self._text = text
+
+    def inner_text(self):
+        return self._text
