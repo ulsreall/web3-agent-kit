@@ -11,6 +11,10 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **airdrop:** a Google Form question with neither an input nor a listbox (a
+  text-only prompt or a grid item) counted for nothing, so `fields_filled +
+  fields_skipped` never added up to `fields_found` and the skipped items were
+  invisible in `details`.
 - **prices:** a failed lookup discarded an expired-but-real price and returned the
   caller's fallback, so a feed blip zeroed positions that had a known value
   seconds earlier. The stale price is served with a warning now, and an unknown
