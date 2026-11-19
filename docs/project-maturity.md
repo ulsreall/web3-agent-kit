@@ -31,6 +31,22 @@ market risk. Always review the [risk disclosure](https://github.com/ulsreall/web
 The classification is intentionally conservative. A module moves to a higher
 level only after satisfying the release criteria below.
 
+## Gates that are machine-checked
+
+CI enforces the mechanical half of these criteria on every pull request, so a
+claim cannot quietly rot:
+
+| Gate | What it holds |
+|---|---|
+| `test` matrix (3.10–3.13) | full suite on every supported interpreter |
+| `lint` / `types` | `ruff check`, `ruff format --check`, `mypy` over the whole package |
+| `gate-coverage` | 95% floor on the gate modules themselves, 70% package-wide |
+| `check_signing_surface` | no signing call may bypass the interceptor |
+| `audit` | `pip-audit` against the lock file |
+
+Passing every gate is necessary, not sufficient — coverage says a line ran, not
+that its behaviour is right, and no gate replaces a testnet run.
+
 ## Promotion criteria
 
 ### Experimental to Beta
