@@ -6,7 +6,7 @@ hide:
 <div class="docs-hero" markdown>
 <div class="docs-hero-copy" markdown>
 
-<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> v1.19.2</p>
+<p class="docs-eyebrow">OPEN-SOURCE PYTHON INFRASTRUCTURE <span>·</span> <a href="https://pypi.org/project/web3-agent-kit/"><img src="https://img.shields.io/pypi/v/web3-agent-kit?style=flat-square&label=latest" alt="latest release" height="18"/></a></p>
 
 # Build agents that can actually execute.
 

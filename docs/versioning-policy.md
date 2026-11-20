@@ -1,6 +1,6 @@
 # Versioning Policy
 
-> **Current version:** v1.19.2
+> **Current version:** see [PyPI](https://pypi.org/project/web3-agent-kit/) — the badge on the home page and the [changelog](changelog.md) are the source of truth.
 
 ## SemVer Commitment
 
