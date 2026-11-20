@@ -22,23 +22,29 @@ def _text(rel: str) -> str:
     return (ROOT / rel).read_text(encoding="utf-8")
 
 
-# Each stamp is anchored to the sentence that carries it, because the same files
-# also mention older versions as history and those must not be rewritten.
-STAMPS = [
-    ("docs/index.md", r'class="docs-eyebrow">.*?v(\d+\.\d+\.\d+)</p>'),
-    ("docs/versioning-policy.md", r"\*\*Current version:\*\* v(\d+\.\d+\.\d+)"),
-    ("docs/security-model.md", r"\*\*Last updated:\*\* v(\d+\.\d+\.\d+)"),
-    ("assets/readme-banner.svg", r">v(\d+\.\d+\.\d+)<"),
-    ("assets/readme-banner.svg", r"Web3 Agent Kit v(\d+\.\d+\.\d+)"),
-    ("README.md", r"alt=\"Web3 Agent Kit v(\d+\.\d+\.\d+)"),
-]
+# No surface may hardcode a release version: release-please owns __version__, and
+# a hand-edited stamp in prose silently lagged v1.19.2 by a full release. The
+# home page reads the version from PyPI instead, so it cannot go stale.
+SURFACES = ["docs/index.md", "assets/readme-banner.svg"]
+_VERSION_LITERAL = re.compile(r"\bv\d+\.\d+\.\d+\b")
 
 
-@pytest.mark.parametrize("rel,pattern", STAMPS, ids=[f"{r}:{i}" for i, (r, _) in enumerate(STAMPS)])
-def test_every_version_stamp_matches_the_package(rel, pattern):
-    match = re.search(pattern, _text(rel))
-    assert match, f"no version stamp matched in {rel}"
-    assert match.group(1) == VERSION, f"{rel} stamps {match.group(1)}, package is {VERSION}"
+@pytest.mark.parametrize("rel", SURFACES)
+def test_no_surface_hardcodes_a_release_version(rel):
+    found = _VERSION_LITERAL.findall(_text(rel))
+    assert not found, (
+        f"{rel} hardcodes {found}; point at PyPI or the changelog instead so the "
+        "value cannot drift from __version__"
+    )
+
+
+def test_the_readme_banner_does_not_hardcode_a_version():
+    # The rest of the README legitimately cites contract versions (Safe v1.4.3)
+    # and breaking-change ranges (v1.14.0+); only the banner is a release stamp.
+    match = re.search(r'alt="Web3 Agent Kit[^"]*"', _text("README.md"))
+    assert match, "the README banner alt text is missing"
+    found = _VERSION_LITERAL.findall(match.group(0))
+    assert not found, f"the README banner hardcodes {found}"
 
 
 def test_the_risk_register_is_published():

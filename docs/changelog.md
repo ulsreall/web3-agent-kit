@@ -11,6 +11,13 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **docs:** the release version was hardcoded in five places (home page eyebrow,
+  versioning policy, security model, README banner, banner SVG) and release-please
+  only bumps `__init__.py`, so every release left the site claiming the previous
+  one. Those literals are gone: the home page reads the version from PyPI as a
+  badge, the versioning policy points at PyPI and the changelog, and the security
+  model stamps the review date instead. A test fails if a release version is
+  hardcoded on any of those surfaces again.
 - **docs:** the site was serving stale numbers and a missing document. The risk
   register lived at the repo root, outside `docs_dir`, so `/risks/` returned 404
   while three pages linked to a GitHub blob instead. The version stamps on the
