@@ -130,6 +130,7 @@ nav:
       - Safety and Transaction Pipeline: safety-and-transaction-pipeline.md
       - Security Model: security-model.md
       - Safety Gap Matrix: security/safety-gap-matrix.md
+      - Risk Register: risks.md
   - API Reference:
       - Agent: api/agent.md
       - Wallet: api/wallet.md
