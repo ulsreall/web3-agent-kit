@@ -47,7 +47,7 @@ print(result)
 
 <div class="docs-metrics" markdown>
 <div><strong>25</strong><span>modules</span></div>
-<div><strong>3,191</strong><span>tests passing</span></div>
+<div><strong>3,197</strong><span>tests passing</span></div>
 <div><strong>9</strong><span>supported chains</span></div>
 <div><strong>92%</strong><span>coverage</span></div>
 <div><strong>MIT</strong><span>license</span></div>
