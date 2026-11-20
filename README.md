@@ -5,7 +5,7 @@
 > [!WARNING]
 > Web3 Agent Kit is beta software. Module readiness ranges from stable to
 > experimental, and availability does not imply unattended mainnet safety.
-> Review the [maturity policy](docs/project-maturity.md) and [risk disclosure](RISKS.md)
+> Review the [maturity policy](docs/project-maturity.md) and [risk disclosure](docs/risks.md)
 > before using real funds.
 
 > Feature readiness is tracked in the [capability matrix](docs/capability-matrix.md).
@@ -22,7 +22,7 @@
 [![Twitter](https://img.shields.io/twitter/follow/itseywacc?style=social)](https://twitter.com/itseywacc)
 
 <p align="center">
-  <img src="assets/readme-banner.svg" alt="Web3 Agent Kit v1.19.1: 9 chains, 37 API routes, 72% coverage, and 1,884 tests passing (171 skipped). Write-path readiness varies by module." width="700"/>
+  <img src="assets/readme-banner.svg" alt="Web3 Agent Kit v1.19.2: 9 chains, 38 API routes, 92% coverage, and 3,191 tests passing (7 skipped). Write-path readiness varies by module." width="700"/>
 </p>
 
 ---

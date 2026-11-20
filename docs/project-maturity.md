@@ -13,7 +13,7 @@ been validated for unattended use with real funds.
 | **Experimental** | Best-effort implementation with limited compatibility guarantees | Research, evaluation, and testnets only |
 
 No maturity level eliminates blockchain, smart-contract, key-management, or
-market risk. Always review the [risk disclosure](https://github.com/ulsreall/web3-agent-kit/blob/master/RISKS.md) and
+market risk. Always review the [risk disclosure](risks.md) and
 [security model](security-model.md).
 
 ## Current classification

@@ -11,6 +11,14 @@ All notable changes to Web3 Agent Kit are documented here.
 ## [Unreleased]
 
 ### Fixed
+- **docs:** the site was serving stale numbers and a missing document. The risk
+  register lived at the repo root, outside `docs_dir`, so `/risks/` returned 404
+  while three pages linked to a GitHub blob instead. The version stamps on the
+  home page, versioning policy, security model, README banner and its SVG still
+  read v1.19.1 after the 1.19.2 release, and the headline figures (tests,
+  coverage, routes) had not moved since 1.18. `tests/test_docs_sync.py` now pins
+  every stamp to `__version__` and makes the three surfaces agree, so a release
+  that forgets the docs fails CI instead of shipping.
 - **api:** `resolve_token` accepted any `0x`-prefixed 42-character string, so a
   typo (`0x` + 40 `z`) was taken as an address and only failed inside web3 once
   the request had been accepted. It must match 20 hex bytes now, and an
