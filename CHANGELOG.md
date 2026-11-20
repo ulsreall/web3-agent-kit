@@ -11,6 +11,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.19.3](https://github.com/ulsreall/web3-agent-kit/compare/v1.19.2...v1.19.3) (2026-11-20)
+
+
+### Documentation
+
+* publish the risk register, resync version stamps and headline numbers ([#181](https://github.com/ulsreall/web3-agent-kit/issues/181)) ([dd3a4fa](https://github.com/ulsreall/web3-agent-kit/commit/dd3a4fa09de561cf424a4c30c5ed393c8abdaccd))
+* stamp RISKS at 1.19.2 ([9d9f18a](https://github.com/ulsreall/web3-agent-kit/commit/9d9f18a4df6e96d2ff5a58232a5ba4a46d6c4070))
+
 ## [1.19.2](https://github.com/ulsreall/web3-agent-kit/compare/v1.19.1...v1.19.2) (2026-11-19)
 
 
